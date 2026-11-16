@@ -1,6 +1,6 @@
 # External-Source Usage & Phase Split (Grokipedia / Wikipedia / OpenSERP / NOAA / NARA)
 
-**Date:** 2026-10-06. The pipeline splits external enrichment **by source**:
+**Date:** 2026-10-06 (Phase-2 table checked against the code 2026-11-16). The pipeline splits external enrichment **by source**:
 
 - **Phase 2 (extraction)** — **ALL Grokipedia + Wikipedia** enrichment (descriptive text +
   images), committed natively by each extractor as it writes the entity.
@@ -15,7 +15,7 @@
 
 | Entity | Phase-2 native fn | Reuses fetch | Gated on | Commit |
 |---|---|---|---|---|
-| equipment | `equipment._apply_wikipedia_text_extract` (+ `_apply_grokipedia_url`, + existing media) | `equipment_wikipedia.search_equipment_wikipedia` + shared `grokipedia.resolve_grokipedia_url` | `wikipedia_checked_at` | native extractor save |
+| equipment | `equipment._apply_wikipedia_text_extract` (the Grokipedia URL is copied from the enrichment result in the same extractor; there is no `_apply_grokipedia_url`) | `equipment_wikipedia.search_equipment_wikipedia` + shared `grokipedia.resolve_grokipedia_url` | `wikipedia_checked_at` | native extractor save |
 | people | `people._enrich_person_phase2` → `enrich_biographies.enrich_person_from_sources` | `search_grokipedia`, Wikipedia bio/image, award citations | `_is_already_enriched` / `_should_re_search` (90-day) | `_save_person_file` |
 | people_groups | `people_groups` loop → `groups_wikipedia.enrich_group_from_wikipedia` | `search_group_wikipedia` + shared `grokipedia.resolve_grokipedia_url` | `wikipedia_checked_at` | `_save_group` |
 | places | `places._find_or_create_place` → `enrich_places.enrich_place_from_grokipedia` + `enrich_place_from_wikipedia` | `_search_grokipedia_place`, `_fetch_place_wikipedia_full` | `grokipedia_url`/`grokipedia_checked_at`, `wikipedia_url`/`wikipedia_checked_at` | `write_json_with_lock` |

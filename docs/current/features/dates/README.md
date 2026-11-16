@@ -2,7 +2,7 @@
 
 **Module:** `src/extraction/dates.py`  
 **Status:** Production  
-**Last Updated:** 2026-03-13
+**Last Updated:** 2026-11-16
 
 ---
 
@@ -19,24 +19,30 @@ Dates extraction analyzes event files and extracts all temporal mentions (dates 
 ### Data Flow
 
 ```
-Event File (JSON)
+Parsed chapter text (raw paragraphs)
     ↓
-For each Sub-event
+Fixed 3-paragraph windows (src/extraction/windows.py)
     ↓
-Create Date Extraction Prompt
+One date request per window (batch_parallel._extract_dates; prompt built in code, cache_type "dates")
     ↓
-Grok API (structured output)
+Each date item settled against the source: its original_text must be in the window
+(windows.settle: exact / repaired to the source sentence; else dropped as quote_unsupported)
     ↓
-ULID Validation & Auto-fix
+Attributed to the real sub-event whose paragraphs hold the quote
     ↓
 Filter Invalid Dates
     ↓
-Find or Create Date File
+Find or Create Date File (index lookup on the normalized key)
     ↓
-Add Event Mention
+Add Event Mention (entity_records.merge_mentions)
     ↓
 Update Index
 ```
+
+Dates are **not** read from the events' summaries or sub-event text. `src/extraction/dates.py` keeps the record helpers
+(`_find_or_create_date`, `_add_event_mention`, `_normalize_date_key`, `_stamp_resolved_interval`); the live Phase-2 path is
+`batch_parallel.extract_dates_batch_async`. `dates.extract_dates` (per sub-event) is only still called by
+`supplemental_info_pipeline.py`.
 
 ### Central Repository Structure
 
@@ -76,7 +82,7 @@ output/dates/
   "normalized_datetime": null,
   "event_mentions": [
     {
-      "MentionID": "01KHYP2N5P7Q9R1S3T5V7W9X1Z",
+      "DateMentionID": "01KHYP2N5P7Q9R1S3T5V7W9X1Z",
       "Event_Name": "Operation Overlord",
       "EventID": "01KHXNSE0W41DV7VV6PEMDJJ5H",
       "Sub_event_Name": "Initial landings at Omaha Beach",
@@ -185,7 +191,7 @@ intra-day ordering and "after 0500" queries work on the interval itself.
 
 A date can accumulate 1–1000+ `event_mentions`. Each record therefore also carries a
 **1–2 sentence significance summary** so a reader/RAG result gets the gist without reading
-every mention (`src/extraction/date_summary.py`, run as a separate pass `summarize_dates`).
+every mention (`src/extraction/date_summary.py`, a separate pass `summarize_dates`). **Not wired:** no pipeline code calls `summarize_dates` (only tests do), so current records do not get these fields until it is scheduled.
 
 | Field | Meaning |
 |---|---|
@@ -243,17 +249,10 @@ Each date file tracks all events that reference it:
 - Preserves original text context
 - Includes book metadata for citation
 
-**Duplicate Prevention** (keyed on `(Sub_eventID, time_start, original_text)`): a sub-event
-re-run is skipped, but the SAME sub-event citing this date at a DIFFERENT time ("0500" vs
-"1800") or in DIFFERENT words is kept as a distinct mention. Each mention's own id is
-**`DateMentionID`** (the name all consumers reference it by).
-```python
-new_key = (sub_event_id, mention.get("time_start"), mention.get("original_text", ""))
-existing = {(m.get("Sub_eventID"), m.get("time_start"), m.get("original_text", ""))
-            for m in date_data["event_mentions"]}
-if new_key in existing:
-    return  # exact re-run -> skip
-```
+**Duplicate Prevention** (`entity_records.mention_identity`, applied by `merge_mentions`): the same sub-event with the same
+normalized quote (`original_text`) is one mention. A re-run is skipped; the same sub-event citing this date in DIFFERENT words is kept as a
+distinct mention (the time is no longer part of the key). Each mention's own id is **`DateMentionID`**
+(minted in `dates._add_event_mention`; it never decides identity).
 
 > **`normalized_datetime` is legacy/exact-only.** It is emitted ONLY for an exact-ISO
 > `date_start` (never for approximate forms like `summer-1944`). For sortable bounds on ANY
@@ -267,7 +266,7 @@ if new_key in existing:
 
 ## Configuration
 
-No specific configuration options. Runs automatically in Phase 2.
+`extraction.window_paragraphs` (3) sets the window size. Runs automatically in Phase 2, in the batch rounds ([batch processing](../batch_processing/README.md)).
 
 ---
 
@@ -279,9 +278,9 @@ No specific configuration options. Runs automatically in Phase 2.
 python3 phase2_extract.py
 ```
 
-Dates extracted automatically after events.
+Dates are asked in the same round as the events request (`prefetch_windows`) and written once the events are in.
 
-### Programmatic
+### Programmatic (legacy per-sub-event entry point)
 
 ```python
 from pathlib import Path
@@ -290,8 +289,8 @@ from src.extraction.dates import extract_dates
 
 grok_client = GrokClient(cache_dir=Path("cache/api"))
 
-event_file = Path("output/BreakoutAndPursuit/chapter1-event.json")
-parsed_file = Path("output/BreakoutAndPursuit/chapter1-parsed.json")
+event_file = Path("output/content/BreakoutAndPursuit/chapter1-event.json")
+parsed_file = Path("output/content/BreakoutAndPursuit/chapter1-parsed.json")
 dates_dir = Path("output/dates")
 
 extract_dates(
@@ -327,8 +326,7 @@ Maps normalized date keys to filenames for fast lookup.
 ## Integration
 
 ### With Events
-- Reads event files
-- Extracts dates from sub-event text
+- Reads the chapter's event file only to attribute each date to its sub-event (by the paragraph of its quote)
 - Links via EventID and Sub-eventID
 
 ### With Weather (Optional)
@@ -368,12 +366,7 @@ Invalid ULIDs automatically replaced:
 
 ### Retry Logic
 
-**Default:** 3 attempts per sub-event
-
-**Behavior:**
-- First attempt uses cache
-- Retries bypass cache
-- Continues to next sub-event on failure
+**Default:** `max_retries=3` in the legacy `extract_dates`. In the Phase-2 path a failed window is reported (`OBSERV dates...`) and the chapter continues.
 
 ---
 
@@ -535,10 +528,10 @@ This is expected - LLM sometimes returns unparseable dates.
 - [Events Extraction](../events/README.md)
 - [Places Extraction](../places/README.md)
 - [Weather Extraction](../weather/README.md)
-- [Error Handling](../../core/error_handling.md)
+- [Error Handling (archived 2026-03 spec)](../../../archive/contextmanagement/Specs/error_handling.md)
 
 ## Phase 3 Enrichment
 
-**None by design.** Dates are extracted, interval-resolved, and summarized in Phase 2; they
+**None by design.** Dates are extracted and interval-resolved in Phase 2 (the summary pass exists but is not wired); they
 receive no external enrichment in Phase 3. See
 [Phase 3 Enrichment](../../core/PHASE3_ENRICHMENT.md).

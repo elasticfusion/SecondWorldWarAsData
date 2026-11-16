@@ -1,6 +1,6 @@
 # Centralized JSON Result De-duplication (design)
 
-**Date:** 2026-10-13 · **Status:** DESIGN (not yet implemented) · **Priority:** HIGH
+**Date:** 2026-10-13 · **Status:** BUILT for URL-identity dedup (see "IMPLEMENTED"); the Grok fact-check / `claim_type` part is NOT built · **Reviewed:** 2026-11-16 · **Priority:** HIGH
 **Related:** URL_SOURCED_ENRICHMENT_DESIGN.md (the "different function" split out there:
 not re-SEARCHING a URL ≠ not WRITING a duplicate result — THIS doc is the latter).
 
@@ -30,16 +30,21 @@ makes two entries "the same" (identity key), because "duplicate" differs per fie
 ```
 DEDUP_FIELDS (per entity schema) — field -> identity key(s):
   places:         images[]            -> normalized url   (via url_hygiene.clean_url)
+                  web_results[]       -> clean url
   people:         images[]            -> clean url
                   military_awards[]   -> clean url
-                  academic_sources[]  -> clean url
+                  academic_references[] -> clean url
   people_groups:  images[]            -> clean url
                   web_results[]       -> clean url
-                  veterans_assoc[]    -> clean url
+  equipment:      images[]            -> clean url
+                  additional_sources[] -> clean url
   bibliography:   resource_urls[]     -> clean url (string list)
   source_section: primary_sources[]   -> clean url
-  <all>:          mentions[]          -> MentionID (reuse entity_store._mention_key)
 ```
+(This is the BUILT table, `result_dedup.DEDUP_FIELDS`. The earlier draft listed `academic_sources` and
+`veterans_assoc`, which are not in the code. Mention lists are deliberately NOT deduped here: they
+are ULID-keyed and deduped at the entity-store layer by `entity_store._mention_key`, and their item
+schemas are `additionalProperties:false`, so stamping recheck fields on them would block the write.)
 
 Identity rules:
 - Identity = the SOURCE URL, NOT the claim/fact text (owner 2026-10-13, Churchill
@@ -50,7 +55,7 @@ Identity rules:
 - URL-bearing entries dedup on `url_hygiene.clean_url(entry["url"])` (so tracking-param
   / case / fragment variants collapse to one — SAME normalizer as the URL registry, so
   "searched once" and "stored once" agree).
-- ID-bearing entries (mentions) dedup on their ULID / junction key.
+- ID-bearing entries (mentions) dedup on their ULID / junction key, but in `entity_store`, not here.
 - Plain string lists (resource_urls) dedup on clean-url string equality.
 
 ### UPSERT (refresh + merge), not discard (owner 2026-10-13)
@@ -107,11 +112,17 @@ Centralized function(s):
   DEDUP_FIELDS declaration (collapse same-URL, refresh checked_at). Called from the
   central write path so NO enricher has to remember to dedup.
 
-## IMPLEMENTED 2026-10-13 (PR TBD)
+## IMPLEMENTED 2026-10-13
+
+NOT built: the "GROK FACT-CHECK on merge" step and the `claim_type: fact|opinion` / `confirmed` stored
+claim fields described above (no `claim_type` writer exists in `src/utils/result_dedup.py`; the only
+`claim_type` in `src/` is in `url_content_verdict.py`, part of the unbuilt-URL-enrichment work).
+The upsert, safe-merge and capped `history[]` are built.
+
 - `src/utils/result_dedup.py` built: DEDUP_FIELDS for places/people/people_groups/
   equipment/bibliography/source_section; URL-identity upsert, safe-merge
-  (fill-only/upgrade-only/never-downgrade), list-union, mention-by-ID, free-form by
-  canonical hash, capped `history[]`, idempotent. 8 tests.
+  (fill-only/upgrade-only/never-downgrade), list-union, free-form by
+  canonical hash, capped `history[]`, idempotent.
 - WIRED at the central write path (`file_lock._validate_entity`, additive + fail-safe,
   alongside `_annotate_semantic_flags`) so it runs for EVERY entity write.
 - SCHEMA DECISION (supersedes the earlier "cut the 6-schema change once"): the

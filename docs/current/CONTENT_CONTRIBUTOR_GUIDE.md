@@ -2,7 +2,7 @@
 
 A guide for adding WWII historical content to the extraction pipeline. No coding required.
 
-**Last Updated:** 2026-04-26
+**Last Updated:** 2026-11-16
 
 ---
 
@@ -47,11 +47,20 @@ contentrepository/
     └── ...
 ```
 
-### Option C: Convert from PDF
+### Option C: Upload the PDF, EPUB or DOCX itself (AWS)
 
-```bash
-python3 scripts/pdf_to_markdown.py path/to/book.pdf
-```
+Upload the file to `contentrepository/` (see Upload and Process). The pipeline routes it by type:
+a PDF or scan is OCR'd on a GPU (Chandra), translated to English if needed, split at its own
+chapter headings and published as `contentrepository/<name>/chapterN/chapterN-{meta.yaml,content.md}`;
+EPUB/DOCX/HTML are converted with pandoc. The book name (its **slug**) is the file name without
+its extension and never changes: re-uploading the same document under another name is rejected.
+Book metadata is found for you and recorded with evidence quotes in the chapter meta. Uploads the
+pipeline cannot use (no usable name, wrong file type, virus scan hit) go to `needs-review/`.
+To attach a transcription for an automatic cross-check of the OCR, upload with
+`--metadata validation-url=<url>` (see [OCR_OPERATIONS.md](OCR_OPERATIONS.md)).
+
+For a local PDF-to-markdown conversion, `python3 scripts/pdf_to_markdown.py path/to/book.pdf` still
+exists (see [PDF Conversion](pipeline/PDF_CONVERSION.md)).
 
 ---
 
@@ -123,10 +132,12 @@ The HyperWar import script does this automatically at `###` headings.
 Upload to S3 to trigger the pipeline automatically:
 
 ```bash
-aws s3 sync contentrepository/ s3://dev-wwii-data-pipeline/content/ --region us-east-1
+aws s3 sync contentrepository/ s3://dev-wwii-data-pipeline/contentrepository/ --region us-east-1
+# or one source file:
+aws s3 cp "My Book.pdf" s3://dev-wwii-data-pipeline/contentrepository/ --region us-east-1
 ```
 
-The pipeline runs: **Parse → Extract → Dedup Review → Enrich → Import**
+The pipeline runs: **Ingest (OCR/convert) → Parse → Extract → Dedup Review → Enrich → Import**
 
 You'll receive an email when Phase 2 completes and it's time to review duplicates.
 
@@ -206,7 +217,7 @@ aws logs tail /ecs/dev-wwii-pipeline --follow --region us-east-1
 aws ecs list-tasks --cluster dev-wwii-pipeline --region us-east-1
 
 # Metrics dashboard
-# Open: https://<metrics-api-id>.execute-api.us-east-1.amazonaws.com/app/metrics
+# Open: https://<metrics-api-id>.execute-api.us-east-1.amazonaws.com/prod/metrics
 ```
 
 ### Local Mode

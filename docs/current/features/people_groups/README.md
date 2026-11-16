@@ -17,8 +17,14 @@ pre-canonical-key model) and the two point-in-time review snapshots
 (`PEOPLE_GROUPS_LOGIC_REVIEW.md`, `PEOPLE_GROUPS_STEP_BY_STEP.md`) → folded into
 `GROUP_DEDUP_RULES_REVIEW.md`; see `docs/archive/2026-10-05-people-groups/`.
 
+## How units are extracted (Phase 2)
+
+Units are discovered over 3-paragraph windows of the raw parsed text (`src/extraction/windows.py`, `batch_parallel._extract_people_groups`), at every
+echelon and nationality; the item is attributed to the sub-event holding its quote. The schema version is per entity (people_groups 2.29,
+`src/schemas/__init__.py`). See [groups.md](groups.md).
+
 ## Code
-- Extraction: `src/extraction/people_groups.py` (`prompts/people_groups.yaml`)
+- Extraction: `src/extraction/batch_parallel.py::_extract_people_groups` (live, windowed); record merge helpers in `src/extraction/people_groups.py` (older per-sub-event path uses `prompts/people_groups.yaml`)
 - Enrichment: `src/extraction/enrich_groups.py` (disambiguated query + wrong-article guard)
 - Dedup: `src/dedup/find_duplicate_groups.py` + `src/dedup/unit_key.py` + `data/unit_nicknames.yaml`
 - Person→group linking: `src/extraction/enrich_biographies.py::_link_person_to_groups`

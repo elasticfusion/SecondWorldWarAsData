@@ -1,6 +1,6 @@
 # Pipeline Backlog
 
-**Last Updated:** 2026-10-29 (Pattern-8 observability P1 remediation A-E shipped + deployed; Slack Chatbot fixed to us-east-1; P2/P3 sweep + 3 review follow-ups + GIT_SHA gap logged below).
+**Last Updated:** 2026-11-16 (docs review: three items marked done/partly done, see 2026-11-16 notes); previously 2026-10-29 (Pattern-8 observability P1 remediation A-E shipped + deployed; Slack Chatbot fixed to us-east-1; P2/P3 sweep + 3 review follow-ups + GIT_SHA gap logged below).
 
 ---
 
@@ -401,6 +401,7 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   `DateMentionID` redirect in `scripts/merge_dates.py`).
 - **[HIGH · data quality · 2026-11-11] Extraction defects found by the provenance validation
   (USA-E-XChannel, 20 chapters; report `output/reports/provenance/USA-E-XChannel-phase2.json`).**
+  **PARTLY ✅ DONE (code check 2026-11-16):** (b) mention-in-wrong-sub-event and (a)/(d) paragraph numbers: all discovery now runs over 3-paragraph raw windows and each item is settled against the window text and attributed to the sub-event holding its quote, with its paragraphs taken from where the quote is (`windows.settle_item` / `attribute_found`; `_PARAGRAPH_KEYS` = `paragraph_numbers`, `paragraphs`). (c) an unsupported quote is repaired to the source sentence or the item is dropped (`quote_unsupported`). (e) bibliography note locators: `supplemental.locate_notes` sets `reference_number` / `verbatim_reference` deterministically. Re-validate on the next E2E before closing.
   (a) logistics `paragraph_numbers` are NOT chapter paragraph numbers: the prompt gives the model the
   sub-event text with no paragraph numbers (`logistics._get_sub_event_text` joins the fulltext), so it
   numbers them itself (41 of 61 cited numbers fit a 1-based count within the sub-event; 67 fail).
@@ -840,7 +841,7 @@ just mocks. (Owner 2026-11-02.)
 
 ## 1. PHASE 2 — OPEN (current priority)
 
-### 1.0d Phase-2 THIRD RE-REVIEW findings (2026-10-21d) — full doc: docs/current/PHASE2_REREVIEW_2026-10-21d.md
+### 1.0d Phase-2 THIRD RE-REVIEW findings (2026-10-21d) — full doc: docs/archive/2026-11-16/PHASE2_REREVIEW_2026-10-21d.md
 
 A THIRD independent 14-agent review (7 slices × code+security) after §1.0b/§1.0c (#475–#513), tasked
 to find what both prior rounds MISSED + regressions + bugs in the largely-unreviewed areas (ingestion/
@@ -915,7 +916,7 @@ security reviews (both PASS)→CI→merge→sync→move to §7. bandit still 0H/
   award_source_pages Content-Type ext (backstopped); HTML sniff leading-whitespace/BOM; pandoc output no size
   cap; dead code (_acquire_lock, external_maps.main arg order).
 
-### 1.0c Phase-2 FRESH RE-REVIEW findings (2026-10-20b) — full doc: docs/current/PHASE2_REREVIEW_2026-10-20b.md
+### 1.0c Phase-2 FRESH RE-REVIEW findings (2026-10-20b) — full doc: docs/archive/2026-11-16/PHASE2_REREVIEW_2026-10-20b.md
 
 A SECOND independent 12-agent re-review (6 slices × code+security) of the merged state after the 1.0b
 campaign + PRs #487–#496. NEW/missed gaps (analyzer-invisible; bandit still 0H/0M). OPEN items below in
@@ -1128,6 +1129,7 @@ priority order; fix each via branch→gate→concurrent code+security reviews (b
   CROSS-CHAPTER DOCUMENT IDENTITY (ch3 "Irwin Diary" == ch5 — dedup's job).
 
 - **[HIGH] 3 footnote CLASSES — hybrid SPLIT is the gap.** CITATIONAL → bibliography, PROSE →
+  ✅ DONE (code check 2026-11-16): `content_class` already carries citation / prose / hybrid with a per-entry `prose_content` (`src/json_schemas.py` supplemental schema; `supplemental._route_one_material` routes hybrid to BOTH). The "OPEN" text below is the original gap.
   notes-event, HYBRID → BOTH. The 3-way split is the Phase-2 supplemental LLM's job. OPEN: add
   per-entry `prose_content` + widen `content_class` to {citation, prose, hybrid}; prompt the LLM to
   SEPARATE prose from citation(s); route prose → `{chapter}-notes-event.json`, each citation →
@@ -1254,7 +1256,7 @@ priority order; fix each via branch→gate→concurrent code+security reviews (b
   table ≠ code, so the doc can never go stale again.
 
 - **[ARCH/PERF] Phase-2 container split — fix submit-only subprocess gap first.** DOC:
-  `docs/current/design/PHASE2_CONTAINER_SPLIT.md`. The "submit-only" decoupling is DEFEATED by the
+  `docs/archive/2026-11-16/design/PHASE2_CONTAINER_SPLIT.md`. The "submit-only" decoupling is DEFEATED by the
   subprocess boundary: `run_submit_only` monkey-patches `poll_batch`, but `phase2_extract.py` runs as
   a `subprocess.run` child that doesn't inherit it → the container BLOCKS the whole batch wait and
   `batch_job#` is never enqueued (poller path dead for Phase 2). STEP 1 (cheap, high value): pass
@@ -1386,7 +1388,7 @@ priority order; fix each via branch→gate→concurrent code+security reviews (b
   the batch is permanently wedged at `ready`. FIX: TTL/release-on-failure on the claim; claim AFTER a
   successful `run_task`, or drop the long synchronous `_wait_for_nat()`.
 
-- **[HIGH · security] CloudFormation review follow-ups** (`CFN_SECURITY_REVIEW_2026-10-11.md`).
+- **[HIGH · security] CloudFormation review follow-ups** (`docs/archive/2026-11-16/CFN_SECURITY_REVIEW_2026-10-11.md`).
   Remaining HIGH: GitHub-deploy-role `iam:PassRole` lacks `PassedToService`; internet-facing
   dedup/mdreview/metrics Lambdas share the broad LambdaExecutionRole. MED: entity-table PITR,
   deploy-role GetSecretValue, TriggerQueue SSE+DLQ, OcrSpotController `batch:*` on `*`, public
@@ -1443,6 +1445,7 @@ The PREVENTIVE write guard + DETECTION catcher are DONE (§7). Remaining:
   audit (persist PK index + `_source_hash`, re-read only changed records).
 
 - **[HIGH · data loss] supplemental prompt↔schema drift + silent drop** (found by the 2026-10-24
+  PARTLY ✅ DONE (code check 2026-11-16): drift (1) keyed-by-Sub-eventID shape is unwrapped (`supplemental._unwrap_keyed_supplemental`, PR #576); drift (2) `reference_number` is now assigned by `supplemental.locate_notes` rather than asked of the model; the drop is counted (`OBSERV supplemental.extract ... dropped=` in `_observe_supplemental_extract`). Drift (3) `classification` vs `content_class` not re-checked.
   RoerDams Phase-1+2 validation run). `extract_supplemental` validates each LLM response against
   the single-shape `SUPPLEMENTAL_SCHEMA`; on a `ValidationError` it logs ERROR, `break`s, and
   returns nothing → the sub-event's supplemental/bibliography is SILENTLY DROPPED (no OBSERV
@@ -1583,7 +1586,7 @@ output/content listing, rebase-before-delete). 9 new tests; pruned 5 stale radon
 on-disk key + the empty-prefix listing). Follow-ups (pre-existing) tracked in §1.0d.
 
 ### Phase-2 code+security review program (2026-10-20) — ALL findings merged
-8 concurrent sub-agents -> 5 root patterns (docs/current/PHASE2_REVIEW_2026-10-20.md). Every finding
+8 concurrent sub-agents -> 5 root patterns (docs/archive/2026-11-16/PHASE2_REVIEW_2026-10-20.md). Every finding
 fixed on its own branch -> concurrent code+security review (both PASS) -> CI -> squash-merge, each
 with added OBSERV; data fixes regenerate only on a NEW run:
 - #475 PATTERN 1 (batch 0-persist: in-task positional mapping + casualties stable cache_key)
@@ -1646,7 +1649,7 @@ with added OBSERV; data fixes regenerate only on a NEW run:
   enrich.persisted.
 - **~~P3 end-of-run summary + schema~~ ✅ #466** — `OBSERV phase2.summary` per-type counts (CORE
   zero=LOUD, optional=INFO) + standardized colon-format lines. Audit:
-  `docs/current/dataquality/PHASE2_OBSERVABILITY_AUDIT.md`.
+  `docs/archive/2026-11-16/dataquality/PHASE2_OBSERVABILITY_AUDIT.md`.
 - Tooling: `scripts/utils/batch_metrics.py`; `scripts/ai_review.sh`.
 
 ### Identity / id discipline + session review fixes (2026-10-18)
@@ -1691,7 +1694,7 @@ with added OBSERV; data fixes regenerate only on a NEW run:
 - **~~Phase 0 auto-trigger + type-routing~~** (OCR auto-submit → merge → Phase 1; CONVERT/VIDEO write
   the chapter contract; structured-ref → deterministic OOB parser). **~~Deploy main to AWS~~** (S3
   AES256 + DenyInsecureTransport, pandoc --sandbox, AV scanning, EBS encryption). **~~Loader
-  SQLite-guard + Postgres-adapter doc~~**. **~~Storage role-split review~~** (`STORAGE_REVIEW.md`).
+  SQLite-guard + Postgres-adapter doc~~**. **~~Storage role-split review~~** (`docs/archive/2026-11-16/STORAGE_REVIEW.md`).
 
 ### Slack / notifications / batch — merged
 - **~~Slack formatter detail parity + triage~~ #347**, **~~SNS ListSubscriptions IAM~~**,

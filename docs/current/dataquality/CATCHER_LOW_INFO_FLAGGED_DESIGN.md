@@ -1,6 +1,6 @@
 # Catcher: low-information + flagged ALLOWs (HIGH-4)
 
-**Status:** proposed (2026-10-10). Make the statistical catcher SEE the quality problems that
+**Status:** BUILT (proposed 2026-10-10; verified against the code 2026-11-16). Make the statistical catcher SEE the quality problems that
 currently hide behind a plain `allow`: records that are structurally valid but low-information
 (empty biographies, no-coordinate places) or semantically flagged (HIGH-2 `quality_flags`).
 
@@ -9,6 +9,14 @@ The catcher clusters write-guard outcomes `allow` / `block` / `allow_warn`. Its 
 record that validates but is useless (empty `{}` biography, 0.0/0.0 place) is counted as a clean
 `allow`, so a SYSTEMATIC content-quality defect is invisible. HIGH-2 added semantic `quality_flags`
 to records but did NOT forward them to the catcher — so flags sit on records, unaggregated.
+
+**As built:** `validation_stats.record_record_quality` (called from `file_lock` after an allowed
+write) records `allow_empty` / `allow_flagged`; `_CONCERN_OUTCOMES = (block, allow_empty,
+allow_flagged)` drives `systematic_clusters`. The floor table `_EMPTY_FLOORS` is 2 populated content
+fields for people, places, bibliography, equipment and dates (other entities are never checked). Only
+flag codes in `_KNOWN_FLAG_CODES` (from `semantic_flags._OWNED_FLAGS`) become keywords, so
+record-derived text never reaches logs or SNS. Recheck-tracking fields (`checked_at`, `history`, ...)
+are non-content (`_NONCONTENT_FIELDS`).
 
 ## Design (additive to `src/utils/validation_stats.py` — one catcher, one vocabulary)
 

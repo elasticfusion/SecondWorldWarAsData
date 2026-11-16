@@ -1,6 +1,6 @@
 # S3-event validation backstop Lambda (block b-1)
 
-**Status:** proposed (2026-10-10). Last line of defence: validate every object written under
+**Status:** BUILT (proposed 2026-10-10; verified against the code 2026-11-16). Last line of defence: validate every object written under
 `output/` at the STORAGE PERIMETER, so a record that reaches S3 by ANY path (a raw-write bypass
 that predates/escapes the b-2 gate, a future un-guarded writer, a partial deploy) is still caught.
 
@@ -68,5 +68,8 @@ rule / future reprocess clears the tag once the content is regenerated.
   skip; read-only) + the fingerprint helper determinism.
 
 ## Rollout / cost
-Code-complete + merged; NOT auto-deployed (deploy is a separate deliberate step). The Lambda is
-event-driven (no idle cost). No AWS resources left running by this work.
+Built: `lambda_handlers/s3_validation_backstop.py`, and in `cloudformation/compute.yaml`
+`S3ValidationBackstopFunction` (`{env}-wwii-s3-validation-backstop`, 256 MB, 60 s), `BackstopRule`
+(EventBridge, `Object Created`, key prefix `output/`), `BackstopInvokePermission`, `BackstopRole`
+and `BackstopDLQ`. It ships with the normal deploy (`scripts/deploy_all.sh`, `update_lambdas.sh`
+stamps `VALIDATION_FINGERPRINT`). The Lambda is event-driven (no idle cost).

@@ -7,13 +7,17 @@ The pipeline uses ISO 3166-1 alpha-3 country codes (3-letter codes) for national
 ## Fields Using ISO Codes
 
 ### People (src/extraction/people.py)
-- `BiographicalProfile.nationality` - Person's nationality
+- `BiographicalProfile.nationality` - Person's nationality/citizenship (optional; not fabricated at extraction time, may be inferred by enrichment)
+- `BiographicalProfile.nationality_served` - The power the person served under, when it differs from `nationality` (e.g. a Frenchman in the Waffen-SS: `FRA` / `DEU`)
 
 ### People Groups (src/extraction/people_groups.py)
-- `PeopleGroup.country_of_origin` - Country where group originated
+- `PeopleGroup.nationality` and `PeopleGroup.country_of_origin` - Country where the group originated (`src/schemas/groups_output.py`)
 
 ### Equipment (src/extraction/equipment.py)
-- `EquipmentExtraction.country_of_origin` - Country that manufactured equipment
+- `country_of_origin` - Country that designed/manufactured the equipment (a captured M10 used by Germany is still `USA`); mentions carry a per-mention operator nationality
+
+### Casualties (src/extraction/casualties.py)
+- `nationality` - Nationality of who suffered the casualties
 
 ## Common WWII Country Codes
 
@@ -32,7 +36,7 @@ The pipeline uses ISO 3166-1 alpha-3 country codes (3-letter codes) for national
 - **GRC** - Greece
 - **YUG** - Yugoslavia
 - **CHN** - China
-- **RUS** - Soviet Union (Russia)
+- **SUN** - Soviet Union (the code the pipeline uses for WWII: `equipment._normalize_origin` maps USSR/Soviet/Russia to `SUN`; `RUS` is the modern Russian Federation)
 
 ### Axis Powers
 - **DEU** - Germany (Deutschland)
@@ -83,9 +87,7 @@ The pipeline uses ISO 3166-1 alpha-3 country codes (3-letter codes) for national
 
 ## Migration
 
-Existing data files use full country names (e.g., "American", "German"). These will be gradually migrated to ISO codes as data is updated.
-
-New extractions automatically use ISO codes.
+Older data files use full country names (e.g., "American", "German"). New extractions are prompted for ISO codes. Equipment origins are normalised in code: `equipment._normalize_origin` maps free text to a canonical code through `src.enrichment.award_sources.canonical_nationality` and falls back to the upper-cased input (a stated value is never dropped).
 
 ## Reference
 
@@ -93,7 +95,7 @@ Full list of ISO 3166-1 alpha-3 codes: https://en.wikipedia.org/wiki/ISO_3166-1_
 
 ## Implementation
 
-- **Schema definitions**: `src/extraction/people.py`, `src/extraction/people_groups.py`, `src/extraction/equipment.py`, `src/schemas.py`
-- **Prompts updated**: All extraction prompts specify ISO codes
-- **Validation**: Pydantic models accept any string (no validation yet)
-- **Future**: Could add validation against official ISO code list
+- **Schema definitions**: `src/schemas/people_output.py`, `groups_output.py`, `equipment_output.py`, `casualties_output.py` (all `["string", "null"]`, no pattern); Pydantic models in `src/extraction/people.py` and the other extractors
+- **Prompts**: the field descriptions in `src/extraction/people.py`, `equipment.py`, `casualties.py`, `enrich_groups.py` and `prompts/equipment_*.yaml` ask for ISO 3166-1 alpha-3
+- **Validation**: none. Any string is accepted, so a stray full name can still appear.
+- **Future**: Could add validation against the official ISO code list (plus the historic `SUN`)

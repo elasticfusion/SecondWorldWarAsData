@@ -2,7 +2,7 @@
 
 Design document for deploying Chandra OCR on AWS with GPU instances for high-quality PDF-to-markdown conversion.
 
-**Status:** Deployed (AWS Batch GPU, `dev-wwii-chandra` job def / `dev-wwii-chandra-gpu` queue) | **Last Updated:** 2026-09-20
+**Status:** Deployed (AWS Batch GPU, `{env}-wwii-chandra` job def / `{env}-wwii-chandra-gpu` queue, plus an on-demand fallback queue). The "Operational findings" below were validated 2026-09-20; the architecture, Batch, image and workflow sections were brought in line with the code on 2026-11-16 (what changed is marked) | **Last Updated:** 2026-11-16
 
 ---
 
@@ -38,10 +38,15 @@ page 1 = cover; page 8 = a hand-drawn dispositions map; page 12 = the
 INTRODUCTION containing the block quote).
 
 **Rule:** to OCR intended physical page `N`, submit `--page-range (N-1)-(N-1)`.
-The `entrypoint.sh` forwards the arg verbatim, so this offset is inherent to
-`chandra` itself, not the wrapper. Any manifest or submission helper must apply
-the `N-1` conversion (and the automatic full-document chunking is unaffected
-only because it ranges the whole doc).
+The `chandra_entrypoint.sh` forwards the arg verbatim, so this offset is inherent to
+`chandra` itself, not the wrapper.
+
+**Now handled in code (2026-11-16):** every submitter converts 1-based physical pages to
+Chandra's 0-based range through the one function
+`src/ingestion/ocr_chunk_manifest.chandra_page_range` (used by
+`trigger_handler._ocr_jobs` for automatic OCR and by `scripts/submit_ocr_job._to_chandra_range`).
+Chunk directory names (`chunk-p0001-0050`) and the chunk-manifest stay 1-based. A page spec that
+cannot be converted (`0`, `5-3`) raises instead of being sent 1-based.
 
 ### Chandra 2 emits image artifacts + captions on scanned pages
 
@@ -58,6 +63,13 @@ pages the image artifact + caption can be taken from Chandra's own output,
 rather than relying solely on `fitz` extraction. The binding requirement — the
 actual image file attached to the markdown reference, not just described — is
 satisfiable directly from Chandra output for scanned sources.
+
+**What was built (2026-11-16):** the model-written caption is NOT kept as book text.
+`src/ingestion/chandra_markdown.py` removes every picture paragraph (`![...](...)` plus Chandra's
+description) from chapter text and lists it (file, PDF page); the book's own printed caption stays.
+Phase 1 then builds the book's figures once from the PDF plus Chandra's crops
+(`src/ingestion/book_figures.py` + `pdf_figures.py` -> `contentrepository/<slug>/_figures/figures.json`
+and `files/`) and attaches each to its chapter by PDF page.
 
 ### Structural blind spots — NOT fixed by a model update
 
@@ -85,21 +97,23 @@ Pages handled well (no action needed): footnotes (page 20 — body + `<sup>`
 markers + `---` divider + numbered citation list) and simple vertical tables
 (page 103).
 
-### Version pinning (reproducibility)
+### Version pinning (reproducibility) — DONE
 
-`Dockerfile.chandra` installs `chandra-ocr[hf]`, `torch`/`torchvision`, and the
-`datalab-to/chandra-ocr-2` weights **unpinned**, so a `--no-cache` rebuild
-resolves whatever is current at build time. The 2026-09-20 rebuild resolved:
-`chandra-ocr 0.2.0`, `transformers 5.17.0`, `torch 2.5.1+cu121`,
-`torchvision 0.20.1+cu121` (note the Dockerfile force-reinstalls the cu121
-torch build over the version `chandra-ocr` pulls). For a citable dataset,
-"which Chandra produced this output" should be answerable — pin these versions
-(and a specific HF model revision), or at minimum record the resolved versions
-per build.
+`Dockerfile.chandra` now pins everything: `chandra-ocr[hf]==0.2.0`, `transformers==5.17.0`,
+`tokenizers==0.23.2`, `accelerate==1.15.0`, `huggingface_hub==1.32.0`, `torch==2.5.1+cu121` /
+`torchvision==0.20.1+cu121` (force-reinstalled with `--no-deps` over the version `chandra-ocr`
+pulls, plus the exact `nvidia-*` CUDA 12.1 runtime wheels), and the model
+`datalab-to/chandra-ocr-2` at revision `af93b47dba1b47b6640c86ccf487ed2260ab9a09`
+(`ENV CHANDRA_MODEL_REVISION`; the build asserts the downloaded commit matches). Bump them
+deliberately.
 
-### Render DPI: we run the 192 baseline, not the recommended 300
+### Render DPI: automatic OCR runs the 192 baseline; the manual script defaults to 300
 
-Investigated 2026-09-22. Chandra's page-render DPI is a **library setting**
+Investigated 2026-09-22. **Current state (2026-11-16):** the DPI is overridable by the `IMAGE_DPI`
+container environment variable (a pydantic setting; no image rebuild). `scripts/submit_ocr_job.py`
+passes it from `--dpi` (default **300**). The automatic path (`trigger_handler._ocr_jobs`) sets no
+`IMAGE_DPI`, so uploads OCR'd by the trigger run at Chandra's 192 default. The analysis below is
+unchanged. Chandra's page-render DPI is a **library setting**
 (`chandra/settings.py: IMAGE_DPI = 192`), **not** exposed on the CLI — so our
 `chandra --method hf ... --page-range ...` invocation runs at the 192 baseline.
 Chandra's own benchmark script (`scripts/olmocr_bench.py`) defaults to **300**
@@ -203,221 +217,87 @@ through the existing review surface — see TODO.
 
 ## Architecture
 
+*(Rewritten 2026-11-16 to match the code; the first design had a plain "Lambda: merge chunks" step.)*
+
 ```
-S3 (source PDFs)
+upload to contentrepository/ (PDF or scan image)
+    │  trigger Lambda: AV gate -> _ocr_chunks (page count) -> write ocr-output/<slug>/.chunks.json
+    │  (BEFORE submitting) -> NAT up -> submit one Batch job per chunk
+    ▼
+AWS Batch queue {env}-wwii-chandra-gpu (SPOT_CAPACITY_OPTIMIZED; g5/g6 xlarge/2xlarge, ≥24 GB VRAM)
+    │  hourly lambda_handlers/ocr_spot_controller: a job RUNNABLE too long on spot is moved to
+    │  {env}-wwii-chandra-gpu-ondemand (48 h cumulative on-demand cap)
+    ▼
+Docker wwii-chandra (scripts/chandra_entrypoint.sh): chandra --method hf --paginate_output
+    under scripts/ocr_watchdog.py  ->  s3://.../ocr-output/<slug>/chunk-pNNNN-NNNN/input/{input.md,
+    input_metadata.json,*.webp}   (whole-PDF job: ocr-output/<slug>/input/input.md)
     │
+    ▼  EventBridge: Batch job SUCCEEDED (every chandra queue) -> lambda_handlers/ocr_merge_handler
+Merge Lambda: waits until EVERY chunk in .chunks.json has fresh markdown, claims the merge
+    (create-only .merged), writes ocr-output/<slug>/merged/raw.md, then
+    ├─ structured reference doc (.structured marker)  -> OOB parser task (phase0_ingest)
+    ├─ upload has a validation URL -> phase0_ocr_crosscheck ECS task (cross-checks the OCR against
+    │   the URL's HTML, then calls ocr_promote.promote)
+    └─ otherwise ocr_promote.promote directly: sanitise -> translate per page -> split chapters
+        -> normalise (chandra_markdown) -> contentrepository/<slug>/chapterN/chapterN-{meta.yaml,content.md}
     ▼
-AWS Batch Job Queue (GPU)
-    │ submits N parallel jobs, one per page range
-    ▼
-┌──────────────────────────────────┐
-│  EC2 Spot g5.xlarge (A10G 24GB) │  ← one per job
-│  Docker: chandra-ocr image      │
-│  chandra --method hf            │
-│    --page-range "51-100"        │
-│    input.pdf output/            │
-└──────────────────────────────────┘
-    │
-    ▼
-S3 (markdown output per chunk)
-    │
-    ▼
-Lambda: merge chunks → final markdown
-    │
-    ▼
-S3 (contentrepository/{Book}/*.md)
-    → existing pipeline ingests as normal
+S3 event on chapterN-content.md starts Phase 1
 ```
 
 ---
 
 ## Parallelization Strategy
 
-Chandra accepts `--page-range` to process a subset of pages. Split large PDFs into chunks and process concurrently:
+Chandra accepts `--page-range` to process a subset of pages. `trigger_handler._ocr_chunks` splits a PDF
+longer than `OCR_CHUNK_PAGES` (default **50**) into 50-page ranges (`1-50`, `51-100`, ...); a PDF of
+50 pages or fewer, an unreadable PDF and a single-page scan image run as one whole-input job. Each
+chunk is an independent Batch job writing `ocr-output/<slug>/chunk-pNNNN-NNNN/` (names derived from
+the 1-based page range, so re-running one range overwrites only its own output).
 
-| PDF Size | Pages | Chunks | Pages/Chunk | Instances | Wall Time |
-|----------|-------|--------|-------------|-----------|-----------|
-| Small | <50 | 1 | All | 1 | ~2 min |
-| Medium | 50-200 | 4 | 50 | 4 | ~3 min |
-| Large | 200-500 | 10 | 50 | 10 | ~3 min |
-| Very large | 500+ | 10-20 | 50 | 10-20 | ~5 min |
+*(2026-11-16: the design's sizing table (4-20 instances) and the `submit_chandra_jobs` / `merge_chunks`
+sketches were removed. The real submitters are `trigger_handler._submit_ocr` /
+`_ocr_jobs` and `scripts/submit_ocr_job.py` (manual: whole PDF, `--page-range`, or `--manifest`).)*
 
-Each chunk is independent — no coordination needed between jobs except the final merge.
+### Merge step
 
-### Job Submission Example
-
-```python
-import boto3
-import math
-
-def submit_chandra_jobs(pdf_s3_key: str, total_pages: int, chunk_size: int = 50):
-    batch = boto3.client("batch")
-    job_ids = []
-    chunks = math.ceil(total_pages / chunk_size)
-
-    for i in range(chunks):
-        start = i * chunk_size + 1
-        end = min((i + 1) * chunk_size, total_pages)
-
-        resp = batch.submit_job(
-            jobName=f"chandra-{pdf_s3_key.split('/')[-1]}-p{start}-{end}",
-            jobQueue="dev-wwii-chandra-gpu",
-            jobDefinition="dev-wwii-chandra",
-            containerOverrides={
-                "command": [
-                    "--method", "hf",
-                    "--page-range", f"{start}-{end}",
-                    f"s3://dev-wwii-data-pipeline/source/{pdf_s3_key}",
-                    f"s3://dev-wwii-data-pipeline/ocr-output/{pdf_s3_key}/chunk-{i:03d}/",
-                ],
-            },
-        )
-        job_ids.append(resp["jobId"])
-
-    return job_ids
-```
-
-### Merge Step
-
-After all chunks complete, concatenate outputs in page order:
-
-```python
-def merge_chunks(pdf_s3_key: str, num_chunks: int, output_key: str):
-    s3 = boto3.client("s3")
-    merged = []
-    for i in range(num_chunks):
-        prefix = f"ocr-output/{pdf_s3_key}/chunk-{i:03d}/"
-        resp = s3.list_objects_v2(Bucket=BUCKET, Prefix=prefix)
-        for obj in sorted(resp.get("Contents", []), key=lambda x: x["Key"]):
-            body = s3.get_object(Bucket=BUCKET, Key=obj["Key"])["Body"].read()
-            merged.append(body.decode("utf-8"))
-
-    s3.put_object(
-        Bucket=BUCKET,
-        Key=output_key,
-        Body="\n\n".join(merged).encode("utf-8"),
-    )
-```
+Every chunk's SUCCEEDED event invokes `ocr_merge_handler`. Without a list of the expected chunks the
+merge used to promote a partial book per finished chunk (re-triggering parse and extraction), so the
+trigger writes `.chunks.json` before submitting (`src/ingestion/ocr_chunk_manifest.py`: submission id,
+chunk list, `source_key`, `validation_url`). The merge proceeds only when every listed chunk's
+markdown exists and is newer than the manifest, and the first merge to create `.merged`
+(`IfNoneMatch='*'`) wins; a claim abandoned by a dead merge is taken over after
+`OCR_MERGE_CLAIM_TTL` (default 3 h). Merged text goes to `merged/raw.md`; what happens next is in the
+Architecture diagram. A stopped `phase0-crosscheck` task is relaunched (with more memory) by
+`ocr_merge_handler.handle_crosscheck_stopped`.
 
 ---
 
 ## AWS Batch Configuration
 
-### Compute Environment
+Defined in `cloudformation/ocr.yaml` (the YAML in the first design was removed; read the template).
 
-```yaml
-ChandraComputeEnv:
-  Type: AWS::Batch::ComputeEnvironment
-  Properties:
-    Type: MANAGED
-    State: ENABLED
-    ComputeResources:
-      Type: SPOT
-      BidPercentage: 70
-      MaxvCpus: 32
-      MinvCpus: 0
-      DesiredvCpus: 0
-      InstanceTypes:
-        - g5.xlarge    # 1× A10G, 24GB VRAM, 4 vCPU, 16GB RAM
-        - g5.2xlarge   # 1× A10G, 24GB VRAM, 8 vCPU, 32GB RAM (fallback)
-      Subnets:
-        - !Ref PrivateSubnet1Id
-        - !Ref PrivateSubnet2Id
-      SecurityGroupIds:
-        - !Ref LambdaSGId
-      Ec2Configuration:
-        - ImageType: ECS_AL2_NVIDIA
-```
-
-### Job Definition
-
-```yaml
-ChandraJobDef:
-  Type: AWS::Batch::JobDefinition
-  Properties:
-    JobDefinitionName: dev-wwii-chandra
-    Type: container
-    ContainerProperties:
-      Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/wwii-chandra:latest"
-      ResourceRequirements:
-        - Type: VCPU
-          Value: "4"
-        - Type: MEMORY
-          Value: "15000"
-        - Type: GPU
-          Value: "1"
-      ExecutionRoleArn: !Ref ECSTaskExecutionRoleArn
-      JobRoleArn: !Ref ECSTaskRoleArn
-      LogConfiguration:
-        LogDriver: awslogs
-        Options:
-          awslogs-group: !Ref ChandraLogGroup
-          awslogs-region: !Ref AWS::Region
-    RetryStrategy:
-      Attempts: 2
-    Timeout:
-      AttemptDurationSeconds: 900  # 15 min max per chunk
-```
-
-### Job Queue
-
-```yaml
-ChandraJobQueue:
-  Type: AWS::Batch::JobQueue
-  Properties:
-    JobQueueName: dev-wwii-chandra-gpu
-    State: ENABLED
-    Priority: 1
-    ComputeEnvironmentOrder:
-      - ComputeEnvironment: !Ref ChandraComputeEnv
-        Order: 1
-```
+- **Compute environment** `{env}-wwii-chandra-gpu-spot-v4` (type is a parameter, default EC2; spot
+  uses `SPOT_CAPACITY_OPTIMIZED`): instance types `g5.xlarge/2xlarge`, `g6.xlarge/2xlarge` only.
+  `g4dn` (16 GB) is excluded because Chandra needs ~9-10 GB of GPU memory per page and OOMs there.
+  `MinvCpus 0`, `MaxvCpus` 280 (parameter), AMI type `ECS_AL2023_NVIDIA`, private subnets.
+- **Queue** `{env}-wwii-chandra-gpu`; **fallback** CE/queue `{env}-wwii-chandra-gpu-ondemand`
+  (`OnDemandMaxvCpus` 96) used by `ocr_spot_controller`.
+- **Job definition** `{env}-wwii-chandra`: 4 vCPU, 15000 MiB, 1 GPU, 2 attempts,
+  `OCR_NO_PROGRESS_SECS=900` (the progress watchdog is the real stall detector),
+  `AttemptDurationSeconds` 14400 (loose cost backstop only).
+- A Paddle (PP-StructureV3) job definition and table-recovery worker share this GPU queue.
 
 ---
 
 ## Docker Image
 
-```dockerfile
-FROM nvidia/cuda:12.4-runtime-ubuntu22.04
-
-RUN apt-get update && apt-get install -y python3 python3-pip && \
-    pip3 install "chandra-ocr[hf]" boto3 && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Pre-download model weights (avoids 8GB download per job)
-RUN python3 -c "from transformers import AutoModel, AutoProcessor; \
-    AutoProcessor.from_pretrained('datalab-to/chandra-ocr-2'); \
-    AutoModel.from_pretrained('datalab-to/chandra-ocr-2')"
-
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-
-ENTRYPOINT ["/entrypoint.sh"]
-```
-
-### Entrypoint
-
-```bash
-#!/bin/bash
-# entrypoint.sh — download PDF from S3, run chandra, upload results
-
-INPUT_S3="$1"
-shift
-OUTPUT_S3="$1"
-shift
-
-LOCAL_INPUT="/tmp/input.pdf"
-LOCAL_OUTPUT="/tmp/output"
-
-# Download
-aws s3 cp "$INPUT_S3" "$LOCAL_INPUT"
-
-# Run chandra
-chandra --method hf "$@" "$LOCAL_INPUT" "$LOCAL_OUTPUT"
-
-# Upload results
-aws s3 sync "$LOCAL_OUTPUT" "$OUTPUT_S3"
-```
+`Dockerfile.chandra` (CUDA 12.4.1 runtime, Ubuntu 22.04). All versions and the model revision are
+pinned (see "Version pinning"); model weights are baked in, so jobs do not download ~8 GB. The
+entrypoint is `scripts/chandra_entrypoint.sh`: validate page ranges, download the input,
+run `chandra --method hf --paginate_output` under `scripts/ocr_watchdog.py` (fails the job on lack of
+progress or a CUDA OOM, and never uploads partial output), then `aws s3 sync` to the output prefix.
+`--paginate_output` writes per-page separators that `src/ingestion/chunk_pages.py` uses to map a
+flattened table back to its physical page.
 
 ---
 
@@ -439,33 +319,13 @@ aws s3 sync "$LOCAL_OUTPUT" "$OUTPUT_S3"
 
 ## Integration with Existing Pipeline
 
-### Trigger Options
-
-1. **Manual** — Lambda or CLI invocation for ad-hoc PDFs
-2. **S3 event** — New PDF uploaded to `source/` prefix triggers job submission
-3. **Pipeline Phase 0** — Before Phase 1 parsing, convert any PDFs to markdown.
-   The Phase 0 ingestion front-end (`src/ingestion/`) consumes Chandra markdown:
-   it classifies each page's disposition and, for scanned reference tables,
-   parses the markdown into structured rows (see
-   [INGESTION_FRONT_END.md](INGESTION_FRONT_END.md) and
-   [STRUCTURED_DATA_ROUTING.md](STRUCTURED_DATA_ROUTING.md)). Chandra is the
-   PDF→markdown OCR bridge feeding that front-end.
-
-### Output Format
-
-Chandra produces markdown with HTML tables. This is directly compatible with the existing Phase 1 parser (for prose) and with the Phase 0 OOB section parsers (for scanned tables) — no conversion needed. Output goes to `contentrepository/{Book}/` alongside other markdown chapter files.
-
-### Workflow
-
-```
-Upload PDF to S3 → Lambda detects new PDF
-  → Count pages (PyPDF2)
-  → Submit N Batch jobs (page-range chunks)
-  → EventBridge monitors job completion
-  → All chunks done → merge Lambda fires
-  → Final markdown written to contentrepository/
-  → S3 notification triggers Phase 1 (existing flow)
-```
+Chandra is the PDF/scan -> markdown step of Phase 0 (`lambda_handlers/trigger_handler.py` routes the
+upload; see `INGESTION_PATHS.md`). Its markdown (HTML tables included) is cleaned by
+`src/ingestion/ocr_promote.promote`, which also translates non-English pages
+(`LANGUAGE_TRANSLATION.md`) and, when the upload carries a validation URL, corrects the OCR against it
+(`phase0_ocr_crosscheck.py`). Structured reference books (ETO Order of Battle) are routed to the OOB
+parser track instead of the chapter path (`INGESTION_FRONT_END.md`, `STRUCTURED_DATA_ROUTING.md`).
+Output chapters land in `contentrepository/<slug>/chapterN/`, and the content upload starts Phase 1.
 
 ---
 
@@ -501,22 +361,22 @@ Options:
 
 ---
 
-## Open Questions
+## Open Questions (status 2026-11-16)
 
-1. **Model download in image vs. runtime** — Baking the model into the Docker image adds ~8GB to ECR storage (~$1.50/month) but eliminates download time per job. Recommended: bake it in.
-
-2. **vLLM server mode** — For high-volume processing, a persistent g5 instance running vLLM would be more efficient than per-job startups. Evaluate if processing >10 PDFs/week.
-
-3. **Table post-processing** — Chandra outputs HTML tables. The existing pipeline expects markdown. May need a conversion step, or update Phase 1 to handle HTML tables directly.
-
-4. **Accuracy validation** — Compare Chandra output against existing manually-converted markdown for a known chapter. Quantify error rate before adopting for all PDFs.
-
-5. **NAT requirement** — Batch GPU instances need internet for ECR pull. Reuse existing dynamic NAT, or place in public subnet with EIP.
+1. **Model download in image vs. runtime** — decided: baked into the image.
+2. **vLLM server mode** — not adopted; jobs use `--method hf`.
+3. **Table post-processing** — HTML tables are handled by Phase 0 OOB parsers and the table-recovery
+   worker (`src/ingestion/table_recovery.py`, `chunk_pages.py`); the parser handles HTML tables in prose.
+4. **Accuracy validation** — addressed per book by the PDF <-> HTML cross-check when a validation
+   URL exists (`src/ingestion/ocr_crosscheck.py`).
+5. **NAT requirement** — decided: the trigger requests the dynamic NAT before submitting OCR
+   (`_ensure_nat_for_ocr`), and `nat_manager` keeps it up while OCR jobs are in flight.
 
 ---
 
 ## Related
 
 - [core/PIPELINE.md](../core/PIPELINE.md) — Phase 1 parsing (consumes markdown)
+- [OCR_OPERATIONS.md](../OCR_OPERATIONS.md) — operating the OCR pipeline
 - [pipeline/PDF_CONVERSION.md](../pipeline/PDF_CONVERSION.md) — Current PDF conversion approach
 - [NETWORKING_LIFECYCLE.md](../NETWORKING_LIFECYCLE.md) — NAT for ECR pulls

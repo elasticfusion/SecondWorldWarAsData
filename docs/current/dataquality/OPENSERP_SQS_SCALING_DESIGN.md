@@ -1,6 +1,6 @@
 # OpenSERP Enrichment at Scale — SQS + Sidecar Worker Design
 
-**Status:** DESIGN (not yet implemented) · **Author:** pipeline team · **Date:** 2026-10-08
+**Status:** BUILT (design 2026-10-08; code verified to exist 2026-11-16: `phase3_enqueue_openserp.py`, `openserp_worker.py`, `lambda_handlers/openserp_worker_autoscaler.py`, `OpenSerpWorkerAutoscaler*` in `cloudformation/compute.yaml`; the details below were NOT re-verified, Phase 3 pass) · **Author:** pipeline team · **Date:** 2026-10-08
 **Supersedes (as the scale target):** the interim "single-coordinator → N OpenSERP backends"
 sketch discussed in session. That remains a valid small-scale increment; this doc is the
 Spot-resilient, horizontally-scalable architecture we commit to for corpus-scale Phase-3

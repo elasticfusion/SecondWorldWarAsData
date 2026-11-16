@@ -17,7 +17,7 @@ Enhanced image download and processing to handle format conversion, size optimiz
 ### 1. Image Validation and Conversion
 
 **File:** `src/extraction/grok_search_maps.py`  
-**Function:** `verify_map_with_vision()`
+**Function:** `verify_map_with_vision()` (conversion/resizing lives in `_prepare_map_image()`)
 
 #### Format Conversion
 Automatically converts unsupported image formats to PNG:

@@ -1,10 +1,27 @@
 # Spec: True Multi-Job Concurrency + NAT Management
 
-**Status:** canonical spec (2026-09-27; status updated 2026-10-05). **Partially
-implemented** — per-book locks, the Step Functions dispatcher, NAT demand-leases, and
-OCR idempotency have landed (see `INTAKE_FRONT_DOOR_STATE.md` + the §-citations in
-`nat_manager`/`dispatcher`/`ecs_entrypoint`); full multi-doc parallelism remains gated
-off by default (`MULTI_DOC_ENABLED=false`) pending the controlled isolation test.
+**Status:** canonical spec (2026-09-27; status updated 2026-11-16). **Partially
+implemented** — per-book locks, the Step Functions dispatcher, NAT demand-leases, per-batch
+retrieve claims, credit gating and OCR idempotency have landed (see the §-citations in
+`nat_manager`/`dispatcher`/`ecs_entrypoint`/`batch_poller`); full multi-doc parallelism remains gated
+off by default (`MultiDocEnabled` / `MULTI_DOC_ENABLED` = `'false'` in `cloudformation/compute.yaml` and
+`main.yaml`) pending the controlled isolation test.
+
+**Implementation status, checked against the code on 2026-11-16** (sections below that describe
+these as "current" or "required" are the original design text):
+
+| Item | State | Evidence |
+|---|---|---|
+| Per-book phase locks (§3.1) | Built, used only when multi-doc is on; serial mode keeps the singleton `lock#{family}` | `trigger_handler` (lock helper near line 652), `ecs_entrypoint` (`lock#{env}-wwii-{suffix}#{book}`) |
+| Job-aware NAT leases (§4) | Built | `src/utils/nat_lease.py` (`nat#lease#<task>`, 15 min TTL, safe default "demand present"); `ecs_entrypoint` acquires, heartbeats and releases; `nat_manager` / `openserp_manager` compute demand from leases, running tasks and pending queues. The `nat#demand` integer counter described in §4 was NOT built (leases replaced it) |
+| Per-batch retrieve (§3.4) | Built | `batch_poller._claim_retrieve` (per-`batch_id` claim; returns False for a batch it did not retrieve) replaced the per-phase singleton |
+| Credit-aware gating (§9.0/9.1) | Built | `src/utils/credit_gate.py`, called from `grok_client.py` |
+| Step Functions dispatcher (§17) | Deployed, not invoked while the kill-switch is off | `cloudformation/dispatcher.yaml`, `lambda_handlers/dispatcher_handlers.py` (`enumerate_pending`, `clamp_pool`, `human_gate`) |
+| Input pre-stage (§7) | Built | `src/ingestion/prestage.py` |
+| Failure taxonomy (§6.1) | Built | `src/utils/failure_taxonomy.py` |
+| Batch rounds | Built (not in this spec): a phase run repeats collect/submit rounds until none queue anything; cap 8, then `batch.rounds_over_cap` | `src/utils/batch_rounds.py` |
+| Entity writes through `DynamoEntityStore` (§1, §3.3) | NOT adopted and the class was REMOVED: `DynamoEntityStore` is now a tombstone that raises, and `get_entity_store()` returns None. S3 (`output/<entity>/*.json`) is the sole entity store, written through `file_lock.write_json_with_lock`; DynamoDB holds only caches, locks, queues, leases and batch/run state. §3.3 must be redesigned around S3 (cross-task safety of concurrent entity writes is still open) | `src/utils/entity_store.py`, `src/utils/file_lock.py` |
+
 **Motivation:** a real backlog (`~/Downloads/WWIIArchives`: **628 files / ~502 GB**
 — 238 PDFs, 204 zips, 184 JPGs, plus NARA data inbound) must be ingested. Today
 the pipeline processes **one document at a time** (serial per-book queue), which
@@ -28,8 +45,9 @@ Related: `docs/current/TODO.md` "True multi-job concurrency" (High/Future) and
   `pending#parsed#{book}`, `pending#enrich#{book}`) hand off one book at a time
   (`_get_next_pending_book`). Within a book, Phase 2 runs `max_parallel_chapters`
   (default 3) concurrent chapter extractions.
-- **Entity store:** `DynamoEntityStore` (DynamoDB-backed, per-entity keys) already
-  exists for durable writes; file layer uses `flock` + threading locks.
+- **Entity store:** *(corrected 2026-11-16)* entity records are S3 JSON written through the file layer
+  (`flock` + threading locks, `file_lock.write_json_with_lock`). The `DynamoEntityStore` this section
+  once cited was removed (see the status table).
 - **Dedup:** **cross-book / global** (`find_duplicate_people/places_v2/...` compare
   across all books; places use a global coords cache). This is the hardest part
   to coordinate — but it runs CONTINUOUSLY/incrementally (per-book against the running resolved set), not as a batch barrier (§3.2).
@@ -98,7 +116,7 @@ deduped whenever it completes.
 ### 3.3 Shared entity store (the correctness crux)
 - Concurrent books writing People/Places/Groups **will collide** on the same
   entities (e.g. "Eisenhower" mentioned in many books). Requirements:
-  - Route all cross-book entity writes through **`DynamoEntityStore`** with
+  - Route all cross-book entity writes through **`DynamoEntityStore`** (REMOVED; see status table) with
     **conditional/atomic updates** (already conditional-write capable) — NOT
     per-file JSON writes, which race across tasks even with flock (flock is
     per-host; Fargate tasks are separate hosts).
@@ -111,7 +129,7 @@ deduped whenever it completes.
 ### 3.4 Batch retrieval must be per-batch, not per-phase (verified finding)
 
 The Grok Batch flow (submit → poller → retrieve task) must retrieve the **correct
-batch for each job** under concurrency. Current state (verified 2026-09-27):
+batch for each job** under concurrency. State when written (verified 2026-09-27; FIXED since, see the status table):
 
 - **Batch identity is correctly bound** ✅ — jobs are keyed `batch_job#{batch_id}`
   (globally-unique xAI id) carrying `book` + `phase`; the retrieve task is launched
@@ -692,7 +710,7 @@ docs — the old all-pairs O(entities²) pass would not.
    **credit-aware submission gating (§9.0 — don't submit beyond available credit;
    overspend = unprocessed work)**, soft spend-threshold alert (§9, default ~$10).
 5. **Shared-entity-store hardening** — cross-book entity writes via
-   DynamoEntityStore conditional/idempotent updates (§3.3).
+   DynamoEntityStore conditional/idempotent updates (§3.3; REMOVED, see status table).
 6. **Incremental/continuous dedup** (§3.2, §11) — per-book dedup against the running resolved set with blocking/indexed candidate lookup; rolling human-review queue for hard cases; idempotent merge + cached re-enrichment. No barrier/wave synchronization.
 7. **Batch resilience** (§6.1–6.4) — failure-CAUSE taxonomy + per-cause policy
    FIRST, then causes plug in (per-batch retrieval, chunk/split-resubmit,

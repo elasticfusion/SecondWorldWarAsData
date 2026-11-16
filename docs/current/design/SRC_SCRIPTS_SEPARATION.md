@@ -1,6 +1,12 @@
 # Plan: Separate `src/` (library) from `scripts/` (entry points)
 
-**Status:** decisions D1 to D4 made 2026-11-06 (see §5). PR 1 in progress (branch `refactor/pr1-dedup-into-src`).
+**Status (checked 2026-11-16):** decisions D1 to D4 made 2026-11-06 (see §5). **PR 1 is DONE:** the 7 dedup modules live in `src/dedup/`
+(`find_duplicate_{people,places_v2,groups,equipment}`, `find_related_groups`, `cleanup_indexes`, `reclassify_military_units`),
+`scripts/find_duplicate_*.py` etc. are CLI wrappers, and `ecs_entrypoint.py` imports `src.dedup.*` and runs the detectors as
+`src.dedup.<module>` (list near `ecs_entrypoint.py:3242`). **PR 2, 3 and 4 are NOT done:** `validate_phase2.py`, `validate_phase3.py`,
+`complete_metadata_with_grok.py` and `view_metrics.py` are still in `scripts/`; `phase2_extract.py:270,1383`, `phase3_enrich_data.py:1075` and
+`ecs_entrypoint.py:2269` still import them from `scripts`; there is no `src/validation/`, and no AST check forbids `scripts` imports.
+`ecs_entrypoint.py` also imports `scripts.validate_provenance` (not listed in §1.1). Section 1 below describes the state on 2026-11-06 (before PR 1); line numbers are from then.
 **Rule this plan establishes:** `scripts/` may import `src/`; `src/`, `lambda_handlers/`, the phase
 scripts and `ecs_entrypoint.py` must never import `scripts/`. Anything the pipeline runs lives in `src/`
 (or `lambda_handlers/`). `scripts/` keeps command-line tools, entrypoints and thin wrappers.

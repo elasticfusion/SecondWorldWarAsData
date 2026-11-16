@@ -38,7 +38,7 @@ GROUPS_OUTPUT_SCHEMA = {
         # provisional commands). A task force is DATE-BOUND: assembled for a mission, then
         # dissolves — unlike a STANDING formation. Per the governing principle, dates MAY be
         # approximate or unresolved (flagged for supplemental); an unknown date never drops the
-        # force. See docs/current/design/organizations-equipment-data-quality.md. ---
+        # force. See docs/archive/2026-11-16/design/organizations-equipment-data-quality.md. ---
         "organization_lifecycle": enum_field(["standing", "ephemeral"], nullable=True),
         "active_period": {
             "type": ["object", "null"],

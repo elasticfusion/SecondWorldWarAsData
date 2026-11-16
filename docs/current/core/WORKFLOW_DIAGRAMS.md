@@ -2,6 +2,49 @@
 
 Visual representations of the WWII data extraction pipeline phases.
 
+**Last Updated:** 2026-11-16. The Mermaid source below is current for Phases 0-2 (checked against `lambda_handlers/trigger_handler.py`, `phase1_parse.py`, `phase2_extract.py`, `src/utils/batch_rounds.py`). The rendered PNGs in `images/` were produced from the older source and have **not** been re-rendered (see `images/mermaid_manifest.json`, which stores a hash of each diagram's source); trust the Mermaid blocks, not the PNGs.
+
+---
+
+## Phase 0: Ingestion (before Phase 1)
+
+```mermaid
+flowchart TD
+    Upload([Upload to contentrepository/]) --> Trigger["trigger Lambda<br/>(lambda_handlers/trigger_handler.py)"]
+    Trigger --> Slug{"Safe slug?<br/>(book_slug: filename stem)"}
+    Slug -->|No / renamed re-upload| Review["needs-review/<br/>(unnamed-upload, source-renamed)"]
+    Slug -->|Yes| AV["ClamAV Fargate scan of binaries<br/>(pdf, image, video, office; fail-closed,<br/>infected -> quarantine; text/md skip it)"]
+    AV --> Route{Media type}
+
+    Route -->|PDF / scan| Chunk["Split into page chunks<br/>manifest written BEFORE submit"]
+    Chunk --> Chandra["Chandra OCR on AWS Batch GPU<br/>ocr-output/slug/chunk-pNNNN-NNNN/"]
+    Chandra --> Merge["ocr_merge Lambda waits for ALL chunks<br/>then ocr_promote.promote"]
+    Merge --> Promote["sanitise, translate to English per page,<br/>split into chapters, chandra_markdown normalise<br/>(pictures removed from text, kept as figures)"]
+    Promote --> Cross{"Validation URL<br/>on the upload?"}
+    Cross -->|Yes| XCheck["phase0_ocr_crosscheck ECS task"]
+    Cross -->|No| Publish
+    XCheck --> Publish
+
+    Route -->|EPUB / DOCX / HTML| Pandoc["phase0_convert (pandoc)"]
+    Route -->|Video| Video["phase0_video"]
+    Route -->|Structured reference doc| OOB["phase0_ingest (OOB parser track)"]
+    Pandoc --> Publish
+    Video --> Publish
+
+    Publish["Publish contentrepository/slug/chapterN/<br/>chapterN-meta.yaml + chapterN-content.md<br/>(book metadata found by Grok, with evidence quotes)"] --> P1([Phase 1])
+
+    style Upload fill:#90EE90
+    style P1 fill:#90EE90
+    style Chandra fill:#FFB6C1
+    style Review fill:#F0A0A0
+    style Promote fill:#87CEEB
+```
+
+**Key operations:**
+- A book's slug is its filename stem and never changes (`src/ingestion/book_slug.py`).
+- Bad uploads go to `needs-review/`; nothing is processed under a shared `unknown` name.
+- OCR is chunked by pages; the merge Lambda acts only when every chunk of the submission is present.
+
 ---
 
 ## Phase 1: Parse Workflow
@@ -9,39 +52,44 @@ Visual representations of the WWII data extraction pipeline phases.
 ```mermaid
 flowchart TD
     Start([Start Phase 1]) --> LoadConfig[Load config.yaml]
-    LoadConfig --> ScanRepo[Scan contentrepository/]
-    ScanRepo --> FindMD[Find .md files]
-    
-    FindMD --> ForEach{For each<br/>markdown file}
-    ForEach --> ReadMD[Read markdown content]
-    ReadMD --> ExtractMeta[Extract metadata<br/>from frontmatter]
-    ExtractMeta --> ParseChapters[Parse chapters<br/>and sections]
-    
-    ParseChapters --> SplitCheck{Chapter<br/>>50 paragraphs?}
-    SplitCheck -->|Yes| AutoSplit[Auto-split into<br/>sub-chapters]
-    SplitCheck -->|No| NumberParas[Number paragraphs<br/>absolutely]
-    AutoSplit --> NumberParas
-    
-    NumberParas --> BuildJSON[Build JSON structure:<br/>- Metadata<br/>- Chapters<br/>- Paragraphs<br/>- Absolute numbering]
-    
-    BuildJSON --> WriteOutput[Write to output/parsed/]
-    WriteOutput --> NextFile{More files?}
+    LoadConfig --> Discover["discover_content_structure:<br/>contentrepository/book/chapterN/<br/>(skips sourcedocument/ and _figures/)"]
+    Discover --> ForEach{For each<br/>chapter}
+    ForEach --> ReadMD["Read chapterN-content.md<br/>+ chapterN-meta.yaml"]
+    ReadMD --> ParseChapters["Parse paragraphs, footnotes/endnotes,<br/>page markers, images, maps"]
+    ParseChapters --> NumberParas["Number paragraphs absolutely<br/>(absolute_number + page_number)"]
+
+    NumberParas --> OCR{"OCR'd PDF book?"}
+    OCR -->|Yes| Figures["book_figures.ensure: build the book's own figures ONCE<br/>(PDF + OCR crops -> _figures/figures.json);<br/>rebuilt only if the PDF or OCR submission changes"]
+    OCR -->|"No (web / HyperWar)"| Links["Images and maps from links in the text"]
+    Figures --> Attach["attach_book: each picture to ONE chapter by PDF page;<br/>each numbered map to every chapter that prints or cites it"]
+    Attach --> SizeCheck
+    Links --> SizeCheck
+
+    SizeCheck{"Chapter text<br/>>400k chars?"}
+    SizeCheck -->|Yes| AutoSplit["Split into 50-paragraph chunks<br/>(3-paragraph overlap)"]
+    SizeCheck -->|No| BuildJSON
+    AutoSplit --> BuildJSON
+
+    BuildJSON["Build JSON: metadata, paragraphs,<br/>notes, images, maps, page_markers"] --> Hash{"Source hash<br/>changed?"}
+    Hash -->|No| Skip["Skip write / S3 upload"]
+    Hash -->|Yes| WriteOutput["Write output/content/book/<br/>chapterN-parsed.json (+ footnotes / endnotes)"]
+    Skip --> NextFile
+    WriteOutput --> NextFile{More chapters?}
     NextFile -->|Yes| ForEach
-    NextFile -->|No| Summary[Generate summary:<br/>- Files processed<br/>- Chapters parsed<br/>- Paragraphs numbered]
-    
-    Summary --> End([Phase 1 Complete])
-    
+    NextFile -->|No| End([Phase 1 Complete])
+
     style Start fill:#90EE90
     style End fill:#90EE90
     style AutoSplit fill:#FFE4B5
+    style Figures fill:#FFE4B5
     style BuildJSON fill:#87CEEB
 ```
 
 **Key Operations:**
-- Markdown → JSON conversion
-- Absolute paragraph numbering
-- Auto-splitting large chapters
-- Metadata extraction
+- Markdown → JSON conversion with absolute paragraph numbering and page numbers
+- Book figures built once per OCR'd PDF book, then attached per chapter
+- Auto-splitting of chapters over 400K characters
+- Unchanged chapters are not rewritten or re-uploaded
 
 ---
 
@@ -51,35 +99,38 @@ flowchart TD
 flowchart TD
     Start([Start Phase 2]) --> LoadConfig[Load config.yaml]
     LoadConfig --> CompleteMeta["Step 0: Complete missing metadata"]
-    CompleteMeta --> InitGrok[Initialize Grok client + API cache]
-    InitGrok --> Step1["<b>Step 1: Parallel core extraction</b><br/>max N chapters concurrent"]
+    CompleteMeta --> InitGrok["Initialize Grok client + API cache<br/>(batch mode in AWS)"]
+    InitGrok --> Round["<b>Batch round N</b> (cap batch.max_rounds = 8)"]
 
-    Step1 --> Batch{For each chapter async}
-    Batch --> Events["Extract Events<br/>(1 Event per section)"]
-    Events --> Emit["Emit source_section anchor<br/>(title + EventID; summary/op null)"]
-    Emit --> Gather["asyncio.gather:<br/>Dates | Places | Groups | People"]
+    Round --> Step1["<b>Step 1: Core extraction</b><br/>process_chapters_parallel"]
+    Step1 --> Events["Events: ONE request per chapter<br/>(Event + Sub-events; orphan paragraphs claimed<br/>by nearest earlier sub-event)"]
+    Events --> Emit["Emit source_section anchor<br/>(title + EventID)"]
+    Emit --> Windows["Discovery over fixed 3-paragraph WINDOWS<br/>of the RAW parsed text (windows.py):<br/>Dates | Places | Groups | People"]
+    Windows --> Settle["windows.settle: attribute each item to the<br/>real sub-event by where its quote is;<br/>unsupported quote -> dropped (quote_unsupported)"]
+    Settle --> NativeEnrich["<b>Native Grokipedia/Wikipedia enrichment</b><br/>People: bio + portrait + awards | Groups | Places"]
 
-    Gather --> NativeEnrich["<b>Native Grokipedia/Wikipedia enrichment</b><br/>(by-source: ALL Grok/Wiki is Phase 2)"]
-    NativeEnrich --> P["People: bio + portrait + award citations"]
-    NativeEnrich --> G["Groups: Wikipedia text + images + grokipedia_url"]
-    NativeEnrich --> PL["Places: Grok/Wiki descriptive text + image + hierarchy"]
-    P --> OptGate
-    G --> OptGate
-    PL --> OptGate
+    NativeEnrich --> Step2["Step 2: Retry missing events"]
+    Step2 --> Bib["Step 3: Deterministic bibliography<br/>(one record per footnote/endnote, no LLM)"]
+    Bib --> OptGate{"Optional features enabled?"}
+    OptGate -->|Yes| Opt["Per event file, windowed:<br/>Weather | Equipment (broad + refine) |<br/>Logistics | Casualties | Supplemental (notes)"]
+    OptGate -->|No| Maps
+    Opt --> Maps["External maps (OpenSERP if enabled) + Images"]
 
-    OptGate{"Optional features enabled?"}
-    OptGate -->|Yes| Opt["Optional entities (per event file):<br/>Weather | Equipment (Wiki text+images) |<br/>Logistics | Casualties | Supplemental"]
-    OptGate -->|No| Step2
-    Opt --> Step2
+    Maps --> Queued{"This pass queued<br/>new requests?"}
+    Queued -->|Yes| Submit["Submit xAI batch, wait in-task<br/>up to batch.in_task_wait_minutes"]
+    Submit --> Answered{Answered?}
+    Answered -->|Yes| Round
+    Answered -->|No| Poller["Hand off to batch-poller Lambda (5 min)<br/>-> launches --retrieve-only task"]
+    Poller --> Round
+    Queued -->|"No (quiescent)"| Step4b
+    Queued -->|"Round cap reached"| CapAlert["alert batch.rounds_over_cap + stop"]
 
-    Step2["Step 2-3: Retry missing events;<br/>Maps (source) + Images"] --> Step4b
+    Step4b["<b>Step 4b: Source-section enrichment</b><br/>summary + operation label (null-over-fake)<br/>+ Grok/Wikipedia articles and media"] --> Step5
 
-    Step4b["<b>Step 4b: Source-section enrichment</b><br/>LLM: summary (&lt;2 sent) + operation label (null-over-fake)<br/>→ Grok + Wikipedia reference articles<br/>→ Wikipedia media → images/map_features"] --> Step5
-
-    Step5["Step 5: Analysis<br/>Duplicate people + related groups reports"] --> BatchQ{Batch mode?}
-    BatchQ -->|Yes| BatchReRun["Submit batch → poll → re-run core<br/>+ re-run source_section enrichment"]
-    BatchQ -->|No| End
-    BatchReRun --> End([Phase 2 Complete])
+    Step5["Step 5: Analysis: duplicate people + related groups reports"] --> Post["Exact-duplicate auto-merge,<br/>dedup report, provenance validation<br/>(scripts/validate_provenance.py)"]
+    Post --> Gate["Dedup gate: auto-proceeds when no duplicate groups (corpus under 500 entities);<br/>else Phase 3 blocked until human review (Dedup Review UI)"]
+    Gate --> End([Phase 2 Complete])
+    CapAlert --> End
 
     style Start fill:#90EE90
     style End fill:#90EE90
@@ -87,15 +138,15 @@ flowchart TD
     style NativeEnrich fill:#FFB6C1
     style Step4b fill:#FFB6C1
     style Step5 fill:#DDA0DD
+    style CapAlert fill:#F0A0A0
 ```
 
 **Key operations:**
-- One Event per source section; `source_section` anchor emitted as each event is finalized.
-- **Phase 2 owns ALL Grokipedia/Wikipedia enrichment** — people, groups, places, equipment
-  enrich natively (gated on `*_checked_at`), committed through each entity's native path.
-- Step 4b derives the section summary + canonical operation label, then fetches the
-  operation's Grok/Wiki articles + Wikipedia media (first-class `images`, cross-linked).
-- Batch mode re-runs core extraction AND source-section enrichment after cached results land.
+- One Event per source section, one events request per chapter; every other entity is discovered over fixed 3-paragraph windows of the raw text and attributed to its real sub-event by its quote.
+- **Phase 2 owns ALL Grokipedia/Wikipedia enrichment** (people, groups, places, equipment), committed through each entity's native path.
+- Batch rounds repeat until a pass queues nothing; a batch not answered in-task is retrieved by the poller Lambda.
+- Step 4b derives the section summary + canonical operation label, then fetches the operation's Grok/Wiki articles + Wikipedia media.
+- Alerts go to the `{env}-wwii-phase2-complete` SNS topic (email + Slack).
 
 ---
 
@@ -152,33 +203,33 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    MD[Markdown Files<br/>contentrepository/] --> Phase1["<b>phase1_parse.py</b><br/>Parse"]
-    Phase1 --> Parsed[Parsed JSON<br/>*-parsed.json]
-    
+    Up["Uploads<br/>contentrepository/<br/>PDF / EPUB / DOCX / HTML / video"] --> Phase0["<b>Phase 0</b><br/>trigger Lambda, Chandra OCR,<br/>phase0_convert / video / ingest"]
+    Phase0 --> Chapters["Chapters<br/>contentrepository/slug/chapterN/"]
+    Chapters --> Phase1["<b>phase1_parse.py</b><br/>Parse"]
+    Phase1 --> Parsed[Parsed JSON<br/>output/content/slug/*-parsed.json]
+
     Parsed --> P2Retry["<b>phase2_retry.py</b><br/>Auto-retry wrapper"]
-    P2Retry --> Phase2["<b>phase2_extract.py</b><br/>Extract"]
+    P2Retry --> Phase2["<b>phase2_extract.py</b><br/>Extract (xAI batch rounds)"]
     Phase2 --> Events[Events<br/>*-event.json]
     Phase2 --> Core[Core Entities<br/>dates/ places/<br/>people/ people_groups/]
-    Phase2 --> Optional[Optional Entities<br/>weather/ equipment/<br/>logistics/ casualties/<br/>supplemental/]
+    Phase2 --> Optional[Optional Entities<br/>weather/ equipment/<br/>logistics/ casualties/<br/>bibliography/]
     Phase2 --> Maps[Maps<br/>maps/ external_maps/]
-    
-    Events --> P3Retry["<b>phase3_retry.py</b><br/>Auto-retry wrapper"]
-    Core --> P3Retry
+    Phase2 --> Gate["Dedup review gate<br/>+ provenance validation"]
+
+    Gate --> P3Retry["<b>phase3_retry.py</b><br/>Auto-retry wrapper"]
     P3Retry --> Phase3["<b>phase3_enrich_data.py</b><br/>Enrich"]
-    Phase3 --> Enriched[Enriched JSON<br/>Biographies in-place]
-    
-    Enriched --> Import["<b>import_to_mongodb.py</b><br/>Optional"]
-    Optional --> Import
-    Maps --> Import
-    Import --> DB[(MongoDB<br/>Database)]
-    
+    Phase3 --> Enriched[Enriched JSON<br/>entities updated in place]
+
+    style Phase0 fill:#FFE4B5
     style Phase1 fill:#87CEEB
     style Phase2 fill:#90EE90
     style Phase3 fill:#FFB6C1
-    style Import fill:#DDA0DD
+    style Gate fill:#DDA0DD
     style P2Retry fill:#FFE4B5
     style P3Retry fill:#FFE4B5
 ```
+
+In AWS, entity records live in S3 (`output/<entity>/*.json`) and run state in the DynamoDB `{env}-wwii-api-cache` table. The former MongoDB import step was removed (`import_to_mongodb.py` no longer exists; `import_to_dynamodb.py` remains).
 
 ---
 
@@ -186,35 +237,31 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    Start([Event Extraction]) --> ParseText[Parse chapter text]
-    ParseText --> IdentifyEvents[Identify events<br/>using Grok AI]
-    
-    IdentifyEvents --> CreateEvent[Create Event:<br/>- EventID ULID<br/>- Event name<br/>- Summary]
-    
-    CreateEvent --> HasSubEvents{Has<br/>sub-events?}
-    HasSubEvents -->|Yes| CreateSubEvents[Create Sub-events:<br/>- Sub-eventID ULID<br/>- Summary<br/>- Paragraph refs]
-    HasSubEvents -->|No| ExtractEntities
-    CreateSubEvents --> ExtractEntities
-    
-    ExtractEntities[Extract Entities] --> ExtractDates[Extract Dates:<br/>- DateID ULID<br/>- Date string<br/>- Precision<br/>- Paragraph refs]
-    
-    ExtractDates --> ExtractPlaces[Extract Places:<br/>- PlaceID ULID<br/>- Name<br/>- GPS coordinates<br/>- Type]
-    
-    ExtractPlaces --> ExtractPeople[Extract People:<br/>- PersonID ULID<br/>- Name<br/>- Rank<br/>- Role<br/>- Unit]
-    
-    ExtractPeople --> ExtractGroups[Extract Groups:<br/>- GroupID ULID<br/>- Name<br/>- Type<br/>- Parent unit]
-    
-    ExtractGroups --> LinkEntities[Link Entities:<br/>- Event → Sub-events<br/>- Sub-events → Dates<br/>- Sub-events → Places<br/>- Sub-events → People<br/>- People → Groups]
-    
-    LinkEntities --> SaveEvent[Save event JSON]
-    SaveEvent --> SaveEntities[Save entity JSON files]
+    Start([Event Extraction]) --> ParseText["Parsed chapter<br/>(absolute paragraph numbers)"]
+    ParseText --> IdentifyEvents["ONE events request per chapter<br/>(Grok; answer must echo BookID + RequestID)"]
+
+    IdentifyEvents --> Valid{"Valid and covers<br/>the chapter?"}
+    Valid -->|"Truncated"| Split["Auto-split the chapter in parts<br/>(_split_on_truncation) and merge"]
+    Valid -->|"Low coverage"| Reask["Re-ask once, else split"]
+    Valid -->|Yes| CreateEvent
+    Split --> CreateEvent
+    Reask --> CreateEvent
+
+    CreateEvent["Create Event:<br/>- EventID = deterministic ULID<br/>  event_id(book, chapter, section)<br/>- name, summary"] --> CreateSubEvents["Create Sub-events:<br/>- Sub-eventID = deterministic ULID<br/>  from the paragraph range<br/>- summary, paragraph numbers<br/>Orphan paragraphs claimed by the nearest earlier sub-event"]
+
+    CreateSubEvents --> ExtractEntities["Entity discovery over fixed 3-paragraph windows<br/>of the RAW parsed text (never the summaries)"]
+    ExtractEntities --> Attribute["windows.settle: attribute each item to the sub-event<br/>that holds its quote (exact / repaired / sentence naming the entity / unquoted);<br/>otherwise dropped: quote_unsupported"]
+    Attribute --> Entities["Dates | Places | People | Groups |<br/>Equipment | Weather | Logistics | Casualties |<br/>Supplemental (notes -> bibliography)"]
+    Entities --> Mentions["One mention per sub-event + normalised quote<br/>(entity_records.mention_identity);<br/>entity ids are ulid.new(), event ids are derived"]
+    Mentions --> SaveEvent[Save event JSON]
+    SaveEvent --> SaveEntities[Save entity JSON files + indexes]
     SaveEntities --> End([Extraction Complete])
-    
+
     style Start fill:#90EE90
     style End fill:#90EE90
     style CreateEvent fill:#87CEEB
     style ExtractEntities fill:#FFE4B5
-    style LinkEntities fill:#DDA0DD
+    style Attribute fill:#DDA0DD
 ```
 
 ---
@@ -223,35 +270,24 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    Start([Deduplication]) --> LoadPeople[Load all people JSON]
-    LoadPeople --> ComparePeople[Compare people:<br/>- Name similarity<br/>- Rank match<br/>- Unit match<br/>- Date overlap]
-    
-    ComparePeople --> FindDupes{Duplicates<br/>found?}
-    FindDupes -->|Yes| MergePeople[Merge people:<br/>- Combine data<br/>- Update references<br/>- Keep one ULID]
-    FindDupes -->|No| LoadPlaces
-    MergePeople --> LoadPlaces
-    
-    LoadPlaces[Load all places JSON] --> ComparePlaces[Compare places:<br/>- Name similarity<br/>- GPS proximity<br/>- Type match]
-    
-    ComparePlaces --> FindPlaceDupes{Duplicates<br/>found?}
-    FindPlaceDupes -->|Yes| MergePlaces[Merge places:<br/>- Combine data<br/>- Update references<br/>- Keep one ULID]
-    FindPlaceDupes -->|No| LoadGroups
-    MergePlaces --> LoadGroups
-    
-    LoadGroups[Load all groups JSON] --> CompareGroups[Compare groups:<br/>- Name similarity<br/>- Type match<br/>- Parent unit]
-    
-    CompareGroups --> FindGroupDupes{Related<br/>groups?}
-    FindGroupDupes -->|Yes| LinkGroups[Link groups:<br/>- Parent-child<br/>- Sibling units<br/>- Update hierarchy]
-    FindGroupDupes -->|No| Summary
-    LinkGroups --> Summary[Generate report:<br/>- People merged<br/>- Places merged<br/>- Groups linked]
-    
-    Summary --> End([Deduplication Complete])
-    
+    Start(["Deduplication (end of Phase 2)"]) --> Score["Score candidate pairs per entity<br/>(src/dedup/find_duplicate_*.py, weights in config dedup:)<br/>name similarity, shared unit/events,<br/>quote proximity, surname frequency"]
+    Score --> Exact{"Exact duplicate?<br/>(identical normalised name)"}
+    Exact -->|Yes| AutoMerge["Auto-merge<br/>(ecs_entrypoint._auto_merge_exact_duplicates,<br/>src/dedup/merge.py)"]
+    Exact -->|No| Report["Dedup report:<br/>candidates above candidate_threshold"]
+    AutoMerge --> Report
+    Report --> GateQ{"Candidates left?"}
+    GateQ -->|No| Open["Gate open: Phase 3 starts"]
+    GateQ -->|Yes| Block["Dedup gate: Phase 3 blocked,<br/>operator notified (email + Slack)"]
+    Block --> UI["Human review in the Dedup Review UI<br/>(lambda_handlers/dedup_ui_handler.py):<br/>merge, or mark 'not duplicates'<br/>(src/dedup/exclusions.py)"]
+    UI --> Open
+    Open --> Groups["Related-groups report:<br/>parent-child / sibling units linked"]
+    Groups --> End([Deduplication Complete])
+
     style Start fill:#90EE90
     style End fill:#90EE90
-    style MergePeople fill:#FFB6C1
-    style MergePlaces fill:#87CEEB
-    style LinkGroups fill:#FFE4B5
+    style AutoMerge fill:#FFB6C1
+    style UI fill:#87CEEB
+    style Block fill:#FFE4B5
 ```
 
 ---
@@ -280,8 +316,7 @@ flowchart TD
     NextFile -->|Yes| ForEachFile
     NextFile -->|No| GenerateReport[Generate report:<br/>- Files validated<br/>- Errors found<br/>- Success rate]
     
-    GenerateReport --> CreateDashboard[Create HTML dashboard]
-    CreateDashboard --> End([Validation Complete])
+    GenerateReport --> End([Validation Complete])
     
     style Start fill:#90EE90
     style End fill:#90EE90
@@ -296,49 +331,33 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    Start([Batch Processing]) --> LoadFiles[Load all parsed files]
-    LoadFiles --> Partition["Partition into batches<br/>(max_parallel chapters)"]
-    
-    Partition --> ForEachBatch{For each<br/>batch}
-    ForEachBatch --> Async["asyncio.gather<br/>per batch"]
-    
-    Async --> ChA[Chapter async]
-    Async --> ChB[Chapter async]
-    Async --> ChC[Chapter async]
-    
-    ChA --> EvA[Extract Events<br/>if needed]
-    ChB --> EvB[Extract Events<br/>if needed]
-    ChC --> EvC[Extract Events<br/>if needed]
-    
-    EvA --> GatherA["_batch_extract × 4:<br/>Dates | Places | Groups | People"]
-    EvB --> GatherB["_batch_extract × 4:<br/>Dates | Places | Groups | People"]
-    EvC --> GatherC["_batch_extract × 4:<br/>Dates | Places | Groups | People"]
-    
-    GatherA --> Collect[Collect results<br/>+ error isolation]
-    GatherB --> Collect
-    GatherC --> Collect
-    
-    Collect --> NextBatch{More<br/>batches?}
-    NextBatch -->|Yes| ForEachBatch
-    NextBatch -->|No| Summary["Summary:<br/>processed / failed<br/>dates / places / groups / people"]
-    
-    Summary --> End([Batch Complete])
-    
+    Start([Phase 2 in batch mode]) --> LoadFiles[Load parsed chapters]
+    LoadFiles --> Round["Round N: run every step with a<br/>batch-collecting GrokClient"]
+    Round --> Collect["Each request is queued instead of sent<br/>(BatchModeCollecting); cached answers are used"]
+    Collect --> Any{"New requests<br/>queued this round?"}
+    Any -->|No| Done([Quiescent: finish steps 4b-5])
+    Any -->|Yes| Cap{"Round > batch.max_rounds (8)?"}
+    Cap -->|Yes| Alert["Alert batch.rounds_over_cap<br/>+ diagnostics, stop"]
+    Cap -->|No| Submit["submit_batch -> xAI Batch API<br/>(batch_job# row in DynamoDB)"]
+    Submit --> Wait["Task waits up to<br/>batch.in_task_wait_minutes (5)"]
+    Wait --> Answered{Answered?}
+    Answered -->|Yes| Store["store_json_answer into the cache"]
+    Answered -->|No| Handoff["Task exits (75 = handed off);<br/>batch-poller Lambda (5 min schedule)<br/>launches a --retrieve-only task"]
+    Handoff --> Store
+    Store --> Round
+
     style Start fill:#90EE90
-    style End fill:#90EE90
-    style Async fill:#87CEEB
-    style GatherA fill:#87CEEB
-    style GatherB fill:#87CEEB
-    style GatherC fill:#87CEEB
-    style Collect fill:#FFE4B5
+    style Done fill:#90EE90
+    style Submit fill:#87CEEB
+    style Handoff fill:#FFE4B5
+    style Alert fill:#F0A0A0
 ```
 
 **Key Design:**
-- Two-level parallelism: chapters concurrent + entities concurrent within each chapter
-- Shared `_batch_extract` helper for all 4 entity types (dates, places, groups, people)
-- `return_exceptions=True` — one entity failure doesn't stop others
-- Per-chapter error isolation — one chapter failure doesn't stop the batch
-- Targeted cache clearing on failure (per-entry, not full wipe)
+- Work that needs an earlier answer (for example equipment refine needs the broad answer) is asked in the next round; rounds repeat until a pass queues nothing.
+- Answers come back through the same cache keys, so a re-run never re-asks (`src/utils/batch_rounds.py`, `src/utils/batch_api.py`).
+- A chapter is processed concurrently with up to `max_parallel` others (`process_chapters_parallel`), and a failure in one chapter or entity does not stop the others (`return_exceptions=True`).
+- Targeted cache clearing on failure (per entry, not a full wipe).
 
 ---
 
@@ -389,7 +408,7 @@ flowchart TD
 ```
 
 **Key Design:**
-- Cache key = sha256 of prompt + temperature + model
+- Cache key = sha256 of system prompt + prompt + temperature + model (plus the book scope for book-bound kinds)
 - Per-type cache directories: `cache/api/{events,dates,places,people,...}`
 - Auto-clear corrupted entries (truncated/short responses) — no manual intervention
 - JSON repair attempted before failing
@@ -397,46 +416,9 @@ flowchart TD
 
 ---
 
-## MongoDB Import Flow
+## MongoDB Import Flow (removed)
 
-```mermaid
-flowchart TD
-    Start([MongoDB Import]) --> Connect[Connect to MongoDB]
-    Connect --> CheckDB{Database<br/>exists?}
-    CheckDB -->|No| CreateDB[Create database]
-    CheckDB -->|Yes| LoadCollections
-    CreateDB --> LoadCollections
-    
-    LoadCollections[Load collections:<br/>- events<br/>- dates<br/>- places<br/>- people<br/>- groups] --> LoadJSON[Load JSON files]
-    
-    LoadJSON --> ForEachFile{For each<br/>JSON file}
-    ForEachFile --> ParseJSON[Parse JSON]
-    ParseJSON --> ValidateDoc[Validate document]
-    
-    ValidateDoc --> Valid{Valid?}
-    Valid -->|Yes| CheckExists{Document<br/>exists?}
-    Valid -->|No| LogSkip[Log skip]
-    
-    CheckExists -->|Yes| UpdateDoc[Update document<br/>upsert=True]
-    CheckExists -->|No| InsertDoc[Insert document]
-    
-    UpdateDoc --> NextFile
-    InsertDoc --> NextFile
-    LogSkip --> NextFile{More<br/>files?}
-    
-    NextFile -->|Yes| ForEachFile
-    NextFile -->|No| CreateIndexes[Create indexes:<br/>- EventID<br/>- DateID<br/>- PlaceID<br/>- PersonID<br/>- GroupID]
-    
-    CreateIndexes --> Summary[Generate summary:<br/>- Documents inserted<br/>- Documents updated<br/>- Errors]
-    
-    Summary --> End([Import Complete])
-    
-    style Start fill:#90EE90
-    style End fill:#90EE90
-    style InsertDoc fill:#87CEEB
-    style UpdateDoc fill:#FFE4B5
-    style CreateIndexes fill:#DDA0DD
-```
+The MongoDB import script (`import_to_mongodb.py`) no longer exists, so its diagram was removed. Entity records are stored as JSON in S3 (`output/<entity>/*.json`); `import_to_dynamodb.py` is the remaining importer. The PNG `images/mongodb_import_flow.png` describes the removed flow.
 
 ---
 
@@ -445,35 +427,40 @@ flowchart TD
 ```mermaid
 flowchart TD
     Error([Error Occurs]) --> Classify{Error Type}
-    
-    Classify -->|Truncated JSON| Truncated["Response < 100K chars?"]
-    Classify -->|Short Response| Short["Response < 500 chars"]
+
+    Classify -->|Truncated JSON| Truncated["Answer starts as JSON and is cut short"]
+    Classify -->|"Short / no JSON"| Short["Under 500 chars and invalid,<br/>or no JSON anywhere"]
     Classify -->|API Error| APIErr["HTTP 429 / 500 / timeout"]
     Classify -->|File I/O| FileErr["OSError / IOError"]
-    Classify -->|JSON Parse| JSONErr["JSONDecodeError"]
-    
-    Truncated -->|Yes| AutoClear1["Auto-clear cache entry<br/>+ raise GrokAPIError"]
-    Truncated -->|No| AutoSplit["Auto-split chapter at<br/>section boundaries"]
-    AutoSplit --> ExtractChunks["Extract each chunk<br/>separately"]
-    ExtractChunks --> MergeResults["Merge sub-events<br/>into single output"]
+    Classify -->|JSON Parse| JSONErr["JSONDecodeError in the middle"]
+
+    Truncated --> AutoClear1["Evict the cache entry<br/>(always, any length)"]
+    AutoClear1 --> Size{"Over 100K chars?"}
+    Size -->|Yes| AutoSplit["Likely max_tokens: split the chapter<br/>at section boundaries (events)"]
+    Size -->|No| Retry1["Transient: retried"]
+    AutoSplit --> ExtractChunks["Extract each chunk separately"]
+    ExtractChunks --> MergeResults["Merge sub-events into single output"]
     MergeResults --> Continue
-    
-    Short --> AutoClear2["Auto-clear cache entry<br/>+ retry once"]
-    
-    APIErr --> Backoff["Exponential backoff<br/>5 attempts, 4s→60s"]
+
+    Short --> AutoClear2["Evict + re-ask once"]
+    AutoClear2 --> Continue
+
+    APIErr --> Backoff["tenacity backoff:<br/>5 attempts, exponential 4s to 60s"]
     Backoff --> Recovered{Recovered?}
     Recovered -->|Yes| Continue[Continue processing]
     Recovered -->|No| FailChapter["Fail chapter<br/>(others continue)"]
-    
+
+    JSONErr --> Repair["_try_repair_json:<br/>merge concatenated objects,<br/>fix invalid escapes"]
+    Repair --> Fixed{Repaired?}
+    Fixed -->|Yes| Continue
+    Fixed -->|No| Loud["Evict, OBSERV grok.json_failed,<br/>raise GrokParseError"]
     FileErr --> LogFile["Log with file name<br/>+ continue to next entity"]
-    JSONErr --> LogJSON["Log with file name<br/>+ continue to next entity"]
-    
-    AutoClear1 --> NextRun["Next run: fresh API call"]
-    AutoClear2 --> NextRun
-    
+
+    Retry1 --> NextRun["Next round / run: fresh API call"]
+    Loud --> NextRun
     FailChapter --> RetryStep["Step 2: Retry missing events<br/>Per-chapter cache clear"]
     RetryStep --> NextRun
-    
+
     style Error fill:#FFB6C1
     style AutoClear1 fill:#FFE4B5
     style AutoClear2 fill:#FFE4B5
@@ -486,10 +473,12 @@ flowchart TD
 
 **Key Principles:**
 - Errors are isolated: one chapter/entity failure doesn't stop the pipeline
-- Cache corruption auto-clears the specific entry (not the whole cache)
-- Truncated responses auto-split the chapter at section boundaries and re-extract
-- Retry step catches anything missed in the parallel phase
-- All error messages include file context for debugging
+- Cache corruption evicts the specific entry (not the whole cache)
+- Truncated events answers over 100K chars split the chapter at section boundaries and re-extract
+- The retry step catches anything missed in the parallel phase
+- A total JSON loss is never silent: it logs `OBSERV grok.json_failed`
+
+See [JSON_REPAIR.md](JSON_REPAIR.md) and [CACHE_AUTO_RECOVERY.md](CACHE_AUTO_RECOVERY.md).
 
 ---
 
@@ -518,4 +507,5 @@ flowchart LR
 ---
 
 **Generated:** 2026-03-15  
+**Updated:** 2026-11-16 (Mermaid source for Phases 0-2, dedup, batch, error flows)  
 **Pipeline Version:** 2.0

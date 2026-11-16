@@ -2,21 +2,20 @@
 
 **Module:** `src/extraction/places.py`  
 **Status:** Production  
-**Last Updated:** 2026-03-22
+**Last Updated:** 2026-11-16
 
 ---
 
 ## Overview
 
-Places extraction analyzes event files and extracts all geographic mentions with GPS coordinates into a **central repository**. Each unique place gets its own file, with event mentions linked via MentionID.
+Places extraction finds every geographic mention in the chapter's raw text and writes it to a **central repository**. Each unique place gets its own file, with event mentions linked via MentionID. **Phase 2 records no coordinates:** it stores what the text says (name, type, role, quote). Phase 3 geocodes the places (see the end of this page); a coordinate asked of the extraction model was a guess and made answers stop early (`batch_parallel._make_place_record`, 2026-11-12).
 
 **Key Features:**
-- GPS coordinates (latitude/longitude) with precision and confidence
-- Automatic bounding box calculation (100km radius)
-- Map service URL generation (Google Maps, OpenStreetMap)
+- GPS coordinates, bounding box and map URLs: filled by Phase 3 geocoding, not by Phase 2 (the helpers `_calculate_bounding_box` / `_generate_map_urls` in `places.py` run only where a coordinate is present)
 - 22-type geography classification
 - Historical names array and aliases
-- Hierarchy data (continent/country/region) via enrichment
+- Hierarchy data (continent/country/region) via Phase 3 enrichment
+- Phase 2 Grokipedia/Wikipedia lookup per new place (`enrich_places.enrich_place_from_grokipedia` / `_from_wikipedia`, once per record, gated by `*_checked_at`)
 - DateMentionID cross-referencing to dates directory
 - Central repository prevents duplication
 
@@ -27,26 +26,28 @@ Places extraction analyzes event files and extracts all geographic mentions with
 ### Data Flow
 
 ```
-Event File (JSON)
+Parsed chapter text (raw paragraphs)
     ↓
-For each Sub-event
+Fixed 3-paragraph windows (src/extraction/windows.py)
     ↓
-Create Place Extraction Prompt
+One places request per window (batch_parallel._extract_places; cache_type "places")
+  asks for: name, type, date_context, role_in_event, original_text, relationships
     ↓
-Grok API (structured output)
+Each place item settled against the source (windows.settle; quote not in the window -> dropped, quote_unsupported)
     ↓
-ULID Validation & Auto-fix
+Attributed to the real sub-event whose paragraphs hold the quote
     ↓
-Null Field Validation
+Find or Create Place File (_find_or_create_place, serialised on index.json under a lock)
     ↓
-Add Bounding Boxes & Map URLs
+Add Event Mention (entity_records.merge_mentions) + related_places from "relationships"
     ↓
-Find or Create Place File
-    ↓
-Add Event Mention
+Phase 2 Grokipedia / Wikipedia lookup for the new record (once)
     ↓
 Update Index
 ```
+
+Places are not read from the events' summaries. `places.extract_places` (per sub-event) is the older entry point; the live Phase-2 path is
+`batch_parallel.extract_places_batch_async`. Phase 3 geocodes, adds hierarchy, and links parent places.
 
 ### Central Repository Structure
 
@@ -158,18 +159,14 @@ else:
 
 ### 2. GPS Coordinates
 
-**Required for all places:**
-- Latitude: -90 to 90 (decimal degrees)
-- Longitude: -180 to 180 (decimal degrees)
-- Precision: 2-4 decimal places
+**Not set by Phase 2.** A new place record has `current_name`, `geography_type`, empty `historical_names` / `aliases` and no coordinates
+(`_make_place_record`). Phase 3's geocoding cascade (Nominatim, then hill/terrain, then a Grok fallback) writes WGS84 coordinates with provenance.
+(The legacy `places.extract_places` path still drops a place with null coordinates unless it is a route, a named height or a situational feature;
+the batch path keeps every named place.)
 
-**For large regions:**
-- Use geographic center point
-- Example: "Western Front" → center of region
+### 3. Automatic Bounding Box (once coordinates exist)
 
-### 3. Automatic Bounding Box
-
-**100km radius around coordinates:**
+**100km radius around coordinates (`places._calculate_bounding_box`):**
 ```python
 bounding_box = {
     "north": lat + 0.9,  # ~100km north
@@ -186,7 +183,7 @@ bounding_box = {
 
 ### 4. Map Service URLs
 
-**Automatically generated:**
+**Generated from coordinates (`places._generate_map_urls`) when they exist:**
 ```json
 {
   "google_maps": "https://www.google.com/maps?q=49.18,-0.37",
@@ -274,9 +271,9 @@ Enrichment uses Grok + Wikipedia fallback to populate hierarchy for places missi
 
 ## Configuration
 
-No specific configuration options. Runs automatically in Phase 2.
+`extraction.window_paragraphs` (3) sets the window size. `PHASE2_REFERENCE_LOOKUPS=0` turns off the Phase-2 Wikipedia/Grokipedia lookups (used in tests). Runs automatically in Phase 2.
 
-**Enrichment:** Run `phase3_enrich_data.py` or use `enrich_all_places()` to populate hierarchy data.
+**Enrichment:** `phase3_enrich_data.py` populates hierarchy and coordinates.
 
 ---
 
@@ -288,9 +285,9 @@ No specific configuration options. Runs automatically in Phase 2.
 python3 phase2_extract.py
 ```
 
-Places extracted automatically after dates.
+Places are asked in the same round as the events request (`prefetch_windows`) and written once the events are in.
 
-### Programmatic
+### Programmatic (older per-sub-event entry point)
 
 ```python
 from pathlib import Path
@@ -299,8 +296,8 @@ from src.extraction.places import extract_places
 
 grok_client = GrokClient(cache_dir=Path("cache/api"))
 
-event_file = Path("output/BreakoutAndPursuit/chapter1-event.json")
-parsed_file = Path("output/BreakoutAndPursuit/chapter1-parsed.json")
+event_file = Path("output/content/BreakoutAndPursuit/chapter1-event.json")
+parsed_file = Path("output/content/BreakoutAndPursuit/chapter1-parsed.json")
 places_dir = Path("output/places")
 
 extract_places(
@@ -336,8 +333,7 @@ Maps normalized place names to filenames for fast lookup.
 ## Integration
 
 ### With Events
-- Reads event files
-- Extracts places from sub-event text
+- Reads the chapter's event file only to attribute each place to its sub-event (by the paragraph of its quote)
 - Links via EventID and Sub-eventID
 
 ### With Dates
@@ -361,10 +357,8 @@ Maps normalized place names to filenames for fast lookup.
 
 ### Invalid Place Filtering
 
-Automatically removes mentions with:
-- Missing `current_name`
-- Missing coordinates (latitude/longitude)
-- Null required fields
+Legacy `places.extract_places` removes mentions with a missing `current_name` or missing coordinates (see `_is_valid_place_mention`).
+On the batch path an item is dropped when its quote is not in the source (`quote_unsupported`) or it has no name.
 
 ```python
 # Before filtering: 5 mentions
@@ -391,12 +385,7 @@ Invalid ULIDs automatically replaced:
 
 ### Retry Logic
 
-**Default:** 3 attempts per sub-event
-
-**Behavior:**
-- First attempt uses cache
-- Retries bypass cache
-- Continues to next sub-event on failure
+**Default:** `max_retries=3` in the legacy `extract_places`. On the batch path a failed window is reported and the chapter continues.
 
 ---
 
@@ -432,7 +421,7 @@ rm -rf cache/api/places/*
 "The 1st Infantry Division advanced toward Paris on 25 August."
 ```
 
-**Output:**
+**Output (legacy per-sub-event shape; the batch path returns `name`/`type` and no coordinates):**
 ```json
 {
   "PlaceMentionID": "01KHYP2M4N6P8Q0R2S4T6V8W0X",
@@ -563,7 +552,7 @@ This is expected - LLM sometimes can't determine coordinates.
 3. Concurrent writes
 
 **Solution:**
-Use `scripts/find_duplicate_places.py` and `scripts/merge_duplicate_places.py`
+Use `scripts/find_duplicate_places_v2.py` (wrapper for `src/dedup/find_duplicate_places_v2.py`) and the Dedup Review UI
 
 ---
 
@@ -573,11 +562,11 @@ Use `scripts/find_duplicate_places.py` and `scripts/merge_duplicate_places.py`
 - [Dates Extraction](../dates/README.md)
 - [Maps Extraction](../maps/README.md)
 - [External Maps](../external-maps/README.md)
-- [Error Handling](../../core/error_handling.md)
+- [Error Handling (archived 2026-03 spec)](../../../archive/contextmanagement/Specs/error_handling.md)
 
 ## Phase 3 Enrichment
 
-**Step 3/6 (always runs).** Hierarchy/name enrichment + `link_parent_place_ids`, then the
+**Step 3/6 (always runs; the Phase-3 pass is for the Phase 3 docs review).** Hierarchy/name enrichment + `link_parent_place_ids`, then the
 **geocoding cascade** (Nominatim → hill/terrain → Grok fallback) writes WGS84 coordinates +
 provenance (low-confidence flagged, never fabricated). This is also the coordinate source the
 maps overlay inherits via resolved PlaceID. See

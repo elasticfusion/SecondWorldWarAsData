@@ -1,7 +1,7 @@
 # Equipment Designation Systems (US vs. German) — reference for dedup & identity
 
 Authoritative reference for how WWII equipment was *named*, and why that matters for
-deduplication, the alias table, and `_is_specific_identity`. The core problem: **US and
+deduplication, the alias table, and `_identity_scope`. The core problem: **US and
 German designation systems are structurally different**, and German equipment carried
 **several overlapping identifiers at once** — which will wrongly split records or fail to
 match unless dedup/aliases account for it.
@@ -66,7 +66,7 @@ One vehicle can **correctly** be called **all** of these simultaneously:
 
 ## Implications for THIS pipeline
 
-### Identity (`_is_specific_identity`, enrichment)
+### Identity (`_identity_scope` / `_is_enrichment_target`, enrichment)
 - `Pz.Kpfw. VI Tiger`, `Tiger`, `Sd.Kfz. 181` are all **specific** identities for the same
   type — all should enrich (to the canonical German record), none are generic.
 - `Ausf. H` / `Ausf. G` are **variants** (like M4A1/M4A3) → inline `variants[]`, not

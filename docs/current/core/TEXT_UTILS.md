@@ -3,7 +3,7 @@
 **Module:** `src/utils/text_utils.py`  
 **Purpose:** Centralized text processing utilities with full European language support  
 **Created:** 2026-03-13  
-**Updated:** 2026-03-13 (Added European language support)
+**Updated:** 2026-11-16 (`normalize_name` behaviour corrected; module checked against `src/utils/text_utils.py`)
 
 ---
 
@@ -67,17 +67,20 @@ transliterate("Þórðarson")   # → "Thordarson"
 
 ### `normalize_name(name: str) -> str`
 
-**Purpose:** Normalize person or group names (lowercase + strip)
+**Purpose:** Normalize person or group names for index matching: lower-case, ASCII-fold by Unicode decomposition (`Dönitz` -> `donitz`, it does **not** use `transliterate`), drop commas, periods and apostrophes, collapse whitespace. Used by the entity indexes and dedup, so the same name written with different accents or punctuation lands on one key.
 
 **Usage:**
 ```python
 from src.utils.text_utils import normalize_name
 
 normalized = normalize_name("Dwight D. Eisenhower")
-# Returns: "dwight d. eisenhower"
+# Returns: "dwight d eisenhower"   (periods are removed)
 
 normalized = normalize_name("  1st Infantry Division  ")
 # Returns: "1st infantry division"
+
+normalized = normalize_name("Dönitz")
+# Returns: "donitz"   (use normalize_name_ascii to get "doenitz")
 ```
 
 ---
@@ -119,6 +122,12 @@ ratio = similarity_ratio("Müller", "Mueller")
 ratio = similarity_ratio("Eisenhower", "Patton")
 # Returns: < 0.5
 ```
+
+---
+
+### Other helpers
+
+`normalize_whitespace(text)`, `remove_special_chars(text, keep_spaces=True)`, `truncate_text(text, max_length, suffix="...")` and `extract_initials(name)` are in the same module (all `lru_cache`d except `truncate_text`).
 
 ---
 
@@ -232,7 +241,7 @@ print(transliterate('François'))    # Francois
 "
 
 # Run unit tests
-python3 -m pytest tests/unit/test_extraction/test_people.py -v
+python3 -m pytest tests/unit/test_text_utils.py -v
 ```
 
 ---
@@ -242,7 +251,7 @@ python3 -m pytest tests/unit/test_extraction/test_people.py -v
 ### Backward Compatibility
 
 ✅ All existing code continues to work  
-✅ `normalize_name()` behavior unchanged  
+✅ `normalize_name()` ASCII-folds (accent-insensitive) as described above  
 ✅ New functions are additive (no breaking changes)
 
 ### New Capabilities
@@ -256,12 +265,12 @@ python3 -m pytest tests/unit/test_extraction/test_people.py -v
 
 ## Related
 
-- **Code Quality:** Run `scripts/gate.sh` (see `.kiro/steering/development.md`)
+- **Code Quality:** Run `scripts/gate.sh` before every commit
 - **People Extraction:** [../features/people/README.md](../features/people/README.md)
 - **Deduplication:** [../features/people/deduplication.md](../features/people/deduplication.md)
 
 ---
 
 **Created:** 2026-03-13  
-**Updated:** 2026-03-13 (European language support)  
+**Updated:** 2026-11-16  
 **Status:** ✅ Implemented and tested

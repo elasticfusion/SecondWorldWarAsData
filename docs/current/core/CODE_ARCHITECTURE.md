@@ -1,5 +1,7 @@
 # Code Architecture
 
+**Last Updated:** 2026-11-16
+
 ## Overview
 
 The codebase is organized into:
@@ -20,7 +22,8 @@ Discovers and parses markdown content into structured JSON.
 - Parses markdown with absolute paragraph numbering
 - Extracts inline entities (images, maps, footnotes, page markers)
 - Reads metadata from YAML files
-- Outputs to `output/{Book}/chapter*-parsed.json`
+- Outputs to `output/content/{Book}/chapter*-parsed.json` (+ `-footnotes.json` / `-endnotes.json`); chapters over 400K chars are split into 50-paragraph chunks (`chapter20c00-parsed.json`, ...) that overlap by 3 paragraphs
+- Builds an OCR'd PDF book's own figures once (`src/ingestion/book_figures.ensure` -> `contentrepository/<book>/_figures/figures.json`) and attaches each picture/map to its chapter(s) (`book_figures.attach_book`)
 - **Source hash skip:** Computes content hash and skips writing/uploading if unchanged
 - **Lock scoping:** Only clears its own Phase 1 lock (not Phase 2/3 locks)
 - **Full-sync scoped by `BOOK_NAME`** env var in AWS mode
@@ -33,27 +36,28 @@ python3 phase1_parse.py
 #### `phase2_extract.py`
 Main extraction pipeline using Grok AI.
 
-**Workflow (5 stages):**
-1. Parallel core extraction — events + dates + places + people_groups + people (batched, concurrent)
-2. Retry missing events — per-chapter cache clear and re-extract
-3. Optional entity extraction — weather, equipment, logistics, casualties, images, supplemental (sequential per event file, batched per chapter)
-4. Maps — source maps + external maps via OpenSERP
+**Workflow (`[phase2 step N/5]` log markers):**
+0. Metadata completion
+1. Parallel core extraction (`batch_parallel.process_chapters_parallel`) — one events request per chapter, then dates, places, people_groups and people discovered over fixed 3-paragraph windows of the raw parsed text (`windows.py`), each item attributed to its real sub-event by its quote
+2. Retry missing events
+3. Deterministic bibliography pass, then optional entity extraction — weather, equipment, logistics, casualties, supplemental (per event file, also windowed), then external maps and images
+4. Source-section enrichment (`4b`)
 5. Analysis — duplicate people report + related groups report
 
 **Key features:**
 - Parallel chapter processing via `batch_parallel.py`
-- Batched API calls (multiple entities per request)
+- xAI Batch API rounds (`src/utils/batch_rounds.py`, cap `batch.max_rounds` = 8): collect requests, submit, wait in-task up to `batch.in_task_wait_minutes`, else hand to the batch poller Lambda, repeat until a pass queues nothing
 - Targeted per-entry cache clearing on failure
 - Caching of all API responses
 - Incremental extraction (people/groups accumulate)
-- Automatic report generation
+- Provenance validation at the end (`scripts/validate_provenance.py`)
 
 **Usage:**
 ```bash
-python3 phase2_extract.py [--log-level LEVEL] [--batch]
+python3 phase2_extract.py [--log-level LEVEL] [--batch] [--book BOOK] [--expected-count N]
 ```
 
-`--batch` uses xAI Batch API for 50% cost reduction (async processing via `src/utils/batch_api.py`).
+`--batch` uses xAI Batch API for 50% cost reduction (async processing via `src/utils/batch_api.py`); in AWS `batch.phase2: true` makes the ECS entrypoint submit batches by default.
 
 #### `phase3_enrich_data.py`
 Enriches extracted entities with external data.
@@ -111,25 +115,8 @@ Detects potential duplicate people using 8 heuristics.
 python3 scripts/find_duplicate_people.py
 ```
 
-#### `merge_duplicate_people.py`
-Interactive duplicate merging with user confirmation.
-
-**Features:**
-- Interactive review (y/n/skip/exclude)
-- Merges event mentions and biographical data
-- Updates index and deletes duplicate files
-- Exclusion list for false positives
-
-**Usage:**
-```bash
-python3 scripts/merge_duplicate_people.py [--auto-confirm]
-```
-
-**Interactive options:**
-- `y` - Merge this group
-- `n` - Skip this group
-- `skip` - Skip this group (same as n)
-- `exclude` - Mark as false positive (never suggest again)
+#### Merging duplicates
+`scripts/merge_duplicate_people.py` no longer exists. Merging is done in the Dedup Review UI (`lambda_handlers/dedup_ui_handler.py`) using `src/dedup/merge.py`; exact duplicates are auto-merged at the end of Phase 2 (`ecs_entrypoint._auto_merge_exact_duplicates`). "Not duplicates" decisions are stored via `src/dedup/exclusions.py`. `scripts/merge_dates.py` and `scripts/merge_equipment.py` remain for those entities.
 
 ### People Groups (`src/dedup/`, CLI wrapper in `scripts/`)
 
@@ -159,7 +146,7 @@ Grok-powered alias suggestions for people groups.
 **Features:**
 - AI-powered alias detection
 - Interactive review (y/n/skip/edit)
-- Updates `people_group_aliases.yaml`
+- Updates `config/people_group_aliases.yaml`
 - Handles hierarchies and temporal subdivisions
 
 **Usage:**
@@ -177,7 +164,7 @@ python3 scripts/suggest_group_aliases.py
 Applies aliases and merges people groups.
 
 **Features:**
-- Reads `people_group_aliases.yaml`
+- Reads `config/people_group_aliases.yaml`
 - Merges groups based on aliases
 - Preserves temporal subdivisions
 - Updates index and deletes duplicates
@@ -288,7 +275,7 @@ Validates all output JSON files across every entity type.
 
 **Usage:**
 ```bash
-python3 scripts/validate_output.py
+python3 scripts/utils/validate_output.py
 ```
 
 ## Core Library (`src/`)
@@ -302,29 +289,41 @@ class Metadata:
     series: str
     book: str
     author: str
-    chapter_number: Optional[str]
-    chapter_title: Optional[str]
+    chapter_title: str
     license: str
-    copyright_date: Optional[str]
-    source_url: Optional[str]
+    copyright_date: str
+    source_url: str
 
 class Paragraph:
-    paragraph_number: int
+    absolute_number: int
     text: str
+    page_number: Optional[int]
+    page_end: Optional[int]
+    section_id: str
+    source_file: str
+    is_quote: bool
+    quote_attribution: Optional[str]
+
+class MarkdownDocument:
+    book: str
+    chapter_number: int
+    chapter_title: str
+    section_id: str
+    author: str
+    series: str
+    license: str
+    source_url: str
+    paragraphs: List[Paragraph]
     images: List[Image]
     maps: List[Map]
     footnotes: List[Footnote]
     page_markers: List[PageMarker]
-
-class MarkdownDocument:
-    metadata: Metadata
-    paragraphs: List[Paragraph]
-    chapter_name: str
+    table_hints: List[dict]
 ```
 
-### Schemas (`src/schemas.py`)
+### Schemas (`src/schemas/`)
 
-Pydantic models for structured outputs:
+`src/schemas/` is a package: `__init__.py` holds the per-entity schema versions (`ENTITY_SCHEMA_VERSIONS`, `entity_version()`; each entity is versioned independently, e.g. places 2.30, people 2.27, events 2.25), and one `*_output.py` module per entity defines its JSON Schema. The older Pydantic module `src/schemas.py` is shadowed by this package (Python imports the package) and its models (`EventOutput`, `PeopleOutput`, ...) are not imported anywhere; the live Pydantic models used for Grok answers sit in the extractors (e.g. `people.PeopleOutput`). The list below describes that legacy module:
 
 **Event schemas:**
 - `EventOutput` - Top-level event extraction
@@ -348,25 +347,29 @@ API client with caching:
 
 ```python
 class GrokClient:
-    def extract_structured(schema, prompt, temperature=0.1)
-        # Structured output with Pydantic schema
-    
-    def extract_json(prompt, temperature=0.1)
-        # JSON extraction
-    
-    def chat_completion(messages, temperature=0.1)
-        # Raw chat completion
-    
-    def clear_cache(cache_type=None)
-        # Clear API cache
+    def __init__(cache_dir, api_key=None, batch_mode=False)
+        # cache_dir: a Path (disk, or DynamoDB when aws.enabled) or a CacheBackend
+
+    def extract_json(prompt, system_prompt=None, temperature=0.1, use_cache=True,
+                     cache_type="default", cache_key=None, book=None)
+        # JSON answer; a book-bound kind carries BookID + RequestID and must echo both
+
+    def extract_structured(prompt, schema, system_prompt=None, use_cache=True, cache_type="default")
+        # JSON validated against a Pydantic schema
+
+    def chat_completion(prompt, system_prompt=None, temperature=0.1, use_cache=True,
+                        cache_type="default", cache_key=None)
+        # Raw text completion
+
+    def extract_json_with_image(...) / extract_json_with_image_base64(...)
+        # Vision requests
+
+    def submit_batch(...)          # submit the collected batch requests (batch_mode=True)
+    def clear_cache_entry(prompt, cache_type="default", temperature=0.1, system_prompt=None, book=None)
+    def cache_key_for(...) / store_json_answer(...)
 ```
 
-**Cache structure:**
-- `cache/api/events/` - Event extractions
-- `cache/api/dates/` - Date extractions
-- `cache/api/places/` - Place extractions
-- `cache/api/people/` - People extractions
-- `cache/api/people_groups/` - Group extractions
+**Cache structure:** one sub-cache per `cache_type` (`events`, `dates`, `places`, `people`, `people_groups`, `equipment_broad`, `equipment_refine`, ...), scoped by book (`books/<book>/<kind>`). Local mode keeps them under `cache/api/`; AWS mode uses the DynamoDB cache table.
 
 ### JSON Schemas (`src/json_schemas.py`)
 
@@ -385,10 +388,11 @@ Extracts and normalizes URLs from text content.
 Markdown parsing with entity extraction:
 
 ```python
-def parse_chapter(chapter_group: ChapterGroup) -> List[MarkdownDocument]
+def parse_chapter(chapter_group: ChapterGroup, *, apply_structure_repair: bool = False) -> List[MarkdownDocument]
     # Main parsing entry point
 
-def parse_content_file(content_file: Path, metadata: Metadata) -> MarkdownDocument
+def parse_content_file(file_path: Path, section_id: str, start_paragraph_num: int,
+                       metadata: Metadata, *, apply_structure_repair: bool = False) -> MarkdownDocument
     # Parse single content file
 
 def parse_metadata(meta_file: Path) -> Metadata
@@ -398,7 +402,7 @@ def split_into_paragraphs(text: str) -> List[str]
     # Split on double newlines
 
 def extract_footnotes(text: str) -> List[Tuple[int, str, str]]  # (number, url, citation_text)
-    # Extract [^1]: footnotes
+    # Extract [^1]: footnotes (chapter-level note handling lives in src/notes.py)
 
 def extract_maps(text: str) -> List[Tuple[str, str]]
     # Extract [MAP: ...] markers
@@ -423,9 +427,13 @@ def discover_content_structure(content_root: Path) -> Dict[str, List[ChapterGrou
 ### Ingestion — Phase 0 (`src/ingestion/`)
 
 Format-agnostic ingestion front-end that runs ahead of Phase 1 (media detection,
-per-page disposition classification, region→Markdown conversion) plus the OOB
-scanned-table parsers. Runnable as **Phase 0** (`phase0_ingest.py` locally,
-`ecs_entrypoint.py` phase0 branch in AWS). See
+per-page disposition classification, region→Markdown conversion, Chandra OCR
+chunking / merge / promotion into chapters) plus the OOB scanned-table parsers.
+Upload routing is in `lambda_handlers/trigger_handler.py`; the OCR merge is
+`lambda_handlers/ocr_merge_handler.py` -> `ocr_promote.promote`; the structured-reference
+track runs as **Phase 0** (`phase0_ingest.py` locally, `ecs_entrypoint.py` in AWS). Other
+Phase 0 entry points: `phase0_convert.py` (EPUB/DOCX/HTML via pandoc), `phase0_video.py`,
+`phase0_ocr_crosscheck.py`. A book's slug (`book_slug.py`) never changes after intake. See
 [../dataquality/INGESTION_FRONT_END.md](../dataquality/INGESTION_FRONT_END.md)
 and [../dataquality/STRUCTURED_DATA_ROUTING.md](../dataquality/STRUCTURED_DATA_ROUTING.md).
 
@@ -435,6 +443,16 @@ src/ingestion/
 ├── media_detection.py        # detect PDF/HTML/image/moving-image; flag unsupported
 ├── disposition.py            # Disposition types + PageSignals/DispositionResult
 ├── disposition_classifier.py # per-page structured/unstructured/image/map (scanned-aware)
+├── book_slug.py              # immutable book identity: book_slug (source stem), content_slug (chapter folder)
+├── chunk_pages.py, ocr_chunk_manifest.py  # split a scan into page chunks for Chandra; the manifest
+├── ocr_sanitise.py, ocr_chapters.py, ocr_promote.py, ocr_publish.py
+│                             # merged OCR -> sanitise, translate, split chapters, publish chapterN/
+├── ocr_crosscheck.py         # cross-check OCR text against a validation URL
+├── chandra_markdown.py       # normalise Chandra output; removes picture paragraphs, records figures
+├── book_figures.py, pdf_figures.py  # the book's own figures (_figures/figures.json) for Phase 1
+├── book_metadata.py, chapter_meta.py  # book metadata found by Grok (with evidence quotes); chapterN-meta.yaml
+├── translation.py            # per-page language detection + translation to English
+├── av_scan.py                # ClamAV scan of binary uploads
 ├── routing_manifest.py       # coalesce regions → manifest for conversion
 ├── region_converter.py       # per-disposition region → Markdown + image/map asset extraction
 ├── pdf_pipeline.py           # PDF→Markdown routing seam: digital-text in-process;
@@ -473,9 +491,9 @@ engines' output side-by-side (ensemble-as-verification). Operations:
 ### Events (`src/extraction/events.py`)
 
 ```python
-def extract_events(parsed_file: Path, grok_client: GrokClient, output_dir: Path) -> Path
-    # Extracts hierarchical events from parsed JSON
-    # Returns: event_file path
+def extract_events(parsed_file: Path, grok_client: GrokClient, output_dir: Path, max_retries: int = 3) -> Optional[Path]
+    # Extracts the chapter's Event with Sub-events from parsed JSON (orphan paragraphs are claimed
+    # by the nearest earlier sub-event); returns the event_file path
 
 def create_event_prompt(parsed_data: Dict) -> str
     # Creates extraction prompt from parsed content
@@ -486,7 +504,7 @@ def create_event_prompt(parsed_data: Dict) -> str
 Split architecture: classifies each endnote/footnote as `document_reference`, `factual_content`, or `ambiguous`, then routes accordingly.
 
 ```python
-def extract_supplemental(event_file: Path, grok_client: GrokClient, output_dir: Path, ...) -> Optional[Path]
+def extract_supplemental(event_file: Path, grok_client: GrokClient, output_root: Path, enrich: bool = True) -> Optional[Path]
     # Classifies and routes supplemental material
     # document_reference → output/bibliography/ (via bibliography.py)
     # factual_content → output/{Book}/{chapter}-notes-event.json
@@ -503,9 +521,10 @@ def extract_supplemental(event_file: Path, grok_client: GrokClient, output_dir: 
 Deduplicated document storage with fuzzy title matching.
 
 ```python
-def store_bibliography_entry(material: Dict, bib_dir: Path) -> str
+def store_bibliography_entry(bib_dir: Path, material: Dict, book: str, chapter: str) -> Optional[str]
     # Merge-or-create bibliography entry
-    # Returns: BibliographyID
+    # Returns: BibliographyID (a deterministic pass, extract_bibliography_deterministic,
+    # writes one record per parsed footnote/endnote without an LLM)
 ```
 
 **Key features:**
@@ -517,9 +536,9 @@ def store_bibliography_entry(material: Dict, bib_dir: Path) -> str
 ### Dates (`src/extraction/dates.py`)
 
 ```python
-def extract_dates(event_file: Path, grok_client: GrokClient, output_dir: Path) -> Path
-    # Extracts temporal entities from events
-    # Returns: dates_file path
+def extract_dates(event_file: Path, grok_client: GrokClient, dates_dir: Path,
+                  parsed_file: Optional[Path] = None, max_retries: int = 3) -> Optional[Path]
+    # Extracts temporal entities (over paragraph windows of parsed_file)
 
 def create_date_prompt(sub_event: Dict, event_id: str, event_name: str) -> str
     # Creates extraction prompt for sub-event
@@ -528,9 +547,9 @@ def create_date_prompt(sub_event: Dict, event_id: str, event_name: str) -> str
 ### Places (`src/extraction/places.py`)
 
 ```python
-def extract_places(event_file: Path, grok_client: GrokClient, output_dir: Path) -> Path
-    # Extracts geographic entities with coordinates
-    # Returns: places_file path
+def extract_places(event_file: Path, grok_client: GrokClient, places_dir: Path,
+                   parsed_file: Optional[Path] = None, max_retries: int = 3) -> Optional[Path]
+    # Extracts geographic entities (over paragraph windows of parsed_file)
 
 def create_place_prompt(sub_event: Dict, event_id: str, event_name: str) -> str
     # Creates extraction prompt for sub-event
@@ -541,9 +560,8 @@ def create_place_prompt(sub_event: Dict, event_id: str, event_name: str) -> str
 File-per-person architecture:
 
 ```python
-def extract_people(event_file: Path, grok_client: GrokClient, output_dir: Path) -> Path
+def extract_people(event_file: Path, grok_client: GrokClient, output_dir: Path, max_retries: int = 3) -> Optional[Path]
     # Extracts people to individual files
-    # Returns: people_dir path
 
 def create_people_prompt(sub_event: Dict, event_id: str, event_name: str) -> str
     # Creates extraction prompt for sub-event
@@ -570,9 +588,8 @@ output/people/
 File-per-group architecture:
 
 ```python
-def extract_people_groups(event_file: Path, grok_client: GrokClient, output_dir: Path) -> Path
+def extract_people_groups(event_file: Path, grok_client: GrokClient, output_dir: Path) -> Optional[Path]
     # Extracts groups to individual files
-    # Returns: groups_dir path
 ```
 
 **Key features:**
@@ -595,9 +612,13 @@ output/people_groups/
 
 Extracts and processes image references from parsed content.
 
-### Combined Map Search (`src/extraction/combined_map_search.py`)
+### Maps (`src/extraction/maps.py`, `search_external_maps.py`, `openserp_maps.py`, `external_maps.py`)
 
-Unified map search across multiple sources (source maps and external maps via OpenSERP).
+Source maps and external maps (via OpenSERP). `combined_map_search.py` no longer exists.
+
+### Windows (`src/extraction/windows.py`)
+
+Fixed 3-paragraph windows over the raw parsed text for all entity discovery (`window_event`, `regroup`, `settle`): each answer item is attributed to the real sub-event by where its quote is found; unsupported quotes are dropped (`quote_unsupported`).
 
 ### Supplemental Advanced (`src/extraction/supplemental_advanced.py`)
 
@@ -686,7 +707,7 @@ Client for xAI Batch API supporting async batch submission and result retrieval 
 
 ### Job Queue (`src/utils/job_queue.py`)
 
-DynamoDB-backed job queue for tracking batch submissions. Manages `batch_job#{batch_id}` entries with status tracking (pending/complete/failed/retrieved) and 30-day TTL auto-cleanup.
+DynamoDB-backed job queue for tracking batch submissions. Manages `batch_job#{batch_id}` entries with status tracking (`pending` -> `ready` -> `retrieved`, or `failed`) and TTL auto-cleanup. Batch rounds are capped by `src/utils/batch_rounds.py`.
 
 ### HTTP Pool (`src/utils/http_pool.py`)
 
@@ -716,15 +737,17 @@ paths:
 
 api:
   grok:
-    model: "grok-beta"
+    model: "grok-4.3"
 
 logging:
   level: INFO
   console: true
-  file: null
+  file: "logs/pipeline.log"
 ```
 
-### `people_group_aliases.yaml`
+`config.yaml.example` holds the shipped defaults (copy it to `config.yaml`); every key is documented in [CONFIGURATION.md](CONFIGURATION.md).
+
+### `config/people_group_aliases.yaml`
 Group alias definitions:
 ```yaml
 aliases:
@@ -751,41 +774,38 @@ temporal_context:
       - Free France
 ```
 
-### `output/people/not_duplicates.json`
-Exclusion list for false positives:
+### Dedup exclusions (`src/dedup/exclusions.py`)
+Pairs a human marked "not duplicates" persist across runs. In AWS mode each pair is a DynamoDB row `exclusion#<entity_type>#<file1>#<file2>` (name-based pairs use `name_exclusion#...`). Locally they are `not_duplicates.json` (groups: `not_related.json`) in the entity directory:
 ```json
-[
-  ["PersonID1", "PersonID2"],
-  ["PersonID3", "PersonID4"]
-]
+{"exclusions": [{"person1": "file1.json", "person2": "file2.json"}]}
 ```
+A read error raises `ExclusionLoadError` (fail-closed) instead of returning an empty set.
 
 ## Data Flow
 
 ```
-contentrepository/
-  └── {Book}/chapter*/
-      ├── chapter*-meta.yaml      → Phase 1 → output/{Book}/
-      └── chapter*-content.md                  ├── chapter*-parsed.json
+upload -> contentrepository/                   Phase 0 (trigger Lambda: OCR / pandoc / video / OOB)
+  └── {slug}/chapter*/
+      ├── chapter*-meta.yaml      → Phase 1 → output/content/{slug}/
+      └── chapter*-content.md                  ├── chapter*-parsed.json (+ -footnotes / -endnotes.json)
                                                │
                                     Phase 2 ↓  │
                                                ├── chapter*-event.json
                                                ├── chapter*-notes-event.json  (factual endnotes)
-                                               ├── chapter*-dates.json
-                                               ├── chapter*-places.json
-                                               │
-                                               └── people/
-                                                   ├── {Name}_{ID}.json
-                                                   └── index.json
-                                               
-                                               └── people_groups/
-                                                   ├── {Group}_{ID}.json
-                                                   └── index.json
 
-                                               └── bibliography/
-                                                   ├── {title_slug}_{ID}.json
-                                                   ├── index.json
-                                                   └── review_queue.json
+output/                                         (entity directories are siblings of content/)
+  ├── dates/ places/ weather/ equipment/ logistics/ casualties/ maps/ images/
+  ├── people/
+  │   ├── {Name}_{ID}.json
+  │   └── index.json
+  ├── people_groups/
+  │   ├── {Group}_{ID}.json
+  │   └── index.json
+  ├── bibliography/
+  │   ├── {title_slug}_{ID}.json
+  │   ├── index.json
+  │   └── review_queue.json
+  └── reports/provenance/{slug}-phase2.json
 ```
 
 ## Key Design Patterns
@@ -798,25 +818,13 @@ People and groups use individual files for:
 - Simple deduplication
 
 ### Caching Strategy
-All API responses cached by:
-- Prompt hash
-- Temperature
-- Cache type (events, dates, places, etc.)
+All Grok responses are cached by a hash of the system prompt, prompt, temperature and model, per cache type (events, dates, places, ...; book-bound kinds are scoped `books/<book>/<kind>`). Local mode uses `cache/api/`; AWS mode uses the DynamoDB cache table. In batch mode the cache is also how batch answers come back to the next round.
 
 ### Skip Logic
-Timestamp-based processing:
-- Events/dates/places: Skip if output exists
-- People/groups: Skip if newer than event file
+Finished work is not repeated: cached answers are reused, people extraction records handled events in `.processed_events.json`, Phase 1 skips chapters whose source hash is unchanged, and Phase 3 uses `enrichment_gate` staleness (`enrichment.re_search_after_days`). `processing.force_reprocess` bypasses the skips.
 
 ### ULID Identifiers
-All entities use ULIDs for:
-- Unique identification
-- Cross-referencing
-- Sortable by creation time
+All entities use 26-character ULID-format ids for unique identification and cross-referencing. EventID, Sub-eventID and BookID are derived deterministically (`src/utils/deterministic_ids.py`) so a re-run keeps the same ids; other ids are random (`ulid.new()`). See [ULID_IMPLEMENTATION.md](ULID_IMPLEMENTATION.md).
 
 ### Structured Outputs
-Pydantic schemas ensure:
-- Type safety
-- Validation
-- Consistent structure
-- Easy serialization
+Each entity has a JSON Schema in `src/schemas/<entity>_output.py` (versioned per entity in `ENTITY_SCHEMA_VERSIONS`) and Pydantic models in the extractors validate Grok's answers: type safety, validation, consistent structure.

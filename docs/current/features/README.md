@@ -1,6 +1,6 @@
 # Feature Documentation
 
-**Last Updated:** 2026-06-13  
+**Last Updated:** 2026-11-16  
 **Status:** Comprehensive feature documentation based on code analysis
 
 ---
@@ -8,6 +8,17 @@
 ## Overview
 
 This directory contains comprehensive documentation for all extraction features in the WWII data pipeline. Each feature is documented based on actual code implementation.
+
+### How Phase 2 extracts entities (current)
+
+- **Events:** one request per chapter produces an Event with Sub-events (`events.py`).
+- **Every other entity** (people, groups/units, places, dates, equipment, weather, logistics, casualties) is
+  discovered over fixed 3-paragraph windows of the raw parsed text (`windows.py`, `batch_parallel.py:prefetch_windows`),
+  never over the events' summaries. Each answer item is attributed to the sub-event its quote sits in
+  (`windows.settle`); an item whose quote is not in the source is dropped with `quote_unsupported`.
+- **Batch mode (default):** requests are collected per round and sent through the xAI batch API
+  ([batch_processing/README.md](batch_processing/README.md)).
+- **Schema versions are per entity** (`src/schemas/__init__.py` `ENTITY_SCHEMA_VERSIONS`).
 
 ### Current Entity Counts (across all processed books)
 
@@ -100,7 +111,7 @@ Individual person extraction with biographical profiles.
 
 ### People Groups (`people_groups.py`)
 **Status:** Production  
-**Documentation:** [people/groups.md](people_groups/groups.md)
+**Documentation:** [people_groups/groups.md](people_groups/groups.md)
 
 Military units and organizations extraction.
 
@@ -186,11 +197,13 @@ Weather conditions extraction with API integration.
 
 ## Maps Features
 
-### Source Maps (`maps.py`)
+### Source Maps (parser + `map_link_source.py`)
 **Status:** Production  
 **Documentation:** [maps/README.md](maps/README.md)
 
-Map extraction from source documents.
+Maps in source documents. Phase 1 finds them (`src/parser.py:extract_maps`, plus the book's own figures for OCR'd PDFs);
+Phase 3 downloads, classifies and links them (`map_link_source.py`). The Phase-2 in-document map step (`maps.py:extract_maps`) was removed (#687);
+`maps.py` now only holds helpers. (Phase 3 detail: for the Phase 3 docs pass.)
 
 **Key Features:**
 - Map metadata extraction
@@ -390,4 +403,4 @@ All extraction modules implement:
 - File-specific error messages
 - Cache clearing suggestions
 
-See [core/error_handling.md](../core/error_handling.md) for details.
+See [error-handling spec (archived 2026-03)](../../archive/contextmanagement/Specs/error_handling.md) for details.

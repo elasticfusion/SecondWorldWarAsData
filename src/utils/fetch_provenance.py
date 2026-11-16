@@ -5,7 +5,7 @@ outcome O)." If an API misbehaves you can walk backwards from the stored record.
 *textual* find is additionally enqueued for human review and, on affirm, flows through the SAME
 path into ingestion/extraction like an uploaded book (handled by callers; this module records).
 
-Design: docs/current/FETCH_PROVENANCE_DESIGN.md. This is operational TELEMETRY, not a
+Design: docs/archive/2026-11-16/FETCH_PROVENANCE_DESIGN.md. This is operational TELEMETRY, not a
 schema-governed corpus entity (no _schema_version / fingerprint). Storage reuses the existing
 ``dev-wwii-api-cache`` DynamoDB table (key ``fetchevent#{id}``) in AWS mode, and an append-only
 JSONL at ``output/_fetch_events/<provider>.jsonl`` locally. Recording is ALWAYS fail-safe: a

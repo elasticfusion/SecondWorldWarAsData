@@ -1,6 +1,6 @@
 # Map as a source document — spec
 
-**Status:** DRAFT / proposed (owner-requested). No code written yet.
+**Status:** ADAPTER BUILT (checked 2026-11-16): `src/extraction/map_source_adapter.py` (`build_map_parsed_source`, `build_map_source_metadata`, `render_map_markdown`) exists and is used by Phase 3 (`map_link_source`, `image_map_vision`). Originally DRAFT / proposed; the text below is the original spec (Phase-3 content, not re-verified line by line).
 **Owner intent (verbatim):** "a map is the source document, from it an event is derived, and everything
 flows out of the normal data pipelines." A vision-verified map should enter the pipeline like any other
 source (a book chapter), produce an **event**, and let people_groups / places / dates / weather /

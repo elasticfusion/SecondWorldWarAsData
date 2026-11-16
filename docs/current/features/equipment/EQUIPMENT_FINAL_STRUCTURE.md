@@ -56,12 +56,21 @@
 - `common_name` - e.g., "Sherman"
 - `technical_identifier` - e.g., "M4"
 - `category` - armor, aircraft, naval, etc.
-- `mentions` - Array of mentions
+- `event_mentions` - Array of mentions
 
 ### Mention Level
 - `MentionID` - ULID for this mention
 - `EventID` - Links to Event.EventID in chapter event file
 - `Sub_eventID` - Links to Sub-eventID in Event.Sub-events[] array
+
+---
+
+### Lineage (schema 2.30)
+
+A record may carry `variant_of` (the base type it is a variant of), `distinguishing_features`
+(what sets it apart) and `lineage_source` (`grok_disambiguation`, the only value). They come from
+the designation disambiguator (`equipment_disambiguation.resolve_designation`) and are copied onto
+the record by `equipment._resolve_canonical_identity`. All are nullable; a base type has none.
 
 ---
 

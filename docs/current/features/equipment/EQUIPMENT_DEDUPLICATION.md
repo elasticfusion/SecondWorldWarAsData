@@ -23,7 +23,8 @@ implementation — a former duplicate copy under `src/extraction/equipment_ext/`
 `merge_or_create_equipment(equipment_data, mention, dir, index, …)` decides, for each
 extracted equipment item, whether it is a NEW type or another mention of an existing one:
 
-1. **Match** (`_find_matching_equipment`): try `technical_identifier` → exact
+1. **Match** (`_find_matching_equipment`): try `canonical_name` (the resolved identity, the
+   most stable key; the only key for named vessels) → `technical_identifier` → exact
    `common_name` → **fuzzy** (`_fuzzy_match_equipment`, `SequenceMatcher ≥ 0.80`, also
    checking `alternate_names`).
 2. **Match found → `_merge_into_existing`**: append the mention (deduped by

@@ -1,6 +1,6 @@
 # Group (Unit) Deduplication — Canonical Unit Key
 
-**Last Updated:** 2026-10-05
+**Last Updated:** 2026-11-16
 
 Group/unit dedup matches on a **canonical unit key** derived from the name, not raw
 string similarity — so `Ninth Division` / `9th Division` / `9th Infantry Division` all

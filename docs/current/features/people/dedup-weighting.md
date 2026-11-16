@@ -1,6 +1,6 @@
 # People Deduplication — Weighted Scoring & the Surname Suggestion Report
 
-**Last Updated:** 2026-10-05
+**Last Updated:** 2026-11-16
 
 This documents the *subtleties* of the config-driven people dedup scoring and the
 human-gated corpus-frequency surname suggestion report. For the end-to-end dedup
@@ -12,7 +12,7 @@ workflow (when it runs, auto-merge vs human gate), see
 ## When dedup runs (and what auto-merges)
 
 Dedup runs at **Phase-2 task completion** (`ecs_entrypoint._run_dedup_detection`).
-`find_duplicate_*.py` writes candidate groups to `duplicate_report.json`, then:
+`find_duplicate_*` (now `src/dedup/find_duplicate_*.py`; `scripts/` holds wrappers) writes candidate groups to `duplicate_report.json`, then:
 
 - **Auto-merge** merges only groups whose names are **byte-identical after
   normalization** (`_auto_merge_exact_duplicates`). Deliberately conservative.

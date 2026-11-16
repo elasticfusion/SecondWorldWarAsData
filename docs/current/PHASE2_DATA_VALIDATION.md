@@ -1,6 +1,8 @@
 # Phase-2 Data Validation — Design & Checklist
 
-**Status:** design (spec for a post-Phase-2 validation step). **Owner-driven.**
+**Status (2026-11-16):** partly implemented. `scripts/validate_phase2.py` runs at the end of `phase2_extract.py` (log-only: the phase is not aborted; the standalone CLI exits 1 on an A failure) and implements A1/A2 (schema + `_schema_version`), A3 (orphan entities, mention `EventID`, empty `original_text`/`book`), A3/B1 (`referential_integrity.audit`, 0 dangling), A4 (people enrichment anomaly; WARN unless `--strict-enrichment`) and B3 (index.json sanity). **Not implemented:** the SNS data-quality alert on FAIL, B2, B4, B5, B6, B7, B8 and the per-person A4 sample, which remain spec below.
+
+**Quote and locator truth is a separate gate:** `scripts/validate_provenance.py` (config `provenance_validation.gate`: `warn` or `block`, env `PROVENANCE_GATE`) runs per book at the end of Phase 2 and checks `P2-L1` (Sub-eventID belongs to the Event), `P2-L2` (cited paragraph exists and lies in the cited sub-event), `P2-Q1` (`original_text` is in the cited paragraphs) and `P2-Q2` (a bibliography `verbatim_reference` is the cited note's text). Its report is `output/reports/provenance/<book>-phase2.json`. With `gate: block`, a hard failure holds Phase 3. **Owner-driven.**
 **Principle:** after a Phase-2 run completes, a single validation pass asserts the generated data is
 **schema-correct, spec-compliant, fully traceable to source, and enriched as intended.** Every
 failure is surfaced **LOUDLY** (a non-zero exit + an explicit `VALIDATION FAIL` summary + an SNS
@@ -153,5 +155,4 @@ Phase-2 already logs these; the validator asserts thresholds:
    or a heuristic (rank ≥ general / appears in N sub-events)? 
 3. Pre-Phase-3 expectations: null place coords + absent weather/source_section (pending batch) must
    be WARN, not FAIL, when Phase 2 ran standalone.
-4. Where the step runs: a new `scripts/validate_phase2.py` invoked at the end of `phase2_extract.py`
-   (ECS) + runnable standalone against a downloaded `output/`.
+4. ~~Where the step runs~~ Resolved: `scripts/validate_phase2.py`, invoked at the end of `phase2_extract.py` and runnable standalone against a downloaded `output/`.

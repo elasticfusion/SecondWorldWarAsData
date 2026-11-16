@@ -1,6 +1,6 @@
 # Maps Refactor — Sequenced Implementation Plan
 
-**Status:** PLAN · 2026-11-02 · implements `maps-target-architecture.md` (owner-approved) ·
+**Status:** Steps 1-6 SHIPPED (#673-#687); step 7 shipped as conflict-safe find-or-create without SQS (#688), so the SQS feedback interface below was NOT built. Checked 2026-11-16. Original plan 2026-11-02 · implements `maps-target-architecture.md` (owner-approved) ·
 grounded in a code inventory of the existing map/enrich/fetch/dedup libraries.
 **Governing constraint (owner):** REUSE existing libraries; do NOT create parallel code doing the
 same thing. Every step below says explicitly what to reuse / consolidate / retire.

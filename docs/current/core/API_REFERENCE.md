@@ -1,10 +1,12 @@
 # API Reference
 
+**Last Updated:** 2026-11-16 (signatures checked against `src/` on branch `refactor/pr1-dedup-into-src`)
+
 ## Core Classes
 
 ### GrokClient
 
-API client for Grok with caching support.
+API client for Grok with caching support (`src/grok_client.py`). The pipeline model is `GROK_MODEL` env, else `api.grok.model` (`grok-4.3`), resolved in `src/utils/grok_models.py`. In AWS mode (`aws.enabled`) `cache_dir` is ignored in favour of the DynamoDB cache table; a `CacheBackend` can also be passed.
 
 ```python
 from src.grok_client import GrokClient
@@ -33,17 +35,20 @@ Extract structured data using Pydantic schema.
 
 **Example:**
 ```python
-from src.schemas import EventOutput
+from pydantic import BaseModel
+
+class MyOutput(BaseModel):   # the live Pydantic models sit next to their extractor, e.g. people.PeopleOutput
+    summary: str
 
 result = client.extract_structured(
     "Extract events from: ...",
-    EventOutput,
+    MyOutput,
     system_prompt="You are a WWII historian.",
     cache_type="events"
 )
 ```
 
-##### `extract_json(prompt, system_prompt=None, temperature=0.1, use_cache=True, cache_type="default")`
+##### `extract_json(prompt, system_prompt=None, temperature=0.1, use_cache=True, cache_type="default", cache_key=None, book=None)`
 Extract JSON without schema validation.
 
 **Parameters:**
@@ -52,10 +57,12 @@ Extract JSON without schema validation.
 - `temperature` (float) - Sampling temperature (default: 0.1)
 - `use_cache` (bool) - Whether to use cache (default: True)
 - `cache_type` (str) - Cache type (default: "default")
+- `cache_key` (Optional[str]) - Explicit cache key (default: hash of system prompt + prompt + temperature + model)
+- `book` (Optional[str]) - Book slug. For a book-bound `cache_type` the request carries the BookID and its own RequestID, and an answer that does not echo both is never trusted (`src/utils/request_identity`); the cache is scoped `books/<book>/<kind>`.
 
 **Returns:** Dict[str, Any]
 
-##### `chat_completion(prompt, system_prompt=None, temperature=0.1, use_cache=True, cache_type="default")`
+##### `chat_completion(prompt, system_prompt=None, temperature=0.1, use_cache=True, cache_type="default", cache_key=None)`
 Get chat completion from Grok API.
 
 **Parameters:**
@@ -67,13 +74,14 @@ Get chat completion from Grok API.
 
 **Returns:** str - Response text from API
 
-##### `clear_cache_entry(prompt, cache_type="default", temperature=0.1)`
+##### `clear_cache_entry(prompt, cache_type="default", temperature=0.1, system_prompt=None, book=None)`
 Remove a single cache entry by prompt.
 
 **Parameters:**
 - `prompt` (str) - The prompt used for the original request
 - `cache_type` (str) - Cache type (default: "default")
 - `temperature` (float) - Temperature used for the original request (default: 0.1)
+- `system_prompt`, `book` - Must match the original request (they are part of the key)
 
 **Returns:** bool - True if entry was removed
 
@@ -81,6 +89,9 @@ Remove a single cache entry by prompt.
 ```python
 client.clear_cache_entry("Extract events from: ...", "events")
 ```
+
+##### Other methods
+`cache_key_for(prompt, system_prompt=None, cache_type="default", temperature=0.1, book=None)` returns the cache key a request would use; `store_json_answer(prompt, system_prompt, cache_type, answer, temperature=0.1, book=None, cache_key=None)` writes a retrieved batch answer into the cache.
 
 ##### `extract_json_with_image_base64(prompt, image_base64, system_prompt=None, temperature=0.1, use_cache=True, cache_type="default")`
 Get JSON response from Grok API with base64 image input (vision).
@@ -109,11 +120,12 @@ Get JSON response from Grok API with image URL input (vision). Downloads the ima
 
 **Returns:** Dict[str, Any] - Parsed JSON response
 
-##### `submit_batch(batch_name="pipeline")`
-Submit collected batch requests to xAI Batch API. Only useful when `batch_mode=True`.
+##### `submit_batch(batch_name="pipeline", max_wait_minutes=None)`
+Submit collected batch requests to xAI Batch API. Only useful when `batch_mode=True`. In Phase 2 this is driven by the batch-round loop (`src/utils/batch_rounds.py`), which waits up to `batch.in_task_wait_minutes` and otherwise hands the batch to the batch-poller Lambda.
 
 **Parameters:**
 - `batch_name` (str) - Name for the batch (default: "pipeline")
+- `max_wait_minutes` (Optional[float]) - How long to wait for an answer (default: `batch.in_task_wait_minutes`)
 
 **Returns:** Optional[str] - Batch ID, or None if no requests to submit
 
@@ -137,18 +149,20 @@ from pathlib import Path
 event_file = extract_events(
     parsed_file=Path("output/Book/chapter1-parsed.json"),
     grok_client=client,
-    output_dir=Path("output/Book")
+    output_dir=Path("output/content/Book"),
+    max_retries=3,
 )
 ```
 
 **Parameters:**
-- `parsed_file` (Path) - Parsed JSON file
+- `parsed_file` (Path) - Parsed JSON file (`output/content/<book>/chapter*-parsed.json`)
 - `grok_client` (GrokClient) - API client
 - `output_dir` (Path) - Output directory
+- `max_retries` (int) - Default 3
 
-**Returns:** Path to event file
+**Returns:** Optional[Path] - path to the event file, `None` on failure
 
-**Output:** `{output_dir}/chapter*-event.json`
+**Output:** `{output_dir}/chapter*-event.json`. One request per chapter yields an Event with Sub-events; orphan paragraphs are claimed by the nearest earlier sub-event (`events._claim_orphan_paragraphs`). EventIDs are deterministic (`deterministic_ids.event_id`).
 
 ---
 
@@ -158,20 +172,23 @@ event_file = extract_events(
 from src.extraction.dates import extract_dates
 
 dates_file = extract_dates(
-    event_file=Path("output/Book/chapter1-event.json"),
+    event_file=Path("output/content/Book/chapter1-event.json"),
     grok_client=client,
-    output_dir=Path("output/Book")
+    dates_dir=Path("output/dates"),
+    parsed_file=Path("output/content/Book/chapter1-parsed.json"),
 )
 ```
 
 **Parameters:**
 - `event_file` (Path) - Event JSON file
 - `grok_client` (GrokClient) - API client
-- `output_dir` (Path) - Output directory
+- `dates_dir` (Path) - Entity directory (one file per date plus `index.json`)
+- `parsed_file` (Optional[Path]) - The parsed chapter. Discovery runs over fixed 3-paragraph windows of this raw text (`src/extraction/windows.py`), never the events' summaries; each item is attributed to the sub-event holding its quote.
+- `max_retries` (int) - Default 3
 
-**Returns:** Path to dates file
+**Returns:** Optional[Path]
 
-**Output:** `{output_dir}/chapter*-dates.json`
+**Output:** `{dates_dir}/<date file>.json` and `{dates_dir}/index.json`
 
 ---
 
@@ -181,20 +198,23 @@ dates_file = extract_dates(
 from src.extraction.places import extract_places
 
 places_file = extract_places(
-    event_file=Path("output/Book/chapter1-event.json"),
+    event_file=Path("output/content/Book/chapter1-event.json"),
     grok_client=client,
-    output_dir=Path("output/Book")
+    places_dir=Path("output/places"),
+    parsed_file=Path("output/content/Book/chapter1-parsed.json"),
 )
 ```
 
 **Parameters:**
 - `event_file` (Path) - Event JSON file
 - `grok_client` (GrokClient) - API client
-- `output_dir` (Path) - Output directory
+- `places_dir` (Path) - Entity directory (one file per place plus `index.json`)
+- `parsed_file` (Optional[Path]) - The parsed chapter (windowed discovery, as for dates)
+- `max_retries` (int) - Default 3
 
-**Returns:** Path to places file
+**Returns:** Optional[Path]
 
-**Output:** `{output_dir}/chapter*-places.json`
+**Output:** `{places_dir}/<place file>.json` and `{places_dir}/index.json`
 
 ---
 
@@ -204,9 +224,9 @@ places_file = extract_places(
 from src.extraction.people import extract_people
 
 people_dir = extract_people(
-    event_file=Path("output/Book/chapter1-event.json"),
+    event_file=Path("output/content/Book/chapter1-event.json"),
     grok_client=client,
-    output_dir=Path("output")
+    output_dir=Path("output"),
 )
 ```
 
@@ -214,8 +234,9 @@ people_dir = extract_people(
 - `event_file` (Path) - Event JSON file
 - `grok_client` (GrokClient) - API client
 - `output_dir` (Path) - Base output directory
+- `max_retries` (int) - Default 3
 
-**Returns:** Path to people directory
+**Returns:** Optional[Path] - the people directory
 
 **Output:** 
 - `{output_dir}/people/{Name}_{PersonID}.json` - Individual person files
@@ -235,9 +256,9 @@ people_dir = extract_people(
 from src.extraction.people_groups import extract_people_groups
 
 groups_dir = extract_people_groups(
-    event_file=Path("output/Book/chapter1-event.json"),
+    event_file=Path("output/content/Book/chapter1-event.json"),
     grok_client=client,
-    output_dir=Path("output")
+    output_dir=Path("output"),
 )
 ```
 
@@ -246,7 +267,7 @@ groups_dir = extract_people_groups(
 - `grok_client` (GrokClient) - API client
 - `output_dir` (Path) - Base output directory
 
-**Returns:** Path to groups directory
+**Returns:** Optional[Path] - the groups directory
 
 **Output:**
 - `{output_dir}/people_groups/{Group}_{GroupID}.json` - Individual group files
@@ -266,11 +287,11 @@ groups_dir = extract_people_groups(
 from src.extraction.equipment import extract_equipment_from_event
 
 equipment_files = extract_equipment_from_event(
-    event_file=Path("output/Book/chapter1-event.json"),
+    event_file=Path("output/content/Book/chapter1-event.json"),
     output_dir=Path("output/equipment"),
     grok_client=client,
-    dates_dir=Path("output/dates"),
-    people_dir=Path("output/people")
+    output_root=Path("output"),
+    enable_enrichment=False,
 )
 ```
 
@@ -278,8 +299,9 @@ equipment_files = extract_equipment_from_event(
 - `event_file` (Path) - Event JSON file
 - `output_dir` (Path) - Equipment output directory
 - `grok_client` (GrokClient) - API client
-- `dates_dir` (Optional[Path]) - Dates directory for linking
-- `people_dir` (Optional[Path]) - People directory for linking
+- `output_root` (Optional[Path]) - Output root, used to find the dates/people directories for linking
+- `max_retries` (int) - Default 3
+- `enable_enrichment` (bool) - Wikipedia/Grokipedia enrichment (default False; `equipment.enable_enrichment`)
 
 **Returns:** List[Path] - Created equipment files
 
@@ -290,7 +312,7 @@ equipment_files = extract_equipment_from_event(
 - Links to DateID if dates available
 - Links to PersonID if person found
 - Tracks performance (successes, failures, modifications)
-- Experimental feature (disabled by default)
+- Broad discovery plus a refine pass; lineage fields `variant_of` / `distinguishing_features` (schema 2.30)
 
 ---
 
@@ -302,7 +324,7 @@ equipment_files = extract_equipment_from_event(
 from src.parser import parse_chapter
 from src.models import ChapterGroup
 
-documents = parse_chapter(
+documents = parse_chapter(   # also accepts apply_structure_repair=False (keyword-only)
     ChapterGroup(
         book="BreakoutAndPursuit",
         chapter_number=1,
@@ -329,7 +351,7 @@ metadata = parse_metadata(Path("chapter1-meta.md"))
 ```
 
 **Parameters:**
-- `meta_file` (Path) - Metadata file (.md or .yaml)
+- `meta_file` (Path) - Metadata file (`-meta.md` or the `chapterN-meta.yaml` that OCR promotion writes)
 
 **Returns:** Metadata object
 
@@ -392,12 +414,12 @@ paths = get_paths(config, base_dir=Path.cwd())
 
 **load_config(config_path)**
 - Loads YAML configuration
-- Expands environment variables
+- Applies env overrides (`NARA_API_KEY` -> `api.nara_api_key`) and validates (e.g. `api.calls_per_minute` must be 1-200)
 - Returns: Dict[str, Any]
 
 **get_paths(config, base_dir)**
 - Resolves paths from config
-- Makes paths absolute
+- Resolves each `paths.*` entry against `base_dir`
 - Returns: Dict[str, Path]
 
 ---
@@ -408,7 +430,7 @@ paths = get_paths(config, base_dir=Path.cwd())
 from src.utils.logger import setup_logging
 
 logger = setup_logging(
-    level="INFO",           # TRACE, DEBUG, INFO, WARN, ERROR, FATAL
+    level="INFO",           # TRACE, DEBUG, INFO, WARN/WARNING, ERROR, FATAL/CRITICAL
     log_file="app.log",     # Optional file output
     console=True            # Console output
 )
@@ -459,11 +481,13 @@ doc = MarkdownDocument(
     author="Martin Blumenson",
     series="United States Army in World War II",
     license="Public Domain",
+    source_url="https://...",
     paragraphs=[...],       # List[Paragraph]
     images=[...],           # List[Image]
     maps=[...],             # List[Map]
     footnotes=[...],        # List[Footnote]
     page_markers=[...],     # List[PageMarker]
+    table_hints=[...],      # List[dict], from opt-in markdown-structure repair
     file_path=Path("..."),  # Optional[Path]
     meta_path=Path("...")   # Optional[Path]
 )
@@ -473,120 +497,29 @@ doc = MarkdownDocument(
 
 ## Schema Models
 
-### Person
+`src/schemas/` is a package, so `from src.schemas import Person, Event, PeopleGroup, generate_ulid` **no longer works** (it resolves to `src/schemas/__init__.py`, which has none of them; the old Pydantic module `src/schemas.py` is shadowed and unused). The package provides:
 
-```python
-from src.schemas import Person, BiographicalProfile, PersonEventMention
+- `ENTITY_SCHEMA_VERSIONS` / `entity_version("<entity>")` - each entity is versioned independently (e.g. places 2.30, people 2.27, events 2.25).
+- One `src/schemas/<entity>_output.py` per entity with its JSON Schema (`events_output`, `people_output`, `places_output`, `groups_output`, ...).
+- `schema_contract.py` and `entity_registry.py` - the contract checks and the entity registry used by validation.
 
-person = Person(
-    PersonID="01HXYZ...",
-    name="Dwight D. Eisenhower",
-    biographical_profile=BiographicalProfile(
-        full_name="Dwight David Eisenhower",
-        birth_date="1890-10-14",
-        death_date="1969-03-28",
-        nationality="American",
-        military_branch="United States Army",
-        highest_rank="General of the Army",
-        positions_held=["Supreme Commander Allied Forces"],
-        awards=[],
-        education=[],
-        notable_relationships=[]
-    ),
-    event_mentions=[
-        PersonEventMention(
-            EventID="01ABC...",
-            Sub_eventID="01DEF...",
-            position_at_event="Supreme Commander",
-            actions_taken=["Approved operation"],
-            book="Breakout and Pursuit",
-            author="Martin Blumenson",
-            series="United States Army in World War II"
-        )
-    ],
-    aliases=["Ike", "General Eisenhower"]
-)
-```
-
----
-
-### PeopleGroup
-
-```python
-from src.schemas import PeopleGroup, PeopleGroupEventMention
-
-group = PeopleGroup(
-    GroupID="01HXYZ...",
-    group_name="Wehrmacht",
-    group_type="military_unit",
-    members=[
-        {
-            "PersonID": "01ABC...",
-            "name": "Erwin Rommel",
-            "role": "Field Marshal",
-            "date_range": "1940-1944"
-        }
-    ],
-    event_mentions=[
-        PeopleGroupEventMention(
-            EventID="01ABC...",
-            Sub_eventID="01DEF...",
-            role_in_event="Defending force",
-            actions_taken=["Established defensive positions"],
-            book="Breakout and Pursuit",
-            author="Martin Blumenson",
-            series="United States Army in World War II"
-        )
-    ]
-)
-```
-
----
-
-### Event
-
-```python
-from src.schemas import Event, SubEvent
-
-event = Event(
-    EventID="01HXYZ...",
-    event_name="Operation Overlord",
-    event_description="Allied invasion of Normandy",
-    start_date="1944-06-06",
-    end_date="1944-08-30",
-    sub_events=[
-        SubEvent(
-            Sub_eventID="01ABC...",
-            sub_event_name="D-Day Landings",
-            sub_event_description="Amphibious assault",
-            start_date="1944-06-06",
-            end_date="1944-06-06",
-            fulltext=SubEventFulltext(
-                paragraph_numbers=[1, 2, 3],
-                text="Full text of sub-event..."
-            )
-        )
-    ]
-)
-```
+The Pydantic models used to validate Grok answers live next to their extractor (e.g. `src/extraction/people.py: PeopleOutput`). See [SCHEMA_REFERENCE.md](../SCHEMA_REFERENCE.md) for field definitions.
 
 ---
 
 ## Helper Functions
 
-### ULID Generation
+### Identifiers
 
 ```python
-from src.schemas import generate_ulid
+from src.utils.deterministic_ids import event_id, sub_event_id, book_id
 
-ulid = generate_ulid()  # Returns: "01HXYZ..."
+eid = event_id("Breakout_and_Pursuit", "chapter1")            # deterministic ULID for one source section
+sid = sub_event_id(eid, para_start=12, para_end=30)          # stable within its parent event
+bid = book_id("Breakout_and_Pursuit")                        # from the immutable slug
 ```
 
-**Features:**
-- Lexicographically sortable
-- Timestamp-based
-- 26 characters
-- URL-safe
+EventID, Sub-eventID and BookID are ULID-format strings derived from a sha256 of a key (not random, not timestamped), so re-extracting the same source yields the same ids. Entity ids (PersonID, PlaceID, ...) that the pipeline creates itself use `ulid.new()` from the `ulid-py` package. See [ULID_IMPLEMENTATION.md](ULID_IMPLEMENTATION.md).
 
 ---
 

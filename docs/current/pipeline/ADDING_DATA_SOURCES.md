@@ -4,6 +4,12 @@
 
 The pipeline is designed to handle multiple books from the same series or different series. Adding a new data source is straightforward.
 
+**Last Updated:** 2026-11-16
+
+**Which route?** In AWS, upload the source itself (PDF, EPUB, DOCX, HTML, video) to `contentrepository/` and Phase 0 does the rest: the trigger Lambda virus-scans binaries, routes a PDF to Chandra OCR (chunked, merged, promoted into chapters) or an EPUB/DOCX/HTML file through pandoc (`phase0_convert.py`), and publishes `contentrepository/<slug>/chapterN/chapterN-{meta.yaml,content.md}`. This guide covers the manual route: writing the chapter files yourself (the same layout Phase 0 produces) for a source that has no usable file, or for local work. See [PIPELINE.md](../core/PIPELINE.md) for Phase 0.
+
+**The book slug is permanent.** A source file is named by its filename stem and chapter folders by their folder name (`src/ingestion/book_slug.py`); once a book has been ingested its slug is never renamed (S3 prefixes, DynamoDB keys, EventIDs and the BookID all derive from it). Choose the folder name with care. Re-uploading a document under another name is rejected to `needs-review/source-renamed/`, and a name that gives no safe slug is rejected to `needs-review/unnamed-upload/`.
+
 ## Process
 
 ### 1. Prepare Content
@@ -30,7 +36,7 @@ Each chapter needs a `chapter*-meta.yaml`:
 series: "United States Army in World War II"
 book: "New Book Name"
 author: "Author Name"
-chapter_number: "I"
+chapter_number: 1
 chapter_title: "Chapter Title"
 license: "Public Domain"
 copyright_date: "1961"
@@ -89,13 +95,13 @@ Upload content to S3 to trigger the pipeline automatically:
 
 ```bash
 # Upload all content (or just the new book)
-aws s3 sync contentrepository/ s3://dev-wwii-data-pipeline/content/
+aws s3 sync contentrepository/ s3://dev-wwii-data-pipeline/contentrepository/
 
 # Or upload a single book
-aws s3 sync contentrepository/NewBookName/ s3://dev-wwii-data-pipeline/content/NewBookName/
+aws s3 sync contentrepository/NewBookName/ s3://dev-wwii-data-pipeline/contentrepository/NewBookName/
 ```
 
-The S3 upload triggers Phase 1 → Phase 2 → dedup review gate → Phase 3 automatically. See [AWS Deployment Guide](../AWS_DEPLOYMENT.md) for monitoring and dedup review.
+The S3 upload triggers Phase 1 → Phase 2 → dedup review gate → Phase 3 automatically (the bucket is `{env}-wwii-data-pipeline`; the key prefix is `contentrepository/`). See [AWS Deployment Guide](../AWS_DEPLOYMENT.md) for monitoring and dedup review.
 
 The pipeline will:
 - Discover new book automatically
@@ -188,8 +194,8 @@ After adding new content:
 # Find duplicates
 python3 scripts/find_duplicate_people.py
 
-# Review and merge
-python3 scripts/archive/merge_duplicate_people.py
+# Exact duplicates are auto-merged at the end of Phase 2; review the rest in the
+# Dedup Review UI (lambda_handlers/dedup_ui_handler.py). Not in a script any more.
 
 # Find related groups
 python3 scripts/find_related_groups.py
@@ -231,7 +237,7 @@ python3 phase1_parse.py
 python3 phase2_extract.py
 
 # 5. Review results
-ls output/NewBook/
+ls output/content/NewBook/
 # chapter1-parsed.json
 # chapter1-event.json
 # chapter1-dates.json
@@ -265,8 +271,8 @@ python3 scripts/complete_metadata_with_grok.py
 python3 phase1_parse.py
 python3 phase2_extract.py
 
-# 5. Deduplicate
-python3 scripts/archive/merge_duplicate_people.py
+# 5. Deduplicate: exact duplicates auto-merge at the end of Phase 2;
+#    review the rest in the Dedup Review UI, then consolidate groups
 python3 scripts/consolidate_people_groups.py
 ```
 
@@ -301,7 +307,7 @@ After adding new content:
 
 ```
 output/
-├── NewBook/
+├── content/NewBook/
 │   ├── chapter1-parsed.json
 │   ├── chapter1-event.json
 │   ├── chapter1-dates.json
@@ -322,17 +328,17 @@ output/
 
 ```bash
 # Verify parsed output
-jq '.metadata' output/NewBook/chapter1-parsed.json
+jq '{book, chapter_number, chapter_title, author}' output/content/NewBook/chapter1-parsed.json
 
 # Check paragraph count
-jq '.paragraphs | length' output/NewBook/chapter1-parsed.json
+jq '.paragraphs | length' output/content/NewBook/chapter1-parsed.json
 ```
 
 ### Check Extraction
 
 ```bash
 # Verify events
-jq '.events | length' output/NewBook/chapter1-event.json
+jq '.Event["Sub-events"] | length' output/content/NewBook/chapter1-event.json
 
 # Check people
 ls output/people/*.json | wc -l
@@ -371,8 +377,7 @@ python3 scripts/complete_metadata_with_grok.py
 # Regenerate report
 python3 scripts/find_duplicate_people.py
 
-# Review and merge
-python3 scripts/archive/merge_duplicate_people.py
+# Review and merge in the Dedup Review UI (scripts/merge_duplicate_people.py no longer exists)
 ```
 
 ### Issue: Wrong Book/Author in Events
@@ -382,8 +387,8 @@ python3 scripts/archive/merge_duplicate_people.py
 # Fix metadata
 vim contentrepository/NewBook/chapter1/chapter1-meta.yaml
 
-# Regenerate events
-rm output/NewBook/chapter1-event.json
+# Re-extract: a re-extracted chapter mints new Sub-eventIDs, so purge the old
+# chapter's event first (scripts/purge_chapter_event.py; dry run by default, --apply writes), then re-run Phase 2
 python3 phase2_extract.py
 ```
 

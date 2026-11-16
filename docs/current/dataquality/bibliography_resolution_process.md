@@ -1,31 +1,22 @@
 # Bibliography Resolution: End-to-End Process
 
-**Date:** 2026-06-05 · **Updated:** 2026-10-13
+**Date:** 2026-06-05 · **Updated:** 2026-11-16 (prerequisite gap closed; the rest is Phase 3 and was not re-reviewed)
 
 ---
 
-## ⚠️ Known prerequisite gap (2026-10-13) — citation text is not captured
+## Prerequisite gap — CLOSED (checked 2026-11-16)
 
-Verified on a clean RoerDams (green-book) run: `output/bibliography/` came out EMPTY
-even though the chapters have real endnotes. Root cause is UPSTREAM of this
-resolver, in the parser:
+On 2026-10-13 a clean RoerDams (green-book) run produced an EMPTY `output/bibliography/` because the
+parser dropped the citation text of every note. This is fixed upstream of this resolver:
 
-- `src/parser.py::extract_footnotes` matches ONLY the in-text marker
-  `<sup>[N](...#fnN)</sup>` and captures `(number, url)`. The `Footnote` model has
-  no `text` field.
-- The actual citation text lives in the END-OF-CHAPTER definition block
-  (`> [N](...#cnN). <citation text>`), e.g.
-  `[1]. 12th A Gp and FUSA G-1 Daily Summaries, 12 Sep 44, FUSA G-2 TAC Misc file,
-  Sep 44.` — a NARA-resolvable archival reference. **This text is never parsed.**
-- Consequence chain: parser drops citation text → Phase 2 has nothing to classify →
-  **zero bibliography entries** → this resolver (NARA/Archive.org) has nothing to act
-  on → NARA/Archive.org appear to "do nothing" but are actually starved of input.
-
-**FIX (TODO HIGH #2 — blocks all bibliography work):** pair each `#fnN` in-text
-marker with its `#cnN` definition, add a `text` field to the footnote/endnote model,
-carry it into `endnotes.json`, and have Phase 2's bibliography extractor consume it.
-Discern footnotes vs endnotes and read the end-of-unit reference block generically
-(not only the ibiblio HyperWar `#fn`/`#cn` convention).
+- `src/parser.py::extract_footnotes` now pairs the in-text marker `<sup>[N](...#fnN)</sup>` with the
+  end-of-chapter definition `[N](...#cnN). <citation text>` and returns `(number, url, text)`.
+- `src/notes.py::separate_notes` (Phase 1) separates each chapter's footnotes/endnotes from the
+  narrative with provenance (note number, kind, source URL, citing paragraph) and rewrites markers to
+  the canonical form; for OCR'd books `src/ingestion/chandra_markdown` gathers the notes into a
+  `### Footnotes` section first.
+- Phase 2's supplemental pass reads notes in windows within each sub-event and assigns
+  `reference_number` / `verbatim_reference` deterministically (`src/extraction/supplemental.py`).
 
 ## Planned extension (2026-10-13) — resolve-then-DOWNLOAD (TODO HIGH #3)
 

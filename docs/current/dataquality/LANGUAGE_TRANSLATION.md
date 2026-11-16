@@ -1,9 +1,11 @@
 # Language Detection & Translation (Phase 0)
 
-**Status:** design (approved 2026-09-24; revised to **per-page** 2026-09-24) —
-**implemented** (per-page translate-at-the-seam; `prompts/translation.yaml`,
-`prompts/language_detect.yaml`, wired in ingestion; `tests/test_translation.py` +
-`tests/test_translation_wiring.py`). Status updated 2026-10-05.
+**Status:** **implemented, OFF by default** (per-page translate-at-the-seam; `prompts/translation.yaml`,
+`prompts/language_detect.yaml`, `src/ingestion/translation.py`; tests `tests/test_translation.py` +
+`tests/test_translation_wiring.py`). Reviewed against the code 2026-11-16. Translation runs only when
+`ingestion.translate: true` in `config.yaml` or `PHASE0_TRANSLATE=1` is set (`translation_enabled`);
+`config.yaml` has no `ingestion.translate` key and no CloudFormation template sets the variable, so a
+default deployment passes every document through unchanged (`OBSERV translation ... disabled`).
 **Owner decision:** **per-page** detection (revised from per-document after the
 M1019 microfilm example); convert original → markdown, then translate non-English
 pages to English via Grok; every translated page is marked (inert) as translated
@@ -31,8 +33,8 @@ document:
 3. **Translate** that Markdown → **English Markdown** via **Grok**, instructing
    it to render proper nouns (people, places, units) in their **conventional
    English forms** (München→Munich, Гудериан→Guderian, 東京→Tokyo).
-4. The **English markdown feeds Phase 1**; the **original-language markdown is
-   kept alongside** for provenance and re-translation.
+4. The **English markdown feeds Phase 1**; the **original-language text is
+   kept** for provenance and re-translation (where, per track: see "Storage layout").
 
 Rejected: Strategy A (extract in original language) would push cross-script
 entity resolution onto the dedup layer, which today cannot do it. Strategy C
@@ -82,7 +84,20 @@ later if required.
 
 ## Storage layout
 
-Per source document, Phase 0 keeps **both** markdowns side by side:
+**As built, per track (2026-11-16).** Translation is called through one adapter,
+`translation.normalize_markdown_to_english(markdown, per_page=...)` (never raises, returns the input on
+disable / English / error):
+
+| Track | Where it runs | Per-page? | Original kept as |
+|---|---|---|---|
+| OCR narrative | `ocr_promote.promote(translate=...)`, called by `ocr_merge_handler._publish` and the `phase0_ocr_crosscheck.py` task, after sanitising | yes | `ocr-output/<slug>/merged/raw.md` (the merged OCR exactly as Chandra wrote it; the bucket keeps every version) |
+| CONVERT (epub/docx/html) | `phase0_convert.convert_key` | no (whole document) | the uploaded source file |
+| VIDEO | `phase0_video._translate_segments` | per segment | transcript timecodes and speaker labels are not sent to Grok |
+| OOB reference | `phase0_ingest._translate_converted_markdown` | yes | `<stem>.orig.md` + `<stem>.lang.json` sidecar |
+
+Only the OOB track writes the `.orig.md` / `.lang.json` / `.meta.yaml` layout below; the other
+tracks keep no per-page language sidecar, and chapter meta does not carry a `source_language` field.
+The layout below is the original design, still accurate for the OOB track:
 
 ```
 <source>/
@@ -115,7 +130,7 @@ sidecar capturing **per-page** provenance:
 
 - **Engine:** Grok via `GrokClient.chat_completion` — no new dependency, and it
   already handles the markdown. Prompt externalized to `prompts/translation.yaml`.
-- **Chunking:** long documents are translated in chunks (same discipline as OCR
+- **Chunking:** (`translation.split_markdown_chunks`) long documents are translated in chunks (same discipline as OCR
   auto-split / extraction), preserving markdown structure (headings, tables,
   image refs) across chunk boundaries. One LLM pass per document at ingest —
   consistent with the "LLM once per item at ingest, never per visit" cost

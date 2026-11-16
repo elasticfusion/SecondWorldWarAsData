@@ -27,10 +27,23 @@ files (idempotent re-runs).
 
 ## Stage 1 — LLM extraction  (`_extract_equipment_with_llm`)
 
-Renders `prompts/equipment.yaml` and calls Grok (`extract_json`). The prompt teaches:
+Discovery runs over the chapter's raw-text windows (`windows.window_event_for`, 3 paragraphs
+each; never the events' summaries), in two runs, each one stage over all its requests
+(`sub_events.run_all`, so a batch-mode collect pass queues every request, then raises
+`BatchModeCollecting` once):
+
+- **Run 1 BROAD** (`_extract_equipment_broad`, `prompts/equipment_extract_broad.yaml`): one call
+  per window for recall; each item (`name`, `original_text`, `paragraph_numbers`) is pinned to the
+  paragraphs its quote is in (`_pin_to_sub_event`); unsupported items are dropped and counted. A
+  chapter with no windows asks nothing and alerts `windows_empty`.
+- **Run 2 REFINE** (`_refine_or_fallback` → `_refine_equipment_item`,
+  `prompts/equipment_refine.yaml`): one call per broad item with the real event's context. NEVER
+  DROP: a failed refine keeps a minimal record and counts `refine_degraded`.
+
+The prompts teach:
 specific-named-equipment only; the origin-vs-operator split; quantity (exact vs verbatim
 vague); the **assertion gate**; `image_scope`; `related_equipment` + `crew_accounts` with
-mandatory `original_text`. ULIDs are repaired (`_fix_invalid_ulids`).
+mandatory `original_text`. ULIDs are repaired (`_fix_invalid_ulids`). Run 3 is the canonical disambiguation (Stage 3).
 
 ## Stage 2 — Per item  (`_process_equipment_item`)
 
@@ -92,7 +105,7 @@ Fallback chain, cheap→expensive, **cached** (one Grok call per distinct design
    `{canonical_name, nationality_of_origin, equivalents}`. **No specs** (identity only).
    Persists to the learned store + a suggestions file for human promotion into the curated
    YAML. Flag-gated (`EQUIPMENT_DISAMBIGUATION`), fail-open to the raw name.
-`identity_source` records which tier resolved it.
+`identity_source` records which tier resolved it. The answer also carries the **lineage** (`variant_of`, `distinguishing_features`; schema 2.30): `_resolve_canonical_identity` copies them onto the record, with `lineage_source: grok_disambiguation`. A base type (variant_of equal to itself) gets no lineage; the curated alias table carries none.
 
 ## Stage 4 — Merge or create  (`merge_or_create_equipment`)
 
@@ -111,9 +124,10 @@ Fallback chain, cheap→expensive, **cached** (one Grok call per distinct design
 
 ## Stage 5 — Enrichment-on-identity  (`_enrich_on_identity`)
 
-Fires once per **specific** record (DECISION: `_is_specific_identity` — a
-technical_identifier, an alias-resolving nickname, or a non-generic/non-category name;
-"medium tank" and "tank" are skipped). Guards:
+Fires once per **specific** record (DECISION: `_is_enrichment_target` → `_identity_scope`: a real
+designation, an alias-resolving nickname, or a canonical resolver hit (Grok only at confidence
+≥ 0.8) is SPECIFIC; "cannon", "rifle", "medium tank" are GENERIC and stay unenriched, stamped
+`identity_scope`). Guards:
 - already `enriched` → skip (never re-enrich);
 - **staleness gate** (`enrichment_gate.should_check_enrichment`, 90-day window) → skip if
   checked recently (**limit updates**).

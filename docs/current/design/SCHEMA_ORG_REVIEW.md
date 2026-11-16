@@ -1,6 +1,7 @@
 # schema.org review — additive enhancement SUGGESTIONS for our entity schemas
 
-**Status:** SUGGESTIONS ONLY. No schemas were changed by this document. Each suggestion, if
+**Status (2026-11-16):** PARTLY ADOPTED. places (schema 2.30: `sameAs`, `containedInPlace`/`containsPlace`, `geo`, `additionalProperty`, `elevation_m`) and images (2.27: ImageObject fields) took suggestions; places `sameAs` is filled in Phase 3 (`src/extraction/enrich_places.py:_add_place_sameas`). The people/people_groups/bibliography rollouts are not done (see `docs/current/TODO.md`). Section text below is the original proposal.
+**Original status:** SUGGESTIONS ONLY. No schemas were changed by this document. Each suggestion, if
 adopted, must go through the normal evolve-+-archive discipline (`docs/current/SCHEMA_VERSIONING.md`:
 bump the entity version → classify additive/breaking → re-pin the fingerprint → archive to
 `src/schemas/history/` → Change Log row).

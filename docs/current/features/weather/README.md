@@ -1,14 +1,14 @@
 # Weather Extraction
 
 **Module:** `src/extraction/weather_central.py`  
-**Status:** Optional (Disabled by default)  
-**Last Updated:** 2026-10-06
+**Status:** Optional, enabled in `config.yaml` (`weather.enabled: true`)  
+**Last Updated:** 2026-11-16
 
 ---
 
 ## Overview
 
-Weather extraction analyzes event files for weather mentions and (optionally) enriches them
+Weather extraction analyzes the chapter's raw parsed text (3-paragraph windows) for weather mentions and (optionally) enriches them
 with historical data from **Open-Meteo** (reanalysis) and **NOAA** (station-observed). Data
 is stored in a central repository with links to dates and places.
 
@@ -23,7 +23,7 @@ is stored in a central repository with links to dates and places.
 - `temperature_unit` normalized to the schema enum `C`/`F`
 - Operational impact tracking
 
-**Status:** Optional feature, disabled by default in `config.yaml`
+**Status:** Optional feature, switched by `weather.enabled` (currently `true` in `config.yaml`)
 
 ---
 
@@ -57,10 +57,13 @@ _None currently open._
 ```
 Event File (JSON)
     ↓
-Batch all Sub-events → Single Grok API call
-(includes per-sub-event place/date context)
+Parsed chapter text → 3-paragraph windows (src/extraction/windows.py)
+One Grok request per window (raw text only, no summary, no places list)
     ↓
-Response: {Sub-eventID: [mentions], ...}
+Response: {window id: [mentions], ...}
+    ↓
+windows.attribute_found: settle each quote against the window text,
+assign the real Sub-eventID (unsupported quote → dropped)
     ↓
 For each mention:
     ↓
@@ -81,7 +84,7 @@ Update Index
 
 **DateID Resolution:** DateID is resolved by matching the date string against the dates directory, not trusting LLM-provided IDs.
 
-**Batching:** All sub-events are sent in a single API call per chapter (via `_batch_extract_weather`). Post-processing (coordinate lookup, API fetch, file creation) remains per-mention.
+**Windows:** `_ask_weather` builds the chapter's windows from the parsed file (`windows.chapter_windows`; size from `WINDOW_PARAGRAPHS` / `extraction.window_paragraphs`, default 3) and sends one window per request (`_batch_extract_weather(..., chunk_size=1)`). Each statement is attributed to the real sub-event that holds its quote. A statement with no quote keeps its description as `original_text` (`_describe_unquoted`). Without a parsed file the sub-events are asked as before. Post-processing (coordinate lookup, API fetch, file creation) remains per-mention. A chapter with failed windows is not marked processed, so the failed windows are retried on the next run.
 
 ### Central Repository Structure
 
@@ -308,7 +311,7 @@ weather:
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| `enabled` | `false` | Enable weather extraction |
+| `enabled` | `true` in `config.yaml` | Enable weather extraction |
 | `fetch_api_data` | `true` | Fetch historical data from API |
 | `api_provider` | `"open-meteo"` | API provider (only Open-Meteo supported) |
 | `cache_responses` | `true` | Cache API responses |
@@ -378,8 +381,8 @@ Maps date+place keys to filenames.
 ## Integration
 
 ### With Events
-- Reads event files
-- Extracts weather from sub-event text
+- Reads event files for the real Sub-events
+- Extracts weather from the raw paragraph windows and attributes each to a sub-event
 - Links via EventID and Sub-eventID
 
 ### With Dates
@@ -617,7 +620,7 @@ WARNING - Filtered weather mention with approximate date: early-1944-06
 - [Dates Extraction](../dates/README.md)
 - [Places Extraction](../places/README.md)
 - [Configuration](../../core/CONFIGURATION.md)
-- [Error Handling](../../core/error_handling.md)
+- [Error Handling (archived 2026-03 spec)](../../../archive/contextmanagement/Specs/error_handling.md)
 
 ## Phase 3 Enrichment
 

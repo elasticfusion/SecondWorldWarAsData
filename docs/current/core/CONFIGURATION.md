@@ -1,7 +1,7 @@
 # Configuration Guide
 
-**File:** `config.yaml`  
-**Last Updated:** 2026-06-13
+**File:** `config.yaml` (shipped defaults: `config.yaml.example`; `config.yaml` is gitignored local state)  
+**Last Updated:** 2026-11-16
 
 Complete reference for all configuration options in the WWII data extraction pipeline.
 
@@ -46,13 +46,10 @@ api:
   grok:
     base_url: "https://api.x.ai/v1/chat/completions"
     model: "grok-4.3"
-    model_map:
-      # isbn: "grok-3-mini"
-      # url_verify: "grok-3-mini"
-      # openserp_verify: "grok-3-mini"
+    model_map: {}                 # per-task model overrides, e.g. isbn: "grok-3-mini" (empty = all tasks use `model`)
     max_retries: 3
     timeout: 60
-  calls_per_minute: 30            # Rate limit: max API calls per minute (across all threads)
+  calls_per_minute: 20            # Rate limit: max API calls per minute (across all threads; 1-200, validated in src/utils/config.py; divided by pool size in `grok_client._effective_calls_per_minute`)
 ```
 
 **Options:**
@@ -61,7 +58,7 @@ api:
 - `model_map` — Per-task model routing for cost optimization. Maps `cache_type` (task name) to a model. Uncommented entries use cheaper/faster models for simple tasks. Keys: `events`, `dates`, `places`, `people`, `peoplegroups`, `weather`, `equipment`, `logistics`, `casualties`, `supplemental`, `isbn`, `url_verify`, `copyright`, `nara_match`, `openserp_verify`. Unset keys use the default `model`.
 - `max_retries` — Number of retry attempts on failure
 - `timeout` — Request timeout in seconds
-- `calls_per_minute` — Proactive rate limit across all threads (default 30). Irrelevant in batch mode.
+- `calls_per_minute` — Proactive rate limit across all threads (`config.yaml.example` ships 20; the code falls back to 30 if the key is absent). Irrelevant in batch mode.
 
 **NARA Catalog API:**
 - `nara_api_key` — API key for National Archives catalog search. Get from [archives.gov](https://www.archives.gov/research/catalog/help/api-getting-started). Used by bibliography resolver to find digitized military records and identify Record Groups. 10,000 requests/month limit. Leave empty to skip NARA search (Grok still identifies Record Groups without it).
@@ -84,8 +81,8 @@ General processing options.
 ```yaml
 processing:
   validate_ulids: true
-  generate_jq_queries: true
-  generate_download_scripts: true
+  generate_jq_queries: false
+  generate_download_scripts: false
   force_reprocess: false             # WARNING: expensive — reprocesses all content regardless of cache
 ```
 
@@ -104,12 +101,16 @@ Controls xAI Batch API usage for 50% cost reduction. When enabled, the ECS entry
 ```yaml
 batch:
   phase2: true                       # Use batch API for Phase 2 extraction
-  phase3: true                       # Use batch API for Phase 3 enrichment
+  phase3: false                      # Phase 3 uses live calls (avoids a network bounce between submit/retrieve)
+  max_rounds: 8                      # Phase 2 batch rounds before the batch.rounds_over_cap alert + stop
+  in_task_wait_minutes: 5            # per round: how long the task waits for the batch; env BATCH_IN_TASK_WAIT_MINUTES
 ```
 
 **Options:**
 - `phase2` - When true, Phase 2 auto-delegates to `run_submit_only` (submits batch, enqueues job, exits). The batch poller Lambda handles retrieval.
-- `phase3` - When true, Phase 3 auto-delegates to `run_submit_only` (same flow as Phase 2).
+- `phase3` - When true, Phase 3 auto-delegates to `run_submit_only` (same flow as Phase 2). Default `false`.
+- `max_rounds` - Phase 2 runs batch **rounds** (`src/utils/batch_rounds.py`): collect requests, submit, repeat until a pass queues nothing. After this many rounds it alerts (`batch.rounds_over_cap`) and stops.
+- `in_task_wait_minutes` - Each round the task polls its batch for this long (`src/utils/batch_api.in_task_wait_minutes`); an unanswered batch is handed to the batch poller Lambda, which launches a `--retrieve-only` task when it is answered.
 
 **Behavior:** When `batch.phase2: true`, calling `ecs_entrypoint.py` with `--phase phase2` automatically runs in submit-only mode. The entrypoint detects the batch config and delegates without needing `--submit-only` explicitly. This means the trigger Lambda doesn't need to know about batch mode — it launches Phase 2 normally and the entrypoint handles the rest.
 
@@ -148,8 +149,8 @@ Military equipment extraction from events (experimental).
 ```yaml
 equipment:
   enabled: true                    # Enable equipment extraction (experimental)
-  enable_enrichment: true          # Enrich with Wikipedia/Grokipedia data (slower, uses more API calls)
-  verify_media_with_vision: true   # Verify media relevance with Grok vision API (recommended)
+  enable_enrichment: false         # Enrich with Wikipedia/Grokipedia data (slower, uses more API calls)
+  verify_media_with_vision: false  # Verify media relevance with Grok vision API
 ```
 
 **Options:**
@@ -193,10 +194,10 @@ supplemental_material:
   search_gutenberg: true           # Phase 3: search Gutenberg
   search_archive_org: true         # Phase 3: search Archive.org
   use_openserp: true               # Phase 3 ONLY: OpenSERP live web search
-  verify_archive_urls: true        # Phase 3: Verify archive URLs
-  extract_isbn: true               # Phase 3: Extract ISBN for books (post-1966)
-  determine_copyright: true        # Phase 3: Determine copyright status
-  max_materials_per_chapter: 1000  # Limit materials per chapter
+  verify_archive_urls: false       # Phase 3: Verify archive URLs
+  extract_isbn: false              # Phase 3: Extract ISBN for books (post-1966)
+  determine_copyright: false       # Phase 3: Determine copyright status
+  max_materials_per_chapter: 500   # Limit materials per chapter
 ```
 
 **Phase 2 performs NO supplemental searches.** It only talks to Grokipedia/Wikipedia and submits data to Grok for
@@ -230,16 +231,39 @@ concurrency:
   enabled: false                   # Enable concurrent processing (experimental)
   max_event_files: 3               # Process N event files concurrently
   max_extraction_group: 3          # Max parallel extractions per group
-  max_enrichment_workers: 6        # Phase 3: concurrent enrichment threads per entity type
+  max_enrichment_workers: 4        # enrichment fetch threads (Phase 2 bio pool, Phase 3 per entity type)
 ```
 
 **Options:**
 - `enabled` - Enable/disable concurrent chapter processing
 - `max_event_files` - Number of event files to process in parallel
 - `max_extraction_group` - Max parallel extractions within a single group (dates, places, etc.)
-- `max_enrichment_workers` - Phase 3 concurrent threads per entity type (default 6). Grok API calls are rate-limited; extra threads keep the external search/geocode/OpenSERP requests running in parallel. (Grokipedia/Wikipedia enrichment runs in Phase 2, not here.)
+- `max_enrichment_workers` - enrichment fetch threads: the Phase-2 biography-enrichment pool (`bio_enrich_parallel`, capped at 16) and Phase 3's per-entity-type pool (shipped 4; code fallback 6 when unset). Grok API calls are rate-limited; extra threads keep the external search/geocode/OpenSERP requests running in parallel. (Grokipedia/Wikipedia enrichment runs in Phase 2, not here.)
 
 **Note:** Concurrent processing is experimental. See `docs/current/FUTURE_ENHANCEMENTS.md` for distributed processing options.
+
+---
+
+## Phase 2 Extraction, Provenance Gate, Dedup, Storage
+
+```yaml
+extraction:
+  window_paragraphs: 3        # paragraphs per discovery window (env WINDOW_PARAGRAPHS overrides)
+
+provenance_validation:
+  gate: warn                  # warn = report + alert, book goes on to Phase 3; block = Phase 3 held when a hard check fails
+
+enrichment:
+  re_search_after_days: 180   # re-search an entity after this many days (code default 90 if the key is absent)
+
+storage:
+  entity_backend: "filesystem"
+```
+
+- `extraction.window_paragraphs` - people, groups/units, places, dates, equipment, weather, logistics and casualties are discovered over fixed windows of this many paragraphs of the raw parsed text (`src/extraction/windows.py`), never the events' summaries. Changing it changes every windowed request (and so its cache key).
+- `provenance_validation.gate` - read by `scripts/validate_provenance.py` (env `PROVENANCE_GATE` overrides without a rebuild).
+- `enrichment.re_search_after_days` - `src/enrichment/enrichment_gate.py`.
+- `dedup` - scoring weights and thresholds for the end-of-Phase-2 dedup report (`people`, `groups` blocks); every key is optional. `people.auto_merge_threshold: 999` means nothing auto-merges beyond byte-identical normalised names until you lower it. See the commented block in `config.yaml.example`.
 
 ---
 
@@ -254,7 +278,7 @@ maps:
   download_images: true            # Download actual map image files
   storage_backend: "filesystem"    # filesystem or s3
   storage_path: "output/maps/"
-  image_storage_path: "filestore/maps/"  # Where to store downloaded map images
+  image_storage_path: "output/maps/files/"  # Where to store downloaded map images
 ```
 
 **Options:**
@@ -275,7 +299,7 @@ Search for historical maps using OpenSERP and verify with Grok vision API.
 
 ```yaml
 external_maps:
-  enabled: true                    # Enable external maps search
+  enabled: false                   # Enable external maps search (needs OpenSERP running)
   max_places: 50                   # Maximum places to search (null for all)
   openserp_url: "http://localhost:7001"  # OpenSERP service URL
   search_limit: 50                 # Max results per search
@@ -354,7 +378,7 @@ cd openserp
 ```
 
 **Domain blacklist configured:**
-See `domain_blacklist.yaml` for filtering unwanted domains.
+See `config/domain_blacklist.yaml` for filtering unwanted domains.
 
 ---
 
@@ -397,11 +421,11 @@ aws:
 
 ## Prompt Templates
 
-Extraction prompts are loaded from YAML files in `prompts/` (27 files). Search query templates are in `search_queries/` (6 files). Missing files cause a hard build failure (validated by `deploy_all.sh`).
+Extraction prompts are loaded from YAML files in `prompts/` (34 files). Search query templates are in `search_queries/` (8 files). Missing files cause a hard build failure (validated by `deploy_all.sh`).
 
 ```
-prompts/           # 27 LLM prompt templates
-search_queries/    # 6 third-party search query templates
+prompts/           # 34 LLM prompt templates
+search_queries/    # 8 third-party search query templates
 ```
 
 **Each prompt YAML contains:**
@@ -434,16 +458,16 @@ logging:
   level: "INFO"
   file: "logs/pipeline.log"
   console: true
-  debug_message_preview_chars: 15000
-  debug_response_preview_chars: 15000
+  debug_message_preview_chars: 500
+  debug_response_preview_chars: 500
 ```
 
 **Options:**
 - `level` - Log level: `DEBUG`, `INFO`, `WARNING`, `ERROR`
 - `file` - Log file path
 - `console` - Also print logs to console
-- `debug_message_preview_chars` - Characters to show in DEBUG logs for API requests
-- `debug_response_preview_chars` - Characters to show in DEBUG logs for API responses
+- `debug_message_preview_chars` (default 500) - Characters to show in DEBUG logs for API requests
+- `debug_response_preview_chars` (default 500) - Characters to show in DEBUG logs for API responses
 
 **Command Line Override:**
 ```bash
@@ -525,7 +549,7 @@ GROK_API_KEY=your_api_key_here
 Optional:
 ```bash
 GROK_API_BASE_URL=https://api.x.ai/v1/chat/completions
-GROK_MODEL=grok-beta
+GROK_MODEL=grok-4.3                # overrides api.grok.model (src/utils/grok_models.py)
 ```
 
 ### ECS Task Environment Variables (AWS mode)
@@ -553,7 +577,7 @@ Configurable via CloudFormation stack parameters in `cloudformation/compute.yaml
 |-----------|---------|-------------|
 | `BatchPollerIntervalMinutes` | 5 | How often batch poller checks xAI API |
 | `ReconciliationIntervalMinutes` | 15 | Stale lock check / Phase 3 re-trigger interval |
-| `NatWaitSeconds` | 180 | Seconds to wait for NAT gateway availability |
+| `NatWaitSeconds` | 270 | Seconds to wait for NAT gateway availability |
 | `TeardownDelayMinutes` | 30 | Delay before tearing down networking after batch submit |
 
 ### DynamoDB Keys Used by Pipeline

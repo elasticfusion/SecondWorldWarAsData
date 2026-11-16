@@ -1,6 +1,21 @@
 # Design: multi-run equipment extraction (broad grab → refine → disambiguate)
 
-**Status:** DESIGN (2026-11-01, owner-approved option A). Replaces the single mega-prompt
+**Status:** BUILT (design 2026-11-01, owner-approved option A; status updated 2026-11-16).
+**What the code does now (differences from the design below):**
+- The single `equipment.yaml` is gone (`prompts/` has no `equipment.yaml`); `_extract_equipment_with_llm`
+  (`src/extraction/equipment.py`) runs broad (`equipment_extract_broad.yaml`) then one refine request per
+  broad item (`equipment_refine.yaml`, `_refine_or_fallback`, never-drop: a failed refine keeps a minimal
+  present record and raises `equipment.refine_degraded`).
+- Broad discovery runs over the chapter's 3-paragraph windows of the raw parsed text
+  (`windows_event` from `src/extraction/windows.py`), not over sub-event text. Items are pinned to the
+  window / sub-event their quote sits in (`_pin_to_sub_event` -> `windows.settle_item`); `extended_text`
+  is code-built verbatim from the parsed paragraphs (`_build_extended_text`, field in the equipment schema).
+- Batch passes run as xAI batch rounds (one round per stage; see `docs/current/features/batch_processing/README.md`).
+- Run 3 is `src/extraction/equipment_disambiguation.py` (`resolve_designation`) plus
+  `equipment_identity.py` (`equipment_vessel_choice` prompt for named vessels). Lineage fields
+  `variant_of` / `distinguishing_features` / `lineage_source` (schema 2.30) are set in `equipment._resolve_canonical_identity`.
+- "Clean-slate RUN-PREP" below is superseded by `scripts/e2e_reset.sh --env dev --full`.
+The text below is the original design; where it says "proposed/will", read "built" unless listed above. Replaces the single mega-prompt
 `equipment.yaml` call with a recall→precision decomposition. Owner constraints: **cost is not a
 concern (batched); provenance must ALWAYS be maintained; simplify the language.**
 

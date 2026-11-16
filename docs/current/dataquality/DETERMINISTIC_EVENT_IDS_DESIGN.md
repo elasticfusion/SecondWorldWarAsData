@@ -1,7 +1,17 @@
 # Deterministic Event IDs — Design (HIGH-1 #1)
 
-**Status:** proposed (2026-10-10). Root-cause fix for the cross-reference staleness/ripple class.
-Pairs with the enforcement pass shipped in PR #324 (that DETECTS dangling refs; this PREVENTS them).
+**Status:** BUILT (proposed 2026-10-10; reviewed 2026-11-16). Root-cause fix for the cross-reference
+staleness/ripple class. Pairs with the enforcement pass shipped in PR #324 (that DETECTS dangling refs;
+this PREVENTS them).
+
+**What was built (2026-11-16):** `src/utils/deterministic_ids.py` holds `event_id`, `sub_event_id` and
+`book_id`. `events._apply_deterministic_ids` overwrites the model's EventID and
+`events._assign_subevent_ids` the Sub-eventIDs (paragraph range first, name second, ordinal as a last
+resort so `sub_event_id` never raises). Beyond this design: `book_id(slug)` mints the BookID from the
+immutable slug; `verify_embedded_ulid` / `observe_embedded_ulid` / `reconcile_echoed_keys` snap an id
+the model was asked to echo back (Sub-eventID in entity-window requests, `windows.py`, `people.py`,
+`places.py`, `casualties.py`, `weather_central.py`) onto the known value and log
+`OBSERV xref.embedded_ulid`. `supplemental.py` and `windows.py` also mint ids through this module.
 
 ## Problem
 
@@ -60,7 +70,7 @@ New central helper `src/utils/deterministic_ids.py`:
 - `event_id(book, chapter, section="full") -> str`
 - `sub_event_id(event_id, *, para_start=None, para_end=None, name=None) -> str`
 
-Applied in `events.py` AFTER the LLM response is parsed, BEFORE validation/write:
+Applied in `events.py` (`_apply_deterministic_ids`) AFTER the LLM response is parsed, BEFORE validation/write:
 - Overwrite `Event.EventID` with `event_id(parsed_data["book"], parsed_data["chapter_title"],
   parsed_data.get("section","full"))`.
 - Overwrite each `Sub-events[].Sub-eventID` with `sub_event_id(...)` from its paragraph range.

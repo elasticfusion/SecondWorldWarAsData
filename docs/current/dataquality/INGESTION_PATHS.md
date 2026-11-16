@@ -2,11 +2,11 @@
 
 How every uploaded file is routed from the S3 front door to a processing track,
 with the success path and the failure/escalation path for each type. Reflects the
-code as of 2026-10-01 (branch `feature/phase0-autotrigger-routing`).
+code as of 2026-11-16 (originally written 2026-10-01; corrected against `lambda_handlers/trigger_handler.py`, `ocr_merge_handler.py`, `src/ingestion/av_scan.py`).
 
 Companion docs: `INGESTION_FRONT_END.md` (per-page disposition design),
-`INTAKE_FRONT_DOOR_STATE.md` (deployed-state log), `MAP_IMAGE_AV_INGESTION.md`
-(the vision branch design).
+`MAP_IMAGE_AV_INGESTION.md` (the vision branch design), `AV_SCANNING_DESIGN.md`,
+`CHANDRA_OCR_DESIGN.md`.
 
 ---
 
@@ -15,6 +15,12 @@ Companion docs: `INGESTION_FRONT_END.md` (per-page disposition design),
 Upload to `s3://{bucket}/contentrepository/...` → `s3:ObjectCreated:*` (prefix
 `contentrepository/`, no suffix filter) → `{env}-wwii-content-uploaded` SNS →
 `trigger_handler.handler`.
+
+Before routing, the handler also enforces book identity (slug rules in `src/ingestion/book_slug.py`;
+the slug is immutable): an upload with no safe name goes to `needs-review/unnamed-upload/`, a document
+already ingested under another slug (`source#<checksum>`) goes to `needs-review/source-renamed/`, and a
+title collision is resolved by `title_uniqueness` (`_enforce_title_uniqueness_at_launch`). Derived
+`_figures/` objects and metadata sidecars are ignored by `_content_keys`.
 
 Two gates run before routing:
 1. **`_content_keys`** — decides what is processable.
@@ -53,8 +59,9 @@ After `_split_by_media`, before any track's processor touches the bytes, the
 **AV gate** (`_av_gate` → `src/ingestion/av_scan.scan_and_gate`) runs. It is
 **demand-launched and binary-only**: the ClamAV scan container
 (`AvScanTaskDef`, a *separate* image from the pipeline) is launched **only when
-the upload batch contains a binary**, over those binary keys. Opt-in via
-`AV_SCAN_ENABLED` (set `true` once the ClamAV image is deployed).
+the upload batch contains a binary**, over those binary keys. Controlled by
+`AV_SCAN_ENABLED`, which defaults to **true**; `_enforce_av_gate_policy` refuses to start the handler
+if it is false outside dev/local/test.
 
 ### Invoked (scanned)
 | Track | Types | Why scanned |
@@ -76,7 +83,7 @@ the upload batch contains a binary**, over those binary keys. Opt-in via
 | `.txt`, `.md`, `.markdown` | **No** | Inert data. We **parse** it / send it to Grok **as text** — we never render it in a browser or execute it. The only ways text "carries a virus" (browser-rendered `<script>`; a byte-polyglot fed to another interpreter) **do not occur in this pipeline**. A giant text "bomb" is a DoS/resource concern, already bounded by the empty/near-empty + size checks — not malware. |
 | `.html`, `.htm` | **No** (parser-hardening, not AV) | `<script>`/handlers/data-URIs are dangerous only when **rendered in a browser or fetched by a tool**; we send HTML to pandoc/parser, not a browser, so active content is inert. Residual risk is pandoc/parser-side (crafted HTML → SSRF/file-read), addressed by parser hardening, not virus signatures. |
 | text-only batch (no binary present) | **No launch** | The scan container is never started → **zero AV cost** for the common text-only upload. Gate: launch iff `ocr_keys ∪ convert_keys ∪ video_keys` is non-empty. |
-| any type when `AV_SCAN_ENABLED=false` | **No** | Feature opt-in; until the ClamAV image is deployed the gate passes keys through unchanged. (The media-mismatch byte-sniff check still runs and catches disguised payloads.) |
+| any type when `AV_SCAN_ENABLED=false` | **No** | Allowed only in dev/local/test (the handler refuses to start otherwise). The media-mismatch byte-sniff check still runs. |
 
 Full design, threat model (incl. the pandoc-macro analysis), ClamAV placement
 (separate container, Fargate), quarantine-not-delete, and the freeze-submitter /
@@ -106,18 +113,22 @@ identity-provenance requirement: **`AV_SCANNING_DESIGN.md`**.
 > Note: pandoc has **no PDF reader** — PDFs never use this track.
 
 ### 3. OCR track — `.pdf` + images (`.jpg .jpeg .png .tif .tiff .webp .bmp`)
-`_submit_ocr` → Chandra GPU OCR (AWS Batch) → `ocr_merge_handler` promotes merged
-markdown → parse.
-- **Success:** merged markdown → `chapter1-content.md` → parse → …
+`_submit_ocr` → per-book claim (`ocr#<slug>`) → `.chunks.json` manifest written → one Chandra GPU
+Batch job per 50-page chunk (`OCR_CHUNK_PAGES`) → `ocr_merge_handler` waits for every chunk, then
+`ocr_promote.promote` (sanitise, translate if enabled, split into chapters, cross-check against the
+upload's `validation-url` metadata when present via the `phase0-crosscheck` task, normalise) → parse.
+See `CHANDRA_OCR_DESIGN.md`. A doc under `_oob/` is tagged `.structured` and routed to the OOB parser
+instead of the chapter path.
+- **Success:** `contentrepository/<slug>/chapterN/chapterN-{meta.yaml,content.md}` → parse → …
 - **Failure — media mismatch** at intake (`_ocr_media_mismatch`: ranged 4 KB
   header fetch + sniff; e.g. a `.pdf` that is html/zip): reject-to-review
   `needs-review/ocr-media-mismatch/` + alert, **before** a GPU job is spent.
   Fail-open: a transient read error proceeds to OCR (never block a legit doc).
-- **Failure — empty OCR** (no markdown produced; previously a silent `return ""`):
-  reject-to-review `needs-review/ocr-empty/`.
+- **Failure — empty OCR** (no markdown produced): reject-to-review `needs-review/ocr-empty/`
+  (raised in `ocr_merge_handler.merge_ocr_output`).
 - **Failure — near-empty OCR** (< `OCR_MIN_USABLE_CHARS`=40 usable chars; e.g. a
   photo/map sent to OCR, or an unreadable scan): reject-to-review
-  `needs-review/ocr-near-empty/`.
+  `needs-review/ocr-near-empty/` (same function).
 - **Failure — CUDA OOM** (prior work): flagged needs-review via the controller.
 
 ### 4. VIDEO track — `.mp4 .mkv .mov .webm .avi .m4v` — SELF-CONTAINED
@@ -152,6 +163,12 @@ Categories in use:
 | `ocr-empty` | OCR produced no markdown |
 | `ocr-near-empty` | OCR produced < 40 usable chars |
 | `convert-failed` | pandoc failed AND Grok MD-correction could not recover |
+| `convert-error` | the convert task raised (`phase0_convert`, fail-safe off-ramp) |
+| `bad-markdown` | a direct `.md/.txt/.html` upload with no usable content (`_validate_parse_keys`) |
+| `av-infected` | ClamAV found a signature (or the file was unscannable) |
+| `unnamed-upload` / `source-renamed` | no safe slug / already ingested under another slug |
+| `duplicate` / `title-collision` / `model-unavailable` | title-sameness check at launch (`_resolve_title_identity`): same work already ingested, same title but a different work, or the Grok model unavailable |
+| `metadata` | raised in `src/ingestion/review_reject.py` (source-metadata completeness) |
 
 Principle: extension is a fast **guess**; routes that fail off-ramp to human
 review (with an automated Grok-repair attempt first on the convert path) rather
@@ -164,7 +181,7 @@ than silently dropping or feeding garbage downstream. No silent failures.
 - **Born-digital PDFs** (text layer): currently go to Chandra like any PDF.
   Empirically the WWII corpus is scanned (NARA B-series = 0 text chars → Chandra
   required), and a born-digital PDF OCRs correctly (just slower). A PyMuPDF
-  text-first path exists (`pdf_pipeline`, orphaned) and is validated to route an
+  text-first path exists (`src/ingestion/pdf_pipeline`, used by `phase0_ingest`, not by the trigger's OCR route) and is validated to route an
   image-only/JPG-in-PDF correctly to Chandra; wiring it is an **efficiency option**,
   not required. Decision deferred (low payoff for a scanned corpus).
 - **Photos / maps / diagrams → vision captioner (BUILT, opt-in).** Images from any
@@ -172,7 +189,7 @@ than silently dropping or feeding garbage downstream. No silent failures.
   `src/extraction/image_captioner.ImageCaptioner` identifies (not OCRs) them via
   Grok vision using the surrounding context `images.py` links; populates
   `description` + classification + confidence; low-confidence/empty → `needs_review`;
-  never fabricates. Config-gated `images.vision_caption` (default off). Distinct
+  never fabricates. Config-gated `images.vision_caption`. Distinct
   from the video track's speaker-id vision.
 - **Standalone bad markdown → reject-to-review (BUILT).** A direct `.md/.txt/.html`
   upload with no usable content off-ramps to `needs-review/bad-markdown/` instead
@@ -183,7 +200,7 @@ than silently dropping or feeding garbage downstream. No silent failures.
   markdown to the deterministic `phase0_ingest` OOB parser (`Phase0IngestTaskDef`),
   NOT narrative LLM extraction. Entity convergence OOB→people at dedup is the
   documented pending bridge.
-- **Non-English documents → translation (BUILT, all tracks, opt-in).** Translation
+- **Non-English documents → translation (BUILT, all tracks, OFF by default).** Translation
   (`src/ingestion/translation.py`, design `LANGUAGE_TRANSLATION.md`: detect →
   Grok translate → English markdown at Phase 0, inert provenance marker) is now
   wired into **every** track via the shared `normalize_markdown_to_english`
@@ -191,9 +208,9 @@ than silently dropping or feeding garbage downstream. No silent failures.
   English/disabled/error passes through unchanged):
     - **OOB** (`phase0_ingest`): per-page, pre-existing.
     - **CONVERT** (`phase0_convert`): per-document, before writing chapter structure.
-    - **OCR-narrative** (`ocr_merge_handler`): per-page (Chandra page separators),
-      before narrative promote; the OOB fork is skipped (it translates in
-      phase0_ingest).
+    - **OCR-narrative** (`ocr_promote.promote`, from `ocr_merge_handler` or the cross-check task):
+      per-page (Chandra page separators), after sanitising and before chapter splitting; the OOB fork
+      is skipped (it translates in phase0_ingest).
     - **VIDEO** (`phase0_video`): **per-segment** — detect once on the joined
       transcript, translate each segment's text while preserving timecodes +
       speaker labels (only spoken text is sent to Grok).

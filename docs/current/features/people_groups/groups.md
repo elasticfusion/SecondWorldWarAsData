@@ -1,6 +1,6 @@
 # People Groups → People Linking
 
-**Last Updated:** 2026-03-22
+**Last Updated:** 2026-11-16
 
 ## Implementation: Option 2 (Groups → People)
 
@@ -66,11 +66,19 @@
 **Cross-references:**
 - `DateMentionID` in mentions → top-level `DateID` in `output/dates/*.json`
 - `members[].PersonID` → top-level `PersonID` in `output/people/*.json`
-- `enrichment_data` populated during Phase 3 enrichment
+- `enrichment_data` populated during Phase 3 enrichment (Phase 2 also does a Wikipedia/Grokipedia lookup for each new unit, WWII pages only: `groups_wikipedia.enrich_group_from_wikipedia`)
 
 ### Extraction Logic
 
-The AI extracts:
+**Current Phase-2 path (changed since this design):** units are discovered over fixed 3-paragraph windows of the raw parsed text
+(`batch_parallel._extract_people_groups`, cache type `peoplegroups`). The request asks for each unit's `name`, `type`, `country` (ISO alpha-3), `context`
+and a verbatim `original_text`; it does **not** ask for members. Each item is settled against the source (`windows.settle`) and attributed to the real
+sub-event. A new record is `{name, group_name, group_type: "military_unit", nationality, source_language}` plus a minted `GroupID` and the mention.
+Individual ships are equipment, not units. `members[]` is filled afterwards by Phase 3 person linking
+(`enrich_biographies._link_person_to_groups`), not by the extraction request. The older per-sub-event path (`people_groups.extract_people_groups`,
+`prompts/people_groups.yaml`) does ask for `members`, and `people_groups._merge_group` still merges them by PersonID.
+
+The older per-sub-event prompt extracts:
 1. **Group identification** (name, type, hierarchy)
 2. **Member identification** from event context:
    - "XIX Corps under Guderian" → Guderian is Commander
@@ -136,9 +144,9 @@ Could add reverse index:
 }
 ```
 
-## Status: ✅ Implemented
+## Status: Implemented, with a changed source of members
 
-- Modified `src/extraction/people_groups.py`
-- Added `members` field to extraction prompt
-- Added member deduplication to merge logic
+- `members` merge by PersonID: `src/extraction/people_groups.py::_merge_group`
+- `members` field in the older per-sub-event prompt (`prompts/people_groups.yaml`); the live windowed Phase-2 request does not ask for it
+- Members are linked in Phase 3 (`enrich_biographies._link_person_to_groups`)
 - Passed all QA checks (pylint 10/10, mypy, bandit)

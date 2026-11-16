@@ -1,9 +1,9 @@
 # People-Group (Unit) Deduplication & Pipeline
 
-**Last Updated:** 2026-10-05
+**Last Updated:** 2026-11-16
 **Status:** Living doc — the single source of truth for how people_groups flow through
 the pipeline and how group dedup decides matches. Implementation:
-`src/extraction/people_groups.py`, `src/extraction/enrich_groups.py`,
+`src/extraction/batch_parallel.py::_extract_people_groups` (live extraction), `src/extraction/people_groups.py` (record helpers), `src/extraction/enrich_groups.py`,
 `src/extraction/enrich_biographies.py` (linking), `src/dedup/find_duplicate_groups.py`,
 `src/dedup/unit_key.py`, `src/dedup/config.py`; config: `config.yaml → dedup.groups`.
 Open questions are flagged **[REVIEW]**; not-yet-built items **[PENDING]**.
@@ -12,12 +12,13 @@ Open questions are flagged **[REVIEW]**; not-yet-built items **[PENDING]**.
 
 ## 0. Pipeline flow (end to end)
 
-1. **Extract** (Phase 2, `people_groups.py`): per-event, cached, idempotent. Schema has
+1. **Extract** (Phase 2, `batch_parallel._extract_people_groups`): one request per 3-paragraph window of the raw parsed text (`src/extraction/windows.py`),
+   cached, attributed to the sub-event holding the quote. New records are written as `military_unit` with `nationality`; the request does not ask for members. Schema (people_groups 2.29) has
    `group_type` (country/alliance/military_unit/political_party/government/… ) +
    `military_hierarchy`, `nationality`, `members[]`, etc. ⚠️ In practice only
    `military_unit`/(none) are populated — civilian types are schema-ready but unused.
 2. **Persist + index**: `GroupID` ULID; write-time merge is by **normalized name only**
-   (variants reconciled later by dedup).
+   (variants reconciled later by dedup). Each new unit also gets a Phase-2 Wikipedia/Grokipedia lookup (WWII pages only, `groups_wikipedia`).
 3. **Enrich** (Phase 3, `enrich_groups.py`): query is **disambiguated** (nickname-resolved
    canonical name + `(Country)` suffix) with a **wrong-article guard** →
    `enrichment_status='ambiguous'` on nationality/echelon contradiction.
@@ -31,7 +32,7 @@ Open questions are flagged **[REVIEW]**; not-yet-built items **[PENDING]**.
 
 ## 1. When it runs
 At **Phase-2 task completion** (`ecs_entrypoint._run_dedup_detection` →
-`find_duplicate_groups.py`). It writes candidate clusters to
+`src/dedup/find_duplicate_groups.py`). It writes candidate clusters to
 `output/people_groups/duplicate_report.json`.
 
 ## 2. What auto-merges vs what waits for a human
@@ -114,7 +115,8 @@ All optional; absent → built-in defaults (= behavior above).
 - **[FIXED 2026-10-05] people_groups auto-merge on canonical-key match.** Unlike People
   (fuzzy/weighted → human gate), a people_group's canonical unit key is DETERMINISTIC, so
   a clean key match with no veto IS the completed disambiguation → it **auto-merges** (no
-  human gate). Byte-identical names also auto-merge. Underspecified names (no number, bare
+  human gate; `ecs_entrypoint` `ecs_entrypoint._all_keys_match`).
+  NOTE: §2 above still says only byte-identical names auto-merge; the key-match auto-merge is the later rule. Byte-identical names also auto-merge. Underspecified names (no number, bare
   CC) are not auto-merged.
 - **Not this model:** Equipment dedup is an alias/synonym problem ("Sherman"/"M4"/
   "M4A3") — a different model, not yet built.

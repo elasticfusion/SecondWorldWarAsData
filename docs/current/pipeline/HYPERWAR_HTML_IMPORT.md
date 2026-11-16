@@ -1,5 +1,7 @@
 # HyperWar HTML Import
 
+**Last Updated:** 2026-11-16
+
 Import books from [ibiblio.org/hyperwar](https://www.ibiblio.org/hyperwar/) into the pipeline content repository.
 
 ## Requirements
@@ -51,7 +53,7 @@ You will be asked for:
 | Author | — | Yes |
 | License | Public Domain | No |
 | Copyright year | — | No |
-| Directory name | Derived from book title | No |
+| Directory name | Derived from book title | No. This becomes the book's **slug** and is permanent once ingested (`src/ingestion/book_slug.py`); pick it deliberately |
 
 ## Output Structure
 
@@ -122,15 +124,17 @@ Run the standard pipeline:
 python3 phase1_parse.py
 
 # 2. Extract entities
-python3 phase2_retry.py
+python3 phase2_retry.py   # wraps phase2_extract.py with auto-retry
 ```
+
+Images and maps come from the links in the HTML text (`parser.extract_images` / `extract_maps`), not from the OCR book-figures path that PDFs use.
 
 **AWS mode:**
 
 Upload the imported content to S3 to trigger the pipeline:
 
 ```bash
-aws s3 sync contentrepository/<BookName>/ s3://dev-wwii-data-pipeline/content/<BookName>/
+aws s3 sync contentrepository/<BookName>/ s3://dev-wwii-data-pipeline/contentrepository/<BookName>/
 ```
 
 See [Adding Data Sources](ADDING_DATA_SOURCES.md) for details on both modes.

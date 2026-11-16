@@ -107,7 +107,7 @@ excluded part.
 
 **Reuse this** for any unit→GroupID resolution or unit dedup (group dedup
 `find_duplicate_groups`, biography linking, map unit resolution all do). Do NOT re-derive
-unit numbering/echelon logic locally — `find_duplicate_groups` still carries a legacy local
+unit numbering/echelon logic locally — `src/dedup/find_duplicate_groups.py` still carries a legacy local
 `ROMAN_MAP`/`_extract_numbers` that should migrate here.
 
 ## 9. Reverse map registration — `src/extraction/map_registration.py`
@@ -129,7 +129,10 @@ Two distinct paths turn non-English sources into English-normalized, resolvable 
 - **Document path (ingestion):** `detect_language` → `translate_markdown` →
   `normalize_to_english`. Foreign-language OCR'd text documents (German KTBs, French
   reports) are detected and translated to English **before** extraction — this runs as a
-  **per-page** pass in **Phase 0** (`phase0_ingest.py` → `normalize_pages_to_english`), so
+  **per-page** pass in **Phase 0**: uploaded PDFs are translated inside `ocr_promote.promote`
+  (the `translate=` callback `normalize_markdown_to_english(text, per_page=True)`, called from
+  `lambda_handlers/ocr_merge_handler.py` and `phase0_ocr_crosscheck.py`), and the structured-reference
+  (OOB) track does it in `phase0_ingest.py` (both reach `normalize_pages_to_english`), so
   every entity extractor (events, people, …) sees English and needs no language guard of its
   own. The verbatim original is kept as a `<name>.orig.md` sidecar; `source_language` is
   stamped; places keep `historical_names` with `language`/`date_range` (e.g. Danzig→Gdańsk).

@@ -1,6 +1,6 @@
 # Domain Blacklist Configuration
 
-The `domain_blacklist.yaml` file controls which domains and URL paths are excluded from external map search results.
+The `config/domain_blacklist.yaml` file controls which domains and URL paths are excluded from external map search results.
 
 ## How It Works
 

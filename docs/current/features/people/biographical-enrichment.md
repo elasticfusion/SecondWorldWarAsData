@@ -165,7 +165,7 @@ Key functions:
 - [People Extraction](README.md)
 - [Deduplication](deduplication.md)
 - [Workflow Diagrams](../../core/WORKFLOW_DIAGRAMS.md) — Phase 3 diagram
-- [Error Handling](../../core/error_handling.md)
+- [Error Handling (archived 2026-03 spec)](../../../archive/contextmanagement/Specs/error_handling.md)
 
 ---
 

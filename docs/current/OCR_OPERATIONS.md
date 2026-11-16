@@ -2,7 +2,7 @@
 
 Deploy and run Chandra OCR independently from the main pipeline.
 
-**Last Updated:** 2026-06-30
+**Last Updated:** 2026-11-16
 
 ---
 
@@ -80,6 +80,9 @@ python3 scripts/submit_ocr_job.py <s3-path-to-pdf> [options]
 | `--output-key KEY` | `contentrepository/{name}/{name}.md` | S3 key for merged output |
 | `--output-prefix PREFIX` | `contentrepository/{name}/` | S3 prefix for individual files (with `--no-merge`) |
 | `--skip-networking` | Off | Skip NAT/VPC endpoint creation (use if networking is already up) |
+| `--no-recover-tables` | Off | Do not send pages with flattened task-org tables to the Paddle recovery worker (see Table Recovery) |
+| `--dpi N` | 300 | Chandra render DPI, passed as the `IMAGE_DPI` container env var (no image rebuild) |
+| `--region` | `AWS_DEFAULT_REGION` or us-east-1 | AWS region |
 
 ### Examples
 
@@ -288,12 +291,12 @@ publishes      contentrepository/{book}/chapterN/chapterN-{meta.yaml,content.md}
 
 | Component | Detail |
 |-----------|--------|
-| Compute | AWS Batch, GPU Spot (g5.xlarge — 1× A10G, 24GB VRAM) |
+| Compute | AWS Batch, GPU Spot (g5.xlarge/2xlarge, g6.xlarge/2xlarge; 24GB-VRAM floor, g4dn excluded because Chandra OOMs on 16GB) |
 | Scaling | 0 instances when idle, up to 32 vCPUs under load |
 | Cost | ~$0.35/hr per instance, ~$0.02 per 50-page chunk |
 | Networking | Reuses existing NAT + VPC endpoints (nat_manager Lambda) |
 | Logs | CloudWatch: `/aws/batch/dev-wwii-chandra` (14-day retention) |
-| Retry | 2 attempts per job, 30-min timeout |
+| Retry | 2 attempts per job; progress watchdog (15 min without a page) is the failure detector, 4 h `AttemptDurationSeconds` is the backstop |
 
 ### Independence from Pipeline
 

@@ -2,7 +2,7 @@
 
 **Version:** 2.0.0  
 **Status:** ✅ Implemented (AI-Ready)  
-**Last Updated:** 2026-03-08
+**Last Updated:** 2026-11-16
 
 ---
 
@@ -24,15 +24,9 @@ See: [combined-search.md](combined-search.md) for automated workflow.
 
 ### Automated Search (Recommended)
 
-Search for maps across all 220 places automatically:
-
-```bash
-# Test with 5 places
-python3 -m src.extraction.search_external_maps
-
-# Process all places (edit max_places=None in script)
-python3 -m src.extraction.search_external_maps
-```
+The web search runs in **Phase 3** (`phase3_enrich_data.py` step `openserp_external_maps`,
+`openserp_maps.import_openserp_maps`) when `external_maps.enabled: true`. The Grok whitelist search
+is run by hand: `python3 -m src.extraction.grok_search_maps` (5 places).
 
 See: [combined-search.md](combined-search.md)
 
@@ -52,7 +46,7 @@ external_maps:
 
 **Option A: Manual Curation**
 ```bash
-cp external_maps.yaml.example external_maps.yaml
+# create external_maps.yaml in the repo root (no .example file ships; format below)
 ```
 
 Edit with your maps:
@@ -76,7 +70,7 @@ Grok can populate `external_maps.yaml` by searching online:
 
 ### 3. Run Phase 2
 
-External maps import automatically during Phase 2:
+The local `external_maps.yaml` corpus imports during Phase 2 (when `external_maps.enabled` is true):
 ```bash
 python3 phase2_extract.py
 ```
@@ -101,7 +95,7 @@ Edit `config.yaml`:
 
 ```yaml
 external_maps:
-  enabled: false                   # Set to true to enable
+  enabled: false                   # Set to true to enable (checked-in config.yaml: false)
   storage_path: "output/external_maps/"
   require_license: true            # Reject maps without license
   allowed_licenses:
@@ -264,5 +258,4 @@ Each map saved as JSON in `output/external_maps/`:
 - **AI Guide:** [AI guide (archived)](../../../archive/external-maps/EXTERNAL_MAPS_AI_GUIDE.md) (YAML approach)
 - **Specification:** `docs/archive/contextmanagement/Specs/external_maps.md` (historical; current schema: `src/schemas/`)
 - **Schema:** `docs/archive/contextmanagement/Specs/external_maps_v2_schema.json` (historical; current schema: `src/schemas/`)
-- **Source Material Maps:** `docs/current/MAPS.md` (v1.0.0)
-- **Example YAML:** `external_maps.yaml.example`
+- **Source Material Maps:** [../maps/README.md](../maps/README.md)

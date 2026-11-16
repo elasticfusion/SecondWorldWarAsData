@@ -1,6 +1,6 @@
 # People Deduplication
 
-**Last Updated:** 2026-05-23
+**Last Updated:** 2026-11-16
 
 ## Problem
 
@@ -20,38 +20,39 @@ Key files:
 
 ## Workflow
 
+Dedup runs at the end of Phase 2 (`ecs_entrypoint._run_dedup_detection`), then blocks Phase 3 at the dedup gate until a human has reviewed the candidates in the Dedup Review UI.
+
 ### Step 1: Find Duplicates
 
 ```bash
-python3 scripts/find_duplicate_people.py
+python3 scripts/find_duplicate_people.py     # wrapper for: python3 -m src.dedup.find_duplicate_people
 ```
 
-Scans all person files in `output/people/` and generates `output/people/duplicate_report.json` containing grouped duplicate candidates with confidence scores and match reasons.
+Scans all person files in `output/people/` and writes `output/people/duplicate_report.json`: grouped candidates with a score and match reasons (candidates above `dedup.people.candidate_threshold`, 0.5; see [dedup-weighting.md](dedup-weighting.md)).
+Groups whose names are byte-identical after normalization are merged automatically (`_auto_merge_exact_duplicates`); everything else goes to review.
 
-### Step 2: Merge Duplicates
+### Step 2: Review and merge (Dedup Review UI)
 
-```bash
-python3 scripts/merge_duplicate_people.py
-```
-
-Interactive merge — for each duplicate group, prompts with:
-- **y** — merge into the primary person
-- **n** — skip this group
-- **skip** — skip this pair
-- **exclude** — add to `output/people/not_duplicates.json` (never flagged again)
-
-Merging combines event mentions, updates `output/people/index.json`, and deletes the merged files.
+The Dedup Review UI shows each group; the reviewer merges it or marks it "Not Duplicates". Merging (`src/dedup/merge.py`) combines event mentions with the shared
+mention rule (`entity_records.merge_mentions`), updates `output/people/index.json`, backs up and deletes the merged files. The interactive
+`scripts/merge_duplicate_people.py` CLI no longer exists.
 
 ## Detection Methods
 
+Scoring is additive (`_score_pair` in `src/dedup/find_duplicate_people.py`):
+
 | Method | Description |
 |--------|-------------|
-| **Name similarity** | SequenceMatcher fuzzy match at 70%+ threshold |
+| **Name similarity** | `SequenceMatcher` fuzzy match on original and normalized names |
 | **ASCII/Unicode variants** | Handles accented characters (e.g., "Müller" vs "Mueller") |
-| **Substring matching** | "Eisenhower" found within "Dwight D. Eisenhower" (>5 chars) |
+| **Substring matching** | "Eisenhower" found within "Dwight D. Eisenhower" |
 | **Shared biographical data** | Same birth date, nationality + birth year |
-| **Same last name** | "George Patton" vs "George S. Patton" (>3 char last names) |
-| **Grok verification** | Ambiguous single-name matches verified by Grok AI before flagging |
+| **Same last name** | "George Patton" vs "George S. Patton" |
+| **Mention proximity** | Same surname close together in the source text is strong evidence |
+| **Shared external URL** | Same Wikipedia / Grokipedia URL, very high weight |
+| **Vetoes** | Conflicting middle initial, or different full surnames, with a large negative weight |
+
+There is no Grok verification step in the detector (the older "Grok verification" row was removed).
 
 ### Name Normalization
 
@@ -97,7 +98,7 @@ Merging combines event mentions, updates `output/people/index.json`, and deletes
 Two types of exclusion prevent false positives from recurring:
 
 ### Filename-based exclusions
-Pairs added via the `exclude` option during interactive merge are stored in `output/people/not_duplicates.json`. These pairs are skipped in future duplicate detection runs. Tied to specific file IDs — if a file is recreated with a new ID, the exclusion is lost.
+Pairs marked "Not Duplicates" in the Dedup Review UI are stored in `output/people/not_duplicates.json`. These pairs are skipped in future duplicate detection runs. Tied to specific file IDs — if a file is recreated with a new ID, the exclusion is lost.
 
 ### Name-based exclusions (DynamoDB / persistent)
 Stored as `name_exclusion#{type}#{name1}#{name2}` entries in DynamoDB (AWS) or local JSON (local mode). These survive file recreation because they match on normalized names rather than file IDs.
@@ -105,10 +106,6 @@ Stored as `name_exclusion#{type}#{name1}#{name2}` entries in DynamoDB (AWS) or l
 **Format:** `name_exclusion#people#eisenhower#eisenhower dwight d`
 
 The Dedup Review UI writes **both** filename-based and name-based exclusions when "Not Duplicates" is selected, ensuring persistence regardless of whether files are later regenerated.
-
-### Processed Events Registry
-
-The dedup scripts track which event files have been processed in `.processed_events.json`. This uses **basename** (not absolute path) to ensure portability between local and AWS environments.
 
 ## Preventing false positives — the exclusion list
 
@@ -121,9 +118,8 @@ vs "General Barker"). Confirmed non-duplicates are recorded so they never resurf
 - **Name-based exclusion** — the Dedup Review UI writes BOTH a filename-based and a name-based
   exclusion (`name_exclusion#people#<book>#<normalized name>`) when "Not Duplicates" is selected,
   so the exclusion persists even if the files are later regenerated.
-- **How to exclude** — in the Dedup Review UI, mark a group "Not Duplicates" (historically the
-  interactive `merge_duplicate_people.py` CLI offered a `y/n/skip/exclude` prompt; that CLI is now
-  retired in favour of the UI). `not_duplicates.json` can also be hand-edited.
+- **How to exclude** — in the Dedup Review UI, mark a group "Not Duplicates" (the old
+  `merge_duplicate_people.py` CLI is gone). `not_duplicates.json` can also be hand-edited.
 
 ## See Also
 

@@ -1,6 +1,6 @@
 # ULID Implementation Review
 
-**Date:** 2026-03-03  
+**Date:** 2026-03-03 (updated 2026-11-16)  
 **Purpose:** Document how ULIDs are implemented across the project
 
 ---
@@ -19,19 +19,18 @@ The project uses **ULIDs (Universally Unique Lexicographically Sortable Identifi
 
 ### Central Function
 
-**Location:** `src/schemas.py`
+There are two sources of ids, and which one applies depends on the id:
 
-```python
-from ulid import new as new_ulid
+1. **Deterministic ids** (`src/utils/deterministic_ids.py`, the single source of truth) for identities that must survive a re-run: `event_id(book, chapter, section)`, `sub_event_id(parent_event_id, para_start=, para_end=)` and `book_id(slug)`. Each is a normal 26-character ULID string, but its 128 bits are the first half of a sha256 of an identity key (with a `v1` schema tag), not timestamp + randomness. Re-extracting the same source gives the same ids, so dependents never dangle. Code must never mint an EventID or Sub-eventID with `ulid.new()`, and `_fix_invalid_ulids` never replaces them.
+2. **Random ids** from the `ulid-py` package (`from ulid import new as new_ulid; str(new_ulid())`) for every other entity and mention id (PersonID, PlaceID, MentionID, ...).
 
-def generate_ulid() -> str:
-    """Generate a new ULID string."""
-    return str(new_ulid())
-```
+> **Removed:** the old `generate_ulid()` helper lives only in the legacy module `src/schemas.py`, which is shadowed by the `src/schemas/` package. `from src.schemas import generate_ulid` raises `ImportError`.
 
-### Usage in Pydantic Models
+A deterministic id is not time-sortable; only random ids are.
 
-ULIDs are auto-generated using `Field(default_factory=generate_ulid)`:
+### Usage in Pydantic Models (legacy `src/schemas.py`, unused)
+
+The legacy models used `Field(default_factory=generate_ulid)`. The live extractors assign ids in code; this block is kept for the naming convention only:
 
 ```python
 class SubEvent(BaseModel):
@@ -74,6 +73,8 @@ For tracking specific mentions within entities:
 | Weather mentions | `WeatherMentionID` | Weather |
 | Equipment mentions | `EquipmentMentionID` | Equipment |
 
+A mention id is **not** what makes two mentions the same. `src/utils/entity_records.mention_identity` treats two mentions of one entity as one when they have the same sub-event and the same normalised quote (`original_text`); the minted ids (`MentionID`, `EventMentionID`, `DateMentionID`) are ignored in that comparison, so a re-applied answer does not duplicate a mention.
+
 ---
 
 ## ULID in File Naming
@@ -86,7 +87,7 @@ For tracking specific mentions within entities:
 - Places: `Normandy_01H8XYZ9.json`
 - People: `Dwight_D_Eisenhower_01H8XYZ5.json`
 - People Groups: `2nd_Armored_Division_01H8XYZ7.json`
-- Equipment: `M4_Sherman_01H8XYZDAB.json`
+- Equipment: `M4_Sherman_01H8XYZD.json`
 
 **Implementation:**
 ```python
@@ -100,10 +101,12 @@ def _name_to_filename(name: str, entity_id: str) -> str:
     return f"{safe_name}_{prefix}.json"
 ```
 
+**Prefix length:** 8 characters is the usual prefix (places, groups, dates, equipment via `batch_parallel`); `people.py` uses 12 (`{name}_{PersonID[:12]}.json`), and a fallback `place_<12>` / `date_<12>` / `map_<12>` name is used when the name is not filename-safe.
+
 **Why 8 characters?**
 - Sufficient uniqueness (281 trillion combinations)
 - Readable filenames
-- Sortable by creation time
+- Readable; the name part carries the sort order
 
 ### Pattern 2: Date + ULID Suffix
 
@@ -169,7 +172,7 @@ from src.utils.json_validator import _fix_invalid_ulids
 - events.py, dates.py, places.py, people.py, weather_central.py
 - supplemental.py, equipment.py, casualties.py, people_groups.py, batch_parallel.py
 
-**Not needed:** logistics.py (ULIDs via Pydantic `default_factory`)
+**Skipped by design:** `EventID` / `Sub-eventID` in every spelling (`_ALWAYS_SKIP_ULID_KEYS`). Randomizing one would fabricate a wrong identity or break a cross-reference; they come from `deterministic_ids` or are references to such ids. Mention-level ids (PersonID, DateMentionID, ...) are still fixed.
 
 ---
 
@@ -307,7 +310,7 @@ Event (EventID)
 
 ### When ULIDs are Generated
 
-1. **During Extraction** - Pydantic models auto-generate via `default_factory`
+1. **During Extraction** - EventID / Sub-eventID are derived (`deterministic_ids`); entity and mention ids are minted in the extractor with `ulid.new()`
 2. **Manual Generation** - For supporting units, external data
 3. **File Creation** - When creating new entity files
 
@@ -377,7 +380,7 @@ def _update_index(index_file: Path, name: str, filename: str):
 
 ### ✅ Do
 
-1. **Use `generate_ulid()` function** - Centralized generation
+1. **Use `deterministic_ids`** for EventID / Sub-eventID / BookID, and `ulid.new()` for the rest
 2. **Validate ULIDs** - Check format before using
 3. **Include in all entity records** - Every entity needs an ID
 4. **Use for cross-references** - Link entities via ULIDs
@@ -386,8 +389,8 @@ def _update_index(index_file: Path, name: str, filename: str):
 
 ### ❌ Don't
 
-1. **Don't manually create ULIDs** - Use library
-2. **Don't use sequential IDs** - ULIDs are random
+1. **Don't hand-write ULIDs, and never `ulid.new()` an EventID/Sub-eventID** - use the library, or `deterministic_ids` for identities
+2. **Don't use sequential IDs** - ids are random or derived from a key
 3. **Don't truncate in JSON** - Only in filenames
 4. **Don't use as primary sort key** - Use dates/names for sorting
 5. **Don't expose in URLs** - Use slugs instead
@@ -437,8 +440,8 @@ output/equipment/
 ## Summary
 
 **ULID Implementation:**
-- ✅ Centralized generation via `generate_ulid()`
-- ✅ Auto-generation in Pydantic models
+- ✅ Deterministic EventID / Sub-eventID / BookID via `src/utils/deterministic_ids.py`
+- ✅ Random ids from `ulid-py` for other entities
 - ✅ Validation with regex pattern
 - ✅ Auto-fixing for invalid ULIDs
 - ✅ Consistent 26-character format

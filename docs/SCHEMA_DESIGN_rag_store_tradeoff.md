@@ -4,7 +4,7 @@
 S3 Vectors evaluated and rejected for this workload's query model.
 **Context:** revisits the store choice in `docs/SCHEMA_DESIGN.md` after the
 S3 Vectors + EKS pattern (AWS blog, "Building self-managed RAG applications with
-Amazon EKS and Amazon S3 Vectors"). RAG remains a **deferred / Phase-2** concern
+Amazon EKS and Amazon S3 Vectors"). RAG remains a **deferred** concern (search "Phase 2" in `.kiro/steering/architecture-decisions.md`, not pipeline Phase 2)
 (see `.kiro/steering/project-overview.md`); this records the decision so it is
 not re-litigated later.
 

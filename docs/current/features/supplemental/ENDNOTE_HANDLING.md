@@ -43,7 +43,7 @@ instead of inventing one.
 | 2. Save per-chapter endnote refs | `phase1_parse._save_endnote_refs` | Writes `chapter<N><section>-endnotes.json` with `number`, `url`, `text`. Logs `OBSERV phase1.endnotes_dropped` on a failed write. |
 | 3. Get the text for a chapter | `src/extraction/fetch_endnotes.fetch_endnote_texts` | Uses parser-captured `text` first (`_partition_footnotes`). Fetches the HTML notes page only for numbers with no text (older parses), grouping by page so each page is fetched once. |
 | 4. Resolve cross-references | `fetch_endnotes._resolve_cross_references` | Rewrites "cited in n. 5", "cited n. 5" and "see n. 5" in place as `[see n. 5: <text of note 5>]`, so the model sees the inherited sources. Runs before any prompt is built. |
-| 5. Put the text in the prompt | `supplemental._build_ref_context` -> `fetch_endnotes.format_endnote_text_block` | Adds an "Actual endnote/footnote text (from source document)" block listing each referenced note's text. |
+| 5. Put the text in the prompt | `supplemental._window_prompts` -> `_sub_event_prompt` -> `_build_ref_context` -> `fetch_endnotes.format_endnote_text_block` | Asks per 3-paragraph window of each sub-event's raw paragraphs (`windows.sub_event_windows`); a note is asked once per sub-event, in the first window whose paragraphs carry its marker (`_window_refs`). Adds an "Actual endnote/footnote text (from source document)" block listing each referenced note's text. |
 | 6. Split multi-work notes | `bibliography._expand_multidoc_notes` (deterministic, from `_store_notes` / `extract_bibliography_deterministic`) | Splits a note on `;` into one sub-note per work. Sub-notes are numbered `5`, `5b`, `5c` so each becomes a separate mention. The supplemental prompt also tells the model to split semicolon/period-delimited sources. |
 
 Back-references inside the bibliography (`Ibid.`, `op. cit.`, short-title repeats)
@@ -64,21 +64,22 @@ are resolved separately by `bibliography._resolve_back_reference`, and bare stub
   access (NAT) and is exposed to link rot; it is a fallback for older parses only.
   It goes through the shared SSRF-guarded fetch (see the SSRF item in `TODO.md`).
 
+## Locators are deterministic
+
+The prompt no longer asks for `reference_number` or `verbatim_reference`. After each answer,
+`supplemental.locate_notes` matches every returned item to the note it came from (`_note_of`) and
+sets `reference_number`, `reference_type` and `verbatim_reference` from the note itself
+(`_put_locator`, `_verbatim`: the note's own words for a citation that names its document; empty
+for prose items, `Ibid.` stubs, or notes with no text). `_observe_note_coverage` reports notes
+that no window asked. Items it cannot match are counted as not located (provenance check P2-Q2).
+
 ## Open issue
 
-**`reference_type` (endnote vs footnote) is still decided by the LLM.** The
-original TODO's first problem: Breakout and Pursuit is endnote-only, yet runs
-produced `*-footnotes.json` files. Today:
-
-- `_build_ref_context` adds an endnote/footnote type hint to the prompt **only when
-  no note text was found**. When text is present (the normal case) the model gets no
-  hint.
-- `_separate_by_type` then routes materials by the `reference_type` the model
-  returned.
-
-The type should come from the source structure (marker style and where the
-definition lives), not the model. This is not fixed; track it in
-`docs/current/TODO.md`.
+**`reference_type` (endnote vs footnote) can still come from the LLM.** `_put_locator` replaces
+the model's `reference_type` with the asked note's kind only when it is empty or `bibliography`;
+an `endnote`/`footnote` value the model returns is kept. `_build_ref_context` adds an
+endnote/footnote hint to the prompt only when no note text was found. The type should come from
+the source structure (marker style and where the definition lives) in every case.
 
 ## Tests
 

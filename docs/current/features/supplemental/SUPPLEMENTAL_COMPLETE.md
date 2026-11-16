@@ -6,6 +6,14 @@
 > `enrich_with_searches` flag no longer exists; citations are stored with an empty `resource_urls`.
 
 
+> **2026-11-16 — how the request is asked.** Supplemental runs over 3-paragraph windows of each
+> sub-event's own raw paragraphs (`supplemental._window_prompts`, `windows.sub_event_windows`); only a
+> window carrying a note marker is asked, and a note once per sub-event. `reference_number`,
+> `reference_type` (when the model gave none) and `verbatim_reference` are assigned deterministically
+> afterwards by `supplemental.locate_notes`; see [ENDNOTE_HANDLING.md](ENDNOTE_HANDLING.md). In the
+> sections below, "Phase 1/2/3" are this feature's own stages, not pipeline phases: the extraction
+> and routing stage runs in pipeline Phase 2; the search and advanced stages run in pipeline Phase 3.
+
 ## Overview
 
 Extracts, classifies, and routes referenced materials (footnotes, endnotes, bibliography) from WWII historical documents. Uses a split architecture that separates document references from factual content.
@@ -24,10 +32,10 @@ How the endnote/footnote **text** reaches the prompt (parse-time capture, HTML f
 "cited in n. X" resolution, semicolon splitting) is in [ENDNOTE_HANDLING.md](ENDNOTE_HANDLING.md).
 
 ### Key Files
-- `src/extraction/supplemental.py` (922 lines) — classification, routing, extraction
-- `src/extraction/bibliography.py` (152 lines) — deduplicated document storage with fuzzy title matching
-- `src/extraction/supplemental_search.py` (243 lines) — Phase 2 URL search
-- `src/extraction/supplemental_advanced.py` (225 lines) — Phase 3 ISBN/copyright
+- `src/extraction/supplemental.py` — classification, routing, extraction
+- `src/extraction/bibliography.py` — deduplicated document storage with fuzzy title matching
+- `src/extraction/supplemental_search.py` — URL search helpers, called from the Phase 3 `src/enrichment/bibliography_resolver.py`
+- `src/extraction/supplemental_advanced.py` — ISBN/copyright, `enrich_bibliography` (Phase 3)
 
 ## Implementation Status
 
@@ -50,8 +58,8 @@ How the endnote/footnote **text** reaches the prompt (parse-time capture, HTML f
 - Factual content written as event-like JSON for downstream entity extraction
 - Bibliography deduplication with fuzzy title matching
 
-### ✅ Phase 2: Search Integration (Complete)
-**File:** `src/extraction/supplemental_search.py` (243 lines)
+### ✅ Search Integration (Complete; runs in pipeline Phase 3)
+**File:** `src/extraction/supplemental_search.py`, driven by `src/enrichment/bibliography_resolver.py` (the sequence below is the original design; the resolver now orders and verifies candidates itself)
 
 **Features:**
 - Sequential search strategy (LLM → Archive.org → OpenSERP)
@@ -84,8 +92,8 @@ How the endnote/footnote **text** reaches the prompt (parse-time capture, HTML f
 - Complexity: C (18) - Acceptable
 - Maintainability: A (46.11) ✅
 
-### ✅ Phase 3: Advanced Features (Complete)
-**File:** `src/extraction/supplemental_advanced.py` (225 lines)
+### ✅ Advanced Features (Complete; pipeline Phase 3, off in config)
+**File:** `src/extraction/supplemental_advanced.py`
 
 **Features:**
 - ISBN extraction for books (post-1966)
@@ -110,15 +118,15 @@ How the endnote/footnote **text** reaches the prompt (parse-time capture, HTML f
 ```yaml
 supplemental_material:
   # Phase 1: Core extraction
-  enabled: false                   # Enable supplemental material extraction
+  enabled: true                    # Enable supplemental material extraction (config.yaml: true)
   extract_citations: true          # Parse citations into structured format
-  max_materials_per_chapter: 100   # Limit materials per chapter
+  max_materials_per_chapter: 100   # Limit materials per chapter (config.yaml: 500)
   
   # Phase 3: search (bibliography_resolver) - Phase 2 performs NO supplemental searches
   llm_search: true                 # Use LLM for search (first pass)
-  search_gutenberg: false          # Search Gutenberg.org for books/periodicals
-  search_archive_org: false        # Search Archive.org (second pass)
-  use_openserp: false              # Use OpenSERP for web search (third pass)
+  search_gutenberg: true           # Search Gutenberg.org for books/periodicals
+  search_archive_org: true         # Search Archive.org (second pass)
+  use_openserp: true               # Use OpenSERP for web search (third pass)
   openserp_url: "http://localhost:7001"
   
   # Phase 3: Advanced features
@@ -259,9 +267,10 @@ Ambiguous items queued for human review:
 ## Processing Flow
 
 ### Phase 1: Core Extraction + Split Routing
-1. Load event file
-2. For each sub-event with endnotes/footnotes:
+1. Load event file and the chapter's parsed file
+2. For each note-bearing window of each sub-event:
    - Build prompt with reference context
+   - After the answer, `locate_notes` sets reference_number / verbatim_reference deterministically
    - Grok extracts structured citations with `content_class`
    - `_fix_invalid_ulids` fixes Grok's fake ULIDs
    - `generate_ulids` replaces GENERATE_NEW_ULID placeholders
@@ -273,8 +282,8 @@ Ambiguous items queued for human review:
    - `ambiguous` → `_append_to_review_queue()`
 4. Filter anachronistic citations (newer than source copyright year)
 
-### Phase 2: Search Integration
-1. Load supplemental file
+### Phase 2: Search Integration (pipeline Phase 3, `bibliography_resolver`)
+1. Load the bibliography entries
 2. For each material without URLs:
    - Try Gutenberg.org (books/periodicals)
    - Try LLM search
@@ -304,7 +313,7 @@ Ambiguous items queued for human review:
 - Total: ~20-40 seconds per chapter (all phases)
 
 ### API Calls
-- Phase 1: 1 LLM call per chapter
+- Phase 1: 1 LLM call per note-bearing window of a sub-event
 - Phase 2: 1-3 calls per material (LLM, Archive.org, validation)
 - Phase 3: 1-2 LLM calls per material (ISBN, death date)
 
@@ -346,7 +355,7 @@ Ambiguous items queued for human review:
 - Lazy % formatting for logging
 - Type hints throughout
 - JSON schema validation
-- Error handling patterns from `error_handling.md`
+- Error handling patterns from the archived `docs/archive/contextmanagement/Specs/error_handling.md`
 - QA standards from `quality_assurance.md`
 
 ## Documentation
@@ -395,8 +404,8 @@ supplemental_material:
 python3 phase2_extract.py
 
 # 3. Check output
-ls -lh output/supplemental/Breakout_and_Pursuit/
-cat output/supplemental/Breakout_and_Pursuit/chapter1-supplemental.json | jq '.materials[0]'
+ls -lh output/bibliography/ | head
+jq '.mentions[0]' output/bibliography/<one file>.json
 ```
 
 ### Expected Output

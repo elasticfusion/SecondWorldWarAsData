@@ -1,6 +1,6 @@
 # Malicious-Document / AV Scanning — Design
 
-Status: **in build** (2026-10-01). Scopes antivirus / malicious-input
+Status: **BUILT and deployed** (designed 2026-10-01; reviewed against the code 2026-11-16). Scopes antivirus / malicious-input
 scanning at the ingestion front door, as part of ingestion management
 (companion: `INGESTION_PATHS.md`).
 
@@ -165,7 +165,37 @@ decision 2026-10-01:
 - Shared regardless: the `quarantine/` seam + the `freshclam` signature-update job.
 
 
-## Build checklist (when scheduled)
+## As built (2026-11-16)
+
+- **Gate:** `trigger_handler._av_gate` -> `_av_scan_and_filter` -> `src/ingestion/av_scan.scan_and_gate`.
+  Binary keys = the OCR, convert and video lists (`select_binary_keys`, suffix list in
+  `av_scan._BINARY_SUFFIXES`). Clean keys proceed; infected or unscannable keys are quarantined and
+  alerted; any gate exception fails closed (binaries held in S3, nothing advances).
+- **Engine:** ClamAV in its own container (`Dockerfile.clamav`, `scripts/av_entrypoint.py`), run as a
+  demand-launched Fargate task (`{env}-wwii-av-scan`, `cloudformation/compute.yaml`) via
+  `av_scan.EcsClamavScanner`, which passes `AV_KEYS` and reads the verdict JSON from
+  `av-scan/results/<run>.json`. A key missing from the verdict JSON, or missing/empty signatures, is
+  `ERROR` (fail-closed). Signatures come from `s3://<bucket>/clamav-sigs/`, refreshed by the
+  `{env}-wwii-av-freshclam` task on a `rate(1 day)` EventBridge rule.
+- **Startup guard:** `trigger_handler._enforce_av_gate_policy` raises at import if `AV_SCAN_ENABLED`
+  resolves false outside dev/local/test (`OBSERV av.gate_enabled` / `av.gate_disabled`).
+- **Quarantine:** `av_scan._quarantine` moves the key to `quarantine/<key>` and rejects to review;
+  `freeze_submitter` writes `quarantine/frozen/<identity>.json` when a submitter identity exists
+  (still none for S3-event uploads) and is otherwise a no-op.
+- **Second entry point (not in the original design):** map/image binaries downloaded during Phase 3
+  are staged under `unscanned/` (`ecs_entrypoint.py`, Phase-3 final sync) and scanned by
+  `av_scan.drain_unscanned` when Phase 3 completes (`trigger_handler._drive_next_phase`, `OBSERV
+  av.phase3_drain`): clean -> production path, infected -> `quarantine/`, unscannable -> stays in
+  `unscanned/` and is retried. A single-drainer lock (`_acquire_drain_lock`) serialises drains.
+- **Not built:** Excel/PowerPoint to text converters (the Office section above). `.xlsx`/`.pptx`
+  are scanned as binaries but `src/ingestion` has no converter for them.
+
+## Build checklist (original; status 2026-11-16)
+
+Built: ClamAV container (Fargate), `freshclam` job, pluggable `Scanner` seam, `quarantine/` +
+reject-to-review + alert, fail-closed outage handling, tests. The Lambda-placement and size-routing
+items were superseded by the uniform-Fargate decision above. Original list:
+
 
 - [ ] ClamAV packaging (container image: Lambda or Fargate per decision).
 - [ ] `freshclam` signature-update job (scheduled) → S3; scanner syncs/mounts.
