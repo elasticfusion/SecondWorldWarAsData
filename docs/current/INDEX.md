@@ -47,6 +47,7 @@
 | [core/CACHE_AUTO_RECOVERY.md](core/CACHE_AUTO_RECOVERY.md) | Poisoned cache detection |
 | [core/ISO_COUNTRY_CODES.md](core/ISO_COUNTRY_CODES.md) | Country codes used in records (incl. historical: SUN, DDR) |
 | [core/PHASE3_ENRICHMENT.md](core/PHASE3_ENRICHMENT.md) | Phase 3 enrichment overview |
+| [core/PHASE3_MAP.md](core/PHASE3_MAP.md) | Phase 3 per-entity map, OpenSERP engagement, known gaps |
 
 ### Architecture & Design
 | Document | Description |

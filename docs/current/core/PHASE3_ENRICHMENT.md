@@ -4,6 +4,9 @@
 `src/extraction/enrich_*` modules. This doc describes what actually runs; per-entity feature
 docs point here.
 
+For the verified per-entity map, how OpenSERP is engaged, and the known gaps, see
+[PHASE3_MAP.md](PHASE3_MAP.md).
+
 Phase 3 takes the extracted + deduplicated entities (`output/<entity>/*.json`) and augments
 them with data from external sources. It runs after the dedup review gate; in AWS mode it is
 auto-triggered when Phase 2 finds no duplicates, and reads the DynamoDB `manifest#phase2` to
