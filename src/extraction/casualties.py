@@ -136,7 +136,7 @@ def extract_casualties(
                 )
                 casualties.append(casualty)
             except Exception as e:
-                logger.error("Failed to build casualty: %s", e)
+                _observe_build_failed(chapter, sub_event_id, casualty_data, e)
 
     # Save casualties: each statement once
     _save_new(casualties, casualties_dir)
@@ -721,6 +721,24 @@ def _set_direct_anchors(
         casualty["PlaceID"] = place_id
 
 
+def _observe_build_failed(
+    chapter: str, sub_event_id: Any, casualty_data: Any, error: Exception
+) -> None:
+    """One casualty that could not be built: dropped, said with what identifies it."""
+    data = casualty_data if isinstance(casualty_data, dict) else {}
+    logger.error(
+        "OBSERV casualties.build_failed chapter=%s sub_event=%s type=%s quote=%r reason=%s: "
+        "%s - this casualty is dropped (fix the cause and re-run casualties for the chapter)",
+        chapter,
+        sub_event_id,
+        str(data.get("type") or "")[:40],
+        str(data.get("original_text") or "")[:80],
+        type(error).__name__,
+        error,
+        exc_info=True,
+    )
+
+
 def _resolve_impacted_entities(
     casualty_data: Dict[str, Any],
     casualty: Dict[str, Any],
@@ -739,8 +757,15 @@ def _resolve_impacted_entities(
         "impacted_equipment": lambda d: _resolve_equipment(d, equipment_index or {}),
     }
     for field, resolver in resolvers.items():
-        if field in casualty_data:
-            casualty[field] = resolver(casualty_data[field])
+        value = casualty_data.get(field)
+        if isinstance(value, list):
+            casualty[field] = resolver(value)
+        elif value is not None:  # a null answer is "none"; another shape is malformed
+            logger.info(
+                "OBSERV casualties.field_malformed field=%s shape=%s: ignored",
+                field,
+                type(value).__name__,
+            )
 
 
 def _resolve_equipment(
@@ -761,7 +786,7 @@ def _resolve_equipment(
             item = {"name": item}
         if not isinstance(item, dict):
             continue
-        name = item.get("name", "")
+        name = _name_of(item)
         if not name:
             continue
         res = resolve_designation(name)
@@ -769,9 +794,7 @@ def _resolve_equipment(
         eq_id = equipment_index.get(canonical.lower()) or equipment_index.get(
             name.lower()
         )
-        relation = item.get("relation")
-        if relation not in _VALID_EQUIPMENT_RELATIONS:
-            relation = "other"
+        relation = _known(item.get("relation"), _VALID_EQUIPMENT_RELATIONS, "other")
         resolved.append({"EquipmentID": eq_id, "name": name, "relation": relation})
     return resolved
 
@@ -787,13 +810,9 @@ def _init_casualty_record(
     """Build the base casualty record (id, clamped side, source) before enrichment."""
     return {
         "CasualtyID": str(ulid.new()),
-        "type": casualty_data.get("type", "casualties"),
-        "side": (
-            casualty_data.get("side", "unknown")
-            if casualty_data.get("side", "unknown") in VALID_SIDES
-            else "unknown"
-        ),
-        "description": casualty_data.get("description", ""),
+        "type": casualty_data.get("type") or "casualties",
+        "side": _known(casualty_data.get("side"), VALID_SIDES, "unknown"),
+        "description": casualty_data.get("description") or "",
         "source": {
             "EventID": event_id,
             "Sub-eventID": sub_event_id,
@@ -823,7 +842,7 @@ def _attach_logistics(
         date_iso = casualty["date"].get("iso_date")
         date_id = casualty["date"].get("DateID")
     links = resolve_logistics(
-        casualty_data.get("impacted_logistics", []),
+        casualty_data.get("impacted_logistics") or [],
         group_ids,
         date_iso,
         logistics_index,
@@ -1076,9 +1095,10 @@ _ROLE_MAP = {
 }
 
 
-def _normalize_role(role: str) -> str:
-    """Normalize freeform role to controlled vocabulary."""
-    role_lower = role.lower().strip()
+def _normalize_role(role: Any) -> str:
+    """Normalize freeform role to controlled vocabulary (a missing or null role - Grok answers
+    ``"role": null`` - is the default, never a crash that drops the whole casualty)."""
+    role_lower = str(role or "").lower().strip()
     if role_lower in VALID_ROLES:
         return role_lower
     return _ROLE_MAP.get(role_lower, "suffered_casualties")
@@ -1096,7 +1116,7 @@ def _resolve_organizations(
     resolved = []
     for org in orgs:
         if isinstance(org, dict):
-            org_name = org.get("name", "")
+            org_name = _name_of(org)
             if not org_name:
                 continue
             org_id = resolve_group_id(org_name, people_groups_index)
@@ -1104,7 +1124,7 @@ def _resolve_organizations(
                 {
                     "PeopleGroupID": org_id,
                     "name": org_name,
-                    "nationality": org.get("nationality", ""),
+                    "nationality": org.get("nationality") or "",
                     "role": _normalize_role(org.get("role", "")),
                 }
             )
@@ -1120,7 +1140,7 @@ def _resolve_people(
         if isinstance(person, str):
             person = {"name": person, "casualty_type": ""}
         if isinstance(person, dict):
-            person_name = person.get("name", "")
+            person_name = _name_of(person)
             if not person_name:
                 continue
             person_id = _find_person_id(person_name, people_index)
@@ -1128,7 +1148,7 @@ def _resolve_people(
                 {
                     "PersonID": person_id,
                     "name": person_name,
-                    "casualty_type": person.get("casualty_type", ""),
+                    "casualty_type": person.get("casualty_type") or "",
                 }
             )
     return resolved
@@ -1147,12 +1167,25 @@ def _resolve_places(
         if isinstance(place, str):
             place = {"name": place}
         if isinstance(place, dict):
-            place_name = place.get("name", "")
+            place_name = _name_of(place)
             if not place_name:
                 continue
             place_id = _match_place_id(place_name, places_index)
             resolved.append({"PlaceID": place_id, "name": place_name})
     return resolved
+
+
+def _known(value: Any, allowed: Any, default: str) -> str:
+    """``value`` when it is one of ``allowed`` (text), else ``default`` - never a crash on a
+    list or dict answer."""
+    return value if isinstance(value, str) and value in allowed else default
+
+
+def _name_of(item: Dict[str, Any]) -> str:
+    """An answer item's name as text ("" when absent, null or not text: the item is skipped -
+    a malformed one never drops the casualty holding it)."""
+    name = item.get("name")
+    return name.strip() if isinstance(name, str) else ""
 
 
 def _find_person_id(name: str, index: Dict[str, str]) -> Optional[str]:
