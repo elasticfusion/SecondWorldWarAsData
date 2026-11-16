@@ -250,8 +250,8 @@ def _existing_statements(casualties_dir: Path) -> set:
     """The statement keys (``_casualty_statement``) of the casualties already saved."""
     keys = set()
     for f in casualties_dir.glob("*.json"):
-        if f.name == "index.json":
-            continue
+        if f.name == "index.json" or f.name.startswith("."):
+            continue  # the index and the run's state files (.processed_events.json) hold no record
         try:
             keys.add(_casualty_statement(json.loads(f.read_text(encoding="utf-8"))))
         except (OSError, ValueError, AttributeError) as e:
