@@ -5,6 +5,45 @@
 ---
 
 
+### People: surname-only names are enriched from a Wikipedia disambiguation page (HIGH)
+Found 2026-11-16 (USA-E-XChannel, owner report; Grok request cache key
+`19bc247c3421978c86fdd8a007251c8d65453cc9c94ef2176d2a10368fb8709b`, type `api`). The book names
+"Maj. Gen. Eugene M. Landrum" once (record `eugene m landrum.json`, enriched correctly 2026-11-15)
+and then "Landrum" alone (chapter 10, 90th Division drive west) - extracted as a SECOND person,
+`landrum.json`. Its Phase-2 enrichment (`enrich_biographies.enrich_person_from_sources`):
+- Grokipedia: `NOT_FOUND`. Wikipedia `search_wikipedia("Landrum")` returned the DISAMBIGUATION page
+  ("Landrum can refer to: Bill Landrum ... Eugene M. Landrum (1891-1967), major general ... Phil
+  Landrum ...").
+- `extract_biographical_data` then sent that list to Grok (`prompts/biography.yaml`) with only the
+  name "Landrum" - no rank, unit, date or book context - asking for one person's biography. A wasted
+  request at best, a wrong person at worst. It was one of the 3 round-9 requests behind the
+  2026-11-16 `batch.rounds_over_cap` alert.
+- No follow-up: nothing fetches the chosen person's OWN Wikipedia / Grokipedia page after Grok
+  answers; whatever Grok extracts from the snippet becomes the biography.
+OPEN: when the batch answers, record whom Grok picked for "Landrum" (expected: Eugene M. Landrum,
+the 90th Division's commander from 13 June 1944).
+ACTION (deterministic first, cost first):
+1. Resolve a surname-only person to a full-name person of the SAME book before enrichment
+   (same surname, a full-name mention earlier in the book / same chapter or unit); attach the
+   mentions to that record (ties to the 504 surname-merge suggestions) and skip its enrichment.
+2. Never send a disambiguation page to Grok: detect "can refer to" / "may refer to" / list-only
+   pages (Wikipedia `pageprops.disambiguation`) and treat as not found - or pick the entry using
+   the book's context (rank, unit, date, nationality), then FETCH that entry's own page.
+3. Pass the book context (rank, unit, date, the citing sentence) into the biography prompt, and
+   require the answer to echo which article it used, so a wrong-person answer is detectable.
+4. Count it: OBSERV `enrich.disambiguation_page` / `enrich.surname_only_skipped`.
+
+
+### Phase 2 re-runs: image / map / source-section records de-duplicate against LOCAL disk (MED)
+Found 2026-11-16 with the weather/casualty duplicates (fixed: `ecs_entrypoint.REHYDRATED_ENTITY_DIRS`
+now restores weather, logistics and casualties). Still exposed when a fresh container re-runs them:
+`images.extract_images` (local `images/index.json` + `_load_existing_urls`),
+`external_maps._check_duplicate` (globs the local maps dir), `source_section` (scans local section
+dirs). Each runs once per normal run today, so a first run is clean; a later Phase 2 re-run would
+write duplicates. ACTION: rehydrate their RECORD files (not `images/files/` binaries) or dedup
+against S3, with a test like `tests/unit/test_phase2_resume_rehydrate.py`.
+
+
 ### Tooling: widen ruff beyond `--select B` (LOW/MED)
 `scripts/gate.sh` runs `ruff check src/ lambda_handlers/ --select B` (flake8-bugbear ONLY); there is
 NO `[tool.ruff]` config in pyproject. Running ruff with DEFAULT rules reports ~83 findings (55 auto-

@@ -246,6 +246,23 @@ def _download_target(local_dir: Path, key: str) -> Optional[Path]:
     return local
 
 
+def _unchanged_downloads(local_dir: Optional[Path] = None) -> set:
+    """The downloaded keys whose local copy is unchanged since the download (same mtime): the
+    ones a final upload may skip. A downloaded file the task then modified - or removed - is not
+    in it."""
+    out = set()
+    for key, mtime in list(
+        _downloaded_keys.items()
+    ):  # a SIGTERM sync may run mid-download
+        local = _safe_local_path(local_dir or WORKDIR, key)
+        try:
+            if local is not None and local.stat().st_mtime == mtime:
+                out.add(key)
+        except OSError:
+            continue  # removed since: not skipped
+    return out
+
+
 def s3_sync_down(prefix: str, local_dir: Path) -> int:
     """Download S3 prefix to local dir. Returns file count. Skips folder-marker keys and unsafe
     keys (see ``_download_target``)."""
@@ -330,10 +347,17 @@ class BackgroundSync:
             logger.warning("Status API not started: %s", e)
 
     def stop(self):
-        """Stop the background sync thread."""
+        """Stop the background sync thread, after one last pass: the changes since the last tick
+        (up to the interval) are uploaded, never left behind."""
         self._stop.set()
         if self._thread:
             self._thread.join(timeout=30)
+            try:
+                self._upload_changed()
+            except (
+                Exception
+            ) as e:  # noqa: BLE001 - the final sync still runs after this
+                logger.warning("Background sync: final flush failed: %s", e)
 
     def _run(self):
         while not self._stop.wait(self._interval):
@@ -342,14 +366,7 @@ class BackgroundSync:
     def _sync(self):
         try:
             _heartbeat_nat_lease()  # M3: keep NAT lease alive while task runs
-            for name, prefix in [("output", "output"), ("artifacts", "artifacts")]:
-                d = WORKDIR / name
-                if d.exists():
-                    n = self._sync_changed(d, prefix)
-                    if n:
-                        self._last_activity_time = time.time()
-                        self.progress.mark()
-                        logger.info("Background sync: uploaded %d %s files", n, name)
+            self._upload_changed()
             # Watchdog: self-terminate if no activity for too long
             idle = time.time() - self._last_activity_time
             if idle > self.WATCHDOG_TIMEOUT:
@@ -365,6 +382,17 @@ class BackgroundSync:
                 os.kill(os.getpid(), signal.SIGTERM)
         except Exception as e:
             logger.warning("Background sync error: %s", e)
+
+    def _upload_changed(self) -> None:
+        """Upload the output/ and artifacts/ files changed since the last pass."""
+        for name, prefix in [("output", "output"), ("artifacts", "artifacts")]:
+            d = WORKDIR / name
+            if d.exists():
+                n = self._sync_changed(d, prefix)
+                if n:
+                    self._last_activity_time = time.time()
+                    self.progress.mark()
+                    logger.info("Background sync: uploaded %d %s files", n, name)
 
     def _sync_changed(self, local_dir: Path, prefix: str) -> int:
         """Upload only files modified since last sync."""
@@ -1616,6 +1644,24 @@ def _observe_bibliography_download_coverage(
         logger.debug("bibliography download coverage check failed: %s", e)
 
 
+# The entity record dirs a book-scoped Phase 2 restores from S3 before it runs. The SCORED ones
+# (the yield gate counts them) AND every extractor that de-duplicates against the records on
+# local disk: weather (its index.json), logistics and casualties (their record files). Without
+# them a fresh container - every batch round's retrieve task is one - sees none and writes each
+# statement again (USA-E-XChannel 2026-11-16: 13 duplicate weather records across rounds; 102
+# duplicate casualties from a casualty re-run).
+REHYDRATED_ENTITY_DIRS = (
+    "people",
+    "people_groups",
+    "dates",
+    "places",
+    "equipment",
+    "weather",
+    "logistics",
+    "casualties",
+)
+
+
 def _rehydrate_scored_entities() -> int:
     """RESUME CORRECTNESS (XChannel-8 2026-10-29): on a resume that leaves existing data in place, a
     FRESH task container has an empty local disk, but Phase-2 extraction + the yield gate both read
@@ -1627,7 +1673,7 @@ def _rehydrate_scored_entities() -> int:
       • the book's content/ prefix (parsed + event files, so extraction finds its input).
     Fail-safe (a missing dir -> 0 files, no error). Returns the count rehydrated."""
     rehydrated = 0
-    for _edir in ("people", "people_groups", "dates", "places", "equipment"):
+    for _edir in REHYDRATED_ENTITY_DIRS:
         rehydrated += s3_sync_down(f"output/{_edir}/", WORKDIR)
     # The book's parsed/event content — extraction needs the parsed file locally even when its event
     # already exists on S3 (the default scan skips it, assuming "event present => already done").
@@ -3388,8 +3434,9 @@ def _final_sync(phase_script: str = ""):
         entity_dirs = [*_PHASE23_ENTITY_DIRS, "metrics"]
         total = 0
         all_uploaded = []
-        # Phase 3 modifies existing files — don't skip any
-        skip = set(_downloaded_keys) if "phase2" in phase_script else set()
+        # Phase 3 modifies existing files — don't skip any; Phase 2 skips only the downloaded files
+        # it did NOT change (a rehydrated weather/index.json it updated must be uploaded)
+        skip = _unchanged_downloads() if "phase2" in phase_script else set()
         for subdir in entity_dirs:
             d = WORKDIR / "output" / subdir
             if not d.exists():
