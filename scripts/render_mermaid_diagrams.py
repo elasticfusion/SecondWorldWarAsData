@@ -10,10 +10,16 @@ Usage:
     python3 scripts/render_mermaid_diagrams.py [markdown_file ...]
 
     If no files given, processes docs/current/core/WORKFLOW_DIAGRAMS.md
+
+Needs node/npx (it runs @mermaid-js/mermaid-cli). Where the OS blocks Chrome's sandbox
+(Ubuntu 23.10+ AppArmor unprivileged-userns restriction), set MERMAID_NO_SANDBOX=1: the
+headless browser then runs unsandboxed - use it only for this repo's own diagram files (no web
+content; the renderer version is pinned, MERMAID_CLI). Exit 1 when any diagram failed to render.
 """
 
 import hashlib
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -22,6 +28,8 @@ import tempfile
 from pathlib import Path
 
 MANIFEST_NAME = "mermaid_manifest.json"
+# pinned: the renderer runs in a headless Chrome (unsandboxed with MERMAID_NO_SANDBOX=1)
+MERMAID_CLI = "@mermaid-js/mermaid-cli@12.2.0"
 
 
 def extract_diagrams(md_path: Path) -> list[tuple[str, str]]:
@@ -56,26 +64,28 @@ def content_hash(source: str) -> str:
     return hashlib.sha256(source.encode()).hexdigest()[:12]
 
 
+def _puppeteer_config() -> "str | None":
+    """A puppeteer config file disabling Chrome's sandbox when MERMAID_NO_SANDBOX=1, else None."""
+    if os.environ.get("MERMAID_NO_SANDBOX") != "1":
+        return None
+    with tempfile.NamedTemporaryFile(suffix=".json", mode="w", delete=False) as f:
+        json.dump({"args": ["--no-sandbox", "--disable-setuid-sandbox"]}, f)
+        return f.name
+
+
 def render_diagram(source: str, output_png: Path) -> bool:
     """Render a mermaid diagram to PNG via mmdc. Returns True on success."""
     with tempfile.NamedTemporaryFile(suffix=".mmd", mode="w", delete=False) as f:
         f.write(source)
         mmd_path = f.name
+    config = _puppeteer_config()
     try:
+        cmd = ["npx", "--yes", MERMAID_CLI, "-i", mmd_path,
+               "-o", str(output_png), "-b", "white", "-s", "2"]  # fmt: skip
+        if config:
+            cmd += ["-p", config]
         result = subprocess.run(
-            [
-                "npx",
-                "--yes",
-                "@mermaid-js/mermaid-cli",
-                "-i",
-                mmd_path,
-                "-o",
-                str(output_png),
-                "-b",
-                "white",
-                "-s",
-                "2",
-            ],
+            cmd,
             capture_output=True,
             text=True,
             timeout=60,
@@ -86,6 +96,8 @@ def render_diagram(source: str, output_png: Path) -> bool:
         return True
     finally:
         Path(mmd_path).unlink(missing_ok=True)
+        if config:
+            Path(config).unlink(missing_ok=True)
 
 
 def main():
@@ -94,6 +106,7 @@ def main():
 
     md_files = [Path(f) for f in sys.argv[1:]] if len(sys.argv) > 1 else default_files
 
+    failed = 0
     for md_path in md_files:
         if not md_path.exists():
             print(f"File not found: {md_path}", file=sys.stderr)
@@ -112,7 +125,7 @@ def main():
         diagrams = extract_diagrams(md_path)
         print(f"{md_path.name}: {len(diagrams)} diagram(s)")
 
-        updated = 0
+        updated = unchanged = 0
         for name, source in diagrams:
             filename = slug(name)
             h = content_hash(source)
@@ -122,6 +135,7 @@ def main():
             # Skip if hash unchanged and PNG exists
             if manifest.get(filename, {}).get("hash") == h and png_path.exists():
                 print(f"  ✓ {png_name} (unchanged)")
+                unchanged += 1
                 continue
 
             print(f"  Rendering {png_name} ...", end=" ", flush=True)
@@ -135,13 +149,15 @@ def main():
                 updated += 1
                 print("done")
             else:
+                failed += 1
                 print("FAILED")
 
         # Save manifest
         manifest_path.write_text(json.dumps(manifest, indent=2) + "\n")
-        print(f"  {updated} updated, {len(diagrams) - updated} unchanged")
+        print(f"  {updated} updated, {unchanged} unchanged, {failed} failed")
         print(f"  Manifest: {manifest_path}")
+    return 1 if failed else 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

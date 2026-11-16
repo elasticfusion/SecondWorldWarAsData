@@ -244,6 +244,20 @@ concurrency:
 
 ---
 
+## Phase 0 Ingestion: Translation
+
+```yaml
+ingestion:
+  translate: true     # default when absent: translate non-English documents to English
+```
+
+- `ingestion.translate` - Phase 0 language detection + translation for every track (convert, OCR,
+  video, OOB), `src/ingestion/translation.translation_enabled`. **On by default** (key absent =
+  on); `false` turns it off. `PHASE0_TRANSLATE=0` / `=1` overrides the file. English text costs
+  nothing (`clearly_english`); only text that is not clearly English asks Grok its language, and only
+  non-English pages / sections are translated. See
+  [../dataquality/LANGUAGE_TRANSLATION.md](../dataquality/LANGUAGE_TRANSLATION.md).
+
 ## Phase 2 Extraction, Provenance Gate, Dedup, Storage
 
 ```yaml

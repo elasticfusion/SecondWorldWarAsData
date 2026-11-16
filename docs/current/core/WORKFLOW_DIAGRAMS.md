@@ -2,7 +2,7 @@
 
 Visual representations of the WWII data extraction pipeline phases.
 
-**Last Updated:** 2026-11-16. The Mermaid source below is current for Phases 0-2 (checked against `lambda_handlers/trigger_handler.py`, `phase1_parse.py`, `phase2_extract.py`, `src/utils/batch_rounds.py`). The rendered PNGs in `images/` were produced from the older source and have **not** been re-rendered (see `images/mermaid_manifest.json`, which stores a hash of each diagram's source); trust the Mermaid blocks, not the PNGs.
+**Last Updated:** 2026-11-16. The Mermaid source below is current for Phases 0-2 (checked against `lambda_handlers/trigger_handler.py`, `phase1_parse.py`, `phase2_extract.py`, `src/utils/batch_rounds.py`). The PNGs in `images/` are rendered from these blocks by `scripts/render_mermaid_diagrams.py` (it re-renders only a diagram whose source hash in `images/mermaid_manifest.json` changed; set `MERMAID_NO_SANDBOX=1` where the OS blocks Chrome's sandbox). Re-run it after editing a diagram.
 
 ---
 
@@ -418,7 +418,7 @@ flowchart TD
 
 ## MongoDB Import Flow (removed)
 
-The MongoDB import script (`import_to_mongodb.py`) no longer exists, so its diagram was removed. Entity records are stored as JSON in S3 (`output/<entity>/*.json`); `import_to_dynamodb.py` is the remaining importer. The PNG `images/mongodb_import_flow.png` describes the removed flow.
+The MongoDB import script (`import_to_mongodb.py`) no longer exists, so its diagram was removed. Entity records are stored as JSON in S3 (`output/<entity>/*.json`); `import_to_dynamodb.py` is the remaining importer. Its PNG is archived at `docs/archive/2026-11-16/core/images/mongodb_import_flow.png`.
 
 ---
 

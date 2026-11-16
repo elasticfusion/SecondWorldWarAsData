@@ -1,11 +1,13 @@
 # Language Detection & Translation (Phase 0)
 
-**Status:** **implemented, OFF by default** (per-page translate-at-the-seam; `prompts/translation.yaml`,
-`prompts/language_detect.yaml`, `src/ingestion/translation.py`; tests `tests/test_translation.py` +
-`tests/test_translation_wiring.py`). Reviewed against the code 2026-11-16. Translation runs only when
-`ingestion.translate: true` in `config.yaml` or `PHASE0_TRANSLATE=1` is set (`translation_enabled`);
-`config.yaml` has no `ingestion.translate` key and no CloudFormation template sets the variable, so a
-default deployment passes every document through unchanged (`OBSERV translation ... disabled`).
+**Status:** **implemented, ON by default** (owner 2026-11-16; per-page translate-at-the-seam;
+`prompts/translation.yaml`, `prompts/language_detect.yaml`, `src/ingestion/translation.py`; tests
+`tests/test_translation.py` + `tests/test_translation_wiring.py`). `translation_enabled` is true
+unless `ingestion.translate: false` in `config.yaml` or `PHASE0_TRANSLATE=0`. English costs nothing:
+`clearly_english` decides it deterministically (Latin script; English function words present, none of
+German / French / Italian / Spanish / Dutch common; markup removed) and only a page or section that is
+not clearly English asks Grok its language (Cross-Channel Attack, 562 pages: 523 decided free, 39 -
+indexes, rosters, map pages - asked).
 **Owner decision:** **per-page** detection (revised from per-document after the
 M1019 microfilm example); convert original → markdown, then translate non-English
 pages to English via Grok; every translated page is marked (inert) as translated
@@ -63,9 +65,21 @@ emits with `--paginate_output`, split via `chunk_pages.split_pages`):
 - Pages are reassembled in order into the English `.md`.
 
 This handles mixed-language rolls correctly and reassembles them into one
-normalized-English document. Detection is per-page (not batched); 1,000+ tiny
-detect calls are cheap and cached — the translations (foreign pages only) are
-the real cost, consistent with "LLM once per item at ingest."
+normalized-English document. Detection is per-page (not batched); a clearly English
+page needs no detect call at all, and the remaining detect calls are small and cached —
+the translations (foreign pages only) are the real cost, consistent with "LLM once per
+item at ingest."
+
+**Documents without pages** (converted EPUB/DOCX/HTML: `normalize_to_english`) are mixed-language
+too: they are detected per SECTION of at most 4,000 characters (`_language_runs`, on Markdown
+block boundaries), neighbouring sections of one language merged, and only the non-English runs
+translated - each with its own marker. (Before 2026-11-16 one language was taken for the whole
+document from its first 4,000 characters, so a German part after an English opening was never
+translated.)
+
+**Known limit:** the unit is a page / section. A short quotation in another language inside a
+mostly-English page (a German order quoted in an English narrative) is detected as the page's
+primary language and stays in the original.
 
 ## Translation-provenance marker (inert)
 

@@ -21,8 +21,10 @@ and [../dataquality/STRUCTURED_DATA_ROUTING.md](../dataquality/STRUCTURED_DATA_R
 - **Region conversion** — each page/region → Markdown (the universal
   intermediate) via a disposition-appropriate method, extracting image/map
   assets that the prose converter previously dropped.
-- **Language detection + translation** — a **per-page** pass detects each page's
-  language and translates non-English pages to English (`normalize_pages_to_english`),
+- **Language detection + translation** (on by default) — a **per-page** pass detects each
+  page's language (deterministically when clearly English, else via Grok) and translates
+  non-English pages to English (`normalize_pages_to_english`; documents without pages per
+  section, so a mixed-language book is handled),
   so every downstream extractor (events, people, …) sees English and needs no language
   guard. The verbatim original is kept as a `<name>.orig.md` sidecar and `source_language`
   is stamped (provenance preserved). Idempotent on re-runs. Full spec:

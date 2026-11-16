@@ -229,6 +229,10 @@ maps:
   storage_path: "output/maps/"
   image_storage_path: "output/maps/files/"
 
+# Phase 0: translate non-English documents to English (default true; English costs nothing)
+ingestion:
+  translate: true
+
 images:
   enabled: true
   download: true                       # fetch image bytes into output/ (synced to S3)

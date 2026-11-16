@@ -36,7 +36,8 @@ def test_normalize_non_english_translates():
         out = tr.normalize_markdown_to_english(
             "Der Angriff begann im Morgengrauen.", grok=grok
         )
-    assert out == "The attack began at dawn."
+    # the translated section carries its provenance marker (inert to the parser)
+    assert out == "<!-- translated from German by grok -->\n\nThe attack began at dawn."
 
 
 def test_normalize_error_keeps_original():
@@ -47,11 +48,17 @@ def test_normalize_error_keeps_original():
     assert out == "Der Angriff."  # fail-safe
 
 
-def test_translation_enabled_env():
-    with patch.dict(os.environ, {"PHASE0_TRANSLATE": "1"}):
+def test_translation_is_on_by_default_and_can_be_switched_off():
+    """Owner 2026-11-16: non-English documents are translated by default (English ones cost
+    nothing: translation.clearly_english)."""
+    with patch.dict(os.environ, {"PHASE0_TRANSLATE": ""}):
+        assert tr.translation_enabled({"ingestion": {}}) is True
         assert tr.translation_enabled({}) is True
-    assert tr.translation_enabled({"ingestion": {"translate": True}}) is True
-    assert tr.translation_enabled({"ingestion": {}}) is False
+        assert tr.translation_enabled({"ingestion": {"translate": False}}) is False
+    with patch.dict(os.environ, {"PHASE0_TRANSLATE": "0"}):
+        assert tr.translation_enabled({"ingestion": {"translate": True}}) is False
+    with patch.dict(os.environ, {"PHASE0_TRANSLATE": "1"}):
+        assert tr.translation_enabled({"ingestion": {"translate": False}}) is True
 
 
 # --- CONVERT track integration ---

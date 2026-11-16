@@ -174,3 +174,87 @@ def test_per_page_physical_page_offset():
     r = t.normalize_pages_to_english(md, 155, PageAwareGrok(), model_name="grok-4")
     assert [p.page for p in r.pages] == [155, 156]
     assert all(p.translated for p in r.pages)
+
+
+ENGLISH = (
+    "The 4th Division landed on Utah Beach at 0630 and the leading battalions of the 8th "
+    "Infantry were ashore within minutes. They found the beach obstacles fewer than expected, "
+    "and the German defenders were stunned by the naval bombardment that had preceded them."
+)
+GERMAN = (
+    "Die Division wurde am 6. Juni an der Küste eingesetzt und hatte den Auftrag, die "
+    "Landungen der Alliierten zu verhindern. Sie war nicht vollständig ausgerüstet, und die "
+    "meisten Soldaten waren noch jung. Nach den Kämpfen zog sich die Division zurück."
+)
+
+
+def test_clearly_english_is_free_and_anything_else_asks_grok():
+    assert t.clearly_english(ENGLISH)
+    assert not t.clearly_english(GERMAN)
+    assert not t.clearly_english("Дивизия была введена в бой шестого июня")
+    assert not t.clearly_english("Deutscher Text.")  # short, no English function word
+    assert not t.clearly_english(
+        "Letter of Instruction, V Corps"
+    )  # one function word: unsure
+    assert t.clearly_english(
+        "Letter of Instruction to the V Corps"
+    )  # two, English only
+    # a quoted German order inside an English paragraph is not "clearly English"
+    assert not t.clearly_english(ENGLISH + " " + GERMAN)
+    # markup is not language: an English table
+    table = "<table><tr><td>CO</td><td>Commanding Officer of the battalion</td></tr></table>"
+    assert t.clearly_english(table)
+    g = FakeGrok("German")
+    assert t.detect_language(ENGLISH, g) == "English" and g.calls == []
+
+
+def test_a_mixed_language_document_translates_only_its_foreign_sections():
+    """A book may mix languages: an English history quoting a German document. Detection per
+    section, not one language for the whole document from its first page."""
+
+    class Grok(FakeGrok):
+        def chat_completion(self, prompt, **kw):
+            self.calls.append({"prompt": prompt})
+            if "Identify the PRIMARY language" in prompt:
+                return "German"
+            return "The division was committed on the coast."
+
+    english_part = "\n\n".join([ENGLISH] * 60)  # past one translation chunk
+    md = english_part + "\n\n" + GERMAN
+    g = Grok()
+    r = t.normalize_to_english(md, g, model_name="grok-4")
+    assert r.translated and r.source_language == "German"
+    assert r.english_markdown.startswith(ENGLISH)  # the English part untouched
+    assert "<!-- translated from German by grok:grok-4 -->" in r.english_markdown
+    assert GERMAN not in r.english_markdown and r.original_markdown == md
+    # the English sections cost no Grok call: one detect + one translate for the German one
+    assert len(g.calls) == 2
+
+
+def test_languages_outside_the_big_five_are_never_judged_english():
+    """Short Polish / Czech / Norwegian text shares "to", "for", "at" with English: judged
+    English, it would pass untranslated, silently (review 2026-11-16)."""
+    for text in (
+        "To jest rozkaz dla dywizji, który przyszedł rano.",
+        "To byl rozkaz pro divizi, který přišel ráno.",
+        "Det var en kald morgen da bataljonen gikk i land på stranden.",
+        "O batalhão atravessou o rio ao amanhecer e tomou a ponte sem perdas.",
+    ):
+        assert not t.clearly_english(text), text
+    # an English page with a German order embedded: Grok decides
+    mixed = (
+        "Task Force Hogan held the crossroads until dusk. Den Befehl hatte der Kommandeur "
+        "am Morgen gegeben, und die Lage war nicht klar. The 3d Armored Division then moved "
+        "north toward the river and the bridge."
+    )
+    assert not t.clearly_english(mixed)
+    assert t.clearly_english(
+        "The battalion crossed the river at dawn and took the bridge."
+    )
+
+
+def test_grok_is_sent_a_short_sample_only():
+    g = FakeGrok("German")
+    t.detect_language(GERMAN * 40, g)
+    (call,) = g.calls
+    assert len(call["prompt"]) < len(GERMAN * 40) and GERMAN[:200] in call["prompt"]

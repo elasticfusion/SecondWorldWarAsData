@@ -8,7 +8,9 @@ docs/current/dataquality/LANGUAGE_TRANSLATION.md.
 Flow per document (operating on the original-language Markdown that the Phase 0
 converters produce):
 
-1. :func:`detect_language` — ask Grok for the document's primary language.
+1. :func:`detect_language` — a deterministic check first (:func:`clearly_english`: English
+   function words dominate, no other language's do, no non-Latin script), so an English page
+   costs nothing; only a page that is not clearly English asks Grok for its language.
 2. If English → **no-op** (no Grok translation call, no ``.orig.md``): the
    markdown passes straight through. This is the common, zero-cost case.
 3. Else :func:`translate_markdown` — translate to English via Grok, chunked on
@@ -33,6 +35,8 @@ logger = logging.getLogger(__name__)
 # Characters of leading text used for language detection — enough to be
 # decisive, small enough to keep the detect call cheap.
 _DETECT_SAMPLE_CHARS = 4000
+# ... of which Grok is sent this much when the deterministic check cannot decide
+_GROK_DETECT_CHARS = 1500
 
 # Soft cap on characters per translation chunk. Long documents are split on
 # Markdown boundaries below this size so each Grok call stays well within
@@ -69,17 +73,105 @@ def is_english(language: str) -> bool:
     return language.strip().lower() in _ENGLISH_NAMES
 
 
+# Function words of English and of the languages a WWII source is most often in: a page is
+# CLEARLY English when English's dominate and no other language's are common. Words two
+# languages share ("in", "die", "a") are left out.
+_FUNCTION_WORDS = {
+    "English": {"the", "and", "of", "to", "was", "were", "with", "which", "that", "had",
+                "from", "by", "on", "at", "for", "this", "their", "they", "been", "would"},
+    "German": {"der", "und", "das", "nicht", "mit", "dem", "den", "ist", "auf", "sich", "wurde",
+               "eine", "einer", "auch", "nach", "zu", "von", "bei", "wir", "sie"},
+    "French": {"le", "les", "et", "des", "du", "une", "dans", "est", "pour", "qui", "sur",
+               "au", "aux", "pas", "par", "ont", "été", "avec", "nous", "sont"},
+    "Italian": {"il", "della", "che", "di", "del", "per", "una", "sono", "nel", "dei",
+                "alla", "gli", "delle", "anche", "più", "non", "si", "ha", "dalla", "questo"},
+    "Spanish": {"el", "los", "las", "del", "que", "por", "una", "con", "para", "se", "su",
+                "fue", "como", "más", "pero", "sus", "este", "entre", "cuando", "muy"},
+    "Dutch": {"het", "een", "van", "en", "niet", "zijn", "voor", "dat", "met", "wordt", "werd",
+              "ook", "bij", "naar", "uit", "worden", "deze", "wij", "hij", "zij"},
+    "Polish": {"w", "nie", "na", "się", "jest", "z", "do", "że", "jak", "dla", "przez",
+               "był", "była", "oraz", "jego", "ale", "od", "po", "tak", "który"},
+    "Czech": {"je", "se", "na", "že", "jako", "byl", "byla", "jsou", "pro", "jeho", "ale",
+              "nebo", "který", "která", "také", "podle", "při", "až", "už", "jen"},
+    "Portuguese": {"os", "as", "do", "da", "dos", "das", "em", "um", "uma", "não", "foi", "com",
+                   "ao", "pelo", "pela", "seu", "sua", "mas", "como", "são"},
+    "Scandinavian": {"og", "er", "ikke", "det", "som", "med", "har", "til", "av", "på", "var",
+                     "fra", "jeg", "vi", "och", "inte", "att", "är", "den", "kan"},
+}  # fmt: skip
+_WORD = re.compile(r"[^\W\d_]+", re.UNICODE)
+_LATIN_LETTER = re.compile(r"[A-Za-z\u00C0-\u024F]")
+# a word with a letter English does not use (ä ö ü ß é è à ł ą ę ě ř æ ø å ç ñ ...): an English
+# history prints some (Saint-Lô, la Fière), a foreign passage many
+_ACCENTED = re.compile(r"[\u00C0-\u024F]")
+_MAX_ACCENTED_SHARE = 0.02
+# markup is not language: HTML tags (tables), image / link targets, code fences (charts)
+_MARKUP = re.compile(r"<[^>]*>|!?\[[^\]]*\]\([^)]*\)|```.*?```", re.DOTALL)
+_MIN_JUDGED_WORDS = 25  # below it, the share of function words says little
+_MIN_ENGLISH_SHARE = (
+    0.15  # English function words / all words; ordinary English prose ~0.3
+)
+_MAX_OTHER_SHARE = 0.02  # another language's function words above this: ask Grok
+_LIST_ENGLISH_SHARE = 0.03  # a table or list: few function words, but only English ones
+_LIST_OTHER_SHARE = 0.005
+
+
+def clearly_english(text: str) -> bool:
+    """True when ``text`` (markup removed) is English beyond doubt, deterministically: Latin
+    script; English function words present, NO other language's common and few accented words.
+    A short text needs two distinct English function words and nothing foreign. False means "ask Grok" -
+    never "not English": a page of a mixed-language book that quotes a German order, or a
+    German page, goes to Grok."""
+    words = [w.lower() for w in _WORD.findall(_MARKUP.sub(" ", text or ""))]
+    if not _latin("".join(words)):
+        return False  # Cyrillic, Greek, CJK...: not English (Grok names the language)
+    return _english_words(words) if words else True  # no text: nothing to translate
+
+
+def _english_words(words: List[str]) -> bool:
+    """``clearly_english`` for a text's (Latin-script) words."""
+    english, other = _function_word_shares(words)
+    accented = sum(1 for w in words if _ACCENTED.search(w)) / len(words)
+    if len(words) < _MIN_JUDGED_WORDS:
+        return _short_english(words, other, accented)
+    prose = english >= _MIN_ENGLISH_SHARE and other <= _MAX_OTHER_SHARE
+    listing = english >= _LIST_ENGLISH_SHARE and other <= _LIST_OTHER_SHARE
+    return accented <= _MAX_ACCENTED_SHARE and (prose or listing)
+
+
+def _short_english(words: List[str], other: float, accented: float) -> bool:
+    """A few words prove little: two distinct English function words, nothing foreign."""
+    distinct = {w for w in words if w in _FUNCTION_WORDS["English"]}
+    return len(distinct) >= 2 and other == 0 and accented == 0
+
+
+def _latin(letters: str) -> bool:
+    """At least 90% of the letters are Latin script (an empty string is)."""
+    return not letters or len(_LATIN_LETTER.findall(letters)) >= 0.9 * len(letters)
+
+
+def _function_word_shares(words: List[str]) -> "tuple[float, float]":
+    """(share of English function words, the highest share of another language's)."""
+    share = {
+        lang: sum(1 for w in words if w in vocab) / len(words)
+        for lang, vocab in _FUNCTION_WORDS.items()
+    }
+    english = share.pop("English")
+    return english, max(share.values())
+
+
 def detect_language(markdown: str, grok, *, use_cache: bool = True) -> str:
-    """Detect the primary language of a Markdown document via Grok.
+    """The primary language of a Markdown document: "English" at no cost when it is
+    :func:`clearly_english`, else Grok's answer.
 
     Returns the English name of the language (e.g. "German"). Falls back to
     "English" on an empty document or an unusable response, so a detection
     hiccup never diverts an English-looking doc into translation.
     """
     sample = markdown.strip()[:_DETECT_SAMPLE_CHARS]
-    if not sample:
+    if not sample or clearly_english(sample):
         return "English"
-    prompt = render_prompt("language_detect", sample=sample)
+    # Grok names a language from a short sample; the whole block is not needed
+    prompt = render_prompt("language_detect", sample=sample[:_GROK_DETECT_CHARS])
     system = get_system_prompt("language_detect")
     resp = grok.chat_completion(
         prompt,
@@ -153,6 +245,28 @@ def translate_markdown(
     return "\n\n".join(out)
 
 
+def _language_runs(
+    markdown: str, grok, use_cache: bool
+) -> "tuple[List[str], List[str]]":
+    """(sections, their languages): the document's blocks in detection-sized sections (each at
+    most ``_DETECT_SAMPLE_CHARS``, so every character is looked at), neighbouring sections of
+    one language merged - a translation request is one run of one language."""
+    blocks = split_markdown_chunks(markdown, max_chars=_DETECT_SAMPLE_CHARS) or [
+        markdown
+    ]
+    sections: List[str] = []
+    languages: List[str] = []
+    for block in blocks:
+        lang = detect_language(block, grok, use_cache=use_cache)
+        lang = "English" if is_english(lang) else lang
+        if languages and languages[-1] == lang:
+            sections[-1] += "\n\n" + block
+        else:
+            sections.append(block)
+            languages.append(lang)
+    return sections, languages
+
+
 def normalize_to_english(
     markdown: str,
     grok,
@@ -160,26 +274,38 @@ def normalize_to_english(
     model_name: Optional[str] = None,
     use_cache: bool = True,
 ) -> TranslationResult:
-    """Detect language and, if non-English, translate the document to English.
-
-    English documents pass through untouched (no translation call). Non-English
-    documents are translated; the original is returned alongside for provenance.
+    """Detect the language of each SECTION (``_language_runs``) and translate the
+    non-English ones to English - a book may mix languages (an English history quoting a German
+    order, a German document with an English cover sheet): one language for the whole document
+    from its first page would leave the rest untranslated. English sections pass through
+    untouched (no translation call; clearly English ones no detection call either); each
+    translated section is marked (:func:`translation_marker`); the original is kept whole.
     """
-    language = detect_language(markdown, grok, use_cache=use_cache)
-    if is_english(language):
+    sections, languages = _language_runs(markdown, grok, use_cache)
+    foreign = [lang for lang in languages if not is_english(lang)]
+    if not foreign:
         logger.info("Document detected as English — no translation")
         return TranslationResult(
             source_language="English",
             translated=False,
             english_markdown=markdown,
         )
-    logger.info("Document detected as %s — translating to English", language)
-    english = translate_markdown(markdown, language, grok, use_cache=use_cache)
     tag = f"grok:{model_name}" if model_name else "grok"
+    out = []
+    for sec, lang in zip(sections, languages):
+        if is_english(lang):
+            out.append(sec)
+            continue
+        logger.info("Section detected as %s — translating to English", lang)
+        out.append(
+            translation_marker(lang, tag)
+            + "\n\n"
+            + translate_markdown(sec, lang, grok, use_cache=use_cache)
+        )
     return TranslationResult(
-        source_language=language,
+        source_language=", ".join(dict.fromkeys(foreign)),
         translated=True,
-        english_markdown=english,
+        english_markdown="\n\n".join(out),
         original_markdown=markdown,
         translator=tag,
     )
@@ -334,21 +460,23 @@ def _observe_translation(lang: str, action: str, *, reason: str = "") -> None:
 
 
 def translation_enabled(config: Optional[dict] = None) -> bool:
-    """True if Phase-0 translation is on (``ingestion.translate`` or
-    ``PHASE0_TRANSLATE=1``). Matches the OOB track's gate so all tracks share one
-    switch."""
+    """True unless Phase-0 translation is switched OFF (``ingestion.translate: false`` or
+    ``PHASE0_TRANSLATE=0``): a non-English document is translated to English by default (the
+    Phase 1-3 stack is English-centric), an English one costs nothing (:func:`clearly_english`).
+    The ONE switch for every track (convert, OCR, video, OOB)."""
     import os
 
-    if os.environ.get("PHASE0_TRANSLATE") == "1":
-        return True
+    env = os.environ.get("PHASE0_TRANSLATE")
+    if env in ("0", "1"):
+        return env == "1"
     if config is None:
         try:
             from src.utils.config import load_config
 
             config = load_config()
-        except Exception:  # noqa: BLE001
-            return False
-    return bool((config or {}).get("ingestion", {}).get("translate", False))
+        except Exception:  # noqa: BLE001 - no config: the default
+            return True
+    return bool((config or {}).get("ingestion", {}).get("translate", True))
 
 
 def normalize_markdown_to_english(

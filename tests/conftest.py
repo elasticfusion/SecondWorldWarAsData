@@ -11,6 +11,8 @@ os.environ.setdefault("WIKIMEDIA_MIN_INTERVAL_SECONDS", "0")
 # Phase 2's place/unit Grokipedia + Wikipedia lookups (batch_parallel._enrich_in_place) reach the
 # network: off unless a test turns them on and mocks them
 os.environ.setdefault("PHASE2_REFERENCE_LOOKUPS", "0")
+# Phase-0 translation is ON by default (production); tests that exercise it set it themselves
+os.environ.setdefault("PHASE0_TRANSLATE", "0")
 
 import json
 from pathlib import Path

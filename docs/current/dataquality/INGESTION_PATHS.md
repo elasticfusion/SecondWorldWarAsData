@@ -200,14 +200,14 @@ than silently dropping or feeding garbage downstream. No silent failures.
   markdown to the deterministic `phase0_ingest` OOB parser (`Phase0IngestTaskDef`),
   NOT narrative LLM extraction. Entity convergence OOB→people at dedup is the
   documented pending bridge.
-- **Non-English documents → translation (BUILT, all tracks, OFF by default).** Translation
+- **Non-English documents → translation (BUILT, all tracks, ON by default; `ingestion.translate: false` / `PHASE0_TRANSLATE=0` turns it off; clearly English text needs no Grok call).** Translation
   (`src/ingestion/translation.py`, design `LANGUAGE_TRANSLATION.md`: detect →
   Grok translate → English markdown at Phase 0, inert provenance marker) is now
   wired into **every** track via the shared `normalize_markdown_to_english`
   adapter (config-gated `ingestion.translate` / `PHASE0_TRANSLATE`; fail-safe —
   English/disabled/error passes through unchanged):
     - **OOB** (`phase0_ingest`): per-page, pre-existing.
-    - **CONVERT** (`phase0_convert`): per-document, before writing chapter structure.
+    - **CONVERT** (`phase0_convert`): per section (at most 4,000 characters; mixed-language documents), before writing chapter structure.
     - **OCR-narrative** (`ocr_promote.promote`, from `ocr_merge_handler` or the cross-check task):
       per-page (Chandra page separators), after sanitising and before chapter splitting; the OOB fork
       is skipped (it translates in phase0_ingest).
