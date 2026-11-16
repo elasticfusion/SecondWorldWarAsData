@@ -60,7 +60,7 @@ emits with `--paginate_output`, split via `chunk_pages.split_pages`):
 
 - Each page is detected independently.
 - English pages pass through untouched (no Grok call).
-- Non-English pages are translated and **prefixed with an inert
+- Non-English pages are translated and **each of their paragraphs prefixed with an inert
   translation-provenance marker** (below).
 - Pages are reassembled in order into the English `.md`.
 
@@ -77,13 +77,26 @@ translated - each with its own marker. (Before 2026-11-16 one language was taken
 document from its first 4,000 characters, so a German part after an English opening was never
 translated.)
 
-**Known limit:** the unit is a page / section. A short quotation in another language inside a
-mostly-English page (a German order quoted in an English narrative) is detected as the page's
-primary language and stays in the original.
+**Foreign passages inside an English page or section** (owner 2026-11-16): a page / section is
+judged by its main language, so after it is judged English each sentence is checked for free
+(`foreign_sentence`): at least 8 words, another language's function words at least 20% of them,
+from at least 3 different words, and more than twice English's - or mostly another script. Italic
+spans (the green-book convention for names, titles and terms the author kept: *Seventh Army*,
+*Grundlegender Befehl ...*), hyphenated place names (Chef-du-Pont) and note definitions (a citation
+the bibliography quotes verbatim) are never judged or translated. Only a run of foreign sentences
+goes to Grok (detect + translate), and is replaced in place by its translation, prefixed with the
+marker (`translate_embedded`); the page's `lang.json` entry reads `English (with German)`.
+
+**Marker in the parsed text:** every translated paragraph carries its own marker
+(`mark_translated`: at the end of the paragraph's first line, so every line-start structure the
+parser reads - headings, note definitions, quote / list markers, tables, `* * *` separators -
+stays intact; a block without letters is not marked; an embedded passage's marker sits right
+before it, mid-line), so a parsed paragraph's provenance never depends on the page layout. Phase 1 lifts every marker out of the file before it reads it (`lift_translation_markers`) so notes separation, headings, separators and tables read exactly the text they read without markers; it then gives each paragraph holding a marked line its `translated_from` (meaning: the paragraph holds translated text - all of it, or a passage), placing each marked line by aligning the file's lines to the paragraphs' lines in order (`difflib.SequenceMatcher`), so the same line elsewhere ("Ibid.") is never marked and the lines that structure repair adds or notes separation and nav stripping remove do not shift the placement. A marker alone on its line (the older per-page form) marks the next line with text. A marked line in the notes section gives the note it defines, or the note defined nearest above it, (`Footnote.translated_from`, serialised only when set) the language; a marked heading or nav line holds no paragraph and is skipped. Any other marked line, including one with no text or past the end of the file, raises `OBSERV parser.translated_line_unplaced`. A file without a marker is read unchanged, byte for byte; no marker reaches Phase 2 extraction or a provenance quote.
+Cross-Channel Attack (English, 562 pages): 0 passages flagged.
 
 ## Translation-provenance marker (inert)
 
-Every **translated page** is prefixed with an HTML comment:
+Every **translated paragraph** carries an HTML comment at the end of its first line (Phase 1 lifts it into `translated_from`):
 
 ```
 <!-- translated from German by grok:grok-4.6 -->

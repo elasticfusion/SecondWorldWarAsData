@@ -22,6 +22,9 @@ class Paragraph:
     # flattening it into ordinary prose). Defaults keep existing behavior.
     is_quote: bool = False
     quote_attribution: Optional[str] = None
+    # Phase-0 translation provenance: the language(s) this paragraph - or a passage in it - was
+    # translated from (src/ingestion/translation markers, lifted out of the text by the parser)
+    translated_from: Optional[str] = None
 
 
 @dataclass
@@ -78,10 +81,12 @@ class Footnote:
     )
     # "footnote" | "endnote" - the SOURCE's own label (its notes-section heading).
     kind: str = "footnote"
+    # the language(s) the note was machine-translated from by Phase 0 (None = source text)
+    translated_from: Optional[str] = None
 
     def to_dict(self) -> dict:
         """The ONE serialized form of a note (parsed.json, endnotes.json, Lambda output)."""
-        return {
+        out = {
             "number": self.number,
             "url": self.url,
             "text": self.text,
@@ -89,6 +94,9 @@ class Footnote:
             # first paragraph citing this note (0 = not located) - provenance for the citation
             "paragraph_number": self.paragraph_number,
         }
+        if self.translated_from:
+            out["translated_from"] = self.translated_from
+        return out
 
 
 @dataclass

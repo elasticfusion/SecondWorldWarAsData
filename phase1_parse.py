@@ -82,6 +82,11 @@ def _paragraph_dict(p) -> dict:
         "source_file": p.source_file,
         **({"is_quote": True} if p.is_quote else {}),
         **({"quote_attribution": p.quote_attribution} if p.quote_attribution else {}),
+        **(
+            {"translated_from": p.translated_from}
+            if getattr(p, "translated_from", None)
+            else {}
+        ),
     }
 
 

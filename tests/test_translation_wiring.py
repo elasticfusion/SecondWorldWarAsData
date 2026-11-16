@@ -37,7 +37,7 @@ def test_normalize_non_english_translates():
             "Der Angriff begann im Morgengrauen.", grok=grok
         )
     # the translated section carries its provenance marker (inert to the parser)
-    assert out == "<!-- translated from German by grok -->\n\nThe attack began at dawn."
+    assert out == "The attack began at dawn. <!-- translated from German by grok -->"
 
 
 def test_normalize_error_keeps_original():

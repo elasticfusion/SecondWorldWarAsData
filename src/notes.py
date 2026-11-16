@@ -163,12 +163,21 @@ def _parse_section(
 _MD_HEADING = re.compile(r"^#{1,6}\s")
 
 
+def is_nav_line(line: str) -> bool:
+    """A site-navigation line (``_strip_nav`` removes it from the body)."""
+    return len(_NAV_LINK.findall(line)) >= _NAV_MIN_LINKS
+
+
+def definition_number(line: str) -> Optional[int]:
+    """The note number a note-definition line defines, else None."""
+    found = _match_definition(_QUOTE_PREFIX.sub("", line).strip(), "")
+    return found[0] if found else None
+
+
 def _ends_notes(line: str) -> bool:
     """A heading (the next section) or a site-navigation line ends the notes - a note may run on
     across blank lines, but never into what follows the notes section."""
-    return (
-        bool(_MD_HEADING.match(line)) or len(_NAV_LINK.findall(line)) >= _NAV_MIN_LINKS
-    )
+    return bool(_MD_HEADING.match(line)) or is_nav_line(line)
 
 
 def _section_end(content: str, start: int) -> int:

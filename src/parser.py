@@ -607,6 +607,138 @@ def _page_in_effect(page_map: Dict[int, int], located: int) -> Optional[int]:
     return current_page
 
 
+def _page_end(
+    page_map: Dict[int, int], found_pos: int, page: Optional[int], text: str
+) -> Optional[int]:
+    """The page a paragraph ends on when it runs past the page it starts on, else None."""
+    if found_pos == -1 or page is None:
+        return None
+    end_page = _page_in_effect(page_map, found_pos + max(len(text) - 1, 0))
+    return end_page if end_page is not None and end_page != page else None
+
+
+def _paragraph_line_key(line: str) -> str:
+    """A line's key as it appears in a paragraph: the parser's own page / footnote markers and
+    quote marker removed (as ``split_into_blocks`` does), then the translation line key.
+    """
+    from src.ingestion.translation import line_key
+
+    line = _FOOTNOTE_PATTERN.sub("", _PAGE_MARKER_PATTERN.sub("", line))
+    return line_key(_BLOCKQUOTE_PATTERN.sub("", line.lstrip()))
+
+
+def _mark_translated_paragraphs(
+    paragraphs: List[Paragraph],
+    notes: List[Footnote],
+    translated_lines: List[tuple],
+    file_path: Path,
+    lifted: str,
+) -> None:
+    """Each paragraph (or note) holding a line the Phase-0 translation marked gets
+    ``translated_from`` - it holds translated text (a whole paragraph, or a passage in it).
+
+    ``lifted`` is the marker-free file the line numbers index. Structure repair, notes separation
+    and nav stripping all run between it and the paragraphs (adding blank lines, removing the
+    notes section and nav lines), so a line is placed by ALIGNING the file's lines to the
+    paragraphs' lines in order (``SequenceMatcher``) - never by text alone, which would mark an
+    identical line ("Ibid.", a repeated sentence) in an English paragraph. A line in no
+    paragraph is a note's (its definition number, else its text) or a removed nav line; a marked
+    heading is no paragraph. Any other marked line is reported."""
+    if not translated_lines:
+        return
+    file_lines = lifted.split("\n")
+    placed = _align_to_paragraphs(file_lines, paragraphs)
+    lost = []
+    for number, lang in translated_lines:
+        line = file_lines[number] if number < len(file_lines) else ""
+        holder = placed.get(number)
+        if holder is not None:
+            _add_language(holder, lang)
+        elif line.lstrip().startswith("#") and _paragraph_line_key(line):
+            continue  # a heading is no paragraph
+        elif not _place_in_note(notes, file_lines, number, lang) and not _is_nav(line):
+            lost.append(_paragraph_line_key(line) or f"line {number} (no text)")
+    _observe_translated(file_path, len(translated_lines), lost)
+
+
+def _align_to_paragraphs(
+    file_lines: List[str], paragraphs: List[Paragraph]
+) -> Dict[int, Paragraph]:
+    """{file line number: the paragraph holding that line}, by in-order alignment of line keys."""
+    from difflib import SequenceMatcher
+
+    numbers = [n for n, ln in enumerate(file_lines) if _paragraph_line_key(ln)]
+    file_keys = [_paragraph_line_key(file_lines[n]) for n in numbers]
+    para_keys: List[str] = []
+    holders: List[Paragraph] = []
+    for p in paragraphs:
+        for ln in p.text.split("\n"):
+            key = _paragraph_line_key(ln)
+            if key:
+                para_keys.append(key)
+                holders.append(p)
+    matcher = SequenceMatcher(None, file_keys, para_keys, autojunk=False)
+    placed: Dict[int, Paragraph] = {}
+    for a, b, size in matcher.get_matching_blocks():
+        for j in range(size):
+            placed[numbers[a + j]] = holders[b + j]
+    return placed
+
+
+def _place_in_note(
+    notes: List[Footnote], file_lines: List[str], number: int, lang: str
+) -> bool:
+    """Give the note holding file line ``number`` the language: the note it defines, else (a
+    continuation line) the note defined nearest above it, when that note's text holds the line.
+    """
+    from src.notes import definition_number
+
+    key = _paragraph_line_key(file_lines[number]) if number < len(file_lines) else ""
+    for above in range(min(number, len(file_lines) - 1), -1, -1):
+        defined = definition_number(file_lines[above])
+        if defined is not None:
+            break
+    else:
+        return False
+    for note in notes:
+        if note.number == defined and (
+            above == number or (key and key in " ".join(note.text.split()))
+        ):
+            _add_language(note, lang)
+            return True
+    return False
+
+
+def _is_nav(line: str) -> bool:
+    from src.notes import is_nav_line
+
+    return is_nav_line(line)
+
+
+def _add_language(holder: Any, lang: str) -> None:
+    """Add ``lang`` to a paragraph's or note's ``translated_from`` (comma-separated, no repeats)."""
+    langs = [x for x in (holder.translated_from or "").split(", ") if x]
+    holder.translated_from = ", ".join(dict.fromkeys(langs + [lang]))
+
+
+def _observe_translated(file_path: Path, marked: int, lost: List[str]) -> None:
+    logger.info(
+        "OBSERV parser.translated file=%s marked_lines=%d", file_path.name, marked
+    )
+    if lost:
+        from src.utils.observe import observe_warn
+
+        observe_warn(
+            "parser",
+            "translated_line_unplaced",
+            file=file_path.name,
+            count=len(lost),
+            example=lost[0][:80],
+            note="a line the Phase-0 translation marked is in no paragraph: that paragraph "
+            "has no translated_from - check how the parser split it",
+        )
+
+
 def _create_paragraphs(
     paragraph_blocks: List[Tuple[str, bool]],
     start_paragraph_num: int,
@@ -621,7 +753,7 @@ def _create_paragraphs(
     :func:`split_into_blocks`; the quote flag is preserved on each Paragraph so
     quotations stay distinct from the author's own prose.
     """
-    paragraphs = []
+    paragraphs: List[Paragraph] = []
     search_from = 0  # monotonic cursor into the original content
     unlocated = 0
 
@@ -639,11 +771,7 @@ def _create_paragraphs(
         else:
             search_from = found_pos + 1  # advance so repeats resolve sequentially
 
-        page_end = None
-        if found_pos != -1 and current_page is not None:
-            end_page = _page_in_effect(page_map, found_pos + max(len(para_text) - 1, 0))
-            if end_page is not None and end_page != current_page:
-                page_end = end_page
+        page_end = _page_end(page_map, found_pos, current_page, para_text)
         para = Paragraph(
             absolute_number=para_num,
             text=para_text,
@@ -1351,6 +1479,13 @@ def parse_content_file(
     non-Chandra sources are unaffected.
     """
     content = file_path.read_text(encoding="utf-8")
+    # Phase-0 translation markers out first: every detector below reads the text as it was
+    from src.ingestion.translation import lift_translation_markers
+
+    content, translated_lines = lift_translation_markers(content)
+    lifted = (
+        content  # the text the marked line numbers index (repair below shifts lines)
+    )
 
     attribution_by_para: Dict[int, Optional[str]] = {}
     table_hints: List[dict] = []
@@ -1420,6 +1555,9 @@ def parse_content_file(
     # paragraph citing that note. Media are extracted from the FULL content (a map linked only
     # from a note is still a map) but anchored against the BODY the paragraphs were built from.
     _add_footnotes_to_doc(doc, content, notes)
+    _mark_translated_paragraphs(
+        doc.paragraphs, doc.footnotes, translated_lines, file_path, lifted
+    )
     _warn_unresolvable_media(content, metadata.source_url, metadata.book)
     _add_images_to_doc(
         doc,
