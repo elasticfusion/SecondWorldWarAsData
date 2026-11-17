@@ -760,9 +760,9 @@ class GrokClient:
         all in by then, the batch is HANDED OFF: its metrics (with the submitted request ids) are
         saved for the poller's retrieve and ``BatchPending`` is raised - nothing is retried live.
         """
-        if not self._batch_collector or len(self._batch_collector) == 0:
-            logger.info("No batch requests to submit (all cached)")
-            return None
+        unbatched, answer = self._answer_without_batch(batch_name)
+        if unbatched:
+            return answer
 
         from src.utils.batch_api import (
             BatchMetrics,
@@ -776,10 +776,10 @@ class GrokClient:
         jsonl_path, count = self._write_batch_jsonl()
 
         # Index requests by id for retry lookup
-        requests_by_id = {r.request_id: r for r in self._batch_collector.requests}
-        self._batch_meta = {
-            r.request_id: r.cache_type for r in self._batch_collector.requests
-        }
+        # non-empty: _answer_without_batch returned otherwise
+        collector: Any = self._batch_collector
+        requests_by_id = {r.request_id: r for r in collector.requests}
+        self._batch_meta = {r.request_id: r.cache_type for r in collector.requests}
 
         # M4.2/M4.4: credit-aware submission gate (§9.0). Estimate this batch's
         # cost and atomically reserve it against the cluster-wide budget BEFORE
@@ -802,9 +802,7 @@ class GrokClient:
         batch_id, batch_state, ordered = self._submit_poll_retrieve(
             jsonl_path, batch_name, count, est_cost, max_wait_minutes
         )
-        submitted = [
-            (r.request_id, r.cache_type) for r in self._batch_collector.requests
-        ]
+        submitted = [(r.request_id, r.cache_type) for r in collector.requests]
         # each answer to its own request (the API returns them out of order: batch_api)
         from src.utils.batch_api import align_by_request_id, alignment_degraded
 
@@ -1229,16 +1227,7 @@ class GrokClient:
                 metrics.retry_failed += 1
                 continue
             try:
-                result = self._call_api(req.messages, req.temperature)
-                content = self._sanitize_content(
-                    result["choices"][0]["message"]["content"]
-                )
-                cache_type = self._batch_meta.get(rid, "default")
-                # Respect the global kill-switch here too (this path has no use_cache param):
-                # with GROK_CACHE_DISABLED set, a batch-retry result must NOT repopulate the cache.
-                if not _cache_globally_disabled():
-                    cache = self._get_cache(cache_type)
-                    cache[rid] = content
+                content = self._answer_live(req, rid)
                 metrics.retry_recovered += 1
                 self._update_detail(metrics, rid, "retry_ok", len(content))
                 logger.info("✓ Retry succeeded for %s", rid)
@@ -1246,6 +1235,74 @@ class GrokClient:
                 metrics.retry_failed += 1
                 self._update_detail(metrics, rid, "retry_fail", error=str(e)[:200])
                 logger.error("✗ Retry failed for %s: %s", rid, e)
+
+    def _answer_without_batch(self, batch_name: str) -> tuple:
+        """(True, answer) when no batch is submitted: nothing queued (None) or fewer requests than
+        ``batch.min_requests`` (answered live: ``_answer_small_batch_live``); else (False, None).
+        """
+        if not self._batch_collector or len(self._batch_collector) == 0:
+            logger.info("No batch requests to submit (all cached)")
+            return True, None
+        from src.utils.batch_api import batch_min_requests
+
+        if len(self._batch_collector) < batch_min_requests(self._config):
+            return True, self._answer_small_batch_live(batch_name)
+        return False, None
+
+    def _answer_live(self, req: Any, rid: str) -> str:
+        """Answer one collected batch request ``rid`` with a real-time call (its own model) and
+        cache the answer under its id - where the re-run reads it, exactly as a batch answer.
+        """
+        result = self._call_api(
+            req.messages, req.temperature, model=getattr(req, "model", "") or ""
+        )
+        content = self._sanitize_content(result["choices"][0]["message"]["content"])
+        cache_type = (
+            getattr(req, "cache_type", None) or self._batch_meta.get(rid) or "default"
+        )
+        # Respect the global kill-switch here too (this path has no use_cache param):
+        # with GROK_CACHE_DISABLED set, a live answer must NOT repopulate the cache.
+        if not _cache_globally_disabled():
+            self._get_cache(cache_type)[rid] = content
+        return content
+
+    def _answer_small_batch_live(self, batch_name: str) -> str:
+        """Fewer requests than ``batch.min_requests``: answer them live now instead of waiting up
+        to 24 h for a batch (the discount on a few requests is cents). Returns a ``live-`` id so
+        the caller re-runs against the cache as after a batch. A request that fails stays
+        unanswered: the re-run queues it again (Phase 2's round cap bounds the repeats).
+        """
+        from src.utils.batch_api import batch_min_requests
+
+        requests = list(self._batch_collector.requests)  # type: ignore[union-attr]
+        self._batch_collector = None
+        self.batch_mode = False
+        failed = []
+        for req in requests:
+            try:
+                self._answer_live(req, req.request_id)
+            except Exception as e:  # pylint: disable=broad-exception-caught
+                failed.append(req.request_id)
+                logger.error("✗ Live answer failed for %s: %s", req.request_id, e)
+        logger.info(
+            "OBSERV batch.answered_live batch=%s requests=%d failed=%d min_requests=%d",
+            batch_name,
+            len(requests),
+            len(failed),
+            batch_min_requests(self._config),
+        )
+        if failed:
+            observe_warn(
+                "batch",
+                "live_answer_failed",
+                batch=batch_name,
+                failed=len(failed),
+                requests=len(requests),
+                example=failed[0],
+                note="these requests got no answer; the re-run queues them again - if they "
+                "keep failing, check the Grok API errors logged above for these request ids",
+            )
+        return f"live-{len(requests)}reqs-{int(_time.time())}"
 
     @staticmethod
     def _update_detail(

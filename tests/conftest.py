@@ -13,6 +13,8 @@ os.environ.setdefault("WIKIMEDIA_MIN_INTERVAL_SECONDS", "0")
 os.environ.setdefault("PHASE2_REFERENCE_LOOKUPS", "0")
 # Phase-0 translation is ON by default (production); tests that exercise it set it themselves
 os.environ.setdefault("PHASE0_TRANSLATE", "0")
+# small batches are answered live in production (batch.min_requests); tests batch everything
+os.environ.setdefault("BATCH_MIN_REQUESTS", "0")
 
 import json
 from pathlib import Path

@@ -40,6 +40,27 @@ class BatchPending(Exception):
         self.batch_id, self.batch_name = batch_id, batch_name
 
 
+def batch_min_requests(config: Optional[Dict[str, Any]] = None) -> int:
+    """The smallest request count worth a batch: ``BATCH_MIN_REQUESTS`` (env), else
+    ``batch.min_requests``, else 50. Fewer are answered live (``GrokClient.submit_batch``);
+    0 batches everything."""
+    import os as _os
+
+    raw = _os.environ.get("BATCH_MIN_REQUESTS") or (
+        ((config or {}).get("batch") or {}).get("min_requests")
+    )
+    try:
+        value = int(raw) if raw not in (None, "") else DEFAULT_BATCH_MIN_REQUESTS
+    except (TypeError, ValueError):
+        logger.warning(
+            "OBSERV batch.min_requests_invalid value=%r: using default %d",
+            raw,
+            DEFAULT_BATCH_MIN_REQUESTS,
+        )
+        value = DEFAULT_BATCH_MIN_REQUESTS
+    return max(value, 0)
+
+
 def in_task_wait_minutes(config: Optional[Dict[str, Any]] = None) -> float:
     """How long a task waits for one batch round before handing it to the poller:
     ``BATCH_IN_TASK_WAIT_MINUTES`` (env, e.g. shorter for tests), else
@@ -69,6 +90,9 @@ def in_task_wait_minutes(config: Optional[Dict[str, Any]] = None) -> float:
 
 
 DEFAULT_IN_TASK_WAIT_MINUTES = 5.0
+# Fewer queued requests than this are answered live instead of batched: the batch discount on a
+# few requests is cents, while a batch can take up to 24 h to answer (owner rule, 2026-11-16).
+DEFAULT_BATCH_MIN_REQUESTS = 50
 MAX_IN_TASK_WAIT_MINUTES = 100.0  # < the poller's 2 h in_task adopt age, with margin
 
 
