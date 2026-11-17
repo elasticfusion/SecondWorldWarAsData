@@ -118,6 +118,26 @@ def _pk_targets() -> Dict[str, str]:
 EDGES: List[Tuple[str, str, str, bool]] = _discover_edges()
 PK_FIELD: Dict[str, str] = _pk_targets()
 _DIR: Dict[str, str] = {}  # registry entity names already equal their output subdir
+# Entities stored per book under content/<book>/<subdir>/ (beside the events), not output/<name>/.
+_NESTED_UNDER_CONTENT = {"source_section": "source_section"}
+
+
+def _record_files(storage: Any, entity_dir: str) -> List[str]:
+    """The JSON files of ``entity_dir``: ``output/<dir>/`` or, for a per-book entity, every
+    ``content/<book>/<dir>/``. (S3 listing is recursive and matches the file name; the local
+    listing globs the pattern, so both forms are tried, as for the event files.)"""
+    sub = _NESTED_UNDER_CONTENT.get(entity_dir)
+    if not sub:
+        return storage.list_files(entity_dir, "*.json")
+    for pattern in (f"*/{sub}/*.json", "*.json"):
+        found = [
+            rel
+            for rel in storage.list_files("content", pattern)
+            if f"/{sub}/" in f"/{rel}"
+        ]
+        if found:
+            return found
+    return []
 
 
 def _iter_records(storage: Any, entity_dir: str):
@@ -127,7 +147,7 @@ def _iter_records(storage: Any, entity_dir: str):
     real dangling ref — so each read failure is counted and surfaced with a loud canonical OBSERV
     (anti-swallow: the audit must never silently run on an incomplete corpus)."""
     skipped = 0
-    for rel in storage.list_files(entity_dir, "*.json"):
+    for rel in _record_files(storage, entity_dir):
         name = rel.rsplit("/", 1)[-1]
         if name == "index.json" or name.startswith(".") or "report" in name:
             continue
