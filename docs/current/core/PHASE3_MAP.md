@@ -32,7 +32,7 @@ skips all of them and only writes the results file.
 ```mermaid
 flowchart TD
   EPS["EP run_phase: secrets, credit + model preflight, patch config, ensure NAT"] --> UP["EP _start_openserp_if_needed: scale OpenSERP to 1, find IP, patch URL + use_openserp=true"]
-  UP --> DL["EP _download_inputs, _stamp_schema_versions"]
+  UP --> DL["EP _download_inputs: download steps 1-5 (see the text below the chart), then _stamp_schema_versions"]
   DL --> RESET["EP _reset_openserp_searched: clear marker on people/equipment with no images or military_awards"]
   RESET --> G1["1 people_groups: Grok unit facts"]
   G1 --> PL["2 places: Grok hierarchy, then link_parent_places"]
@@ -50,7 +50,12 @@ flowchart TD
   NOAA -- no --> RES
   W --> RES["batch re-run if --batch; .phase_results.json"]
   RES --> POST["EP after S3 sync: _phase3_durable_referential_fix, provenance gate, stop OpenSERP if no demand"]
+  click DL href "https://github.com/elasticfusion/SecondWorldWarAsData/blob/main/docs/current/core/PHASE3_MAP.md#what-ep-_download_inputs-does" "What EP _download_inputs does: steps 1-5" _blank
 ```
+
+**From the chart:** the `EP _download_inputs` box is described step by step (1-5) in
+[What `EP _download_inputs` does](#what-ep-_download_inputs-does). The box links there too: on GitHub a
+plain click on it does nothing, but Ctrl-click (Cmd-click on a Mac) opens the section in a new tab.
 
 Order in `P3:main()` (lines 873-960): people_groups; places and link_parent_places and geocode
 (`_enrich_places_and_geocode`, line 145); bibliography; bibliography_resolve; document media; OpenSERP
@@ -76,7 +81,7 @@ then `output/.phase_results.json` (`enriched`, `entity_counts` for people, peopl
 equipment, weather, logistics, casualties, maps, supplemental; `source_stats`; `errored_sources`),
 and `write_validation_stats`. Referential-integrity repair, provenance enforcement and
 `scripts.validate_phase3` run in-process only when `S3_BUCKET` is unset (`P3:1061` onward). On ECS they
-run after the final sync in `EP:_phase3_durable_referential_fix` (`EP:2280`, called at `EP:2452`).
+run after the final sync in `EP:_phase3_durable_referential_fix` (`EP:2329`, called at `EP:2501`).
 
 Steps that read parsed documents (in_doc_map_links, image_map_vision, image_person_link,
 link_asset_review, image_place_link, intra_corpus_links) need `output/content/**/*-parsed.json`. With
@@ -84,13 +89,13 @@ none, `_load_parsed_docs` logs `OBSERV phase3.no_parsed_docs` once and each step
 
 ### ECS wrapper (`EP:run_phase`, lines 975-1000)
 
-1. Load secrets, `_preflight_credit_check` (also checks every configured Grok model, `EP:786`),
+1. Load secrets, `_preflight_credit_check` (also checks every configured Grok model, `EP:799`),
    `_patch_config`.
-2. `_ensure_nat_if_needed` (`EP:610`): NAT for Phase 2 and 3, waits for the nat-manager to report ready.
-3. `_start_openserp_if_needed` (`EP:719`, Phase 3 only).
-4. `_download_inputs` (`EP:1293`, called at `EP:992`): copies the entity records Phase 3 enriches from
+2. `_ensure_nat_if_needed` (`EP:623`): NAT for Phase 2 and 3, waits for the nat-manager to report ready.
+3. `_start_openserp_if_needed` (`EP:732`, Phase 3 only).
+4. `_download_inputs` (`EP:1298`, called at `EP:1005`): copies the entity records Phase 3 enriches from
    S3 to the task's local disk. See [What `EP _download_inputs` does](#what-ep-_download_inputs-does).
-5. `_stamp_schema_versions()` then `_reset_openserp_searched()` (`EP:996`).
+5. `_stamp_schema_versions()` then `_reset_openserp_searched()` (`EP:1009`).
 6. Background S3 sync every `SYNC_INTERVAL` (120 s) while `phase3_enrich_data.py` runs as a subprocess.
 
 #### What `EP _download_inputs` does
@@ -98,66 +103,92 @@ none, `_load_parsed_docs` logs `OBSERV phase3.no_parsed_docs` once and each step
 Phase 3 runs `phase3_enrich_data.py` against a local `output/` tree, not against S3 directly. Before
 it starts, `_download_inputs` fills that tree from the S3 bucket, and the background sync and final
 sync copy the enriched files back afterwards. One function serves every phase: it picks the download
-by the phase script name (`EP:1293-1310`). For Phase 3 the steps are:
+by the phase script name (`EP:1298-1315`). For Phase 3 the steps are:
 
 1. **DynamoDB shortcut (does nothing).** It calls `_materialize_from_dynamo()` unless
    `processing.force_reprocess` is true. That function is a deprecated stub that always returns
-   False (`EP:1285-1290`): S3 is the only entity store, so the S3 download below always runs.
-2. **Wait for the bibliography reconcile barrier.** `_download_phase3_from_s3` (`EP:1543`) first
-   calls `_wait_for_reconcile_barrier` (`EP:1402`). The dedup step's full-corpus bibliography
-   reconcile (`_reconcile_bibliography_full_corpus`, `EP:2834`) collapses the per-task bibliography
+   False (`EP:1290-1295`): S3 is the only entity store, so the S3 download below always runs.
+2. **Wait for the bibliography reconcile barrier.** `_download_phase3_from_s3` (`EP:1548`) first
+   calls `_wait_for_reconcile_barrier` (`EP:1407`). The dedup step's full-corpus bibliography
+   reconcile (`_reconcile_bibliography_full_corpus`, `EP:2883`) collapses the per-task bibliography
    shards and, when done, publishes `manifests/reconcile_complete/_all.json`. Phase 3 polls every 5 s
    for that file (or `<book>.json`) for up to `RECONCILE_BARRIER_WAIT_SECS` (default 300 s; 0 turns
    the wait off). A barrier counts as fresh when its `run_id` matches the latest reconcile run marker
    (`manifests/reconcile_complete/_run.json`) and it completed after that run started, so a reconcile
    finished by an earlier task is accepted at once. When the barrier has no valid run id, or the
    marker is missing or unreadable, it must have completed no earlier than 30 s before this task
-   started (`_judge_barrier`, `EP:2967`).
+   started (`_judge_barrier`, `EP:3016`).
    On timeout Phase 3 continues anyway (fail-open) and logs `OBSERV reconcile.barrier_timeout...`;
    the `_incomplete` variant means batches for the book are still queued, so late bibliography
    records will be missing from this run.
-3. **Download the entity records.** The directories are `_PHASE23_ENTITY_DIRS` (`EP:56-70`): people,
+3. **Download the entity records.** The directories are `_PHASE23_ENTITY_DIRS` (`EP:56-78`): people,
    people_groups, places, dates, equipment, weather, logistics, casualties, maps, images,
    supplemental, bibliography and narrative_notes.
-   - **`BOOK_NAME` set (one book):** it gets the book's file list from `_get_book_entity_files`
-     (`EP:1228`), which reads the per-book `book_manifest#<book>#<entity>` rows in DynamoDB
-     (`BookManifest.get_all_files`, `src/utils/book_manifest.py:39-58`). It downloads each
-     directory's `index.json` and only the listed files. `bibliography/` and `supplemental/` are
-     downloaded in full, because their records are shared across books. The manifest covers 9 types
-     (people, people_groups, places, dates, equipment, weather, logistics, casualties, bibliography),
-     so the maps, images and narrative_notes record files are NOT downloaded, only their `index.json`
-     (gap 27). If the book has no manifest rows, or the DynamoDB lookup fails, the fallback
-     (`EP:1248-1280`) reads the `index.json` of those same 9 directories and takes every file they name,
-     for all books, plus every file under `bibliography/`.
-   - **`BOOK_NAME` empty (all books):** it downloads every directory in full. Files already on local
-     disk are skipped (`_download_s3_prefix_skip_existing`, `EP:1918`). This is the case when the
+   - **`BOOK_NAME` set (one book):** every directory is one of two kinds, and a test pins that each
+     is one or the other (`tests/unit/test_phase3_scoped_download.py`):
+     - **Per book** (`MANIFESTED_ENTITY_TYPES`, `src/utils/book_manifest.py:19-30`: people,
+       people_groups, places, dates, equipment, weather, logistics, casualties, images; bibliography
+       records are registered too, but that directory is downloaded in full): it gets the book's file
+       list from `_get_book_entity_files` (`EP:1241`), which reads the per-book
+       `book_manifest#<book>#<entity>` rows in DynamoDB that Phase 2 writes as it saves each record
+       (`batch_parallel._register_entity`; every image writer goes through `images.register_image`,
+       including the Wikipedia media of a source section). It downloads each directory's `index.json`
+       and only the listed files.
+     - **Shared across books** (`_PHASE3_CROSS_BOOK_DIRS`, `EP:76`: bibliography, supplemental, maps,
+       narrative_notes): downloaded in full. Bibliography and supplemental records are keyed by
+       citation, a map is keyed by its URL and one foldout is referenced from many chapters and books,
+       and narrative notes are relocated out of the shared bibliography, so the per-book manifest
+       cannot list them. The map image binaries under `output/maps/files/` are not downloaded in
+       bulk (`_PHASE3_DOWNLOAD_EXCLUDE`, `EP:83`): downloading them made every task fetch the whole
+       corpus's map images and then re-stage them all for the AV scan. Phase 3 reads an existing map
+       image only to retry a vision check that has not decided yet, so after the records are
+       downloaded `_download_pending_map_images` (`EP:1600`) fetches the binary of each map that still
+       needs it (`map_common.needs_vision_image`: no `map_vision_checked_at`, and the name and URL do
+       not decide map or not-map) and logs `OBSERV phase3.map_images_for_vision pending=<n>
+       downloaded=<n>`.
+
+     If the book has no manifest rows, or the DynamoDB lookup fails, the fallback reads the
+     `index.json` of the per-book directories and takes every file they name, for all books, plus every
+     file under `bibliography/` (`EP:1261-1285`). The run logs
+     `OBSERV phase3.scoped_download book=<book> <dir>=<files> ...` with the count per directory
+     (`EP:1581`), so a directory that downloads 0 files is visible.
+   - **`BOOK_NAME` empty (all books):** it downloads every directory in full, except the map image
+     binaries (same exclusion and the same fetch of the binaries a vision retry needs). Files already on local disk are skipped
+     (`_download_s3_prefix_skip_existing`, `EP:1961`). This is the case when the
      dedup review starts Phase 3, because that launch carries no book (see
      [DEDUP_REVIEW_GATE.md](DEDUP_REVIEW_GATE.md) §5).
-4. **Download the content tree for provenance.** `_download_phase3_provenance_inputs` (`EP:1505`)
+4. **Download the content tree for provenance.** `_download_phase3_provenance_inputs` (`EP:1510`)
    syncs `output/content/<book>/` (or all of `output/content/` when no book is set). That tree holds
    the event files, the parsed documents and the source-section records. Without it the
    `event_provenance_stamp` step finds no source sections, and the in-document map, image-to-person
    and link-review steps have no parsed documents to read. A failure here is logged as a warning and
    Phase 3 continues.
-5. **Check the bibliography arrived.** `_observe_bibliography_download_coverage` (`EP:1586`) counts
+5. **Check the bibliography arrived.** `_observe_bibliography_download_coverage` (`EP:1629`) counts
    bibliography records in S3 and on local disk and logs
    `OBSERV phase3.bib_download s3=<n> local=<n> status=ok|SHORTFALL barrier=<status>`, where
    `<status>` is the barrier outcome: `seen`, `timeout`, `timeout_incomplete`, `disabled` or `unknown`.
    A `SHORTFALL` means the bibliography resolver will run on a partial set; the `barrier` value says
    whether the reconcile wait timed out.
 
+**Uploading back.** At the end, `_final_sync` (`EP:3470`) uploads only the downloaded files the task
+changed (or created): a file whose modification time still equals the one recorded at download is
+skipped (`_unchanged_downloads`, `EP:262`), as the background sync and Phase 2 already did. So a
+book-scoped run that downloads every shared map and bibliography record re-uploads only the ones it
+touched. Two tasks that change the same shared record at the same time can still overwrite each other
+(gap 28).
+
 It does not read `manifest#phase2` (only Phase 2 does) and it does not download `external_maps/`, so
 the external-maps step works from what is on local disk.
 
-On a non-zero exit (`EP:1040-1056`): failure notification, final sync, NAT lease released. The Phase 3
+On a non-zero exit (`EP:1053-1069`): failure notification, final sync, NAT lease released. The Phase 3
 lock is not removed (`if "phase3" not in phase_script`), and OpenSERP is not scaled down. The lock
-expires by TTL after 2 h (`EP:4084`).
+expires by TTL after 2 h (`EP:4135`).
 
-On success (`EP:2444` onward): remove lock; `_phase3_durable_referential_fix`; `_notify_url_review_pending`;
+On success (`EP:2493` onward): remove lock; `_phase3_durable_referential_fix`; `_notify_url_review_pending`;
 provenance gate (`_provenance_gate("3")`, mode from `provenance_validation.gate`, default `warn`); doc
 lifecycle to done; trigger the next pending enrich book through the trigger Lambda. OpenSERP is
-scaled to 0 only if no other book is pending in either queue (`EP:2488`) and `_openserp_demand_present`
-(`EP:3780`) is false (section 3.1).
+scaled to 0 only if no other book is pending in either queue (`EP:2537`) and `_openserp_demand_present`
+(`EP:3831`) is false (section 3.1).
 
 ### Reliability and observability (all steps)
 
@@ -217,23 +248,23 @@ across several search engines. The pipeline calls it over HTTP on port 7001.
   (`compute.yaml:1553`) is stale, and the pipeline reaches the task by private IP.
 - **Scale up** (`EP:_start_openserp_if_needed`, line 719, Phase 3 only): if `runningCount > 0` it only
   discovers the IP; if `desiredCount` is 0 it sets 1; if desired is already 1 but nothing runs it
-  forces a new deployment. It polls `_get_openserp_alb_dns` (`EP:506`; despite the name it reads the
+  forces a new deployment. It polls `_get_openserp_alb_dns` (`EP:519`; despite the name it reads the
   running task's `privateIPv4Address`) every 10 s, 72 tries (12 min). On success `_patch_openserp_url`
-  (`EP:773`) writes `external_maps.openserp_url = http://<ip>:7001` and
+  (`EP:786`) writes `external_maps.openserp_url = http://<ip>:7001` and
   `supplemental_material.use_openserp = true` into `/app/config.yaml`. The service is started whether
   or not `use_openserp` is set.
-- **Start failure**: a timeout or an exception only logs a warning (`EP:768-770`). `_patch_openserp_url`
+- **Start failure**: a timeout or an exception only logs a warning (`EP:781-783`). `_patch_openserp_url`
   is not called, so `use_openserp` keeps its `config.yaml` value (true), and `external_maps.openserp_url`
   is not in `config.yaml`, so the code default `http://localhost:7001` applies, which does not exist in
   the Phase 3 task. See gap 1.
-- **NAT**: `_ensure_nat_if_needed` (`EP:610`) runs for Phases 2 and 3, invokes the nat-manager Lambda
+- **NAT**: `_ensure_nat_if_needed` (`EP:623`) runs for Phases 2 and 3, invokes the nat-manager Lambda
   and retries up to `NAT_READY_MAX_ATTEMPTS` (6) until it reports ready. Phases do not tear NAT down.
   The task also holds a NAT lease (`_acquire_nat_lease`).
-- **Scale down at phase end**: `_stop_openserp_if_running` (`EP:3824`) sets `desiredCount=0` unless
-  `_openserp_demand_present` (`EP:3780`) is true. Demand means any Phase 2 or Phase 3 lock held
+- **Scale down at phase end**: `_stop_openserp_if_running` (`EP:3875`) sets `desiredCount=0` unless
+  `_openserp_demand_present` (`EP:3831`) is true. Demand means any Phase 2 or Phase 3 lock held
   (any book) or any other running or pending Phase 2 or Phase 3 task (this task is excluded by
   `ECS_TASK_ID`). Any lookup error keeps OpenSERP up. After Phase 3 success it is also skipped when
-  another book is pending (`EP:2488-2490`).
+  another book is pending (`EP:2537-2539`).
 - **Backstops**: `openserp_manager` Lambda on `{env}-wwii-openserp-idle-monitor` (every 10 min,
   `events.yaml:267`) scales the service to 0 and tears NAT down after `IDLE_MINUTES` (30) with no
   pipeline tasks, and force-tears down if NAT is older than 2 h with no pipeline task and no lock. It
@@ -382,7 +413,7 @@ Provenance: every search is recorded as a fetch event (`recorded_fetch`; DynamoD
   (`write_json_with_lock` returns False) leaves the entity out of `entities_enriched`; equipment and
   source sections also count `write_failed` and log `OBSERV openserp.*_write_failed`, while people, groups
   and places do not.
-- `EP._reset_openserp_searched` (`EP:3532`) runs at every Phase 3 task start. In `/app/output/people` and
+- `EP._reset_openserp_searched` (`EP:3583`) runs at every Phase 3 task start. In `/app/output/people` and
   `/app/output/equipment` it deletes `openserp_searched` (not `openserp_searched_at`) from any record
   with the marker and neither `images` nor `military_awards`, writing with `write_text`. Those records
   are searched again on every run. Groups, places and source sections are not reset.
@@ -576,7 +607,7 @@ a field wrong, **Low** is cosmetic or dead code. None is fixed here.
 
 ### High
 
-1. **An unreachable OpenSERP is silent.** A start timeout or error only logs a warning (`EP:768-770`),
+1. **An unreachable OpenSERP is silent.** A start timeout or error only logs a warning (`EP:781-783`),
    and every driver then fails the `/health` probe, logs one warning and returns 0 (`OE:1428-1436`). The
    steps report `status=ok enriched=0`, no `openserp.anomaly` fires (nothing was eligible), and no SNS alert
    is sent. A run can finish with no OpenSERP enrichment and nobody is told. Needs an actionable alert or a
@@ -593,7 +624,7 @@ a field wrong, **Low** is cosmetic or dead code. None is fixed here.
    `_run_document_media_steps` says document media must not depend on the OpenSERP flag.
 4. **On ECS `use_openserp: false` has no effect when the service starts.** The entrypoint starts the service
    (Fargate and NAT cost) whatever the flag says, and `_patch_openserp_url` then forces the flag true
-   (`EP:773-780`). The flag only holds when the start fails.
+   (`EP:786-793`). The flag only holds when the start fails.
 5. **Batch mode with OpenSERP is wrong.** In `--batch` the verify calls are queued, read as NO, cached as
    `REJECT` for 90 days, and the entities are stamped searched. `_run_batch_rerun` does not re-run OpenSERP
    or geocoding (section 5). Latent while `batch.phase3` is false.
@@ -601,7 +632,7 @@ a field wrong, **Low** is cosmetic or dead code. None is fixed here.
 ### Medium
 
 6. **`_reset_openserp_searched` defeats the 90-day gate.** People and equipment with no hit are searched
-   again on every Phase 3 task (`EP:3532`). Grok verdicts are cached but the queries are not, so each repeat
+   again on every Phase 3 task (`EP:3583`). Grok verdicts are cached but the queries are not, so each repeat
    pays the 5 s sleep per query. It also writes with `write_text`, outside `write_json_with_lock` and its
    schema guard.
 7. **People web pages are stored as `military_awards[]`.** Hits of any kind land in that field with a
@@ -618,7 +649,7 @@ a field wrong, **Low** is cosmetic or dead code. None is fixed here.
     workers for any message although the pool size is 0 (section 3.12).
 11. **`openserp_manager` cannot tell OpenSERP's task from pipeline work.** It matches "openserp" in task ARNs
     (`openserp_manager.py:31,81`), which never contain it, so the idle monitor never tears down while
-    OpenSERP runs. After a failed Phase 3 (no scale-down at `EP:1040-1056`, lock held up to 2 h) only the
+    OpenSERP runs. After a failed Phase 3 (no scale-down at `EP:1053-1069`, lock held up to 2 h) only the
     hourly reaper remains, and it also requires no held lock.
 12. **`supplemental_search.search_openserp` and `search_gutenberg_openserp` always miss.** They `POST /search`,
     which the Go server does not route (`openserp/core/server.go:207-235`), and errors are swallowed at debug
@@ -651,7 +682,7 @@ a field wrong, **Low** is cosmetic or dead code. None is fixed here.
 
 ### Low
 
-21. The completion email text (`EP:3965-3975`) lists "People (biographical data)" and "OpenSERP (images,
+21. The completion email text (`EP:4016-4026`) lists "People (biographical data)" and "OpenSERP (images,
     academic papers)", omits geocoding, maps and equipment images, and says "All entities enriched".
 22. Step labels and lock status text do not match the step list (section 1).
 23. Dead or unwired code: `enrich_with_advanced_features`, `search_academic_sources`, `_verify_results_batch`,
@@ -670,14 +701,31 @@ a field wrong, **Low** is cosmetic or dead code. None is fixed here.
 
 - `search_queries/*.yaml` format and the query-sharpening rules (`_person_query_terms`, `_equipment_query_terms`)
   are described only here and in code.
-27. **(Medium, added 2026-11-17) A single-book Phase 3 downloads no map, image or narrative-note
-    records.** With `BOOK_NAME` set, `_download_phase3_from_s3` takes each directory's file list from the
-    book manifest (or its index fallback), and both cover only 9 types (`src/utils/book_manifest.py:39-58`,
-    `EP:1253-1263`); maps, images and narrative_notes get only their `index.json`. The image and map steps
-    (`image_map_vision`, `image_person_link`, `image_place_link`, `in_doc_map_links`) then run without the
-    local records. `image_map_vision` globs `output/images/*.json` (`image_map_vision.py:320`), so it
-    finds no pending images to decide. A map already in S3 is found through `maps/index.json` (which is
-    downloaded), but reading its record fails, which logs `OBSERV maps.shared_read_failed` and drops this
-    chapter's reference to the map (`map_common._append_shared_map`, `map_common.py:155-180`). An unscoped run (the dedup-review launch, which carries no book) downloads
-    every directory and is not affected. Impact on a real single-book run not measured. Fix: add the three
-    types to the manifest's list, or download those prefixes in full like `bibliography/`.
+27. **FIXED 2026-11-17: a single-book Phase 3 downloaded no map, image or narrative-note records.**
+    The book manifest and its index fallback covered 9 types, so with `BOOK_NAME` set the maps, images
+    and narrative_notes directories got only their `index.json`. `image_map_vision` (which globs
+    `output/images/*.json`, `image_map_vision.py:320`) then found no pending images, and a map already in
+    S3 was found in `maps/index.json` but its record could not be read (`OBSERV maps.shared_read_failed`,
+    `map_common.py:155-180`), dropping the chapter's reference. The fix:
+    - images are read back from the manifest (`MANIFESTED_ENTITY_TYPES`); the source-section Wikipedia
+      media images, which were written without a manifest row, now register through the shared
+      `images.register_image`;
+    - maps and narrative_notes are downloaded in full like bibliography (`_PHASE3_CROSS_BOOK_DIRS`),
+      without the map image binaries (`_PHASE3_DOWNLOAD_EXCLUDE`), except the few whose map still needs
+      its vision check (`_download_pending_map_images`);
+    - the Phase 3 final sync uploads only changed files, so the shared records are not all re-uploaded;
+    - a test fails if a Phase 3 directory is neither per-book nor shared, and the per-directory download
+      counts are logged (`OBSERV phase3.scoped_download`).
+
+    See [What `EP _download_inputs` does](#what-ep-_download_inputs-does), step 3. Runs before the fix
+    are not repaired: re-run Phase 3 for a book that ran scoped (images still pending vision are decided
+    on that run; a dropped map reference comes back when that chapter's maps are persisted again).
+    Source-section media images written before the fix have no manifest row; a full (unscoped) run sees
+    them.
+28. **(Medium, found 2026-11-17) Concurrent Phase 3 tasks can overwrite each other's change to a shared
+    record.** Each task edits its local copy of a shared map, bibliography or supplemental record and
+    uploads the whole file, so when two book tasks change the same record, the later upload wins and the
+    earlier task's change (for example a map reference it appended) is lost. Uploading only changed
+    files (gap 27) narrows this to records both tasks actually changed. The same exposure exists for
+    bibliography. Not fixed: needs a conditional write (S3 `If-Match` on the ETag read at download) or
+    serialising shared-record writes.

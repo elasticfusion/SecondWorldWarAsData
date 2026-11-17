@@ -25,7 +25,7 @@ contentrepository/[<source>/]<slug>/chapterN/chapterN-meta.yaml
   document (PDF, EPUB) is named by its own filename stem (`book_slug`), and Phase 0 writes its chapters
   to `contentrepository/<stem>/chapterN/`, so both rules give the same slug.
 - Phase 1 scans one content root whose children are the book folders (`discover_content_structure`, `src/discovery.py`). The book-scoped ECS run syncs `contentrepository/<book>/` down
-  (`ecs_entrypoint.py:1354`).
+  (`ecs_entrypoint.py:1359`).
 - Folders named `sourcedocument` and `_figures`, and dot-folders, are skipped.
 - A chapter folder must be named `chapter<digits>` or `chapter<ROMAN>` (`chapterIV`; Roman numerals
   are converted by `_convert_chapter_number` in `src/discovery.py`). Other folders are skipped with

@@ -74,7 +74,7 @@ live-only or leave the choice to the caller.
   `in_task_wait_minutes` 5) in `phase2_extract.py:1040-1093`; after the rounds it sets `batch_mode = False` for
   the retry and post-extraction steps. Phase 3 is live (`batch.phase3: false`); with `--batch` it collects,
   submits once and re-runs six enrichers ([PHASE3_MAP.md](PHASE3_MAP.md) section 5).
-- **Model guard** (`src/utils/grok_models`). `EP._preflight_credit_check` (`ecs_entrypoint.py:786`) makes a
+- **Model guard** (`src/utils/grok_models`). `EP._preflight_credit_check` (`ecs_entrypoint.py:799`) makes a
   1-token request, aborts on HTTP 402, 403-with-"credit" or 401, then checks that every configured model
   (default plus `model_map` values) is both listed by xAI and answers as itself (a retired model may be
   silently redirected). A failure raises `GrokModelUnavailable`, a `BaseException`, with an
@@ -208,7 +208,7 @@ No other Lambda (including `batch_poller.py`) imports `GrokClient` or makes a ch
 ---|---|---|---|
 | `urlreview_ui_handler` Lambda (`compute.yaml:1226`) | `lambda_handlers/urlreview_ui_handler.py:176-200` -> `enrichment/fetch_review.py:253` `decide_exclude_scope` | chat, `exclude_scope`, temp 0.0: exclude one URL or the whole site when an operator excludes a find | wired; operator action, not a pipeline run. Error returns `SCOPE_URL` |
 | `openserp_worker.py:298` | the Phase 3 OpenSERP requests through `enrich_one_<type>` | as section 5 | dormant (nothing fills the queue) |
-| `ecs_entrypoint.py:4859` | builds a `GrokClient` only to populate the cache from retrieved batch answers; makes no request | n/a | live |
+| `ecs_entrypoint.py:4910` | builds a `GrokClient` only to populate the cache from retrieved batch answers; makes no request | n/a | live |
 | `lambda_handlers/phase2_handler.py`, `phase3_handler.py` | `:28`, `:40` (`GrokClient(...)`) | per-entity enrichment from S3 events | dormant: not referenced by any template or script |
 
 | `batch_poller` and other Lambdas | no chat request | n/a | n/a |

@@ -189,6 +189,11 @@ def _apply_media_meta(rec: Dict[str, Any], w, h, mime) -> None:
         rec["encodingFormat"] = mime
 
 
+def _section_book(record: Dict[str, Any]) -> str:
+    """The book a source-section record belongs to ("" when unknown)."""
+    return str((record.get("source") or {}).get("book") or "")
+
+
 def fetch_section_media(
     record: Dict[str, Any],
     output_dir: Path,
@@ -214,7 +219,7 @@ def fetch_section_media(
     section_id = record.get("SourceSectionID")
     event_id = record.get("EventID")
 
-    from src.extraction.images import _download_image
+    from src.extraction.images import _download_image, register_image
     from src.utils.file_lock import write_json_with_lock
 
     images_dir = output_dir / "images"
@@ -249,6 +254,7 @@ def fetch_section_media(
         # Tier-1 deterministic media metadata (schema.org images 2.27), from the bytes we downloaded.
         _apply_media_meta(rec, _w, _h, _mime)
         write_json_with_lock(images_dir / f"{img_id}.json", rec, entity="images")
+        register_image(_section_book(record), f"{img_id}.json")
         written += 1
     logger.info(
         "source_section media: wrote %d image(s) for operation %r", written, title

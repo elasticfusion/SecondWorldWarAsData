@@ -13,6 +13,22 @@ from typing import List, Optional
 
 logger = logging.getLogger(__name__)
 
+# The entity types whose files are registered per book (batch_parallel._register_entity; images:
+# images._extract_one_image) - what a book-scoped Phase 3 download takes from the manifest. Shared
+# (cross-book) types are not here: Phase 3 downloads them in full (ecs_entrypoint._PHASE3_CROSS_BOOK_DIRS).
+MANIFESTED_ENTITY_TYPES = (
+    "people",
+    "people_groups",
+    "places",
+    "dates",
+    "equipment",
+    "weather",
+    "logistics",
+    "casualties",
+    "bibliography",
+    "images",
+)
+
 
 class BookManifest:
     """Track entity files per book."""
@@ -38,19 +54,8 @@ class BookManifest:
 
     def get_all_files(self, book: str) -> dict:
         """Get all entity filenames for a book, keyed by entity type."""
-        entity_types = [
-            "people",
-            "people_groups",
-            "places",
-            "dates",
-            "equipment",
-            "weather",
-            "logistics",
-            "casualties",
-            "bibliography",
-        ]
         result = {}
-        for et in entity_types:
+        for et in MANIFESTED_ENTITY_TYPES:
             files = self.get_files(book, et)
             if files:
                 result[et] = files

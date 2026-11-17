@@ -41,7 +41,9 @@ def test_full_download_path_fetches_content_when_unscoped(monkeypatch):
     monkeypatch.delenv("BOOK_NAME", raising=False)
     monkeypatch.setattr(EE, "_wait_for_reconcile_barrier", lambda: "seen")
     monkeypatch.setattr(EE, "_s3_client", lambda: object())
-    monkeypatch.setattr(EE, "_download_s3_prefix_skip_existing", lambda s3, p: (0, 0))
+    monkeypatch.setattr(
+        EE, "_download_s3_prefix_skip_existing", lambda s3, p, *exclude: (0, 0)
+    )
     monkeypatch.setattr(
         EE, "_observe_bibliography_download_coverage", lambda *a, **k: None
     )

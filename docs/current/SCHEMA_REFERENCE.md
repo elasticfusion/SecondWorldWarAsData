@@ -811,14 +811,14 @@ Survives file recreation — matches on normalized names rather than file IDs.
 ```json
 {
   "cache_key": "book_manifest#BreakoutAndPursuit#people",
-  "book": "BreakoutAndPursuit",
-  "entity_type": "people",
-  "keys": ["output/people/Eisenhower_01ABC.json", "output/people/Patton_01DEF.json"],
-  "updated_at": "2026-05-20T15:00:00Z"
+  "filenames": ["Eisenhower_01ABC.json", "Patton_01DEF.json"]
 }
 ```
 
-Used by Phase 3 to scope S3 downloads to only the entities relevant to the current book.
+`filenames` is a DynamoDB string set of bare file names under `output/<entity_type>/`, added to with
+`ADD` as Phase 2 saves each record (`BookManifest._register_dynamo`). The item has no other attributes.
+
+Used by Phase 3 to scope S3 downloads to only the entities relevant to the current book. Registered types: `src/utils/book_manifest.MANIFESTED_ENTITY_TYPES` (people, people_groups, places, dates, equipment, weather, logistics, casualties, bibliography, images).
 
 ### Pipeline Locks — `lock#{env}-wwii-{phase}[#{book}]`
 

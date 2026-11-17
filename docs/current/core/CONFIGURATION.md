@@ -409,7 +409,7 @@ aws:
     startup_timeout: 120
 ```
 
-`config.yaml.example` ships only `enabled`, `region` and `notification_email` under `aws:`. The other keys are read with code defaults only if present (CloudFormation sets the matching env vars on ECS tasks; see below). `ecs_entrypoint.py:488-503` patches `aws.enabled: true`, `aws.s3_bucket` and `storage.entity_backend: filesystem` at runtime. The `health_check_url` and `database.backend/mongodb_uri` keys previously listed here are not read by any code; the health check is a fixed `GET {url}/health` (`src/utils/openserp_client.py:95`). `database.dynamodb_table_prefix` appears only in `lambda_handlers/import_handler.py`.
+`config.yaml.example` ships only `enabled`, `region` and `notification_email` under `aws:`. The other keys are read with code defaults only if present (CloudFormation sets the matching env vars on ECS tasks; see below). `ecs_entrypoint.py:501-516` patches `aws.enabled: true`, `aws.s3_bucket` and `storage.entity_backend: filesystem` at runtime. The `health_check_url` and `database.backend/mongodb_uri` keys previously listed here are not read by any code; the health check is a fixed `GET {url}/health` (`src/utils/openserp_client.py:95`). `database.dynamodb_table_prefix` appears only in `lambda_handlers/import_handler.py`.
 
 **Options:**
 - `enabled` — When true, storage uses S3, cache uses DynamoDB, OpenSERP uses ECS Fargate
@@ -571,7 +571,7 @@ Set by CloudFormation on ECS task definitions (`cloudformation/compute.yaml`) or
 | `CONTENT_TOPIC_ARN` | Phase 2 | SNS topic for content-uploaded events (used to re-trigger pipeline for pending content) |
 | `DEDUP_REVIEW_URL` | Phase 2 | URL of the dedup review UI (included in notification emails) |
 | `BOOK_NAME` | Phase 3 | Scopes S3 downloads to a specific book (set by trigger Lambda) |
-| `SKIP_RETRY` | Retrieve task | Set by `ecs_entrypoint.py:4721` (not CloudFormation); `phase2_extract.py:868` then skips the empty-event retry pass |
+| `SKIP_RETRY` | Retrieve task | Set by `ecs_entrypoint.py:4772` (not CloudFormation); `phase2_extract.py:868` then skips the empty-event retry pass |
 | `ENV_NAME` | All | Environment name prefix (e.g., `dev`) |
 
 ### CloudFormation Timing Parameters
