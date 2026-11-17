@@ -41,9 +41,20 @@ tries, abort if never ready) -> `_clear_title_cache_if_reprocess` -> `_load_secr
 - **LOW - two copies of the 1-token probe.** `_preflight_credit_check` posts its own request
   (`EP:808`) and `grok_models.preflight` posts the same probe per model (`src/utils/grok_models.py:199`).
   Fold the credit/key checks into `grok_models.preflight` (DRY).
-- **LOW - Phase 3 clears a cache it never uses.** `_clear_title_cache_if_reprocess` runs for Phase 3 but
-  only clears the Phase 2 per-title event cache (`cache/api/books/<title>/events/`). Harmless; skip it
-  for Phase 3 or say why.
+- **MED - `_clear_title_cache_if_reprocess` deletes nothing on ECS, so a reprocess reuses the old Grok
+  answers.** Purpose (`EP:546`): on a reprocess (`processing.force_reprocess`, a non-empty
+  `processing.reprocess_types`, or `REPROCESS_TITLE` = `BOOK_NAME`) clear this book's cached Grok event
+  answers, so a stale or bad cached answer does not fail every re-run. It runs for Phase 2, Phase 3 and
+  the OCR cross-check, and deletes the local directory `/app/cache/api/books/<book>/events/`. On ECS the
+  answers are not there: `_patch_config` sets `aws.enabled=true`, so `GrokClient` uses
+  `DynamoCacheBackend` (`src/grok_client.py:429`), with keys under `books/<book>/events` in
+  `dev-wwii-api-cache`; the local directory holds only batch JSONL and rejected answers (`EP:3539`
+  comment), and nothing downloads cached answers into it. Effect: the reprocess flag does not refresh the
+  event answers it is meant to refresh. Phase 3 also has no book-scoped cache to clear (it sets no
+  `current_book`, "was gap 26"). Fix (DRY): clear through the cache backend (`DynamoCacheBackend` already
+  has a prefix scan-and-delete, `clear`, `src/utils/cache_backend.py:155`), and skip Phase 3. Owner decision
+  before fixing: whether a reprocess should really drop paid answers (cost), or only the answers that
+  failed.
 - Not checked at preflight: the NARA key (warning only when missing), OpenSERP (see "was gap 1"),
   Nominatim. Owner decision whether any should block.
 
