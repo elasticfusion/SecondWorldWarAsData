@@ -20,6 +20,11 @@ was verified. *refactor* = only a redesign fixes it. `EP` = `ecs_entrypoint.py`.
   `processing.force_reprocess` (`EP:1311-1313`) exists only to skip the stub, so it goes too. Remove
   the function, both calls and that read; the S3 download is then unconditional. Verified: function
   body is `return False`.
+- **DONE 2026-11-17 (PR #756; was gap 27) - a single-book Phase 3 downloaded no map, image or
+  narrative-note records.** Fixed: per-book types read from the book manifest (now incl. images),
+  shared types downloaded in full, map binaries only when a vision retry needs them, changed-only
+  final sync; details in `PHASE3_MAP.md` §1 "What `EP _download_inputs` does", step 3. Runs before the
+  fix are not repaired: re-run Phase 3 for a book that ran scoped.
 - **MED - a failed bibliography reconcile is silent, and Phase 3 then runs on unmerged shards.**
   `_reconcile_bibliography_full_corpus` (dedup step at the end of Phase 2, `EP:2883`) catches every
   exception and only `logger.warning`s it (`EP:2935`): no OBSERV event, no SNS alert. It has already
@@ -133,7 +138,8 @@ was verified. *refactor* = only a redesign fixes it. `EP` = `ecs_entrypoint.py`.
   (`src/enrichment/openserp_enrichment.py`) already does this for OpenSERP enrichment but has no caller.
 - **MED - book path: Gutenberg and OpenSERP never return anything.** `_resolve_book_search`
   (`BR:1833`) calls `search_gutenberg_openserp` and `search_openserp`, which POST to `/search`, a route
-  the OpenSERP server does not have (also `PHASE3_MAP.md` gap 9). Books are in practice searched on
+  the OpenSERP server does not have (`openserp/core/server.go:207-235`; was gap 12; errors are swallowed
+  at debug level). Books are in practice searched on
   Archive.org, then the Grok LLM search. (Where they do return, each hit is content-verified by
   `_verify_match` -> `_verify_url_content`.) Fix with the batch-verify entry above: route books
   through the same multi-source search as the archive path.
@@ -158,9 +164,116 @@ was verified. *refactor* = only a redesign fixes it. `EP` = `ecs_entrypoint.py`.
   Record Group"; it calls `_identify_nara_record`, a deterministic table lookup (`BR:1398-1432`) that
   never uses Grok.
 
+### Carried over from PHASE3_MAP.md §6 (found by the 2026-11-17 documentation review)
+
+Not yet re-reviewed step by step; each keeps its old number ("was gap N"), which `PHASE3_MAP.md`
+still uses in its text. `EP` = `ecs_entrypoint.py`, `OE` = `src/enrichment/openserp_enrichment.py`,
+`P3` = `phase3_enrich_data.py`.
+
+- **HIGH (was gap 1) - An unreachable OpenSERP is silent.** A start timeout or error only logs a
+  warning (`EP:781-783`), and every driver then fails the `/health` probe, logs one warning and returns
+  0 (`OE:1428-1436`). The steps report `status=ok enriched=0`, no `openserp.anomaly` fires (nothing was
+  eligible), and no SNS alert is sent. A run can finish with no OpenSERP enrichment and nobody is told.
+  Needs an actionable alert or a `skipped` status.
+- **HIGH (was gap 2) - An outage or open breaker marks entities as searched for 90 days.** Every driver
+  stamps the entity after trying, even when every query returned `[]` (`OE:1418`, called
+  unconditionally). Only people and equipment without results are rescued, by the reset in the entry that was gap 6.
+  Groups, places and source sections lose their window. The SQS worker is worse: it never resets its
+  breaker (`openserp_worker.py`), so after five failures it marks every later entity searched without
+  searching, until it exits.
+- **HIGH (was gap 3) - Five non-search steps are gated by `use_openserp`.** `image_person_link`,
+  `link_asset_review`, `image_place_link`, `intra_corpus_links` and `event_provenance_stamp` sit inside
+  `_run_openserp_enrichment` (`P3:351-385`). Setting the flag false, or a failed import or
+  `reset_metrics` (`P3:285-292`, returns 0), also skips them and the SourceSectionID stamp. The comment
+  on `_run_document_media_steps` says document media must not depend on the OpenSERP flag.
+- **HIGH (was gap 4) - On ECS `use_openserp: false` has no effect when the service starts.** The
+  entrypoint starts the service (Fargate and NAT cost) whatever the flag says, and
+  `_patch_openserp_url` then forces the flag true (`EP:786-793`). The flag only holds when the start
+  fails.
+- **HIGH (was gap 5) - Batch mode with OpenSERP is wrong.** In `--batch` the verify calls are queued,
+  read as NO, cached as `REJECT` for 90 days, and the entities are stamped searched. `_run_batch_rerun`
+  does not re-run OpenSERP or geocoding (PHASE3_MAP.md §5). Latent while `batch.phase3` is false.
+- **MED (was gap 6) - `_reset_openserp_searched` defeats the 90-day gate.** People and equipment with
+  no hit are searched again on every Phase 3 task (`EP:3583`). Grok verdicts are cached but the queries
+  are not, so each repeat pays the 5 s sleep per query. It also writes with `write_text`, outside
+  `write_json_with_lock` and its schema guard.
+- **MED (was gap 7) - People web pages are stored as `military_awards[]`.** Hits of any kind land in
+  that field with a `summary` (`OE:1247-1282`). It is shared with Phase 2 award citations, it
+  suppresses further people web searches (`if not data.get("military_awards")`), and the reset treats
+  it as "had results".
+- **MED (was gap 8) - Image results are page URLs.** `images[]` items are search-result pages, not
+  images, and nothing resolves them (no `og:image`, no Wikimedia File resolution). Later downloads fail
+  with `OBSERV vision.image_blocked reason=not_an_image` (`images.py:77`). Yield for groups and places
+  is near zero.
+- **MED (was gap 9) - The breaker counts empty results as failures.** Five consecutive legitimate
+  no-hit queries open it and skip the rest of that driver's searches (`OE:385-413`).
+- **MED (was gap 10) - The SQS path is unwired and defective.** No producer runs; `source_section`
+  enqueues nothing; the worker searches generic equipment, lacks a reachability probe and loses its
+  metrics; the autoscaler starts workers for any message although the pool size is 0 (PHASE3_MAP.md
+  §3.12).
+- **MED (was gap 11) - `openserp_manager` cannot tell OpenSERP's task from pipeline work.** It matches
+  "openserp" in task ARNs (`openserp_manager.py:31,81`), which never contain it, so the idle monitor
+  never tears down while OpenSERP runs. After a failed Phase 3 (no scale-down at `EP:1053-1069`, lock
+  held up to 2 h) only the hourly reaper remains, and it also requires no held lock.
+- **MED (was gap 13) - External maps cannot work on ECS.** `search_with_openserp` runs
+  `./tools/search_maps`, which is not copied into the image (`Dockerfile` has no `tools/` line), and
+  only logs the `/mega/search` URL. The failure returns `[]`, and the place is still marked searched in
+  the search history (`openserp_maps.py:718`). Off by default (`external_maps.enabled: false`).
+- **MED (was gap 14) - `--max-items` does not bound OpenSERP searches** for equipment, groups, places
+  and source sections. The cap tests the enriched count, so records that yield nothing keep being
+  searched. Only people limit the candidates collected.
+- **MED (was gap 15) - Places OpenSERP is under-instrumented and uncapped.** No `_record_eligible`, no
+  name gate, no result cap, once per name variant, and image hits are not counted in `items_added`.
+  `openserp.results_per_query` is unused (limit fixed at 5).
+- **MED (was gap 16) - Model-memory facts have no citable source.** Group `enrichment_data` carries
+  `_source: {type:"grok"}` and no URL; place hierarchy carries no stamp. Under the provenance rule
+  these are unsourced.
+- **MED (was gap 17) - NOAA never runs and its validation warning is benign.** The token is empty and
+  nothing supplies it, yet `validate_phase3` warns on every run. Weather records created before their
+  place was geocoded may never get coordinates, so they would get neither Open-Meteo nor NOAA data
+  (UNVERIFIED: no Phase 3 step backfills weather coordinates, but the creation order was not traced).
+- **MED (was gap 18) - Per-result Grok verification is the cost driver.** One request per hit,
+  `_verify_results_batch` has no caller, and the insignia and patch queries run twice per group (once
+  as `images`, once for the patch) because search results are not cached.
+- **MED (was gap 19) - OpenSERP image items lack provenance beyond the URL.** No query, engine or
+  verdict, no link to the fetch event; the verdict cache key is truncated and people image verdicts
+  omit snippet and URL (PHASE3_MAP.md §3.6).
+- **MED (was gap 20) - Bibliography verifier is fail-open in one place.** `_verify_match` accepts on a
+  Grok error or without a client; every other verifier fails closed.
+- **MED (was gap 28) - Concurrent Phase 3 tasks can overwrite each other's change to a shared record.**
+  Each task edits its local copy of a shared map, bibliography or supplemental record and uploads the
+  whole file, so when two book tasks change the same record, the later upload wins and the earlier
+  task's change (for example a map reference it appended) is lost. Uploading only changed files (was
+  gap 27) narrows this to records both tasks actually changed. The same exposure exists for
+  bibliography. Not fixed: needs a conditional write (S3 `If-Match` on the ETag read at download) or
+  serialising shared-record writes.
+- **LOW (was gap 21)** - The completion email text (`EP:4016-4026`) lists "People (biographical data)"
+  and "OpenSERP (images, academic papers)", omits geocoding, maps and equipment images, and says "All
+  entities enriched".
+- **LOW (was gap 22)** - Step labels and lock status text do not match the step list (PHASE3_MAP.md
+  §1).
+- **LOW (was gap 23)** - Dead or unwired code: `enrich_with_advanced_features`,
+  `search_academic_sources`, `_verify_results_batch`, `_prefilter_verify_cache`,
+  `_parse_batch_verdicts`, `search_person_images` and `search_military_awards` (used only by
+  `scripts/utils/debug_searches.py`), `equipment._extract_media_with_openserp` chain,
+  `situational_geocode`, `url_content_verdict.evaluate`, `phase3_retry.py` (copied by `Dockerfile:49`,
+  no caller), `lambda_handlers/phase3_handler.py`, `--no-references`, `enrich_all_people`.
+- **LOW (was gap 24)** - `compute.yaml` labels `OpenSerpService` "Internal ALB for OpenSERP" and
+  `openserp_manager`'s docstring mentions an ALB, but no load balancer exists. `_get_openserp_alb_dns`
+  returns an IP.
+- **LOW (was gap 25)** - `.phase_results.json` does not embed the OpenSERP metrics snapshot.
+- **LOW (was gap 26)** - No per-request identity: Phase 3 sets no `current_book`, so no Phase 3 Grok
+  request is BookID/RequestID stamped (see [GROK_REQUESTS.md](core/GROK_REQUESTS.md) section 1).
+  Whether entity-level Phase 3 calls need an equivalent is an owner decision.
+- **DOC** - `search_queries/*.yaml` format and the query-sharpening rules (`_person_query_terms`,
+  `_equipment_query_terms`) are described only here and in code.
+- **LOW (from PHASE3_ENRICHMENT.md) - `map_features` has no Phase 3 step.** The map-interior
+  extraction and reverse registration (`src/extraction/map_registration.py`) are prototype-level and
+  not wired into `phase3_enrich_data.py`.
+
 ### Code defects found by the 2026-11-17 documentation review (each verified in code)
 Phase 3 defects (OpenSERP service, 90-day marker, breaker, batch mode, external maps, NOAA, ...)
-are ranked ONCE in `docs/current/core/PHASE3_MAP.md` section 6; not repeated here. The rest:
+are listed once, in the "Phase 3 review" section above; not repeated here. The rest:
 
 HIGH
 - **A parse-track upload with no safe slug runs Phase 1 over ALL books.** When no pending key
