@@ -184,18 +184,34 @@ meta.yaml + content.md pair) so the map re-enters Phase 1 -> 2 -> 3 as a new "bo
   `_recycle_as_source` runs. With the files lost (above), or a failed write, every later run skips the map
   as a duplicate. Fix with the upload: claim after the source is durably in S3, or release the claim on
   failure.
-- **MED *refactor* - `depicted` is not stored on the Map entity.** The Map record gets no units, places,
-  sector, date or movements; only the recycled prose carries them. Nothing links the Map's `MapID` to
-  the PeopleGroups, Places or Dates that Phase 2 later extracts from `map-<id>`: the meta carries the map
-  only as the slug, and no Phase 1/2 code reads its `source_type: map` (grep). Store `depicted` on the Map (with `vision` provenance) and link the derived
-  entities back to it.
-- **MED *refactor* - structure is thrown away, then re-extracted by a second LLM pass.** Unit, place and
-  date lists become sentences ("Units depicted on the map: ..."), which Phase 2 re-extracts with Grok.
-  That costs a second request per map and loses the link between a unit, its position and the time
-  shown. Unit-at-place-at-time placement and boundaries (unit sectors, national borders, phase lines)
-  have no field: `front_line_or_sector` is one free-text string, `movements[]` are strings, and there is
-  no geometry. Owner decision needed on a structured map-observation model (unit, place, datetime,
-  boundary/geometry, MapID) written directly, without the prose round-trip.
+- **HIGH *refactor* - DECISION (owner 2026-11-17): write map vision results straight into the entity
+  JSON with the existing entity writers; stop recycling maps as prose sources.** Today `depicted` is
+  turned into sentences ("Units depicted on the map: ...") and Phase 2 re-extracts them with Grok: a
+  second paid request per map, and the unit-at-place-at-time link is lost. Nothing is stored on the Map
+  record, and nothing links the derived entities back to the `MapID` (no Phase 1/2 code reads the
+  meta's `source_type: map`, grep). The new flow, reusing what Phase 2 already uses:
+  - **Map**: store `depicted` on the Map record (with `vision` provenance: model, RequestID,
+    `map_vision_checked_at`) through `map_common.find_or_create_map_by_url` (`map_common.py:127`).
+  - **Places** (towns, rivers, hills, roads): `places._find_or_create_place` (`places.py:526`) and
+    `places._add_event_mention` (`places.py:686`). Geocoding then runs on them in the normal Phase 3
+    step.
+  - **Dates** (`date_or_window`): `dates._find_or_create_date` (`dates.py:233`) and
+    `dates._add_event_mention` (`dates.py:313`).
+  - **PeopleGroups** (units): `people_groups._save_group` (`people_groups.py:294`), which merges
+    into an existing group or creates a new one under the index lock.
+  - **The map as a citation**: `bibliography.store_bibliography_entry` (`bibliography.py:774`).
+  - **Mentions**: key them on a deterministic EventID for the map, `event_id("map-<id>", 1)`, so each
+    entity is linked to the map and its `verbatim_reference` is the vision `description`.
+  These writers are private and take Phase 2 shapes (a mention dict plus an index), so the refactor
+  makes each one a public find-or-create entry point. Phase 2 and the map path then call the same
+  function: no second writer. This removes `recycle_map_as_source`'s `contentrepository/map-<id>/` write,
+  and with it the two HIGH entries above (files never uploaded, dedup claim never released).
+- **MED - owner decision needed: a structured model for map observations.** The writers above cover
+  "this unit, this place, this date appear on this map". The vision answer has no field for what a map
+  adds: unit X at place Y at time T, unit sector boundaries, national borders and phase lines.
+  `front_line_or_sector` is one free-text string, `movements[]` are strings, and there is no geometry.
+  Decide on a placement record (PeopleGroupID, PlaceID, datetime, boundary/geometry, MapID) and extend
+  `prompts/map_vision.yaml` to return it.
 - **MED - provenance of the derived data is weak.** The recycled meta has `license: Unknown`, empty
   author and copyright, and `source_url` = the image URL. The originating book, chapter and
   `SourceSectionID` that linked the map are not recorded, so events from `map-<id>` cannot cite where the
@@ -209,24 +225,44 @@ meta.yaml + content.md pair) so the map re-enters Phase 1 -> 2 -> 3 as a new "bo
 
 ### Step: OpenSERP group (PHASE3_MAP §3)
 
-- **MED - a web source OpenSERP finds and Grok confirms gets no bibliography record.**
-  `process_positive_url` (`src/enrichment/openserp_enrichment.py:808`) returns
-  `{url, title, summary, fetched_at, source}` (plus `archived_url` / `wayback_capture_timestamp` when the
-  page came from the Wayback Machine). The callers store it inline on the entity: places
-  `web_results[]` (`OE:2128`), people_groups `web_results[]` / veterans associations (`OE:1792`), source
-  sections `primary_sources[]` (`OE:1185` -> `OE:1744`), people `military_awards[]` (`OE:1272`; a
-  person's web hits are kept only as awards). No module in the OpenSERP path creates a `BibliographyID` or a
-  mention (grep: `BibliographyID` appears only in `bibliography_resolver`, `source_acquisition`,
-  `supplemental`, `bibliography` and `people`). Effect: these sources are not citable through the
-  bibliography, are not resolved (NARA/archive.org) and are not deduplicated against existing citations;
-  the docstring at `OE:712` already calls the result "the bibliographical record". Fix (DRY): pass each
-  confirmed hit through the existing `store_bibliography_entry` (`src/extraction/bibliography.py:774`,
-  find-or-create + mention) and keep only the `BibliographyID` and the summary on the entity.
-- **MED - every confirmed web page about a person is stored as a military award.**
-  `_apply_verified_web` (`OE:1247`) appends each summarized page from the people `web_results` queries
-  to `military_awards[]`, whatever the page is (an obituary, a unit history, a forum post). The site
-  would show these pages as awards. Fix with the entry above: store the page as a bibliography source,
-  and write `military_awards` only from an award-specific extraction.
+- **HIGH *refactor* - DECISION (owner 2026-11-17): a page OpenSERP finds and Grok confirms goes to the
+  human URL-review queue; approval submits it to Phase 0.** Today `process_positive_url`
+  (`src/enrichment/openserp_enrichment.py:808`) returns `{url, title, summary, fetched_at, source}` (plus
+  the Wayback fields), and the callers write it inline on the entity: places `web_results[]` (`OE:2128`),
+  people_groups `web_results[]` / veterans associations (`OE:1792`), source sections
+  `primary_sources[]` (`OE:1185` -> `OE:1744`), people `military_awards[]` (`OE:1272`). It gets no
+  bibliography record and no human review.
+  The queue, the UI and the Phase 0 submission already exist (PR #577/#578), so this reuses them:
+  - **Queue**: `fetch_provenance.record_fetch_event` with `kind=TEXTUAL, outcome=HIT` sets
+    `review_status=pending` for a provider in `_ENQUEUE_PROVIDERS` (`src/utils/fetch_provenance.py:52`).
+    OpenSERP is not in that set and `process_positive_url` records no fetch event, so no OpenSERP find
+    reaches the queue. The M4 link path already does exactly this (`link_assets._enqueue_one`,
+    `src/extraction/link_assets.py:187`); move that function to one shared enqueue helper and call it
+    from both.
+  - **UI**: the URL-review Lambda `dev-wwii-urlreview-ui` (`lambda_handlers/urlreview_ui_handler.py`,
+    `cloudformation/compute.yaml:1221`) is deployed (last modified 2026-11-16). It lists pending finds
+    and approves or rejects them (`fetch_review.affirm_fetch_find`, `reject_fetch_find`).
+  - **Phase 0**: `fetch_review.submit_affirmed_batch` (`fetch_review.py:562`) uploads each approved
+    find to `contentrepository/_system/<title>/fetchfind-<id>.html`. The trigger routes `.html` to the
+    Phase 0 convert task (`lambda_handlers/trigger_handler.py:898`), with the global content-hash
+    dedup first. The slug is `fetchfind-<id>` (`book_slug`, filename stem), so it is immutable.
+  Gaps to close for OpenSERP finds:
+  - **The page itself is not kept.** `_find_content_bytes` (`fetch_review.py:397`) submits the file at
+    `quarantine_path` / `retrieved_path`; only `source_retrieval` sets one (`source_retrieval.py:193`).
+    `url_fetch.fetch` keeps no bytes, so an approved OpenSERP find would submit only the provenance stub
+    (URL + summary). Keep the fetched page (or its Wayback copy) and record its path on the event.
+  - **The originating entity must be carried.** Put the entity type and ULID (PersonID, PeopleGroupID,
+    PlaceID, SourceSectionID) and the search query in `request_params`, as `_enqueue_one` already does
+    with `origin_SourceSectionID`, so the new source's events link back to that entity.
+  - **The bibliography record comes from intake.** The approved page becomes a source with its own
+    BookID; no OpenSERP-specific bibliography writer is needed.
+  - **Owner decision: what the entity keeps while a find is pending.** Options: nothing (the queue is
+    the only record) or a pending reference (URL + fetch_event_id, no summary shown as fact).
+  - **Stop the `military_awards` misuse.** `_apply_verified_web` (`OE:1247`) files every confirmed page
+    about a person (obituary, unit history, forum post) under `military_awards[]`. With the queue it
+    is enqueued like every other find; `military_awards` is written only by an award extraction.
+  - Queue volume: every confirmed hit becomes a review item. Keep the per-entity caps, and batch the
+    Grok verify as decided for `bibliography_resolve`.
 
 ### Cross-cutting: how Phase 3 results reach the S3 JSON
 

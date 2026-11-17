@@ -404,6 +404,8 @@ Image results are verify-only: the search-result URL is stored as is, with no fe
 For equipment, `equipment_images` later runs a vision check. For people, groups (except the unit patch)
 and places there is none.
 
+Planned change: confirmed finds go to the URL-review queue and, on approval, to Phase 0 (`TODO.md` "Step: OpenSERP group").
+
 ### 3.8 Fields written and provenance
 
 | Entity | Field | Cap per run | Item |
@@ -607,6 +609,8 @@ it and the next Phase 3 moves it again.
   queues survivors for human review, nothing is auto-ingested), `image_place_link` (`images.link_places`),
   `intra_corpus_links` (`links.intra_corpus`), and `event_provenance_stamp` (always, writes `SourceSectionID`
   on events and sub-events). All default on and are fail-safe.
+
+Planned change: map vision results are written to the Map, Place, Date and PeopleGroup JSON through the existing entity writers, replacing the map-as-source recycle (`TODO.md` "Step: in_doc_map_links, image_map_vision").
 
 ### 4.5 Equipment images (`equipment_images.py`)
 
