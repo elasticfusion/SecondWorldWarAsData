@@ -264,6 +264,38 @@ meta.yaml + content.md pair) so the map re-enters Phase 1 -> 2 -> 3 as a new "bo
   - Queue volume: every confirmed hit becomes a review item. Keep the per-entity caps, and batch the
     Grok verify as decided for `bibliography_resolve`.
 
+### Step: photos from Phase 2 (image_map_vision, image_person_link, image_place_link)
+
+How Phase 3 handles document photos today (verified in code at `main` 96703bca):
+- `image_map_vision` (always runs): images Phase 2 marked `map_check=pending_vision` get a Grok vision
+  map-or-not verdict; a map becomes a Map entity (PHASE3_MAP §4.4).
+- `image_person_link` (`src/extraction/image_person_link.py`): parses names from each parsed image's
+  caption, resolves them to PersonIDs through the people index (full name, then unambiguous surname) and
+  appends `{url, title=caption, source="document:<book>"}` to that person's `images[]`.
+- `image_place_link` (`src/extraction/image_place_link.py`): classifies terrain/aerial photos from the
+  caption (keywords, then a Grok text question, `:71`), resolves or creates the Place through
+  `places._find_or_create_place` (`:154`), appends the photo to `places.images[]` and sets
+  `contentLocation {PlaceID, name}` on the Image record (`:227`).
+- Both linkers read the parsed documents, not `output/images/`, and both run only when `use_openserp` is
+  true (the "was gap 3" entry below).
+
+Findings:
+- **MED - a person photo is linked on one side only.** `image_person_link` writes `people.images[]` but
+  never updates the Image record in `output/images/`, so an Image has no link to the people it shows,
+  and the person entry carries no ImageID (URL only). `image_place_link` writes both sides
+  (`contentLocation`). Fix (DRY): one shared "link image to entity" helper that writes the entity's
+  `images[]` entry (with ImageID) and the Image record's field (`about` / `contentLocation`), used by
+  both linkers.
+- **LOW - the people-photo vision gate never looks at the photo.** `_is_people_photo`
+  (`image_person_link.py:152`) calls `ImageCaptioner.caption(None, ...)`; with no bytes `caption`
+  returns `classification="unknown"`, `method="context-only"` (`image_captioner.py:114-123`), so the gate
+  always passes. Fix (DRY): read the Phase 2 `vision_classification` already stored on the Image record,
+  and drop the dead call.
+- **Owner question - do photo URLs found in Phase 2 go to the URL-review queue?** Photos from the source
+  document are part of an approved source, so they are not new finds. Wikipedia and Grokipedia images
+  that Phase 2 attaches to people, groups and equipment are web URLs; the 2026-11-17 decision says
+  every URL find goes to review. Decide whether those count.
+
 ### Cross-cutting: every URL a Phase 3 step finds goes to human review (owner 2026-11-17)
 
 - **HIGH *refactor* - DECISION: the URL-review queue applies to every find that has a URL, not only
