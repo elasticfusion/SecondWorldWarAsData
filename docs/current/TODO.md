@@ -264,6 +264,36 @@ meta.yaml + content.md pair) so the map re-enters Phase 1 -> 2 -> 3 as a new "bo
   - Queue volume: every confirmed hit becomes a review item. Keep the per-entity caps, and batch the
     Grok verify as decided for `bibliography_resolve`.
 
+### Cross-cutting: every URL a Phase 3 step finds goes to human review (owner 2026-11-17)
+
+- **HIGH *refactor* - DECISION: the URL-review queue applies to every find that has a URL, not only
+  OpenSERP.** That covers OpenSERP pages, Archive.org and Gutenberg copies found by `bibliography_resolve`,
+  NARA records with an online copy, Grok LLM-search URLs, and map URLs. Approval submits the find to
+  Phase 0 through `fetch_review.submit_affirmed_batch`. One shared enqueue helper (the OpenSERP entry
+  above) is called by every finder. Current behaviour, verified in code:
+  - **The queue gets search calls, not finds.** `recorded_fetch` (`src/utils/fetch_provenance.py:185`)
+    records each request with `outcome=HIT` for any 2xx status (`:256`), and `_initial_review_status`
+    (`:64`) makes that `pending` for `nara`, `archive-org`, `archive-solr`, `gutendex` and `wayback`. The
+    `endpoint` is the search API (`catalog.archives.gov/api/v2/records/search`, archive.org
+    advancedsearch, gutendex), so a reviewer sees one item per successful query, including queries that
+    matched nothing, with no link to the BibliographyID and no Grok relevance verdict.
+  - **The finds bypass review.** `bibliography_resolve` writes each verified Archive.org / Gutenberg /
+    NARA URL straight into the record's `resource_urls` and `source_metadata.findings`
+    (`BR:330-336`, `BR:677-682`); nothing is submitted to Phase 0.
+  - Fix: enqueue the found item URL (with BibliographyID or entity ULID, provider, query, Grok verdict),
+    stop `recorded_fetch` from enqueueing search calls (provenance only), and keep `resource_urls` for
+    approved finds (or mark the pending ones).
+- **DECISION: a NARA record with no online copy is not queued; its data is appended to the
+  bibliography JSON.** Record group, series, holding, physical address and NARA identifiers go on the
+  record (`archive_physical_address` etc., `BR:261`), with the source of each value. This is the current
+  behaviour apart from the overwrite fix already recorded ("one physical address for every record
+  group"); confirm nothing is enqueued for it once the queue change above lands.
+- **FEATURE - owner - a UI for sorting out NARA records with no online copy. Requirements first.**
+  Not designed yet. Open questions to settle before building: who uses it (operator, contributor,
+  genealogist), what actions it offers (confirm the record group, correct the holding, request a scan,
+  mark it unobtainable), how it relates to the URL-review and dedup UIs (one app or three), and what it
+  writes back (the bibliography JSON, with provenance of the human edit).
+
 ### Cross-cutting: how Phase 3 results reach the S3 JSON
 
 Every Phase 3 step writes its Grok-confirmed result into the local entity JSON through the one shared
