@@ -57,6 +57,22 @@ was verified. *refactor* = only a redesign fixes it. `EP` = `ecs_entrypoint.py`.
   (paid NARA/OpenSERP/Grok lookups) and the site would show a citation twice, one copy without the
   merged mentions. Fix: delete every S3 key in `output/bibliography/` whose basename the reconciled
   local set no longer has (shards and merged-away records), and repair the 8 now.
+- **MED - schema stamping switches the whole pipeline's trigger off for a local-only job.**
+  `_stamp_schema_versions` (`EP:3690`, run by every Phase 3 task right after the download) sets the
+  trigger Lambda's reserved concurrency to 0 (`EP:3708`) while it rewrites files on the task's local
+  disk, and removes the limit in a `finally` (`EP:3756`). Stamping touches no S3 object (the files
+  reach S3 only at the later syncs), so the disable protects nothing. While it lasts, every pipeline
+  event (uploads, phase-complete messages) is throttled and depends on the sender's retries; if the
+  task is killed during stamping (OOM, SIGKILL) the `finally` never runs and the trigger stays off
+  with no alert, so the pipeline silently stops starting anything. Fix: drop the disable/re-enable.
+  Verified in code; for the current bibliography it rewrites nothing (all 2,035 records are already
+  at 2.29).
+- **LOW - stamping hides failures and bypasses the write guard.** `_stamp_file` (`EP:3664`) catches
+  every exception and returns 0 with no log, so an unreadable record is skipped silently, and it writes
+  with `os.replace` instead of `write_json_with_lock`, so a stamped record is not schema-checked.
+- **LOW - a short bibliography download is only a log line.** `_observe_bibliography_download_coverage`
+  logs a SHORTFALL warning (`EP:1679`, with a good cause analysis) but sends no alert, and a failure of
+  the check itself is logged at debug (`EP:1687`).
 - ***refactor* - the barrier exists only because bibliography is written as per-task shards that a
   later corpus-wide pass must merge.** Merging at write time (conditional writes on the canonical
   `bib_<hash>.json`) would remove the reconcile pass, the barrier, the run marker and the wait.
