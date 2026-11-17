@@ -1,7 +1,7 @@
 """Unit tests for duplicate detection logic."""
 
 import pytest
-from scripts.find_duplicate_people import (
+from src.dedup.find_duplicate_people import (
     _normalize_unicode,
     _normalize_german,
     _similarity_ratio,

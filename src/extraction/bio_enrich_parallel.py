@@ -103,9 +103,13 @@ def _fetch_one(
     ``BatchModeCollecting`` is captured like any other error (defensive — the
     caller already excludes batch mode, so this should not occur).
     """
+    from src.utils.grok_models import GrokModelUnavailable
+
     try:
         enriched_now = bool(enrich_fn(person, grok_client))
         return person, enriched_now, None
+    except GrokModelUnavailable:
+        raise  # a model that is gone stops the run (future.result() hands it on)
     except (
         BaseException
     ) as exc:  # noqa: BLE001 - enrichment is additive; isolate failures

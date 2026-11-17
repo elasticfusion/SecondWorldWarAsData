@@ -20,24 +20,18 @@ _FIELDS = {
     "alpha-3 (e.g. USA, DEU, GBR) or null",
     "category": "one of armor, aircraft, naval, artillery, infantry_weapons, "
     "vehicles, communications, engineering, other, or null",
-    "quantity": "the EXACT number of this equipment the text states, as an integer, "
-    "or null if the text gives only a vague count or none",
-    "quantity_text": "the VERBATIM count phrase from the text (e.g. '10', 'several', "
-    "'a handful') or null if no count is stated — never invent a number",
-    "place_name": "where this equipment was per the text (e.g. 'the crossroads in "
-    "Cherbourg') or null",
 }
 
 
+# Asked only when the RECORD lacks them. quantity / quantity_text / place_name are per mention:
+# refine already reads them from the same quote onto the mention, and they are never on the
+# record dict - so asking for them made every item a recheck request (2,249 in the 2026-11-14
+# full-book run, against the ~2,500 items refine had just classified).
+_RECORD_FIELDS = ("country_of_origin", "category")
+
+
 def _needs(rec: Dict[str, Any]) -> List[str]:
-    fields = (
-        "country_of_origin",
-        "category",
-        "quantity",
-        "quantity_text",
-        "place_name",
-    )
-    return [f for f in fields if not rec.get(f)]
+    return [f for f in _RECORD_FIELDS if not rec.get(f)]
 
 
 _SPEC = FieldRecheckSpec(
@@ -45,7 +39,6 @@ _SPEC = FieldRecheckSpec(
     needed=_needs,
     label="equipment",
     name_fields=("common_name", "name", "technical_identifier"),
-    coerce={"quantity": int},
 )
 _RECHECKER = SourceRechecker(_SPEC)
 

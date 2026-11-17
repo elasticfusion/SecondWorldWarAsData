@@ -5,10 +5,11 @@ import math
 import logging
 import hashlib
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 import ulid
 from jsonschema import ValidationError, validate
 
+from src.grok_client import for_chapter_book
 from src.grok_client import BatchModeCollecting, GrokClient
 from src.utils.json_validator import _fix_invalid_ulids
 from src.json_schemas import SUPPLEMENTAL_SCHEMA
@@ -93,70 +94,320 @@ def _build_ref_context(
 def create_supplemental_prompt(
     event_data: Dict[str, Any],
     endnote_texts: Optional[Dict[int, str]] = None,
+    parsed_data: Optional[Dict[str, Any]] = None,
 ) -> List[tuple]:
-    """Create prompt for supplemental material extraction."""
-    event_name = event_data.get("Event", {})
-    event_id = event_name.get("EventID", "")
-    event_title = event_name.get("Event_Name", "")
+    """Prompts for supplemental material extraction: ``[(Sub-eventID, prompt, stable cache key
+    material, EventID)]``.
 
+    With the parsed chapter (``parsed_data``): one prompt per paragraph window of each sub-event's
+    OWN raw paragraphs (``windows.sub_event_windows``) that carries note markers - the raw text
+    only, never the events' summary; its notes are the ``<sup>[N]</sup>`` markers of those
+    paragraphs. Without: one per sub-event, as before."""
+    event = event_data.get("Event", {})
+    if parsed_data is not None:
+        return _window_prompts(event, parsed_data, endnote_texts)
     prompts = []
-
-    for sub_event in event_name.get("Sub-events", []):
-        sub_event_id = sub_event.get("Sub-eventID", "")
-        sub_event_summary = sub_event.get("Sub-event_summary", "")
-        fulltext = sub_event.get("Sub-event_fulltext", {})
-        endnote_refs = sub_event.get("Endnote_References", [])
-        footnote_refs = sub_event.get("Footnote_References", [])
-
-        text = "\n".join(fulltext.values())
-        endnote_block, ref_type_hint = _build_ref_context(
-            endnote_refs, footnote_refs, endnote_texts
-        )
-
-        from src.utils.prompt_loader import get_system_prompt, render_prompt
-
-        prompt = render_prompt(
-            "supplemental",
-            event_title=event_title,
-            event_id=event_id,
-            sub_event_summary=sub_event_summary,
-            sub_event_id=sub_event_id,
-            text=text,
-            endnote_refs=endnote_refs,
-            footnote_refs=footnote_refs,
-            endnote_block=endnote_block,
-            ref_type_hint=ref_type_hint,
-        )
-        # Deterministic identity for cache keying — DELIBERATELY excludes the volatile
-        # `text` (Sub-event_fulltext is regenerated/summarized differently between a
-        # batch submit and the retrieve re-run) AND the endnote_block (same volatility
-        # class — must not reintroduce a submit-vs-rerun mismatch). The event/sub-event
-        # ids are deterministic content-derived ULIDs and, with the sorted reference
-        # numbers, uniquely identify the sub-event, so a submit and its retrieve resolve
-        # to the SAME supplemental cache entry.
-        stable_material = "|".join(
-            [
-                str(event_id),
-                str(sub_event_id),
-                "e:"
-                + ",".join(
-                    str(n)
-                    for n in sorted(
-                        r for r in (endnote_refs or []) if isinstance(r, int)
-                    )
+    for sub_event in event.get("Sub-events", []):
+        prompts.append(
+            _sub_event_prompt(
+                event,
+                sub_event.get("Sub-eventID", ""),
+                sub_event.get("Sub-event_summary", ""),
+                "\n".join(sub_event.get("Sub-event_fulltext", {}).values()),
+                (
+                    sub_event.get("Endnote_References", []),
+                    sub_event.get("Footnote_References", []),
                 ),
-                "f:"
-                + ",".join(
-                    str(n)
-                    for n in sorted(
-                        r for r in (footnote_refs or []) if isinstance(r, int)
-                    )
-                ),
-            ]
+                endnote_texts,
+            )
         )
-        prompts.append((sub_event_id, prompt, stable_material))
-
     return prompts
+
+
+def _window_prompts(
+    event: Dict[str, Any],
+    parsed_data: Dict[str, Any],
+    endnote_texts: Optional[Dict[int, str]],
+) -> List[tuple]:
+    """One prompt per note-bearing window of each sub-event's own raw paragraphs; a note is asked
+    once per sub-event (in the first window carrying its marker)."""
+    from src.extraction import windows
+    from src.extraction.events import _parse_note_context
+
+    note_context = _parse_note_context(parsed_data)
+    pairs = windows.sub_event_windows(parsed_data, {"Event": event})
+    if not pairs:
+        windows.no_windows({"Event": event}, "supplemental")
+        return []
+    prompts = []
+    asked: Dict[str, set] = {}
+    for seid, window in pairs:
+        refs = _window_refs(window, note_context, asked.setdefault(seid, set()))
+        if refs is None:
+            continue  # no (new) note in these paragraphs: nothing to classify, nothing asked
+        prompts.append(
+            _sub_event_prompt(
+                event,
+                seid,
+                "",
+                "\n".join(window["Sub-event_fulltext"].values()),
+                refs,
+                endnote_texts,
+                window=window["Sub-eventID"],
+            )
+        )
+    _observe_note_coverage(event, parsed_data, note_context, asked)
+    return prompts
+
+
+def _window_refs(
+    window: Dict[str, Any], note_context: tuple, asked: set
+) -> Optional[tuple]:
+    """``(endnote numbers, footnote numbers)`` the window's raw paragraphs mark and its sub-event
+    has not been asked yet (recorded in ``asked``), or None when there are none."""
+    from src.extraction.events import _classify_marks, _subevent_marks
+    from src.utils.paragraph_numbers import paragraph_number
+
+    para_lookup, fn_nums, en_nums = note_context
+    nums = [n for n in map(paragraph_number, window["Sub-event_fulltext"]) if n]
+    marks = _subevent_marks({"paragraph_numbers": nums}, para_lookup) - asked
+    if not marks:
+        return None
+    asked |= marks
+    fnotes, enotes = _classify_marks(marks, fn_nums, en_nums)
+    return enotes, fnotes
+
+
+def _observe_note_coverage(
+    event: Dict[str, Any],
+    parsed_data: Dict[str, Any],
+    note_context: tuple,
+    asked: Dict[str, set],
+) -> None:
+    """LOUD when a note marked in the chapter's narrative is in no sub-event's paragraphs (the
+    events answer left its paragraph out): it is never classified - a lost citation."""
+    from src.extraction import windows
+    from src.extraction.events import _subevent_marks
+
+    nums = [p["absolute_number"] for p in windows.content_paragraphs(parsed_data)]
+    marked = _subevent_marks({"paragraph_numbers": nums}, note_context[0])
+    covered = set().union(*asked.values()) if asked else set()
+    missing = sorted(marked - covered)
+    if missing:
+        from src.utils.observe import observe_error
+
+        observe_error(
+            "supplemental",
+            "notes_unowned",
+            event_id=event.get("EventID", ""),
+            notes=",".join(map(str, missing[:20])),
+            count=len(missing),
+            note="these notes are marked in paragraphs no sub-event holds: never classified "
+            "(no bibliography for them) - check events coverage",
+        )
+
+
+def _sub_event_prompt(
+    event: Dict[str, Any],
+    sub_event_id: str,
+    summary: str,
+    text: str,
+    refs: tuple,
+    endnote_texts: Optional[Dict[int, str]],
+    window: str = "",
+) -> tuple:
+    """``(Sub-eventID, prompt, stable cache key material, EventID)`` for one request."""
+    from src.utils.prompt_loader import render_prompt
+
+    endnote_refs, footnote_refs = refs
+    event_id = event.get("EventID", "")
+    endnote_block, ref_type_hint = _build_ref_context(
+        endnote_refs, footnote_refs, endnote_texts
+    )
+    prompt = render_prompt(
+        "supplemental",
+        event_title=event.get("Event_Name", ""),
+        event_id=event_id,
+        sub_event_summary=summary,
+        sub_event_id=sub_event_id,
+        text=text,
+        endnote_refs=endnote_refs,
+        footnote_refs=footnote_refs,
+        endnote_block=endnote_block,
+        ref_type_hint=ref_type_hint,
+    )
+    # Deterministic identity for cache keying — DELIBERATELY excludes the volatile `text` and
+    # the endnote_block (a submit and its retrieve re-run must resolve to the SAME entry). The
+    # event/sub-event ids are deterministic content-derived ULIDs and, with the sorted reference
+    # numbers (and the window's paragraph range), uniquely identify the request.
+    parts = [
+        str(event_id),
+        str(sub_event_id),
+        "e:" + _sorted_refs(endnote_refs),
+        "f:" + _sorted_refs(footnote_refs),
+    ]
+    if window:
+        parts.append("w:" + window)
+    return sub_event_id, prompt, "|".join(parts), event_id
+
+
+def _sorted_refs(refs: Any) -> str:
+    return ",".join(
+        str(n) for n in sorted(r for r in (refs or []) if isinstance(r, int))
+    )
+
+
+_KIND_OF_KEY = {"e:": "endnote", "f:": "footnote"}
+
+
+def _asked_notes(stable_material: str) -> List[Tuple[str, str]]:
+    """``[(note number, kind)]`` a request asked about, from its stable cache-key material (built
+    by ``_sub_event_prompt``: ``...|e:<endnotes>|f:<footnotes>[|w:<window>]``)."""
+    asked: List[Tuple[str, str]] = []
+    for part in str(stable_material or "").split("|"):
+        kind = _KIND_OF_KEY.get(part[:2], "")
+        pairs = [(n, kind) for n in part[2:].split(",") if n and kind]
+        asked.extend(p for p in pairs if p not in asked)
+    return asked
+
+
+# a citation's own words, to tell which asked note it came from
+_CITATION_KEYS = ("title", "alt_title", "archive_reference_number")
+_MATERIAL_KEYS = ("archive_reference", "archive_reference_number", "prose_content")
+
+
+Note = Tuple[str, str]  # (note number, kind: "footnote" | "endnote")
+
+
+def _note_of(
+    material: Dict[str, Any], asked: List[Note], notes: Dict[Note, List[str]]
+) -> Optional[Note]:
+    """Which of the ``asked`` notes one answer item comes from: the number the model gave (when
+    it is ONE asked note), else the ONE asked note, else the one asked note holding the item's
+    title / archive reference / prose (``_holding``); None when no or several notes do (footnote
+    3 and endnote 3 asked together are told apart by their text, never guessed)."""
+    given = str(material.get("reference_number") or "").strip()
+    named = [k for k in asked if k[0] == given]
+    if len(named) == 1:
+        return named[0]
+    if len(asked) == 1:
+        return asked[0]
+    holding = _holding(_own_words(material), asked, notes)
+    return holding.pop() if len(holding) == 1 else None
+
+
+def _own_words(material: Dict[str, Any]) -> List[str]:
+    """An item's title / alt title / archive reference / prose - what its note's text holds."""
+    from src.utils.quote_match import too_short
+
+    citation = material.get("citation")
+    words = [
+        *(citation.get(k) for k in _CITATION_KEYS if isinstance(citation, dict)),
+        *(material.get(k) for k in _MATERIAL_KEYS),
+    ]
+    return [w for w in words if isinstance(w, str) and not too_short(w)]
+
+
+def _holding(words: List[str], asked: List[Any], notes: Dict[Any, List[str]]) -> set:
+    """The asked notes whose text holds any of ``words`` (whole words, or a near match -
+    ``quote_match.in_paragraphs``)."""
+    from src.utils.quote_match import build_index, in_paragraphs
+
+    def holds(text: str, part: str) -> bool:
+        index = build_index([{"absolute_number": 0, "text": text}])
+        return bool(in_paragraphs(part, index, [0])[1])
+
+    return {
+        n
+        for n in asked
+        if any(holds(text, w) for text in notes.get(n, []) for w in words)
+    }
+
+
+def chapter_notes(parsed_file: Path) -> Dict[str, List[Dict[str, Any]]]:
+    """``{note number: [its notes as parsed]}`` of a chapter - the source's own text and kind
+    (``bibliography.collect_parsed_notes``), never the cross-reference-resolved text the prompt
+    shows (a ``verbatim_reference`` must be the note's own words)."""
+    from src.extraction.bibliography import collect_parsed_notes
+
+    out: Dict[str, List[Dict[str, Any]]] = {}
+    for note in collect_parsed_notes(parsed_file) or []:
+        if note.get("number") is not None:
+            out.setdefault(str(note["number"]).strip(), []).append(note)
+    return out
+
+
+def locate_notes(
+    response: Dict[str, Any],
+    stable_material: str,
+    notes: Dict[str, List[Dict[str, Any]]],
+) -> Tuple[int, int]:
+    """Give each item of one supplemental answer its note locator IN PLACE, deterministically
+    (``_note_of``, ``_put_locator``). The prompt asks none of these: without them a bibliography
+    mention says only which sub-event cited the source (provenance P2-Q2). Returns (located, not
+    located)."""
+    asked = _asked_notes(stable_material)
+    own = {(n, kind): _of_kind(notes.get(n, []), kind) for n, kind in asked}
+    texts = {k: [str(x.get("text") or "") for x in got] for k, got in own.items()}
+    located = unlocated = 0
+    for material in (response or {}).get("Supplemental_Material") or []:
+        if not isinstance(material, dict):
+            continue
+        note = _note_of(material, asked, texts)
+        if note is None:
+            unlocated += 1
+        else:
+            located += 1
+            _put_locator(material, note, own[note])
+    return located, unlocated
+
+
+def _of_kind(notes: List[Dict[str, Any]], kind: str) -> List[Dict[str, Any]]:
+    """A number's notes of the asked ``kind`` (footnote 3 and endnote 3 may both exist); all of
+    them when none is labelled so (the request's kind and the note's own label can differ).
+    """
+    return [x for x in notes if x.get("_ref_type") == kind] or notes
+
+
+_CITATION_CLASSES = ("citation", "hybrid", "document_reference")
+
+
+def _put_locator(
+    material: Dict[str, Any], note: Note, notes: List[Dict[str, Any]]
+) -> None:
+    """``reference_number``; ``reference_type`` the asked note's kind (for the "bibliography"
+    default); and ``verbatim_reference`` (``_verbatim``)."""
+    material["reference_number"], kind = note
+    if material.get("reference_type") in (None, "", "bibliography"):
+        material["reference_type"] = kind
+    if not str(material.get("verbatim_reference") or "").strip():
+        material["verbatim_reference"] = _verbatim(material, notes)
+
+
+def _verbatim(material: Dict[str, Any], notes: List[Dict[str, Any]]) -> str:
+    """The note's own words for a CITATION that names its document (a title, alt title or archive
+    reference - an empty one stays empty: a verbatim_reference alone makes it a stored document,
+    ``_has_document``); "" for a prose item, a stub note ("Ibid.") or no note text."""
+    from src.extraction.bibliography import _is_stub_citation
+
+    words = _own_words(material)
+    text = next((str(x["text"]) for x in notes if str(x.get("text") or "").strip()), "")
+    if material.get("content_class") not in _CITATION_CLASSES or not words or not text:
+        return ""
+    own = _own_part(text, words)
+    return "" if _is_stub_citation(own) else own
+
+
+def _own_part(text: str, words: List[str]) -> str:
+    """The note's text; of a note citing several documents (the green-book ";"), the ONE part
+    holding the item's words, else "" (which document it is, is unknown)."""
+    from src.extraction.bibliography import _GREENBOOK_DOC_DELIMITER
+
+    parts = [p.strip() for p in text.split(_GREENBOOK_DOC_DELIMITER) if p.strip()]
+    if len(parts) <= 1:
+        return text
+    holding = [p for p in parts if _holding(words, ["p"], {"p": [p]})]
+    return holding[0] if len(holding) == 1 else ""  # never all its documents' text
 
 
 def _is_cross_reference(title: str) -> bool:
@@ -173,19 +424,82 @@ def _is_cross_reference(title: str) -> bool:
     return False
 
 
-def _sanitize_material(material: Dict[str, Any], sub_event_id: str = "") -> None:
-    """Sanitize a single supplemental material (modifies in place)."""
-    _apply_defaults(material)
+def _resolve_reference_id(
+    material: Dict[str, Any],
+    field: str,
+    known_id: str,
+    *,
+    material_id: str,
+) -> None:
+    """Resolve a cross-reference ID field (EventID / Sub-eventID) on a material.
+
+    A supplemental material's EventID/Sub-eventID are REFERENCES to the owning event/sub-event —
+    NOT primary keys this record is free to invent. The project rule is to never mint a random
+    identity for a reference (that produces a DANGLING cross-ref no entity resolves to). So:
+      1. If the LLM echoed a value, keep it (it is validated/reconciled elsewhere).
+      2. Else if we KNOW the real parent id (threaded from the extraction context), DERIVE from it.
+      3. Else (no echo AND no known parent) mint a last-resort ULID but emit a LOUD observe_error so
+         the dangling reference is a greppable anomaly instead of a silent corpus defect.
+    """
+    if material.get(field) is not None:
+        return
+    if known_id:
+        material[field] = known_id
+        return
+    import ulid
+
+    from src.utils.observe import observe_error
+
+    minted = str(ulid.new())
+    material[field] = minted
+    observe_error(
+        "supplemental",
+        "reference_id_fabricated",
+        field=field,
+        material_id=material_id,
+        minted=minted,
+        note=(
+            "no LLM-echoed value AND no known parent id in context — minted a last-resort "
+            "ULID; this reference is DANGLING (no event/sub-event resolves to it). Thread the "
+            "real parent id into sanitize_supplemental_data to eliminate"
+        ),
+    )
+
+
+def _sanitize_material(
+    material: Dict[str, Any],
+    sub_event_id: str = "",
+    *,
+    known_event_id: str = "",
+) -> None:
+    """Sanitize a single supplemental material (modifies in place).
+
+    ``sub_event_id`` / ``known_event_id`` are the REAL parent ids from the extraction context; when
+    the LLM omitted a reference, the material inherits the known parent rather than a random ULID
+    (derive-not-fabricate). See ``_resolve_reference_id``.
+    """
+    _apply_defaults(
+        material, known_event_id=known_event_id, known_sub_event_id=sub_event_id
+    )
     _normalize_enums(material)
     _normalize_urls(material)
     _normalize_citation(material, sub_event_id)
 
 
-def _apply_defaults(material: Dict[str, Any]) -> None:
-    """Set required string fields to defaults if missing. ID fields get a REAL ULID directly
-    (not the GENERATE_NEW_ULID sentinel) because this record is validated without a guaranteed
-    generate_ulids pass afterward — an empty string or the literal sentinel both fail the
-    strict ULID pattern."""
+def _apply_defaults(
+    material: Dict[str, Any],
+    *,
+    known_event_id: str = "",
+    known_sub_event_id: str = "",
+) -> None:
+    """Set required string fields to defaults if missing.
+
+    MaterialID is a PRIMARY key for this record, so a fresh ULID is correct. EventID/Sub-eventID are
+    REFERENCES — resolved via ``_resolve_reference_id`` (keep echo → derive from known parent →
+    loud last-resort mint), never silently randomized. ID fields get a REAL ULID (not the
+    GENERATE_NEW_ULID sentinel) because this record is validated without a guaranteed generate_ulids
+    pass afterward — an empty string or the literal sentinel both fail the strict ULID pattern.
+    """
     import ulid
 
     # The LLM emits the class as "classification" (prompt); routing reads "content_class".
@@ -195,10 +509,20 @@ def _apply_defaults(material: Dict[str, Any]) -> None:
     if material.get("content_class") is None and material.get("classification"):
         material["content_class"] = material["classification"]
 
+    if material.get("MaterialID") is None:
+        material["MaterialID"] = str(ulid.new())
+    # References: derive from the known parent rather than fabricate (never-dangle rule).
+    _resolve_reference_id(
+        material, "EventID", known_event_id, material_id=material["MaterialID"]
+    )
+    _resolve_reference_id(
+        material,
+        "Sub-eventID",
+        known_sub_event_id,
+        material_id=material["MaterialID"],
+    )
+
     defaults = {
-        "MaterialID": lambda: str(ulid.new()),
-        "EventID": lambda: str(ulid.new()),
-        "Sub-eventID": lambda: str(ulid.new()),
         # Unknown class -> human review (NOT document_reference: silently storing an
         # unclassified endnote as a citation, or dropping a prose one, is worse than a
         # review-queue entry).
@@ -486,31 +810,41 @@ def _unwrap_keyed_supplemental(data: Dict[str, Any]) -> Dict[str, Any]:
     return {**base, "Supplemental_Material": merged}
 
 
-def sanitize_supplemental_data(data: Dict[str, Any]) -> Dict[str, Any]:
-    """Sanitize supplemental data to ensure schema compliance."""
+def sanitize_supplemental_data(
+    data: Dict[str, Any],
+    *,
+    known_event_id: str = "",
+    known_sub_event_id: str = "",
+) -> Dict[str, Any]:
+    """Sanitize supplemental data to ensure schema compliance.
+
+    ``known_event_id`` / ``known_sub_event_id`` are the REAL parent ids from the extraction
+    context. When the LLM omits an EventID/Sub-eventID the record DERIVES from these rather than
+    minting a random ULID (which would dangle). If a known id is absent the last-resort mint emits a
+    loud observe_error (see ``_resolve_reference_id``)."""
     data = _unwrap_keyed_supplemental(data)
 
     # Normalize plural key variant (LLM sometimes returns "Supplemental_Materials")
     if "Supplemental_Materials" in data and "Supplemental_Material" not in data:
         data["Supplemental_Material"] = data.pop("Supplemental_Materials")
 
-    # Event-level defaults. ID fields get a REAL ULID — this sanitize pass runs AFTER
-    # generate_ulids(), so a GENERATE_NEW_ULID sentinel here would never be resolved.
-    import ulid
+    # Event-level references: derive from the known parent ids (never-dangle rule). A missing
+    # reference with no known parent is minted loud via _resolve_reference_id, not silently.
+    # A keyed-by-ULID unwrap may have recovered a real Sub-eventID into data; prefer the explicitly
+    # threaded known id, else what the data already carries.
+    eff_sub = known_sub_event_id or str(data.get("Sub-eventID") or "")
+    if data.get("Event_Name") is None:
+        data["Event_Name"] = ""
+    if data.get("Sub-event_Name") is None:
+        data["Sub-event_Name"] = ""
+    _resolve_reference_id(data, "EventID", known_event_id, material_id="<event-level>")
+    _resolve_reference_id(data, "Sub-eventID", eff_sub, material_id="<event-level>")
 
-    defaults = {
-        "Sub-event_Name": lambda: "",
-        "Event_Name": lambda: "",
-        "EventID": lambda: str(ulid.new()),
-        "Sub-eventID": lambda: str(ulid.new()),
-    }
-    for key, make_default in defaults.items():
-        if data.get(key) is None:
-            data[key] = make_default()
-
-    # Sanitize each material
+    # Sanitize each material, inheriting the resolved event/sub-event ids as the known parents.
+    parent_event = str(data.get("EventID") or "")
+    parent_sub = str(data.get("Sub-eventID") or "")
     for material in data.get("Supplemental_Material", []):
-        _sanitize_material(material, str(data.get("Sub-eventID") or ""))
+        _sanitize_material(material, parent_sub, known_event_id=parent_event)
 
     return data
 
@@ -635,6 +969,20 @@ def append_subevents_to_files(
     _append_to_file(parsed_file, new_subevents, "parsed")
 
 
+def _load_parsed(parsed_file: Path) -> Optional[Dict[str, Any]]:
+    """The parsed chapter (a dict), or None - said in the log - when it cannot be read."""
+    try:
+        data = json.loads(parsed_file.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as e:
+        logger.warning(
+            "OBSERV supplemental.no_parsed_file file=%s err=%s: asked per sub-event",
+            parsed_file.name,
+            type(e).__name__,
+        )
+        return None
+    return data if isinstance(data, dict) else None
+
+
 def _load_event_data(event_file: Path) -> Optional[Dict[str, Any]]:
     """Load and validate event data from file."""
     try:
@@ -659,6 +1007,7 @@ def _extract_with_retry(
     grok_client: GrokClient,
     max_retries: int = 3,
     stable_key_material: str = "",
+    known_event_id: str = "",
 ) -> Optional[Dict[str, Any]]:
     """Extract supplemental material with retry logic.
 
@@ -691,7 +1040,11 @@ def _extract_with_retry(
 
             response = generate_ulids(response)
             response = _fix_invalid_ulids(response)
-            response = sanitize_supplemental_data(response)
+            response = sanitize_supplemental_data(
+                response,
+                known_event_id=known_event_id,
+                known_sub_event_id=sub_event_id,
+            )
             # Strip unmodeled top-level keys BEFORE validate so one stray LLM field doesn't trip
             # additionalProperties:False and drop ALL materials for this sub-event (#671 class).
             if isinstance(response, dict):
@@ -734,74 +1087,24 @@ def _extract_with_retry(
     return None
 
 
-def _supplemental_url_verified(title: str, url: str, grok_client: Any) -> bool:
-    """Content-verify a search-found URL against the citation before it is stored as a supplemental
-    resource_url. Reuses bibliography_resolver._verify_match (Grok fetches the page + confirms it
-    matches), so the supplemental path gets the SAME verification gate the bibliography path has.
-    Fail-open ONLY when there is no grok_client (offline/test) — matching _verify_match's own
-    no-client behavior; any verifier error inside _verify_match is already caught there.
+def _apply_license(material: Dict[str, Any]) -> None:
+    """Fill the material's license from its citation fields (modifies in place).
+
+    PURE computation - no network, no search. Phase 2 deliberately performs NO supplemental
+    searches (archive.org, Gutenberg, OpenSERP, Grok "LLM search"): Phase 2 only talks to
+    Grokipedia/Wikipedia and submits data to Grok for extraction. Looking up where a cited document
+    can be obtained is Phase 3's job (``bibliography_resolver``), which verifies every candidate.
+    ``resource_urls`` is therefore left EMPTY here: a pre-filled URL would trip the resolver's
+    "has resource_urls -> already resolved" short-circuit and block NARA resolution
+    (see src/extraction/bibliography.py).
     """
-    try:
-        from src.enrichment.bibliography_resolver import _verify_match
-
-        return _verify_match(title or "", url, grok_client)
-    except Exception as e:  # noqa: BLE001 - verification must never crash enrichment
-        logger.debug("supplemental url verify errored for %s: %s", url, e)
-        # Fail-CLOSED on an unexpected verifier import/call error when a client WAS available:
-        # better to drop an unverified url than to store a possibly-wrong source.
-        return grok_client is None
-
-
-def _enrich_material(
-    material: Dict[str, Any],
-    grok_client: Any,
-    openserp_url: str = "http://localhost:7001",
-) -> None:
-    """Enrich material with searches and copyright calculation (modifies in place)."""
     from src.extraction.copyright_calculator import determine_license
-    from src.extraction.supplemental_search import sequential_search
 
-    category = material.get("material_category", "referenced_material")
-
-    # Only enrich referenced material
-    if category != "referenced_material":
+    if (
+        material.get("material_category", "referenced_material")
+        != "referenced_material"
+    ):
         return
-
-    citation = material.get("citation", {})
-    title = citation.get("title", "")
-    author = citation.get("author", [])
-    author_str = author[0] if author else None
-    periodical = citation.get("periodical_name")
-
-    # Search for URLs if not already present
-    if not material.get("resource_urls"):
-        url, source = sequential_search(
-            title=title,
-            author=author_str,
-            periodical=periodical,
-            grok_client=grok_client,
-            openserp_url=openserp_url,
-            search_gutenberg=True,
-        )
-
-        if url and _supplemental_url_verified(title, url, grok_client):
-            material["resource_urls"] = [url]
-            material["search_source"] = source
-            logger.info("Found URL via %s: %s", source, url)
-        elif url:
-            # A search hit that does NOT verify against the citation is DROPPED — sequential_search
-            # returns the FIRST hit per source with no content-match, so storing it unchecked
-            # silently attributes a wrong source to the citation (§1.0d HIGH). Mirror the
-            # bibliography_resolver verify gate.
-            logger.warning(
-                "OBSERV supplemental.url_rejected source=%s title=%r url=%s — "
-                "search hit did not verify against the citation; not stored",
-                source,
-                str(title)[:80],
-                str(url)[:120],
-            )
-
-    # Calculate copyright
     license_status, license_notes = determine_license(material)
     if not material.get("license") or material.get("license") == "unknown":
         material["license"] = license_status
@@ -829,76 +1132,6 @@ def _resolve_entities_in_materials(
             material["mentioned_people"] = mentioned_people
         if mentioned_orgs:
             material["mentioned_organizations"] = mentioned_orgs
-
-
-def _enrich_materials(materials: list, grok_client: Any, enrich: bool) -> None:
-    """Enrich materials with searches and copyright if enabled."""
-    if enrich and grok_client:
-        for material in materials:
-            _enrich_material(material, grok_client)
-
-
-def _filter_by_reference_type(materials: list, ref_type: str) -> list:
-    """Filter materials by reference type."""
-    return [m for m in materials if m.get("reference_type") == ref_type]
-
-
-def _create_event_metadata(sub_event_data: dict) -> dict:
-    """Create event metadata dictionary."""
-    return {
-        "Event_Name": sub_event_data.get("Event_Name"),
-        "EventID": sub_event_data.get("EventID"),
-        "Sub-event_Name": sub_event_data.get("Sub-event_Name"),
-        "Sub-eventID": sub_event_data.get("Sub-eventID"),
-    }
-
-
-def _separate_by_type(
-    all_supplemental: List[Dict[str, Any]],
-    people_index: Dict[str, str],
-    groups_index: Dict[str, str],
-    grok_client: Any = None,
-    enrich: bool = True,
-) -> tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
-    """Separate supplemental materials into endnotes and footnotes, resolving entities."""
-    endnotes = []
-    footnotes = []
-
-    for sub_event_data in all_supplemental:
-        # Normalize plural key variant
-        if (
-            "Supplemental_Materials" in sub_event_data
-            and "Supplemental_Material" not in sub_event_data
-        ):
-            sub_event_data["Supplemental_Material"] = sub_event_data.pop(
-                "Supplemental_Materials"
-            )
-        materials = sub_event_data.get("Supplemental_Material", [])
-
-        # Resolve entities
-        _resolve_entities_in_materials(materials, people_index, groups_index)
-
-        # Enrich with searches and copyright
-        _enrich_materials(materials, grok_client, enrich)
-
-        # Filter by type
-        endnote_materials = _filter_by_reference_type(materials, "endnote")
-        footnote_materials = _filter_by_reference_type(materials, "footnote")
-
-        # Create event metadata
-        event_metadata = _create_event_metadata(sub_event_data)
-
-        if endnote_materials:
-            endnotes.append(
-                {**event_metadata, "Supplemental_Material": endnote_materials}
-            )
-
-        if footnote_materials:
-            footnotes.append(
-                {**event_metadata, "Supplemental_Material": footnote_materials}
-            )
-
-    return endnotes, footnotes
 
 
 def _get_source_copyright_year(event_file: Path) -> Optional[int]:
@@ -981,7 +1214,6 @@ def _route_one_material(
     bib_dir: Path,
     book: str,
     chapter: str,
-    grok_client: Any,
     enrich: bool,
     factual_items: list,
     ambiguous_items: list,
@@ -1001,7 +1233,7 @@ def _route_one_material(
     # empty (a pure prose entry carries no document to store).
     if is_citation and _has_document(material):
         if enrich:
-            _enrich_material(material, grok_client)
+            _apply_license(material)
         from src.extraction.bibliography import store_bibliography_entry
 
         store_bibliography_entry(bib_dir, material, book, chapter)
@@ -1053,8 +1285,7 @@ def _route_by_content_class(
     bib_dir: Path,
     book: str,
     chapter: str,
-    grok_client: Any = None,
-    enrich: bool = False,
+    enrich: bool = True,
 ) -> tuple:
     """Route materials by content_class. Returns (factual_items, ambiguous_items, bib_count)."""
     factual_items: list = []
@@ -1075,7 +1306,6 @@ def _route_by_content_class(
                 bib_dir,
                 book,
                 chapter,
-                grok_client,
                 enrich,
                 factual_items,
                 ambiguous_items,
@@ -1181,11 +1411,12 @@ def _append_to_review_queue(bib_dir: Path, items: List[Dict[str, Any]]) -> None:
     logger.info("Added %d ambiguous items to review queue", len(items))
 
 
+@for_chapter_book
 def extract_supplemental(
     event_file: Path,
     grok_client: GrokClient,
     output_root: Path,
-    enrich: bool = False,
+    enrich: bool = True,
 ) -> Optional[Path]:
     """Extract and classify endnotes/footnotes from event file.
 
@@ -1194,8 +1425,8 @@ def extract_supplemental(
     and ambiguous items to review_queue.json.
 
     Args:
-        enrich: If True, search online/offline repositories for bibliography URLs
-                and determine copyright status before storing.
+        enrich: If True, determine the license from the citation before storing. This is pure
+                computation: Phase 2 performs NO supplemental searches (they live in Phase 3).
     """
     logger.info("Extracting supplemental material from %s", event_file.name)
 
@@ -1223,21 +1454,47 @@ def extract_supplemental(
     # OBSERV (bibliography chain): what does supplemental actually see for this event?
     _observe_supplemental_input(event_file, event_data, endnote_texts)
 
-    # Create prompts
-    prompts = create_supplemental_prompt(event_data, endnote_texts)
+    # Create prompts: over each sub-event's own raw paragraph windows (the parsed chapter), else
+    # per sub-event when there is no readable parsed file
+    prompts = create_supplemental_prompt(
+        event_data, endnote_texts, _load_parsed(parsed_file)
+    )
     if not prompts:
-        logger.info("No sub-events found in %s", event_file.name)
+        logger.info(
+            "OBSERV supplemental.nothing_to_ask event=%s sub_events=%d: no sub-event "
+            "paragraph carries a note marker (or no sub-events)",
+            event_file.name,
+            len(event_data.get("Event", {}).get("Sub-events", [])),
+        )
         return None
 
-    # Extract from API
+    # Extract from API. Keep each response paired with its KNOWN parent ids so sanitize can
+    # derive (not fabricate) any reference the LLM omitted — carried in a parallel list rather
+    # than stashed on the dict (which would risk leaking into the validated record).
     all_supplemental = []
-    for sub_event_id, prompt, stable_material in prompts:
+    known_parents = (
+        []
+    )  # parallel to all_supplemental: (known EventID, known Sub-eventID, stable key material)
+
+    def _ask(item: tuple) -> None:
+        sub_event_id, prompt, stable_material, parent_event_id = item
         logger.debug("Processing sub-event %s", sub_event_id)
         response = _extract_with_retry(
-            prompt, sub_event_id, grok_client, stable_key_material=stable_material
+            prompt,
+            sub_event_id,
+            grok_client,
+            stable_key_material=stable_material,
+            known_event_id=parent_event_id,
         )
         if response:
             all_supplemental.append(response)
+            known_parents.append((parent_event_id, sub_event_id, stable_material))
+
+    # every request joins this batch round: a queued one does not stop the rest (stopping at the
+    # first queued asked one per round - chapter 8: supplemental:1 in round after round)
+    from src.utils.chunked_extract import ask_all
+
+    ask_all(prompts, _ask)
 
     # OBSERV: how many sub-event prompts returned materials (post-batch answers).
     _observe_supplemental_extract(event_file, prompts, all_supplemental)
@@ -1246,9 +1503,25 @@ def extract_supplemental(
         logger.info("No supplemental material extracted from %s", event_file.name)
         return None
 
-    # Sanitize and generate ULIDs
-    for sub_event_data in all_supplemental:
-        sanitize_supplemental_data(sub_event_data)
+    # Sanitize, give each item its note locator, and generate ULIDs
+    notes = chapter_notes(parsed_file)
+    located = unlocated = 0
+    for sub_event_data, (ev_id, se_id, material) in zip(
+        all_supplemental, known_parents
+    ):
+        sanitize_supplemental_data(
+            sub_event_data, known_event_id=ev_id, known_sub_event_id=se_id
+        )
+        got, missed = locate_notes(sub_event_data, material, notes)
+        located, unlocated = located + got, unlocated + missed
+    logger.info(
+        "OBSERV supplemental.notes_located file=%s located=%d unlocated=%d (unlocated: "
+        "several asked notes and none or more than one holds the item's title - its mention "
+        "cites only its sub-event)",
+        event_file.name,
+        located,
+        unlocated,
+    )
     all_supplemental = generate_ulids(all_supplemental)
 
     # Route by content class
@@ -1257,7 +1530,7 @@ def extract_supplemental(
     bib_dir = output_root / "bibliography"
 
     factual, ambiguous, bib_count = _route_by_content_class(
-        all_supplemental, bib_dir, book, chapter, grok_client, enrich
+        all_supplemental, bib_dir, book, chapter, enrich
     )
 
     # Write factual content as notes-event file (URL map from the parsed file's footnotes).

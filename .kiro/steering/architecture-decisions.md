@@ -81,3 +81,28 @@ Mechanism (do not reinvent per-alert): publish free-form alert text to the
 New components that need to alert MUST publish to `phase2-complete` (both channels),
 not to a bespoke topic. Alarm-based alerts (CloudWatch) already render in Slack
 directly; free-form pipeline/controller notifications need the formatter path.
+
+## Book identity: the slug is immutable (owner rule, 2026-11-11)
+
+A book's **slug** is its identity everywhere: S3 prefixes (`contentrepository/<slug>/`,
+`ocr-output/<slug>/`, `output/content/<slug>/`), DynamoDB keys, `BOOK_NAME`/`--book`, every
+EventID (`event_id(book, chapter)`) and its **BookID** (`deterministic_ids.book_id(slug)`, a
+deterministic ULID). Once assigned at intake a slug is **never renamed**.
+
+- TWO rules, both in `src/ingestion/book_slug.py`, and no other code may derive a book name
+  from a key (tests pin both; changing either re-keys future uploads):
+  - a SOURCE document (PDF/EPUB/DOCX/video) is named by its filename stem: `book_slug(key)`
+    (so `contentrepository/books/Patton at the Bulge.epub` -> `Patton_at_the_Bulge`);
+  - CHAPTER CONTENT is named by its folder: `content_slug(key)`
+    (`contentrepository/[<source>/]<slug>/chapterN/...`; a leading `_system`/`user-`/`contrib-`/
+    `org-` segment is skipped; a loose file uses its stem).
+  Phase 0 writes chapters to `contentrepository/<stem>/chapterN/`, so the two rules agree.
+- An upload whose name gives no safe slug (`unknown`) is rejected to `needs-review/unnamed-upload/`
+  - never processed under a shared `unknown` name.
+- A document already ingested under one slug is rejected if re-uploaded under another
+  (`source#<checksum>` binding, `needs-review/source-renamed/`).
+- A chapter meta's `book` must equal its folder slug; Phase 1 uses the slug and alerts on a
+  mismatch.
+- A future naming scheme (e.g. work/edition) must grandfather existing slugs, never re-key them.
+- Every book-bound Grok request carries the BookID and its own RequestID, and an answer that does
+  not echo both is never trusted (`src/utils/request_identity`).

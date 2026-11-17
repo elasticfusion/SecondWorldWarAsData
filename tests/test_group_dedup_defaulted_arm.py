@@ -45,7 +45,7 @@ def test_already_matching_pair_is_not_a_soft_candidate():
 
 
 def _groups(tmp_path, monkeypatch, names):
-    import scripts.find_duplicate_groups as fdg
+    import src.dedup.find_duplicate_groups as fdg
 
     monkeypatch.setattr(
         "src.dedup.exclusions.load_reviewed_pairs", lambda *_a, **_k: set()

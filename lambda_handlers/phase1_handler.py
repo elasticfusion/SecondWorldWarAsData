@@ -187,23 +187,12 @@ def _doc_to_output_minimal(doc) -> dict:
             }
             for p in doc.paragraphs
         ],
-        "images": [
-            {
-                "type": img.type,
-                "resource_id": img.resource_id,
-                "url": img.url,
-                "alt_text": img.alt_text,
-                "caption": img.caption,
-            }
-            for img in doc.images
-        ],
+        "images": [img.to_dict() for img in doc.images],
         "maps": [
             {"url": m.url, "description": m.description, "map_id": m.map_id}
             for m in doc.maps
         ],
-        "footnotes": [
-            {"number": f.number, "url": f.url, "text": f.text} for f in doc.footnotes
-        ],
+        "footnotes": [f.to_dict() for f in doc.footnotes],
     }
 
 

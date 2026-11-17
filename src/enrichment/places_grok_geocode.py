@@ -35,7 +35,7 @@ from typing import Any, List, Optional
 
 from pydantic import BaseModel, Field
 
-from src.enrichment.places_geo import enrich_place, is_geocodable_name
+from src.enrichment.places_geo import coords_verified, enrich_place, is_geocodable_name
 
 logger = logging.getLogger(__name__)
 
@@ -468,10 +468,34 @@ def _toponym_from_prose(text: str, corroborate: Optional[str] = None) -> Optiona
 
 
 def _needs_geocode(place: dict) -> bool:
-    """True if a place has no coordinates yet."""
+    """True if a place has no coordinates yet - or only a GUESS (Phase-2 extraction coordinates:
+    no ``geocode_source``, not stated exact; ``places_geo.coords_verified``). Phase 2 no longer
+    asks for coordinates, but 215 places of the corpus (2026-11-12) still carry such guesses with
+    a made-up confidence 0.8: without this the geocoder skipped every one of them."""
+    if not _has_coords(place):
+        return True
+    return not coords_verified(place)
+
+
+def _has_coords(place: dict) -> bool:
     coords = place.get("coordinates") or {}
     lat, lon = coords.get("latitude"), coords.get("longitude")
-    return lat in (None, 0, 0.0) and lon in (None, 0, 0.0)
+    return not (lat in (None, 0, 0.0) and lon in (None, 0, 0.0))
+
+
+_GUESS_FIELDS = ("coordinates", "latitude", "longitude", "bounding_box", "map_urls")
+
+
+def _drop_guess(place: dict) -> None:
+    """Remove an unverified (Phase-2 guessed) coordinate and what was derived from it: the
+    geocoder could not confirm it, and once the place carries a ``geocode_source`` a kept guess
+    would read as a real geocode (``places_geo.coords_verified``)."""
+    for key in _GUESS_FIELDS:
+        place.pop(key, None)
+    logger.info(
+        "OBSERV geocode.guess_dropped place=%s (unconfirmed Phase-2 coordinate removed)",
+        str(place.get("PlaceID") or place.get("current_name") or "?")[:40],
+    )
 
 
 def _prompt_for(name: str, place: dict) -> str:
@@ -594,8 +618,11 @@ def _apply_result(place: dict, result: GeocodeResult) -> str:
     low-confidence result records a status note and leaves the place un-geocoded
     (never a guessed coordinate).
     """
+    guessed = _has_coords(place) and not coords_verified(place)
     early = _non_geocoded_status(place, result)
     if early is not None:
+        if guessed:
+            _drop_guess(place)
         return early
 
     # WGS84 range guard: a confident result with impossible coordinates (e.g. an LLM returning

@@ -104,7 +104,7 @@ def test_count_mismatch_force_bypasses_systemic_guard():
 
     requests_by_id = {"k1": _Req(), "k2": _Req()}
     calls = []
-    client._call_api = lambda msgs, temp: calls.append(1) or {
+    client._call_api = lambda msgs, temp, model="": calls.append(1) or {
         "choices": [{"message": {"content": '{"ok":1}'}}]
     }
     metrics = BatchMetrics(batch_id="b1", total_requests=2)

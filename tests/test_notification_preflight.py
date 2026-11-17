@@ -39,7 +39,11 @@ def _call_with_subs(subs, monkeyenv=None):
 def test_no_subscriptions_warns(caplog):
     with caplog.at_level(logging.WARNING):
         _call_with_subs([])
-    assert any("NO confirmed subscriptions" in r.message for r in caplog.records)
+    # Now emitted as a canonical OBSERV anomaly (reaches the alerting path), not a bare warning.
+    assert any(
+        "OBSERV notify.no_subscriber" in r.message and "status=warn" in r.message
+        for r in caplog.records
+    )
 
 
 def test_pending_only_warns(caplog):
@@ -47,7 +51,9 @@ def test_pending_only_warns(caplog):
     with caplog.at_level(logging.WARNING):
         _call_with_subs(subs)
     msgs = [r.message for r in caplog.records]
-    assert any("NO confirmed subscriptions" in m and "pending" in m for m in msgs)
+    assert any(
+        "OBSERV notify.no_subscriber" in m and "pending_confirmation" in m for m in msgs
+    )
 
 
 def test_confirmed_subscription_no_warn(caplog):
@@ -59,7 +65,8 @@ def test_confirmed_subscription_no_warn(caplog):
     ]
     with caplog.at_level(logging.WARNING):
         _call_with_subs(subs)
-    assert not any("NO confirmed subscriptions" in r.message for r in caplog.records)
+    # A confirmed sub emits no WARNING-level no_subscriber anomaly (an INFO subscriber_ok is fine).
+    assert not any("OBSERV notify.no_subscriber" in r.message for r in caplog.records)
 
 
 def test_list_error_is_non_blocking(caplog):

@@ -4,79 +4,49 @@ Extract maps and diagrams from WWII source material.
 
 ## Overview
 
-Maps extraction identifies and processes maps, diagrams, and illustrations from the source books. Maps are discovered during Phase 1 parsing and extracted in Phase 2.
+Maps (and diagrams) from the source books are **found in Phase 1** and **persisted as Map entities in Phase 3**. Phase 2 has no map step. (The old per-event extractor `src/extraction/maps.py` is no longer called by any pipeline entry point.)
+
+Where a document's maps come from (Phase 1, written into `output/content/<book>/chapterN<section>-parsed.json` `maps[]`):
+- **Web (HyperWar) sources:** links in the text (`[Map VIII](maps/...jpg)`), found by `parser.extract_maps` and resolved to absolute URLs.
+- **OCR'd PDF books:** the book's own figures, built once in Phase 1 by `src/ingestion/book_figures` (+ `pdf_figures`) from the PDF and the OCR crops, into `contentrepository/<book>/_figures/figures.json` + `files/`. Each numbered map goes to **every chapter that prints or cites it**, with the citing paragraphs as its reference footprint. A figure's `url` is its key under `_figures/files/`; image bytes are read from storage (`images.fetch_image_bytes`), not the web.
+
+Phase 3 (`phase3_enrich_data.py`, step `in_doc_map_links`): `map_link_source.persist_map_entities` writes one Map entity per map **keyed by url**, accumulating each chapter's reference footprint in `references[]` (a roman-numeral fold-out shared by many chapters or books is one record). It downloads the image (`map_common.download_map_image`), classifies the map type, and links Place / Date / Organization from the footprint's sub-events (`map_common.link_map_entities`). Map entities are persisted regardless of `external_maps` flags. Separately, when `external_maps.recycle_in_doc_maps` is true, each in-document map is also recycled as a map-as-source document (one paid vision call each).
 
 ## Quick Start
 
-### Enable Maps Extraction
+### Maps config
 
-Edit `config.yaml`:
+Edit `config.yaml` (current values):
 
 ```yaml
 maps:
   enabled: true
-  download_images: false        # Set true to download images
-  storage_backend: "filesystem"
-```
-
-Run extraction:
-
-```bash
-python3 phase2_extract.py
-```
-
-## Configuration Options
-
-### Basic Configuration
-
-```yaml
-maps:
-  enabled: true                   # Enable/disable maps extraction
-  extract_during_phase1: true     # Extract during document parsing
-  download_images: false          # Download actual image files
-  storage_backend: "filesystem"   # filesystem or s3
-```
-
-### Filesystem Storage (Default)
-
-```yaml
-maps:
+  extract_during_phase1: true
+  download_images: true         # map bytes are kept in the corpus
   storage_backend: "filesystem"
   storage_path: "output/maps/"
-  image_storage_path: "output/maps_images/"
-  download_timeout: 30
+  image_storage_path: "output/maps/files/"
 ```
+
+Maps are written by Phase 3:
+
+```bash
+python3 phase3_enrich_data.py
+```
+
+## Storage
+
+Maps are stored on the filesystem under `output/maps/` (synced to S3 with the rest of `output/`). The `s3` storage backend described in earlier versions of this guide was never implemented.
 
 **Output Structure:**
 ```
 output/maps/
-├── {MapID}.json              # Map metadata
-├── {MapID}.json
-├── index.json                # Map index
-output/maps_images/
-├── {MapID}.jpg               # Downloaded images
-├── {MapID}.png
+├── {MapID}.json              # Map metadata (+ references[])
+├── index.json                # url -> map file index (accumulation survives across runs)
+└── files/
+    ├── {MapID}.jpg           # Downloaded images
+    └── {MapID}.png
 ```
-
-### S3 Storage
-
-```yaml
-maps:
-  storage_backend: "s3"
-  s3_bucket: "your-bucket-name"
-  s3_prefix: "maps/"
-  s3_region: "us-east-1"
-  download_images: true
-```
-
-**S3 Structure:**
-```
-s3://your-bucket/maps/
-├── metadata/{MapID}.json
-├── images/{MapID}.jpg
-```
-
-See [S3_STORAGE.md](S3_STORAGE.md) for detailed S3 setup.
 
 ## Map Metadata
 
@@ -86,11 +56,10 @@ Each map has a JSON file with comprehensive metadata and **automatic entity link
 {
   "MapID": "01KJ8X9Y2Z3A4B5C6D7E8F9G0H",
   "map_title": "German Invasion Routes - September 1, 1939",
-  "source_book": "The German Campaign in Poland (1939)",
-  "source_author": "Robert M. Kennedy",
-  "source_series": "United States Army in World War II",
-  "page_number": null,
   "figure_number": "Map 3",
+  "references": [
+    { "book": "Poland", "chapter": "chapter1", "paragraph_number": 12, "Sub_eventID": "01KJ8X2Y..." }
+  ],
   "EventID": "01KJ8X1Y...",
   "Event_Name": "Invasion of Poland",
   "Sub_eventID": "01KJ8X2Y...",
@@ -99,8 +68,7 @@ Each map has a JSON file with comprehensive metadata and **automatic entity link
   "PlaceMentionID": "01KJ8X3Y...",
   "date": "1939-09-01",
   "DateMentionID": "01KJ8X4Y...",
-  "local_path": "output/maps/01KJ8X9Y.json",
-  "local_image_path": "output/maps_images/01KJ8X9Y.jpg",
+  "local_image_path": "output/maps/files/01KJ8X9Y.jpg",
   "source_url": "https://...",
   "file_format": "jpg",
   "extracted_date": "2026-02-24T13:19:00Z",
@@ -110,10 +78,12 @@ Each map has a JSON file with comprehensive metadata and **automatic entity link
 }
 ```
 
-**Automatic Linking:**
-- EventID/Sub_eventID: From event file structure
-- PlaceMentionID/place_name: Matched via Sub_eventID in places repository
-- DateMentionID/date: Matched via Sub_eventID in dates repository
+`references[]` is the map's **reference footprint** (every chapter/paragraph printing or citing it, deduped, each stamped with its `book`). Exact fields come from `map_common.base_map_record` and the enforced `maps` schema in `src/schemas/`.
+
+**Automatic Linking** (`map_common.link_map_entities`, from the footprint's Sub_eventIDs; only fills an empty link):
+- PlaceMentionID/place_name: matched via Sub_eventID in the places repository
+- DateMentionID/date: matched via Sub_eventID in the dates repository
+- PeopleGroupID/PeopleGroup_Name: matched via Sub_eventID in the people_groups repository
 
 ## Image Download
 
@@ -125,16 +95,7 @@ maps:
   download_timeout: 30
 ```
 
-**Supported Formats:**
-- JPG/JPEG
-- PNG
-- TIFF/TIF
-- PDF
-
-**Content-Type Detection:**
-- Automatically detects format from HTTP headers
-- Falls back to URL extension
-- Defaults to JPG if unknown
+Downloads go through the SSRF-safe `images.fetch_image_bytes` gate (an image/* body, byte-capped, no redirects; a book figure key is read from storage). The extension comes from the content type, else the URL suffix, default `jpg`. A blocked or failed download leaves `local_image_path` null and logs `OBSERV maps.download_failed` / `maps.download_blocked`.
 
 ### Without Image Download
 
@@ -145,12 +106,10 @@ If `download_images: false`:
 
 ## Linking to Other Entities
 
-Maps are **automatically linked** to events, places, and dates based on the sub-event context where they appear.
+Maps are **automatically linked** to places, dates and organizations from the sub-events of their reference footprint.
 
-### Events (Automatic ✅)
-- `EventID` - Parent event containing the map
-- `Sub_eventID` - Specific sub-event where map appears
-- Extracted from event file structure
+### Events
+- Each `references[]` entry carries the paragraph (and `Sub_eventID` when located) where the map is printed or cited. A map with no located reference is a loud provenance-gap warning in Phase 1.
 
 ### Places (Automatic ✅)
 - `PlaceMentionID` - Place linked to the sub-event
@@ -164,20 +123,20 @@ Maps are **automatically linked** to events, places, and dates based on the sub-
 - Matched by searching dates repository for Sub_eventID
 - Example: Map in June 6, 1944 sub-event → links to that date
 
-**No manual configuration required** - all linking happens automatically during extraction.
+**No manual configuration required** - linking happens automatically in Phase 3.
 
 ## Querying Maps
 
 ### Find All Maps
 
 ```bash
-ls output/maps/*.json | wc -l
+ls output/maps/*.json | wc -l  # includes index.json
 ```
 
 ### Find Maps by Book
 
 ```bash
-jq -r 'select(.source_book == "Cross-Channel Attack") | .map_title' output/maps/*.json
+jq -r 'select(any(.references[]?; .book == "USA-E-XChannel")) | .map_title' output/maps/*.json
 ```
 
 ### Find Maps by Date
@@ -192,17 +151,6 @@ jq -r 'select(.date == "1944-06-06") | .map_title' output/maps/*.json
 jq -r 'select(.place_name == "Normandy") | .map_title' output/maps/*.json
 ```
 
-## Storage Backend Comparison
-
-| Feature | Filesystem | S3 |
-|---------|-----------|-----|
-| **Setup** | None | AWS credentials |
-| **Cost** | Free | ~$0.023/GB/month |
-| **Access** | Local only | Global |
-| **Backup** | Manual | Automatic (versioning) |
-| **Scalability** | Limited | Unlimited |
-| **Speed** | Fast | Network dependent |
-
 ## Troubleshooting
 
 ### No Maps Found
@@ -210,9 +158,9 @@ jq -r 'select(.place_name == "Normandy") | .map_title' output/maps/*.json
 **Cause:** No maps in Phase 1 parsed files
 
 **Solution:**
-1. Check Phase 1 output: `grep -r "maps" output/*/chapter*-parsed.json`
-2. Verify source markdown has map references
-3. Check map extraction patterns in `src/parser.py`
+1. Check Phase 1 output: `jq '.maps' output/content/<book>/chapter*-parsed.json`
+2. Web source: verify the markdown links maps (`parser.extract_maps`)
+3. OCR'd PDF book: check `contentrepository/<book>/_figures/figures.json` (built by `book_figures.ensure`)
 
 ### Download Failures
 
@@ -224,75 +172,18 @@ jq -r 'select(.place_name == "Normandy") | .map_title' output/maps/*.json
 3. Verify URLs are accessible
 4. Check firewall/proxy settings
 
-### S3 Upload Failures
-
-**Cause:** AWS credentials or permissions
-
-**Solution:**
-1. Verify credentials: `aws s3 ls`
-2. Check bucket exists: `aws s3 ls s3://your-bucket/`
-3. Review IAM permissions
-4. See [S3_STORAGE.md](S3_STORAGE.md) for details
-
 ## Best Practices
 
-1. **Start without image download** to test metadata extraction
-2. **Enable download** only for maps you need
-3. **Use S3** for production/shared environments
-4. **Use filesystem** for development/testing
-5. **Monitor storage costs** when using S3
-6. **Backup local files** regularly
+1. Keep `download_images: true` so the corpus holds the bytes (the source host can vanish).
+2. Keep map storage under `output/` (only `output/` and `artifacts/` are synced to S3; `filestore/` is ephemeral).
+3. Map entities are keyed by url: do not re-key or hand-edit `index.json`.
 
 ## Related Documentation
 
-- [S3_STORAGE.md](S3_STORAGE.md) - S3 configuration guide
-- `contextmanagement/Specs/maps.md` - Technical specification
-- `contextmanagement/Specs/maps_v1_schema.json` - JSON schema
+- Archived: `docs/archive/2026-11-16/features/maps/S3_STORAGE.md` (the never-implemented S3 backend)
+- `docs/archive/contextmanagement/Specs/maps.md` - Technical specification (historical; current schema: `src/schemas/`)
+- `docs/archive/contextmanagement/Specs/maps_v1_schema.json` - JSON schema (historical; current schema: `src/schemas/`)
 - [PIPELINE.md](../../core/PIPELINE.md) - Complete pipeline documentation
-
-## Examples
-
-### Extract Maps (Metadata Only)
-
-```yaml
-maps:
-  enabled: true
-  download_images: false
-```
-
-```bash
-python3 phase2_extract.py
-```
-
-### Extract Maps with Images (Filesystem)
-
-```yaml
-maps:
-  enabled: true
-  download_images: true
-  storage_backend: "filesystem"
-```
-
-```bash
-python3 phase2_extract.py
-```
-
-### Extract Maps to S3
-
-```yaml
-maps:
-  enabled: true
-  download_images: true
-  storage_backend: "s3"
-  s3_bucket: "wwii-maps"
-  s3_region: "us-east-1"
-```
-
-```bash
-export AWS_ACCESS_KEY_ID="your-key"
-export AWS_SECRET_ACCESS_KEY="your-secret"
-python3 phase2_extract.py
-```
 
 ## Map-Interior Extraction (new)
 
@@ -315,7 +206,7 @@ symbology constraints, and the reverse-registration pass
   `docs/current/dataquality/CHANDRA_OCR_DESIGN.md`)
 - [x] Map image analysis (boundaries, features) — **prototype**: map-interior extraction
   (Tier-1 inventory + Tier-2 dated movement); see MAP_FEATURES_SCHEMA.md
-- [ ] Extract page numbers from parsed documents
+- [x] Page numbers: OCR'd PDF figures carry their PDF page and printed page (`figures.json`)
 - [ ] Wire the map-interior prototype into the pipeline + enforced output records
 - [ ] Map type classification refinement (tactical / strategic / political)
 

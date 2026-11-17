@@ -11,10 +11,11 @@ import logging
 import re
 from functools import lru_cache
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 from ulid import new as new_ulid
 
+from src.grok_client import for_chapter_book
 from src.grok_client import GrokClient
 from src.json_schemas import PEOPLE_GROUP_ITEM_SCHEMA
 from src.utils.json_validator import _fix_invalid_ulids
@@ -162,14 +163,19 @@ def _build_extraction_prompt(event_data: dict) -> str:
     return render_prompt("people_groups", text=text)
 
 
-def _parse_groups_response(response: str) -> list:
-    """Parse API response and extract groups list."""
+def _decode_groups_text(response: str) -> Any:
+    """Raw response text -> JSON (a ```json fence stripped). Raises JSONDecodeError."""
     response_clean = response.strip()
     if response_clean.startswith("```"):
         match = re.search(r"```(?:json)?\s*(\{.*\})\s*```", response_clean, re.DOTALL)
         if match:
             response_clean = match.group(1)
-    data = json.loads(response_clean)
+    return json.loads(response_clean)
+
+
+def _parse_groups_response(response: Any) -> list:
+    """The groups list, from the parsed answer (or raw response text)."""
+    data = _decode_groups_text(response) if isinstance(response, str) else response
     # Accept BOTH shapes the LLM may return: a {wrapper: [...]} dict (key variants) OR a bare list.
     # Requiring the exact 'People_Groups' key silently returned [] for a whole chapter when the model
     # used a variant key or a bare list (PATTERN 4 silent-drop).
@@ -360,16 +366,19 @@ def _load_book_metadata_for_groups(event_file: Path) -> tuple[str, str, str]:
 
 
 def _call_groups_grok(prompt, event_file, event_data, grok_client):
-    """Call Grok for group extraction; return the response string, or None on a handled drop
+    """Call Grok for group extraction; return the parsed answer, or None on a handled drop
     (truncation / empty) after emitting the canonical point-of-loss OBSERV + yield observer.
+    extract_json, not chat_completion: the answer is verified as THIS request's
+    (src/utils/request_identity). An unparsable answer raises GrokAPIError (the caller's
+    parse-error path); another request's answer raises GrokIdentityError.
     """
+    from src.grok_client import GrokTruncationError
+
     try:
-        response = grok_client.chat_completion(
+        response = grok_client.extract_json(
             prompt, temperature=0.3, cache_type="people_groups"
         )
     except Exception as e:
-        from src.grok_client import GrokTruncationError
-
         if isinstance(e, GrokTruncationError):
             logger.error(
                 "  People groups response truncated for %s — event too large",
@@ -384,7 +393,7 @@ def _call_groups_grok(prompt, event_file, event_data, grok_client):
             return None
         raise
 
-    if not response:
+    if response is None or response == "":
         logger.error("  Failed to get response from Grok API")
         # Empty response is also a point-of-loss drop that bypassed the yield observer.
         observe_error("groups", "empty_response", produced=0, reason="empty_response")
@@ -393,6 +402,7 @@ def _call_groups_grok(prompt, event_file, event_data, grok_client):
     return response
 
 
+@for_chapter_book
 def extract_people_groups(
     event_file: Path, grok_client: GrokClient, output_dir: Path
 ) -> Optional[Path]:
@@ -418,27 +428,29 @@ def extract_people_groups(
     # the previous event_data.get("book", "Unknown") silently stamped every group with "Unknown"
     # (mandatory-provenance corruption), diverging from the batch path which threads real metadata.
     book, author, series = _load_book_metadata_for_groups(event_file)
-    if not book or not author:
-        raise ValueError(
-            f"Missing required book metadata for {event_file.name} "
-            f"(expected in the -parsed.json sibling): book={book!r}, author={author!r}"
-        )
+    from src.extraction._entity_common import require_book_provenance
+
+    require_book_provenance(
+        book, author, "people_groups", f"{event_file.name} (-parsed.json sibling)"
+    )
 
     logger.info("  Extracting people groups from %s...", event_file.name)
     prompt = _build_extraction_prompt(event_data)
-    response = _call_groups_grok(prompt, event_file, event_data, grok_client)
-    if not response:
-        return None
+    from src.grok_client import GrokAPIError, GrokIdentityError
 
     try:
+        response = _call_groups_grok(prompt, event_file, event_data, grok_client)
+        if response is None:
+            return None
         groups = _parse_groups_response(response)
-    except json.JSONDecodeError:
+    except (json.JSONDecodeError, GrokAPIError) as e:
+        if isinstance(e, GrokIdentityError):
+            raise  # an answer to another request: never a "no groups"
         logger.warning("  No valid JSON in response (likely no groups in this section)")
-        logger.debug("  Response content: %s", response[:500])
         # #8 PATTERN-8: the JSONDecodeError path returned groups_dir BEFORE the yield observer ran,
         # so a parse-failure was indistinguishable from a legitimate zero. Emit a canonical
         # point-of-loss OBSERV and run the yield observer (produced=0) AHEAD of the early return.
-        observe_error("groups", "parse_error", produced=0, reason="JSONDecodeError")
+        observe_error("groups", "parse_error", produced=0, reason=type(e).__name__)
         _observe_groups_yield(event_data, 0)
         return groups_dir
 

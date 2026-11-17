@@ -1,10 +1,6 @@
 """Title-derived civilian group memberships: born date-unverified, concurrent, temporal
 validation flips, never asserts unverified as fact; dedup discounts unverified."""
 
-import importlib.util
-import sys
-from pathlib import Path
-
 from src.extraction.people import BiographicalProfile, GroupAffiliation
 from src.extraction.title_memberships import (
     derive_title_memberships,
@@ -12,12 +8,7 @@ from src.extraction.title_memberships import (
     validate_membership_dates,
 )
 
-_SPEC = importlib.util.spec_from_file_location(
-    "fdp_tm", Path(__file__).parent.parent / "scripts" / "find_duplicate_people.py"
-)
-fdp = importlib.util.module_from_spec(_SPEC)
-sys.modules["fdp_tm"] = fdp
-_SPEC.loader.exec_module(fdp)
+import src.dedup.find_duplicate_people as fdp  # noqa: E402
 
 
 def _rep():

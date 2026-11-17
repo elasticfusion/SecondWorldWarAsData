@@ -29,36 +29,29 @@ def get_group_wikipedia_image(name: str) -> Optional[dict]:
 
 def search_group_wikipedia(name: str) -> Optional[dict]:
     """Search Wikipedia for a military unit/group. Returns {extract, url, image, license} or None."""
-    from src.utils.search_cache import cache_result, get_cached, TRANSIENT
+    from src.enrichment._wikipedia_common import cached_variant_search
+    from src.utils.wikimedia_client import GROUPS
 
-    cached = get_cached("wikipedia_group", name)
-    if cached == "NOT_FOUND":
+    found = cached_variant_search(
+        GROUPS,
+        name,
+        lambda title: _lookup_group(title),  # late-bound (tests patch _lookup_group)
+        [name, f"{name} (World War II)"],
+        _groups_wiki_images,
+        _groups_wiki_images_lock,
+    )
+    # a cached answer from before the WWII rule is held to it too
+    if isinstance(found, dict) and not _in_wwii(found.get("extract")):
         return None
-    if cached:
-        return json.loads(cached)
+    return found
 
-    transient = False
-    result = _lookup_group(name)
-    if result is TRANSIENT:
-        transient = True
-        result = None
-    if not result:
-        r = _lookup_group(f"{name} (World War II)")
-        if r is TRANSIENT:
-            transient = True
-        elif r:
-            result = r
 
-    if result:
-        cache_result("wikipedia_group", name, json.dumps(result))
-        with _groups_wiki_images_lock:
-            _groups_wiki_images[name] = {
-                "url": result.get("image", ""),
-                "license": result.get("license", "unknown"),
-            }
-    elif not transient:
-        cache_result("wikipedia_group", name, None)  # genuine miss -> negative-cache
-    return result
+def _in_wwii(extract: Optional[str]) -> bool:
+    """The unit's article places it in WWII (names the war or 1939-1945) - the deterministic
+    text rule equipment uses (equipment_identity.mentions_wwii); no Grok request."""
+    from src.extraction.equipment_identity import mentions_wwii
+
+    return mentions_wwii(extract)
 
 
 def _lookup_group(title: str):  # -> dict | None | search_cache.TRANSIENT sentinel
@@ -73,13 +66,11 @@ def _lookup_group(title: str):  # -> dict | None | search_cache.TRANSIENT sentin
     except Exception:  # noqa: BLE001
         pass
     try:
-        from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
+        from src.utils.wikimedia_client import TRANSIENT, wikimedia_get
 
-        resp = recorded_fetch(
+        resp = wikimedia_get(
             "wikipedia",
             "https://en.wikipedia.org/w/api.php",
-            kind=TEXTUAL,
-            method="GET",
             params={
                 "action": "query",
                 "format": "json",
@@ -92,12 +83,15 @@ def _lookup_group(title: str):  # -> dict | None | search_cache.TRANSIENT sentin
             },
             headers=_HEADERS,
             timeout=15,
+            subject=title,
             result_summary_fn=lambda r: f"status={r.status_code} title={title[:40]!r}",
         )
+        if resp is TRANSIENT:
+            return TRANSIENT  # rate limit / block / 5xx / network: not a genuine miss
         if resp.status_code != 200:
-            from src.utils.search_cache import TRANSIENT
-
-            return TRANSIENT  # transient server error, not a genuine miss
+            return (
+                TRANSIENT  # other non-200: not a genuine miss either (prior behaviour)
+            )
 
         pages = resp.json().get("query", {}).get("pages", {})
         for page_id, page_data in pages.items():
@@ -144,6 +138,12 @@ def _extract_group_page(page_data: dict, title: str) -> Optional[dict]:
     lower = extract.lower()
     if not any(kw in lower for kw in _GROUP_KEYWORDS):
         return None  # not a military unit/organization
+    if not _in_wwii(extract):
+        logger.info(
+            "OBSERV groups_wikipedia.not_wwii title=%s: page does not place the unit in WWII",
+            title[:80],
+        )
+        return None  # a same-named modern / other-war unit (the next title variant is tried)
 
     img_url = page_data.get("original", {}).get("source", "")
     license_info = None
@@ -199,35 +199,59 @@ def enrich_group_from_wikipedia(group: dict) -> bool:
         return False
 
     # Grokipedia (independent of the Wikipedia outcome; runs within the same gate).
-    changed = False
-    try:
-        from src.enrichment.grokipedia import resolve_grokipedia_url
-
-        grok_url = resolve_grokipedia_url(name)
-        if grok_url:
-            group["grokipedia_url"] = grok_url
-            changed = True
-    except Exception as e:  # noqa: BLE001 - best-effort, never block
-        logger.debug("Grokipedia lookup failed for group %s: %s", name, e)
+    changed = _apply_group_grokipedia(group, name)
 
     result = search_group_wikipedia(name)
+    from src.utils.wikimedia_client import GROUPS, lookup_was_transient
+
+    if lookup_was_transient(GROUPS, name, result):
+        group.pop(
+            "wikipedia_checked_at", None
+        )  # unknown, not a miss: look again next run
+        return changed
     if not result:
         logger.debug("No Wikipedia extract for group %s", name)
         return changed
 
     group["wikipedia_url"] = result["wikipedia_url"]
     group["wikipedia_extract"] = result["extract"][:500]
-    if result.get("image"):
-        group.setdefault("images", []).insert(
+    _add_wikipedia_image(group, result)
+    logger.debug("Wikipedia enriched group %s → %s", name, result["wikipedia_url"])
+    return True
+
+
+def _apply_group_grokipedia(group: dict, name: str) -> bool:
+    """Set the unit's grokipedia_url; True when set. A transient failure clears the one
+    checked_at marker that gates both lookups (a rate limit / outage must not lose the unit's
+    link for good; the Wikipedia answer is search-cached, so looking again costs no request).
+    """
+    try:
+        from src.enrichment.grokipedia import resolve_grokipedia_url_status
+
+        grok_url, grok_transient = resolve_grokipedia_url_status(name)
+        if grok_transient:
+            group.pop("wikipedia_checked_at", None)
+        if grok_url:
+            group["grokipedia_url"] = grok_url
+            return True
+    except Exception as e:  # noqa: BLE001 - best-effort, never block
+        logger.debug("Grokipedia lookup failed for group %s: %s", name, e)
+    return False
+
+
+def _add_wikipedia_image(rec: dict, result: dict) -> None:
+    """Put the article's image first in ``images`` - once (a retry adds no second copy)."""
+    image = result.get("image")
+    known = {i.get("url") for i in rec.get("images") or [] if isinstance(i, dict)}
+    if image and image not in known:
+        rec.setdefault("images", []).insert(
             0,
             {
-                "url": result["image"],
+                "url": image,
                 "license": result.get("license", "unknown"),
                 "source": "wikipedia",
             },
         )
-    logger.debug("Wikipedia enriched group %s → %s", name, result["wikipedia_url"])
-    return True
 
 
 def _apply_group_wikipedia(rec, result):
@@ -238,15 +262,7 @@ def _apply_group_wikipedia(rec, result):
     if result:
         rec["wikipedia_url"] = result["wikipedia_url"]
         rec["wikipedia_extract"] = result["extract"][:500]
-        if result.get("image"):
-            rec.setdefault("images", []).insert(
-                0,
-                {
-                    "url": result["image"],
-                    "license": result["license"],
-                    "source": "wikipedia",
-                },
-            )
+        _add_wikipedia_image(rec, result)
         rec["enrichment_status"] = "enriched"
     return rec
 
@@ -272,6 +288,10 @@ def _enrich_one_group_file(f: Path) -> tuple[bool, bool]:
         return False, False
 
     result = search_group_wikipedia(name)
+    from src.utils.wikimedia_client import GROUPS, lookup_was_transient
+
+    if lookup_was_transient(GROUPS, name, result):
+        return True, False  # unknown, not a miss: do NOT stamp wikipedia_checked_at
 
     def _apply(rec, _result=result):
         return _apply_group_wikipedia(rec, _result)

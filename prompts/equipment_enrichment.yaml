@@ -1,28 +1,38 @@
 system_prompt: |
-  You are a WWII military equipment specialist providing technical details.
+  You are a WWII military equipment specialist. You extract technical details ONLY from the
+  encyclopedia text you are given; you never add facts from memory.
 
 prompt_template: |
-  Look up information about this WWII military equipment: {identifier} ({common_name})
+  Extract information about this WWII military equipment: {identifier} ({common_name})
 
   Category: {category}
   Country of origin: {country}
 
-  Provide:
-  1. Official designation and common name
-  2. Type/role (tank, fighter, artillery, etc.)
-  3. Key specifications (weight, speed, armament, crew, range)
-  4. Production numbers and dates
-  5. Notable variants
-  6. Primary users (nations/units)
-  7. Timeline (first production/combat use, total produced, combat losses)
-  8. Technical evolution (dated design changes: what/why/effect)
-  9. Logistics (fuel consumption, ammunition capacity, maintenance, supply challenges)
+  Source text (Grokipedia / Wikipedia; each block starts with its URL):
+  ---
+  {source_text}
+  ---
+
+  Using ONLY the source text above, provide:
+  1. A short factual description (2-3 sentences)
+  2. Official designation and common name
+  3. Type/role (tank, fighter, artillery, etc.)
+  4. Key specifications (weight, speed, armament, crew, range)
+  5. Production numbers and dates
+  6. Notable variants
+  7. Primary users (nations/units)
+  8. Timeline (first production/combat use, total produced, combat losses)
+  9. Technical evolution (dated design changes: what/why/effect)
+  10. Logistics (fuel consumption, ammunition capacity, maintenance, supply challenges)
+
+  Anything the source text does not state is null (or an empty list). Do not guess.
 
   Return JSON matching this structure:
   {schema}
 
 schema: |
   {
+    "description": "The M4 Sherman was the most widely used medium tank of the United States and Western Allies in World War II.",
     "official_name": "Medium Tank, M4",
     "common_name": "Sherman",
     "type": "medium_tank",

@@ -170,9 +170,9 @@ class TestProcessEntityObj:
             entity_dir=entity_dir,
             index=index,
             id_field="PlaceID",
-            seid="SE_001",
+            seid="SE000100000000000000000000",
             se_name="Advance on Nancy",
-            event_id="EV_001",
+            event_id="EV000100000000000000000000",
             event_name="Lorraine Campaign",
             meta={"book": "Test", "author": "Author", "series": "Series"},
             sub_event_key="places",
@@ -180,13 +180,13 @@ class TestProcessEntityObj:
         )
         assert result is True
         assert "nancy" in index
-        assert "SE_001" in links  # Links keyed by sub_event_id
+        assert "SE000100000000000000000000" in links  # Links keyed by sub_event_id
         # Verify file was created with mention
         entity_file = entity_dir / index["nancy"]
         data = json.loads(entity_file.read_text(encoding="utf-8"))
         assert data["current_name"] == "Nancy"
         assert len(data["event_mentions"]) == 1
-        assert data["event_mentions"][0]["Sub_eventID"] == "SE_001"
+        assert data["event_mentions"][0]["Sub_eventID"] == "SE000100000000000000000000"
 
     def test_skips_empty_key(self, entity_dir):
         from src.extraction.batch_parallel import _process_entity_obj
@@ -201,9 +201,9 @@ class TestProcessEntityObj:
             entity_dir=entity_dir,
             index=index,
             id_field="PlaceID",
-            seid="SE_001",
+            seid="SE000100000000000000000000",
             se_name="Test",
-            event_id="EV_001",
+            event_id="EV000100000000000000000000",
             event_name="Test",
             meta={"book": "Test", "author": "A", "series": "S"},
             sub_event_key="places",

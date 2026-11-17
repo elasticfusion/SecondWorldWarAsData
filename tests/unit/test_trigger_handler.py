@@ -36,6 +36,10 @@ def dynamodb_table():
             AttributeDefinitions=[{"AttributeName": "cache_key", "AttributeType": "S"}],
             BillingMode="PAY_PER_REQUEST",
         )
+        # _submit_ocr records the OCR submission's chunk manifest in the data bucket.
+        boto3.client("s3", region_name="us-east-1").create_bucket(
+            Bucket=os.environ["S3_BUCKET"]
+        )
         yield
 
 
@@ -279,6 +283,12 @@ def test_submit_ocr_first_claims_and_submits(dynamodb_table):
         "test-wwii-api-cache"
     )
     assert table.get_item(Key={"cache_key": "ocr#B460"}).get("Item")
+    manifest = json.loads(
+        _b.client("s3", region_name="us-east-1")
+        .get_object(Bucket=th.BUCKET, Key="ocr-output/B460/.chunks.json")["Body"]
+        .read()
+    )
+    assert manifest["chunks"] == [""] and manifest["validation_url"] == ""
 
 
 def test_submit_ocr_duplicate_is_denied(dynamodb_table):

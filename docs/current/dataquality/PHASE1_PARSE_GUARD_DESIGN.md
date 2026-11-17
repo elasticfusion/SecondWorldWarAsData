@@ -1,6 +1,6 @@
 # Guard Phase-1 parse output (HIGH-4b)
 
-**Status:** proposed (2026-10-10). Close the earliest preventive gap: Phase 1 writes
+**Status:** BUILT (proposed 2026-10-10; verified against the code 2026-11-16). Close the earliest preventive gap: Phase 1 writes
 `chapter*-parsed.json` via raw `json.dump` — no schema, no guard — so a malformed/empty parse flows
 straight into Phase 2 (garbage-in at the very start of the pipeline).
 
@@ -42,12 +42,16 @@ surfaces as a code-level alert.
 
 ## Wiring
 A single `guard_parsed_content(name, data) -> bool` holds the ONE validation+flag definition.
-Three writers use it (no path left un-guarded):
-- `phase1_parse.py` local writers (main `_save_*` + split-chunk) via `write_parsed_with_guard`
+Every `-parsed.json` writer uses it (no path left un-guarded). `_PARSED_MIN_PARAGRAPHS` is 1:
+- `phase1_parse.py` local writers (the main chapter file and each split-chunk file of a chapter over
+  400k chars) via `write_parsed_with_guard`
   (validate → atomic tmp+replace); a blocked chapter logs `DROPPED ... re-parse needed` (not
   "Saved").
-- `lambda_handlers/phase1_handler.py` (the S3/ECS production path) calls `guard_parsed_content`
-  directly before `storage.write_json`, skipping the upload + logging DROPPED on block.
+- `lambda_handlers/phase1_handler.py::_write_parsed_doc` (the S3/ECS production path) calls
+  `guard_parsed_content` directly before `storage.write_json`, skipping the upload and logging
+  `DROPPED schema-invalid parse ... re-parse needed` on block.
+`guard_parsed_content` returns True (writes) when the validator itself errors, and logs a warning so
+the swallow is visible.
 The notes / endnote-ref artifacts are separate (not `-parsed.json`) and out of scope here.
 
 ## Testing

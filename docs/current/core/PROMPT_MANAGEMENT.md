@@ -1,217 +1,70 @@
 # Grok Prompt Management
 
-Reference for all Grok AI prompts in the pipeline. Use this to understand what each extractor sends, how responses are validated, and where to make changes.
+**Last Updated:** 2026-11-16
 
-## GrokClient API Methods
+How prompts reach Grok, how answers are validated, and where to change things. The per-prompt catalog (which code invokes which prompt, with its variables and cache lane) is [PROMPT_REFERENCE.md](../PROMPT_REFERENCE.md); how to edit a prompt safely is [PROMPT_EDITING_GUIDE.md](../PROMPT_EDITING_GUIDE.md). This file does not repeat them.
 
-All prompts flow through `src/grok_client.py`. Four public methods:
+## Where prompts live
 
-| Method | Returns | Use Case |
-|--------|---------|----------|
-| `chat_completion()` | `str` | Raw text responses (consolidation, search, ISBN lookup) |
-| `extract_json()` | `dict` | JSON responses with auto-retry and repair |
-| `extract_structured()` | `BaseModel` | Pydantic-validated responses (dates, places, people, weather, logistics) |
-| `extract_json_with_image_base64()` | `dict` | Vision analysis (map/equipment verification) |
+Prompt text is **not** in the Python modules. Each prompt is a YAML file in `prompts/` (34 files) with `system_prompt`, `prompt_template`, an optional `schema` and an optional `rules` list. Code loads it through `src/utils/prompt_loader.py`:
 
-Common parameters: `prompt`, `system_prompt`, `temperature` (default 0.1), `use_cache` (default True), `cache_type`.
+- `render_prompt(name, **vars)` returns the rendered user prompt. Substitution is **single pass**: each `{name}` is replaced once, left to right, so untrusted source text that happens to contain `{other}` is never re-interpolated. An unknown `{name}` is left intact (JSON braces survive). `{schema}` comes from the YAML's `schema` block, with only the structural placeholders (`event_id`, `sub_event_id`, `event_name`, `sub_event_summary`) pre-filled. `{quote_rule}` is the shared quote-provenance rule (`src/utils/quote_match.QUOTE_RULE`). `rules` are appended as a bullet list.
+- `get_system_prompt(name)` returns the system message.
+- `load_prompt(name)` is `lru_cache`d; `clear_cache()` resets it. When `aws.enabled` and `S3_BUCKET` is set it reads `s3://<bucket>/prompts/<name>.yaml` first and falls back to the local file, so a prompt can be changed in AWS without a rebuild.
 
-### Response Validation Chain (extract_json)
+A few prompts still have text in code (for example short inline system prompts in some Phase 3 helpers). Search for `system_prompt=` to find them; new prompts belong in `prompts/`.
 
-1. Strip markdown code fences
-2. Sanitize JSON (fix trailing commas, unescaped chars, etc.)
-3. `json.loads()` — if valid, return
-4. If short (<500 chars) and invalid JSON → clear cache, raise error
-5. If truncated → clear cache, raise `GrokAPIError` with "splitting chapter"
-6. Attempt JSON repair (close brackets, fix quotes)
-7. If all fails → raise `GrokAPIError`
+## GrokClient methods
 
-Short valid JSON (`[]`, `{}`) passes step 3 and is returned without retry.
+All requests go through `src/grok_client.py` (`GrokClient`; the model is `GROK_MODEL` env, else `api.grok.model`, `grok-4.3`).
 
-## Prompt Inventory
+| Method | Returns | Use |
+|--------|---------|-----|
+| `chat_completion()` | `str` | Raw text answers |
+| `extract_json()` | `dict` | JSON answers with eviction, retry and repair. All Phase 2 chapter requests use it |
+| `extract_structured()` | `BaseModel` | Answers validated against a Pydantic model |
+| `extract_json_with_image_base64()` / `extract_json_with_image()` | `dict` | Vision checks |
 
-### Phase 2 — Core Extraction
+Common parameters: `prompt`, `system_prompt`, `temperature` (default 0.1), `use_cache` (default True), `cache_type`; `extract_json` also takes `cache_key` and `book`. Signatures are in [API_REFERENCE.md](API_REFERENCE.md).
 
-#### events.py
-- **System prompt:** Module-level `SYSTEM_PROMPT` — expert historian, extract events/sub-events
-- **User prompt:** 1 — ULID requirements, chapter text, schema template
-- **Anti-hallucination:** ULID format enforcement
-- **Schema:** `EVENT_SCHEMA`
-- **Method:** `extract_json` → temperature 0.1
-- **Cache:** `events` (book-scoped)
-- **Auto-split:** On truncation, splits chapter at section boundaries, merges results
-- **Token optimization:** Prompt asks for paragraph numbers only (`"paragraphs": [1, 5, 12]`), not fulltext echo. `_reconstruct_fulltext()` maps numbers back to text from parsed data. Saves ~72% of output tokens.
+In batch mode (`batch_mode=True`, the Phase 2 default in AWS) these calls queue a request and raise `BatchModeCollecting`; the batch round loop (`src/utils/batch_rounds.py`) submits the queue, and the answers are read back through the same cache keys on the next round.
 
-#### dates.py
-- **System prompt:** Module-level `SYSTEM_PROMPT` — expert historian, extract dates
-- **User prompt:** 1 — extract all date/time mentions from event text
-- **Anti-hallucination:** "Do NOT stop until all closing braces", "Do NOT include null date_start"
-- **Schema:** Pydantic `DateExtractionOutput`
-- **Method:** `extract_structured`
-- **Cache:** `dates` (global)
+### Book identity and request identity
 
-#### places.py
-- **System prompt:** Module-level `SYSTEM_PROMPT` — expert historian/geographer, extract places with coordinates
-- **User prompt:** 1 — extract place mentions with GPS coordinates
-- **Schema:** Pydantic `PlaceExtractionOutput`
-- **Method:** `extract_structured`
-- **Cache:** `places` (global)
+For a book-bound `cache_type` (`request_identity.BOOK_BOUND`: events, dates, places, people, peoplegroups, people_groups, weather, logistics, casualties, equipment_broad, equipment_refine, supplemental, source_section) `extract_json` stamps the prompt with the **BookID** and a per-request **RequestID** and requires the answer to echo both. A `mismatch` (the answer belongs to another request) is evicted and asked once more; a second mismatch raises `GrokAPIError`, so such an answer is never used. `missing` is asked once more, then accepted with a warning (in batch mode it is accepted at once); a non-object answer is accepted with a warning (`unverifiable`). Their cache lives under `books/<book>/<kind>`.
 
-#### people.py
-- **System prompt:** Module-level `SYSTEM_PROMPT` — expert historian, extract people with biographical details
-- **User prompt:** 1 — extract people mentions with biographical details
-- **Schema:** Pydantic `PeopleExtractionOutput`
-- **Method:** `extract_structured`
-- **Cache:** `people` (global)
+### Response validation chain (`extract_json`)
 
-#### batch_parallel.py
-- **System prompt:** None (uses events.py SYSTEM_PROMPT via shared prompt)
-- **User prompts:** 2 — multi-chapter event extraction, entity batching
-- **Method:** `extract_json`
-- **Cache:** `events`, `dates`, `places`, `people`, `peoplegroups`
+1. `json_payload`: take the JSON from the answer (as is, else the first fenced block, else the first JSON value in prose)
+2. Sanitize escapes and control characters (`_sanitize_json_response`)
+3. `json.loads()`; valid answers are returned, including short ones such as `[]` or `{}`
+4. An invalid answer under 500 chars, or a cached answer with no JSON at all, is evicted and asked once more
+5. A truncated answer (starts as JSON, error at its end) is evicted; over 100K chars the log says to split the input
+6. Repair (`_try_repair_json`: merge concatenated objects, fix invalid escapes)
+7. Otherwise evict, log `OBSERV grok.json_failed`, raise `GrokParseError` (a `GrokAPIError`)
 
-### Phase 2 — Optional Extraction
+Details: [JSON_REPAIR.md](JSON_REPAIR.md), [CACHE_AUTO_RECOVERY.md](CACHE_AUTO_RECOVERY.md).
 
-#### weather_central.py
-- **System prompt:** Module-level `SYSTEM_PROMPT` — expert historian, extract weather
-- **User prompt:** 1 — batch extract weather mentions from all sub-events (includes per-sub-event place/date context)
-- **Anti-hallucination:** "ONLY extract weather explicitly mentioned", "Only extract EXACT dates"
-- **Schema:** Response is JSON dict keyed by Sub-eventID; each mention validated against `WeatherMention` fields
-- **Method:** `extract_json` (batch), `extract_structured` (single, legacy)
-- **Cache:** `weather` (book-scoped)
+## Prompt patterns
 
-#### logistics.py
-- **System prompt:** None (inline in prompt)
-- **User prompt:** 1 — batch extract logistics issues from all sub-events
-- **Schema:** Response is JSON dict keyed by Sub-eventID; each item validated via `LogisticsExtraction.model_validate()`
-- **Method:** `extract_json` (batch), `extract_structured` (single, legacy)
-- **Cache:** `logistics` (book-scoped)
+- **Windows.** All entity discovery prompts (dates, places, people, people_groups, equipment, weather, logistics, casualties) see a window of 3 paragraphs of the raw parsed text (`src/extraction/windows.py`); `event_name` / `sub_event_summary` are empty for them. Only `events` is one request per chapter.
+- **Quotes are provenance.** Every answer item carries the verbatim quote it came from; `windows.settle` checks it against the source and drops unsupported items. The quote wording lives in the shared `{quote_rule}`.
+- **Anti-hallucination.** Prompts say to extract only what the text states and not to copy the schema's example values; ids are not the model's to invent (EventID and Sub-eventID come from `deterministic_ids`, see [ULID_IMPLEMENTATION.md](ULID_IMPLEMENTATION.md)).
+- **Temperature.** 0.1 for extraction. Lookup and yes/no verification calls pass 0.0 explicitly; grep the call site for `temperature=`.
 
-#### casualties.py
-- **System prompt:** None (inline in prompt)
-- **User prompt:** 1 — batch extract casualties from all sub-events with casualty mentions
-- **Method:** `chat_completion` → parsed manually (batch), same for single (legacy)
-- **Cache:** `casualties` (book-scoped)
+## Cache
 
-#### equipment.py
-- **System prompt:** None
-- **User prompts:** 5 — extraction, enrichment lookup, media search, image URL extraction, image verification
-- **Method:** `extract_json` (3), `chat_completion` (2), `extract_json_with_image_base64` (1)
-- **Temperature:** 0.1 (extraction), 0.0 (verification)
-- **Cache:** `equipment`, `equipment_enrichment`, `equipment_media`, `equipment_image_extraction`, `vision_verification`
+The cache key is a hash of the system prompt, the prompt, the temperature and the model, so editing a prompt YAML changes the key and the old entries are simply not hit. One sub-cache per `cache_type`; book-bound kinds are scoped `books/<book>/<kind>`. Local mode keeps them under `cache/api/`; AWS mode uses the DynamoDB cache table (`{env}-wwii-api-cache`). `GROK_CACHE_DISABLED=1` switches all cache reads and writes off. Clear one entry with `GrokClient.clear_cache_entry(...)`; locally you can delete `cache/api/books/<book>/<kind>/` for a whole kind.
 
-#### supplemental.py
-- **System prompt:** Module-level `SYSTEM_PROMPT` — expert librarian/historian
-- **User prompts:** 2 — reference extraction, narrative content extraction
-- **Anti-hallucination:** "CRITICAL: Only extract references that actually appear", "Do NOT invent, fabricate, or copy example references"
-- **Multi-source instruction:** Split semicolon/period-delimited sources into separate entries
-- **Schema:** `SUPPLEMENTAL_SCHEMA`
-- **Method:** `extract_json` → temperature 0.1
-- **Cache:** `supplemental` (book-scoped)
+## Modifying prompts
 
-#### supplemental_search.py
-- **System prompt:** Inline — "You are a research librarian. Only provide URLs you are certain about."
-- **User prompt:** 1 — find URL for publication
-- **Method:** `chat_completion` → temperature 0.0
-- **Cache:** `supplemental_search` (book-scoped)
+1. Find the prompt in [PROMPT_REFERENCE.md](../PROMPT_REFERENCE.md) and edit `prompts/<name>.yaml`.
+2. Keep the placeholders the calling code supplies (the Context vars column). A removed placeholder is silently left out; an added unknown one is left as literal text.
+3. Run the tests that render it (`tests/unit/`, see [TESTING.md](TESTING.md)).
+4. To use the change in AWS without a rebuild, upload the file to `s3://<bucket>/prompts/<name>.yaml`; `deploy_all.sh` validates that every prompt file exists.
+5. Run `bash scripts/gate.sh` before committing.
 
-#### supplemental_advanced.py
-- **System prompt:** None
-- **User prompts:** 2 — ISBN lookup, author death date
-- **Method:** `chat_completion`
-- **Cache:** `supplemental_advanced` (book-scoped)
+## Known issues
 
-### Phase 2 — Maps
-
-#### grok_search_maps.py
-- **User prompts:** 2 — search for WWII maps, verify image relevance
-- **Method:** `extract_json`, `extract_json_with_image_base64`
-- **Temperature:** 0.1 (search), 0.0 (verification)
-- **Cache:** `grok_search_maps`, `vision_verification`
-
-#### openserp_maps.py
-- **User prompt:** 1 — analyze website license terms
-- **Method:** `extract_json` → temperature 0.0
-- **Cache:** `license_check`
-
-### Phase 3 — Enrichment
-
-#### enrich_biographies.py
-- **User prompt:** 1 — extract biographical data from Wikipedia/Grokipedia text
-- **Method:** `extract_json` → temperature 0.1
-- **Cache:** `api` (global)
-
-### Phase 2 — Analysis
-
-#### people_consolidation.py
-- **System prompt:** Inline — "You are an expert historian identifying duplicate person entries."
-- **User prompt:** 1 — identify duplicate people entries
-- **Method:** `chat_completion`
-- **Cache:** `people` (global)
-
-## Prompt Patterns
-
-### System Prompt Locations
-
-Two patterns in use:
-
-1. **Module-level constant** — `SYSTEM_PROMPT = """..."""` at top of file
-   - Used by: events, dates, places, people, weather_central, supplemental
-   - Easier to find and review
-
-2. **Inline string** — `system_prompt="..."` passed directly in function call
-   - Used by: supplemental_search, supplemental (narrative), people_consolidation
-   - Harder to audit — search for `system_prompt=`
-
-### Anti-Hallucination Guards
-
-Currently present in:
-- **supplemental.py** — "CRITICAL: Only extract references that actually appear" + "Do NOT invent, fabricate, or copy"
-- **dates.py** — "Do NOT include mentions with null date_start"
-- **weather_central.py** — "ONLY extract weather explicitly mentioned"
-
-Not present in: events, places, people, logistics, casualties, equipment. These rely on schema validation to catch bad data rather than prompt-level guards.
-
-### Temperature Settings
-
-| Temperature | Used By | Purpose |
-|-------------|---------|---------|
-| 0.1 (default) | events, dates, places, people, weather, logistics, supplemental, equipment extraction, enrich_biographies | Deterministic extraction |
-| 0.0 | supplemental_search, openserp_maps (license), grok_search_maps (verification), equipment (verification) | Zero-creativity tasks (URL lookup, yes/no verification) |
-
-### Schema Enforcement
-
-| Approach | Extractors | Validation |
-|----------|-----------|------------|
-| Pydantic (`extract_structured`) | dates, places, people, weather, logistics | Pydantic model validates before return |
-| JSON schema in prompt | events, supplemental | Schema template shown in prompt, validated post-extraction |
-| No schema | casualties, equipment (some), maps, consolidation | Manual parsing of response |
-
-## Cache Architecture
-
-Book-scoped types (under `cache/api/books/{BookName}/`):
-- events, weather, equipment, logistics, casualties
-- supplemental, supplemental_search, supplemental_advanced
-
-Global types (under `cache/api/`):
-- dates, places, people, peoplegroups
-
-Other (under `cache/api/`):
-- grok_search_maps, vision_verification, license_check, equipment_media, equipment_image_extraction, equipment_enrichment, api (biographies)
-
-## Known Issues
-
-1. **Short response rejection** — `TODO_short_response_rejection.md`. The `chat_completion` path (L179) now only warns on short responses. The `extract_json` path (L745) tries `json.loads` before retrying. But 5 extractors using `chat_completion` + manual JSON parsing may still waste retries on valid short responses.
-
-2. **Endnote content not fetched** — `TODO_fetch_endnote_content.md`. Supplemental prompt receives reference numbers but not actual text. Grok fabricates `verbatim_reference` content.
-
-3. **Inconsistent system prompt patterns** — Mix of module-level constants and inline strings makes auditing harder.
-
-## Modifying Prompts
-
-1. Find the extractor file in the inventory above
-2. Locate the system prompt (module-level `SYSTEM_PROMPT` or inline `system_prompt=`)
-3. Locate the user prompt (search for `prompt = f"""`)
-4. Make changes
-5. Clear the relevant cache type: `rm -rf cache/api/books/*/{cache_type}/*` (book-scoped) or `rm -rf cache/api/{cache_type}/*` (global)
-6. Test with `--max-items 1` or similar flag to verify output
-7. Run QA: black, pylint, radon, bandit, vulture
+1. `reference_type` (endnote vs footnote) is still the model's call when note text is present; the note text itself is fetched and passed in (see [ENDNOTE_HANDLING.md](../features/supplemental/ENDNOTE_HANDLING.md)).
+2. A few Phase 3 helpers still keep prompt text inline instead of in `prompts/`.

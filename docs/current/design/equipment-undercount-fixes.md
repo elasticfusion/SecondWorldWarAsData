@@ -1,6 +1,11 @@
 # Design: equipment undercount fixes — generics, absence, and tri-modal ships
 
-**Status:** DESIGN (2026-10-31). Driven by a gold-standard human review of USA-E-XChannel-8:
+**Status:** PARTLY BUILT (design 2026-10-31; checked against code 2026-11-16). PR 1 (generics, enemy->theater),
+PR 2 (`presence` / `absence_reason` on equipment mentions, `src/extraction/equipment.py` mention schema) and the
+PR 3 multi-modal routing + `TYPE_UNRESOLVED` rule (in `prompts/equipment_refine.yaml`) are in. PR-3b (dual-write of a
+platform/absence mention into logistics / people_groups, shared identity key) is NOT built: no code writes a
+second-entity record from an equipment mention; the refine prompt only notes the logistics role in context.
+Equipment is now discovered over 3-paragraph windows (`src/extraction/windows.py`), which is what closes most of the undercount. Driven by a gold-standard human review of USA-E-XChannel-8:
 ~50 real equipment references vs 7 extracted (~7x undercount). Three PRs.
 
 ## Governing principle (NEW — applies to ships AND absence)

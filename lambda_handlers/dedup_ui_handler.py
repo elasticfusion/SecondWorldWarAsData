@@ -21,6 +21,7 @@ import boto3
 logger = logging.getLogger(__name__)
 logger.setLevel(os.getenv("LOG_LEVEL", "INFO"))
 
+from src.utils.entity_records import merge_mentions  # noqa: E402
 from src.utils.observe import observe_error  # noqa: E402
 
 STATUS_KEY = "dedup/review_status.json"
@@ -344,8 +345,26 @@ def _handle_action(event, storage, config):
     primary_index = body.get("primary_index", 0)
     excluded_indices = set(body.get("excluded_indices", []))
 
+    if action not in ("merge", "exclude", "skip"):
+        return _json_response(400, {"error": f"unknown action: {action}"})
     # Find group index in the raw report by matching filenames
     group_index = _resolve_group_index(storage, entity_type, group_filenames, body)
+    if group_index is None:
+        # NEVER fall back to another group: a re-sent action (its first try committed, but the
+        # browser saw a network error) would otherwise merge whatever group is now first
+        logger.warning(
+            "OBSERV dedup.action_group_gone entity=%s action=%s files=%d",
+            entity_type,
+            action,
+            len(group_filenames),
+        )
+        return _json_response(
+            409,
+            {
+                "result": "gone",
+                "error": "this group is no longer in the report (already committed?)",
+            },
+        )
 
     if action == "merge":
         return _do_merge(
@@ -359,24 +378,24 @@ def _handle_action(event, storage, config):
 
 
 def _resolve_group_index(storage, entity_type, group_filenames, body):
-    """Find the group index in the raw report by matching filenames; fall back to the
-    body-provided ``group_index``. Preserves the original best-effort behavior (DynamoDB sync
-    warning on error)."""
-    group_index = body.get("group_index", 0)  # fallback
+    """The index of the report group holding ``group_filenames``, or None when the action names
+    files and no group holds ALL of them (the group was already committed or changed). Only an
+    action without filenames uses the body-provided ``group_index``."""
+    if not group_filenames:
+        return None  # an action must name its group's files: no index guess
     try:
         rpt = storage.read_json(_report_path(entity_type))
-        raw_groups = rpt.get("duplicates", rpt.get("related", []))
-        if group_filenames:
-            for i, g in enumerate(raw_groups):
-                g_files = {
-                    p.get("filename", "") for p in g.get("people", g.get("groups", []))
-                }
-                if group_filenames & g_files:
-                    group_index = i
-                    break
-    except Exception as e:
-        logger.warning("DynamoDB sync failed: %s", e)
-    return group_index
+    except Exception as e:  # noqa: BLE001
+        logger.warning(
+            "OBSERV dedup.report_unreadable entity=%s err=%s", entity_type, e
+        )
+        return None
+    raw_groups = rpt.get("duplicates", rpt.get("related", []))
+    for i, g in enumerate(raw_groups):
+        g_files = {p.get("filename", "") for p in g.get("people", g.get("groups", []))}
+        if group_filenames <= g_files:
+            return i
+    return None
 
 
 def _do_skip(entity_type, group_index, storage):
@@ -569,6 +588,31 @@ def _merge_generic_files(entity_type, people, primary_index, storage):
     aliases = primary_data.get("aliases", []) or []
     primary_id = primary_data.get(pk_field, "") if pk_field else ""
 
+    absorbed = _absorb_secondaries(
+        storage, prefix, people, primary_index, primary_mentions, aliases
+    )
+    # Write the merged primary FIRST: only once it holds the secondaries' mentions are their refs
+    # repointed and their files deleted (a failed write leaves every secondary intact).
+    primary_data["event_mentions"] = primary_mentions
+    primary_data["aliases"] = aliases
+    storage.write_json(f"{prefix}/{primary['filename']}", primary_data)
+    _sync_entity_to_dynamo(prefix.split("/")[-1], primary_data)
+    _append_to_manifest([f"{prefix}/{primary['filename']}"])
+    for p, secondary in absorbed:
+        secondary_id = secondary.get(pk_field, "") if pk_field else ""
+        _rebase_event_refs_storage(storage, secondary_id, primary_id, ref_key)
+        try:
+            storage.delete(f"{prefix}/{p['filename']}")
+        except Exception as e:
+            logger.warning("Could not delete %s: %s", p.get("filename"), e)
+
+
+def _absorb_secondaries(
+    storage, prefix, people, primary_index, primary_mentions, aliases
+):
+    """Absorb every secondary into the primary lists (until the Lambda nears its timeout).
+    Returns [(entry, secondary record)] of those absorbed - nothing is deleted here."""
+    absorbed = []
     for i, p in enumerate(people):
         if i == primary_index:
             continue
@@ -576,41 +620,24 @@ def _merge_generic_files(entity_type, people, primary_index, storage):
         if _lambda_context and _lambda_context.get_remaining_time_in_millis() < 10000:
             logger.warning("Lambda timeout approaching — saving partial merge")
             break
-        _absorb_secondary_generic(
-            storage, prefix, p, primary_mentions, aliases, primary_id, pk_field, ref_key
+        secondary = _absorb_secondary_generic(
+            storage, prefix, p, primary_mentions, aliases
         )
-
-    primary_data["event_mentions"] = primary_mentions
-    primary_data["aliases"] = aliases
-    storage.write_json(f"{prefix}/{primary['filename']}", primary_data)
-    _sync_entity_to_dynamo(prefix.split("/")[-1], primary_data)
-    _append_to_manifest([f"{prefix}/{primary['filename']}"])
+        if secondary is not None:
+            absorbed.append((p, secondary))
+    return absorbed
 
 
-def _absorb_secondary_generic(
-    storage, prefix, p, primary_mentions, aliases, primary_id, pk_field, ref_key
-):
-    """Union one secondary's mentions/alias into the primary lists, rebase its event refs to the
-    primary id (BEFORE delete so nothing is orphaned), then delete the secondary file.
-    """
+def _absorb_secondary_generic(storage, prefix, p, primary_mentions, aliases):
+    """Union one secondary's mentions (entity_records.merge_mentions - the same rule as every
+    other merge) and its name (as an alias) into the primary lists. Returns the secondary record,
+    or None when it cannot be read (then nothing of it is merged or deleted)."""
     try:
         secondary = storage.read_json(f"{prefix}/{p['filename']}")
     except Exception as e:
         logger.warning("Could not read %s: %s", p.get("filename"), e)
-        return
-    seen = {
-        (m.get("Sub_eventID", ""), m.get("event_id", ""), m.get("Event_Name", ""))
-        for m in primary_mentions
-    }
-    for m in secondary.get("event_mentions", []):
-        mention_key = (
-            m.get("Sub_eventID", ""),
-            m.get("event_id", ""),
-            m.get("Event_Name", ""),
-        )
-        if mention_key not in seen:
-            primary_mentions.append(m)
-            seen.add(mention_key)
+        return None
+    merge_mentions(primary_mentions, secondary.get("event_mentions", []))
     sec_name = secondary.get(
         "name",
         secondary.get(
@@ -620,12 +647,7 @@ def _absorb_secondary_generic(
     )
     if sec_name and sec_name not in aliases:
         aliases.append(sec_name)
-    secondary_id = secondary.get(pk_field, "") if pk_field else ""
-    _rebase_event_refs_storage(storage, secondary_id, primary_id, ref_key)
-    try:
-        storage.delete(f"{prefix}/{p['filename']}")
-    except Exception as e:
-        logger.warning("Could not delete %s: %s", p.get("filename"), e)
+    return secondary
 
 
 def _rename_to_match_content(event, storage):
@@ -901,7 +923,8 @@ def _assign_to_person(event, storage):
         if source_name and source_name not in aliases:
             aliases.append(source_name)
         target["aliases"] = aliases
-        target["event_mentions"] = target_mentions + source_mentions
+        merge_mentions(target_mentions, source_mentions)
+        target["event_mentions"] = target_mentions
         storage.write_json(f"{prefix}/{target_file}", target)
         storage.delete(f"{prefix}/{source_file}")
         _append_to_manifest([f"{prefix}/{target_file}"])
@@ -1373,8 +1396,10 @@ function renderGroups() {
 }
 
 let processing = false;
-let pendingActions = [];
+// The queue survives a reload or a failed commit (localStorage): decisions are never lost.
+let pendingActions = JSON.parse(localStorage.getItem('dedupPending') || '[]');
 let lastSnapshots = [];
+function saveQueue() { localStorage.setItem('dedupPending', JSON.stringify(pendingActions)); }
 
 function queueAction(idx, action) {
   const primary = document.querySelector('input[name="primary-'+idx+'"]:checked');
@@ -1382,8 +1407,9 @@ function queueAction(idx, action) {
   document.querySelectorAll('.include-cb[data-group="'+idx+'"]').forEach(cb => {
     if (!cb.checked) excluded.push(parseInt(cb.dataset.idx));
   });
-  const body = {action, entity_type:currentTab, group_filenames: (data[currentTab]||[])[idx]?.people?.map(p=>p.filename)||[], primary_index: primary?parseInt(primary.value):0, excluded_indices: excluded};
+  const body = {action, entity_type:currentTab, group_filenames: (((data[currentTab]||[])[idx]||{}).people || ((data[currentTab]||[])[idx]||{}).groups || []).map(p=>p.filename), primary_index: primary?parseInt(primary.value):0, excluded_indices: excluded};
   pendingActions.push(body);
+  saveQueue();
   // Mark group as queued visually
   const cards = document.querySelectorAll('.group-card');
   if (cards[idx]) { cards[idx].style.opacity = '0.5'; cards[idx].querySelector('.actions').innerHTML = '<span style="color:#2563eb">⏳ Queued: '+action+'</span> <button class="btn" style="background:#dc2626;color:#fff;padding:4px 10px;font-size:12px" onclick="unqueue('+pendingActions.length+')">✕</button>'; }
@@ -1392,6 +1418,7 @@ function queueAction(idx, action) {
 
 function unqueue(n) {
   pendingActions.splice(n-1, 1);
+  saveQueue();
   renderGroups();
   updateCommitBar();
 }
@@ -1401,25 +1428,44 @@ function updateCommitBar() {
   if (!bar) { bar = document.createElement('div'); bar.id='commit-bar'; bar.style.cssText='position:sticky;bottom:0;background:#1f2937;color:#fff;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;border-radius:8px;margin:10px 0'; document.querySelector('.container').appendChild(bar); }
   if (pendingActions.length === 0) { bar.style.display='none'; return; }
   bar.style.display='flex';
-  bar.innerHTML = '<span>'+pendingActions.length+' action(s) queued</span><div><button class="btn" style="background:#6b7280;color:#fff;margin-right:8px" onclick="pendingActions=[];renderGroups();updateCommitBar()">Clear</button><button class="btn" style="background:#059669;color:#fff" onclick="commitAll()">Commit All</button></div>';
+  bar.innerHTML = '<span>'+pendingActions.length+' action(s) queued</span><div><button class="btn" style="background:#6b7280;color:#fff;margin-right:8px" onclick="pendingActions=[];saveQueue();renderGroups();updateCommitBar()">Clear</button><button class="btn" style="background:#059669;color:#fff" onclick="commitAll()">Commit All</button></div>';
 }
 
+// After a lost response the first try may still be running server-side: wait out the Lambda
+// timeout (30 s) before a retry, so "gone" (409) really means committed and no merge runs twice.
+let retryAfter = parseInt(localStorage.getItem('dedupRetryAfter') || '0');  // survives a reload
 async function commitAll() {
   if (processing || !pendingActions.length) return;
+  const wait = Math.ceil((retryAfter - Date.now()) / 1000);
+  if (wait > 0) { alert('The last commit lost its response; wait '+wait+' s before retrying (it may still be finishing).'); return; }
   processing = true;
   const bar = document.getElementById('commit-bar');
   const total = pendingActions.length;
   lastSnapshots = [];
-  for (let i = 0; i < total; i++) {
-    bar.innerHTML = '<span>Committing '+(i+1)+'/'+total+'...</span>';
+  let done = 0;
+  // Each action leaves the queue only once the server answered it; on any failure the rest stay
+  // queued (saved) for "Commit All" again. A 409 means it was already committed: dropped.
+  while (pendingActions.length) {
+    bar.innerHTML = '<span>Committing '+(done+1)+'/'+total+'...</span>';
+    let resp, result;
     try {
-      const resp = await fetch(API+'/action', {method:'POST', body:JSON.stringify(pendingActions[i]), headers:{'Content-Type':'application/json'}, credentials:'include'});
-      const result = await resp.json();
-      if (result.snapshot_id) lastSnapshots.push(result.snapshot_id);
-      if (result.error) { alert('Error on item '+(i+1)+': '+result.error); break; }
-    } catch(e) { alert('Network error on item '+(i+1)); break; }
+      resp = await fetch(API+'/action', {method:'POST', body:JSON.stringify(pendingActions[0]), headers:{'Content-Type':'application/json'}, credentials:'include'});
+      result = await resp.json();
+    } catch(e) {
+      retryAfter = Date.now() + 35000; localStorage.setItem('dedupRetryAfter', retryAfter);
+      alert('Network error on item '+(done+1)+' of '+total+'. It may have been committed; '+pendingActions.length+' action(s) are still queued - click Commit All to continue (an already-committed one is skipped).');
+      break;
+    }
+    if (!resp.ok && resp.status !== 409) {
+      if (resp.status >= 500) { retryAfter = Date.now() + 35000; localStorage.setItem('dedupRetryAfter', retryAfter); }  // a gateway timeout may still be running
+      alert('Error on item '+(done+1)+' ('+resp.status+'): '+(result.error || result.message || 'request failed')+' - '+pendingActions.length+' action(s) still queued.');
+      break;
+    }
+    if (result.snapshot_id) lastSnapshots.push(result.snapshot_id);
+    pendingActions.shift();
+    saveQueue();
+    done++;
   }
-  pendingActions = [];
   processing = false;
   await load();
   updateCommitBar();
@@ -1551,7 +1597,7 @@ async function toggleDetail(groupIdx, personIdx, filename) {
   }
 }
 
-load();
+load().then(updateCommitBar);  // show a queue restored from localStorage
 </script>
 </body>
 </html>"""

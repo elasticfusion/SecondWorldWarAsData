@@ -2,7 +2,7 @@
 
 **Module:** `src/extraction/batch_parallel.py`  
 **Status:** Production  
-**Last Updated:** 2026-05-23
+**Last Updated:** 2026-11-16
 
 ---
 
@@ -51,24 +51,26 @@ Extract Events  Extract Events  Extract Events
 └─────────────┴─────────────┴─────────────┘
 ```
 
-### Two-Level Parallelization
+### Parallelization levels
 
 **Level 1: Chapter-Level**
-- Process multiple chapters concurrently
-- Configurable: `max_parallel` (default: 3)
+- Process multiple chapters concurrently (`process_chapters_parallel`).
+- Configurable: `concurrency.max_parallel_chapters` (code default 3; not set in `config.yaml`).
 - Prevents API rate limiting
 
 **Level 2: Entity-Level**
-- Within each chapter, extract entities in parallel
-- Dates, Places, Groups, People extracted simultaneously
-- Uses `asyncio.gather()`
-- Shared `_batch_extract` helper eliminates code duplication
+- Within each chapter, `extract_all_async` runs dates, places, people groups and people together with `asyncio.gather()`.
+- Each entity type asks the model about **3-paragraph windows of the raw parsed text**
+  (`src/extraction/windows.py`, size `extraction.window_paragraphs` / env `WINDOW_PARAGRAPHS`), not about each sub-event.
+  The answer is attributed to the real sub-event by where its quote sits (`windows.settle`).
+- Shared `_batch_extract` helper eliminates code duplication.
+- **Prefetch:** when a chapter's events are not yet in, `prefetch_windows` queues the window requests together with the
+  events request, so in batch mode they share one round instead of waiting for a later one.
 
 **Level 3: Optional Entity Batching**
-- Weather, Logistics, Casualties each send all sub-events in a single API call per chapter
-- `_batch_extract_weather()`, `_batch_extract_logistics()`, `_batch_extract_casualties()`
-- Post-processing (entity linking, file creation, API enrichment) remains per-item
-- Reduces optional extractor API calls from ~2,807 to ~558 (~80% reduction)
+- Weather, Logistics, Casualties (`_batch_extract_weather()`, `_batch_extract_logistics()`, `_batch_extract_casualties()`)
+  and Equipment (broad discovery, then one refine request per item) run after the core entities, in later batch rounds.
+- Post-processing (entity linking, file creation, API enrichment) remains per-item.
 
 ---
 
@@ -95,23 +97,10 @@ await process_chapters_parallel(
 
 ### 2. Batch API Calls
 
-**Single API call for multiple sub-events:**
-
-Traditional approach:
-```
-Sub-event 1 → API call → Response
-Sub-event 2 → API call → Response
-Sub-event 3 → API call → Response
-Total: 3 API calls
-```
-
-Batch approach:
-```
-Sub-events 1,2,3 → Single API call → Batch response
-Total: 1 API call
-```
-
-**Reduction:** 66% fewer API calls
+Grok calls are not made one by one. In batch mode (`batch.phase2: true`) every uncached request is collected
+(`BatchModeCollecting`) and a whole round is sent as one xAI batch job at 50% of standard token pricing.
+Requests that depend on an earlier answer (an event's windows, an equipment item's refine, its identity) wait for the next
+round. See [xAI Batch API](#xai-batch-api-50-cost-reduction) below.
 
 ### 3. Concurrent Entity Extraction
 
@@ -127,7 +116,7 @@ results = await asyncio.gather(
 )
 ```
 
-**All four run simultaneously** instead of sequentially.
+**All four run simultaneously** instead of sequentially (`extract_all_async`).
 
 ### 4. Error Isolation
 
@@ -161,17 +150,26 @@ Processing batch 2: 3 chapters
 
 ## Configuration
 
-### Enable Concurrent Processing
-
 ```yaml
 # config.yaml
 concurrency:
-  enabled: true                   # Enable concurrent processing
-  max_event_files: 3             # Process N chapters concurrently
-  max_extraction_group: 3        # Max parallel extractions per chapter
+  enabled: false                 # as shipped
+  max_event_files: 3             # event-file worker threads (phase2_extract.py)
+  max_extraction_group: 3
+  max_enrichment_workers: 4      # Phase-2 bio-enrichment fetch pool (capped at 16)
+  bio_enrichment_parallel: true
+
+extraction:
+  window_paragraphs: 3           # paragraphs per entity-discovery request (env WINDOW_PARAGRAPHS)
+
+batch:
+  phase2: true                   # xAI batch API for Phase 2 (env BATCH_PHASE2 overrides)
+  phase3: false                  # Phase 3 makes live calls
+  max_rounds: 8                  # rounds before the batch.rounds_over_cap alert + stop
+  in_task_wait_minutes: 5        # wait per round before handing off to the poller (env BATCH_IN_TASK_WAIT_MINUTES)
 ```
 
-**Note:** Not enabled by default. Set `enabled: true` to activate.
+`concurrency.max_parallel_chapters` (default 3, read in `phase2_extract.py`) is the chapter concurrency.
 
 ---
 
@@ -215,12 +213,7 @@ Batch parallel processing is the default extraction path in `phase2_extract.py`:
 python3 phase2_extract.py
 ```
 
-All chapters are processed in parallel batches automatically. Configure concurrency in `config.yaml`:
-
-```yaml
-concurrency:
-  max_parallel_chapters: 3  # chapters processed simultaneously
-```
+All chapters are processed in parallel batches automatically (`concurrency.max_parallel_chapters`, default 3).
 
 ---
 
@@ -228,19 +221,9 @@ concurrency:
 
 ### Benchmarks
 
-**Test:** 9 chapters, ~50 paragraphs each
-
-| Method | Time | API Calls | Speedup |
-|--------|------|-----------|---------|
-| Sequential | 15 min | 270 | 1x |
-| Parallel (3) | 5 min | 270 | 3x |
-| Batch + Parallel | 3 min | 90 | 5x |
-
-**Factors:**
-- Network latency
-- API response time
-- Chapter complexity
-- Cache hit rate
+The 9-chapter benchmark that was here (May 2026: sequential 15 min, parallel 5 min, batch + parallel 3 min) pre-dates windowed
+discovery and batch rounds and was removed as no longer representative. Wall time now depends mostly on batch round count
+(typically several rounds per book; equipment alone takes about 6) and on how fast xAI answers each round.
 
 ### Resource Usage
 
@@ -363,9 +346,8 @@ for result in results:
 ### Retry Logic
 
 **Not implemented at batch level:**
-- Use `phase2_retry.py` wrapper
-- Retries failed chapters sequentially
-- Batch processing for initial pass only
+- `phase2_retry.py` wrapper retries failed chapters sequentially
+- After the last batch round, `_retry_missing_events` retries chapters whose events still failed (live calls)
 
 ---
 
@@ -446,65 +428,62 @@ await asyncio.sleep(5)
 **Solution:**
 ```bash
 # Use sequential processing for debugging
-python3 phase2_extract.py  # Without --concurrent
+python3 phase2_extract.py  # Without --batch (live, synchronous calls)
 ```
 
 ---
 
 ## xAI Batch API (50% Cost Reduction)
 
-**Module:** `src/utils/batch_api.py`  
+**Module:** `src/utils/batch_api.py` (`BatchCollector`, `submit_batch`, `poll_batch`, `BatchPending`, `in_task_wait_minutes`)  
+**Rounds:** `src/utils/batch_rounds.py` (`BatchRounds`, cap, diagnostics, `HANDED_OFF_EXIT = 75`)  
+**Driver:** `phase2_extract.py` (`_run_batch_rounds`, `_run_batch_rounds_or_exit`)  
 **Job Queue:** `src/utils/job_queue.py`  
 **Poller:** `lambda_handlers/batch_poller.py`  
-**Flag:** `--batch` on `phase2_extract.py` and `phase3_enrich_data.py`  
-**Last Updated:** 2026-05-23
+**Flag:** `--batch` on `phase2_extract.py` (config `batch.phase2`, env `BATCH_PHASE2`); Phase 3 is live (`batch.phase3: false`)  
+**Last Updated:** 2026-11-16
 
-The xAI Batch API processes requests asynchronously at 50% of standard token pricing. Instead of real-time API calls, requests are queued and processed in the background (typically within 24 hours).
+The xAI Batch API processes requests asynchronously at 50% of standard token pricing. Requests are collected, submitted as one batch, answered, and the run repeats until a pass queues nothing new.
 
 ### Usage
 
 ```bash
 # Phase 2 with batch pricing
 python3 phase2_extract.py --batch
-
-# Phase 3 with batch pricing
-python3 phase3_enrich_data.py --batch
 ```
 
-### How It Works (Local Mode)
+### How It Works: rounds
 
-1. Pipeline runs normally — cached results return instantly
-2. Uncached requests are collected (not sent) via `BatchModeCollecting`
-3. After first pass: all collected requests submitted as one xAI batch job
-4. Polls until batch completes (minutes to hours)
-5. Results written into local diskcache
-6. Pipeline re-runs — everything hits cache, processes normally
+1. A pass runs normally. Cached answers return instantly; uncached requests are collected (`BatchModeCollecting`), not sent.
+2. `_run_batch_rounds` submits the collected requests as one batch named `phase2-<book>-<n>files-r<round>-<k>reqs`
+   (`grok_client.submit_batch(..., max_wait_minutes=wait)`).
+3. The task **waits in-task** up to `batch.in_task_wait_minutes` (5). If the batch is answered, the results go into the cache and the
+   whole pass re-runs; what the answers unlock (an event's entities, an equipment item's refine, identity, source re-check) is queued as the next round.
+4. Rounds repeat until a pass queues nothing; that pass has written everything from the cache. Then `_finish_after_rounds` leaves batch mode
+   and retries chapters whose events still failed.
+5. **Round cap:** `batch.max_rounds` (8). Past it `BatchRounds.admit` alerts (`batch.rounds_over_cap`, with per-kind request counts and
+   repeat diagnostics), the run exits 1 and is marked `incomplete`: nothing downstream (dedup gate, Phase 3) runs. A repeated request
+   is flagged earlier as `batch.round_repeats`.
 
-### How It Works (AWS Mode — Submit/Retrieve Architecture)
+### How It Works (AWS): in-task wait + batch-poller hand-off
 
-When `batch.phase2: true` or `batch.phase3: true` in `config.yaml`, the ECS entrypoint auto-delegates to submit-only mode. The full flow:
+`ecs_entrypoint.py` routes a batch-enabled Phase 2 through `run_submit_only` (the `--batch` extraction runs in a child process), then `_settle_phase2_task` acts on the child's exit status:
 
-1. **Submit-only task** (`ecs_entrypoint.py --submit-only`):
-   - Runs the phase — cached results return instantly, uncached requests collected
-   - Submits all collected requests as one xAI batch job
-   - Enqueues `batch_job#{batch_id}` in DynamoDB via `src/utils/job_queue.py`
-   - Tears down NAT Gateway + scales OpenSERP to 0
-   - Exits (no long-running ECS task)
+- **0** - every round was answered in-task: post-process (dedup gate, notification, Phase 3 trigger).
+- **75 (`HANDED_OFF_EXIT`)** - a round was not answered within the in-task wait. The task enqueues that batch (`batch_job#{batch_id}`) for the poller and exits;
+  `phase2_extract` has written `pending_batch` to `.phase_results.json`.
+- **anything else** (including the round cap) - failed; nothing is enqueued and nothing is post-processed.
 
-2. **Batch poller Lambda** (`dev-wwii-batch-poller`):
-   - EventBridge triggers every 5 minutes (configurable via BatchPollerIntervalMinutes)
-   - Scans DynamoDB for `batch_job#*` entries with status `pending`
-   - Polls Grok batch API for completion
-   - On completion: updates status, creates networking, launches ECS retrieve task
-   - **24h timeout:** Jobs pending >24 hours are marked `failed` (stuck batch protection)
+**Batch poller Lambda** (`{env}-wwii-batch-poller`, `lambda_handlers/batch_poller.py`):
+- EventBridge triggers every 5 minutes (`BatchPollerIntervalMinutes`).
+- Polls jobs in status `pending` / `ready`; an `in_task` job (a batch a running task is still waiting for) is left alone until it is older than
+  `BATCH_IN_TASK_ADOPT_SECONDS` (2 h), then adopted as pending (the task died, e.g. a spot reclaim).
+- On completion it launches an ECS task with `--retrieve-only`.
 
-3. **Retrieve-only task** (`ecs_entrypoint.py --retrieve-only`):
-   - Downloads batch results from Grok API
-   - Populates DynamoDB cache with responses
-   - Re-runs the phase with `SKIP_RETRY=true` — everything hits cache
-   - Uploads results to S3
-   - Tears down networking
-   - Updates job status to `retrieved`
+**Retrieve-only task** (`ecs_entrypoint.py --retrieve-only <batch_id> <phase_script>`):
+- Maps the batch results to cache keys and fills the cache, re-runs Phase 2 with `SKIP_RETRY=1` (everything hits the cache)
+  and carries on with the next rounds (`BATCH_ROUND_START` makes the cap count every round of the book, not per container).
+- Settles the same way (`_settle_phase2_task`): it may hand off again, finish, or fail.
 
 ### DynamoDB Job Queue Schema
 
@@ -515,9 +494,9 @@ Entries stored in the cache table with key `batch_job#{batch_id}`:
 | `batch_id` | String | Grok batch API job ID |
 | `phase` | String | `phase2` or `phase3` |
 | `book` | String | Book being processed |
-| `batch_name` | String | Descriptive name for the batch |
+| `batch_name` | String | Descriptive name for the batch (carries the round, `-r<round>-`) |
 | `submitted_at` | String | ISO timestamp of submission |
-| `status` | String | `pending` / `complete` / `failed` / `retrieved` |
+| `status` | String | `in_task` / `pending` / `ready` / `complete` / `failed` / `retrieved` (see `job_queue.py` and `batch_poller.py`) |
 | `completed_at` | String | ISO timestamp of completion (set by poller) |
 | `request_count` | Number | Number of requests in the batch |
 | `ttl` | Number | DynamoDB TTL (auto-cleanup) |
@@ -526,14 +505,13 @@ Entries stored in the cache table with key `batch_job#{batch_id}`:
 
 - Output is identical to real-time mode
 - Previously cached results are reused (free)
-- Batch requests don't count against rate limits
 - `GrokClient(batch_mode=True)` intercepts `chat_completion()` after cache check
-- Results stored in same cache as real-time responses
-- Subsequent runs (with or without `--batch`) reuse cached results
-- **Preflight credit check** verifies Grok API balance before submission
-- **Smart retry** skips footnotes-only sections that consistently fail
-- **Per-chapter heartbeat** logs progress every chapter to detect stalls
-- **JSON quality statistics** tracked per batch for monitoring extraction quality
+- Results are matched to submitted requests by request id first, falling back to position (`batch_api.align_by_request_id`, `retrieve_results_ordered`)
+- Every book-bound request carries the BookID and its own RequestID; an answer that does not echo both is not trusted (`src/utils/request_identity.py`)
+- **Preflight credit check** (`credit_gate`) reserves budget before submission and releases it on failure
+- A completed batch whose error fraction is at least `BATCH_PARTIAL_FAILURE_ALERT_PCT` (10%) raises an operator alert
+- **Per-chapter heartbeat** logs progress to detect stalls
+- Timing statistics per batch: `src/utils/batch_stats.py`
 
 ---
 
@@ -552,5 +530,5 @@ Entries stored in the cache table with key `batch_job#{batch_id}`:
 - [Events Extraction](../events/README.md)
 - [Dates Extraction](../dates/README.md)
 - [Places Extraction](../places/README.md)
-- [Error Handling](../../core/error_handling.md)
+- [Error Handling (archived 2026-03 spec)](../../../archive/contextmanagement/Specs/error_handling.md)
 - [Configuration](../../core/CONFIGURATION.md)

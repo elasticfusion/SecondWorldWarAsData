@@ -22,6 +22,12 @@ prompt_template: |
   designation is a generic class ("medium tank") or you cannot identify it, set
   canonical_name to null.
 
+  When the type is a VARIANT of a base type, variant_of is the base type's canonical name
+  ("M4 Sherman" for the M4A1; "Pz.Kpfw. IV" for the Ausf. H) and distinguishing_features says,
+  in one or two sentences, what physically sets this variant apart from that base type (hull,
+  engine, armament, armor) - only what is well established. A base type itself, or a
+  designation you cannot place in a family: both null.
+
   Return ONLY valid JSON matching this structure:
   {schema}
 
@@ -30,5 +36,7 @@ schema: |
     "canonical_name": "M4A2 Sherman",
     "nationality_of_origin": "USA",
     "equivalents": ["M4A2", "Sherman III"],
+    "variant_of": "M4 Sherman",
+    "distinguishing_features": "Twin General Motors 6046 diesel engines instead of the M4's Continental radial; welded hull.",
     "confidence": 0.9
   }

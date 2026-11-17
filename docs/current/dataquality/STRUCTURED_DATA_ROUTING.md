@@ -3,7 +3,7 @@
 Design for classifying source documents at ingestion and routing structured
 (tabular) data through the same entity model as unstructured (prose) data.
 
-**Status:** Partially implemented (ingestion front-end + OOB markdown parsers built; docx/epub/txt + web-video/transcript converters built; entity convergence pending) | **Last Updated:** 2026-09-23
+**Status:** Partially implemented (ingestion front-end + OOB markdown parsers built; docx/epub/txt + web-video/transcript converters built; entity convergence built but opt-in) | **Last Updated:** 2026-11-16 (migration list and Phase-0 table reconciled with the code)
 
 ---
 
@@ -203,14 +203,14 @@ front door that unifies them.
 |---------------|---------|-------------|--------|
 | `markdown` | none (ready) | text | ✅ exists |
 | `html` | HTML→markdown (HyperWar converter, generalized) | text | ⚠️ exists for ibiblio only |
-| `pdf` | Chandra OCR → markdown | text | ✅ **Built** (`src/ingestion/region_converter.py`; media detection + per-page disposition classify → convert) |
+| `pdf` | Chandra OCR → markdown → `ocr_promote` → chapters | text | ✅ **Built** (trigger OCR track, see `CHANDRA_OCR_DESIGN.md`; `region_converter.py` is the older disposition-based converter used by `phase0_ingest`) |
 | `pdf` (scanned tables) | Chandra OCR markdown → **section parsers** → rows | text | ✅ **Built** (`src/ingestion/oob_markdown/*`: command-staff, campaigns, command-posts, statistics, organic-units + division inference) — see note below on markdown-parser vs. CSV-field-map |
 | `csv` | tabular parser (declarative field-map) | text (entities) | ❌ to build (still the right path for *cleanly*-CSV sources) |
 | `epub` | epub→markdown (pandoc) | text | ✅ **Built** (`src/ingestion/text_converters.py`, `epub_to_markdown`) |
 | `docx` (Word) | docx→markdown (pandoc) — carries embedded images/tables | text (+ media) | ✅ **Built** (`src/ingestion/text_converters.py`, `docx_to_markdown`) |
 | `txt` | wrap as markdown | text | ✅ **Built** (`src/ingestion/text_converters.py`, `txt_to_markdown`) |
 | `image` (still) | register asset + vision caption/OCR | media entity | ⚠️ `images.py` + region converter extract embedded images |
-| `map` (still) | register asset + vision verify | `maps` entity | ✅ exists |
+| `map` (still) | register asset + vision verify | `maps` entity | ✅ exists (an OCR'd PDF book's own maps come from `_figures/`, `src/ingestion/book_figures.py`) |
 | `video` (moving, incl. web-page-with-video) | register asset + **timecoded transcript** + linked page-capture | media entity | ✅ **Built** (`src/ingestion/web_video.py`; `GrokTranscriber` → xAI `/v1/stt` word-level timecodes, `NullTranscriber` default flags `needs_review`) |
 | `audio` (oral history) | transcribe → markdown + register asset | both | ⚠️ transcription path exists via `GrokTranscriber`; oral-history acquisition wiring pending |
 
@@ -556,10 +556,12 @@ points land in the same place.
 Foundation first, then one medium at a time. Each medium reuses an existing
 handler where one exists.
 
-> **Progress (2026-09-18).** The ingestion front-end and OOB scanned-table
-> extraction are built in `src/ingestion/` (steps marked ✅ below). Remaining
-> work is the entity-convergence bridge, pipeline wiring (Phase 0 as a runnable
-> step), the clean-CSV field-map, and the media/audio/acquisition handlers.
+> **Progress (2026-11-16).** The ingestion front-end, OOB scanned-table extraction, pipeline wiring
+> (`phase0_ingest.py` + the ECS phase0 task), the fuzzy crosswalk and the entity-convergence emit
+> (opt-in via `ingestion.converge_people` / `OOB_CONVERGE_PEOPLE`, default off) are built in
+> `src/ingestion/` (steps marked ✅ below). Remaining work is the clean-CSV field-map, the audio
+> handler, the acquisition loop and the media-entity registry. Ordinary uploads are routed by
+> `lambda_handlers/trigger_handler.py` (see `INGESTION_PATHS.md`).
 
 **Foundation**
 1. ✅ **Source metadata + media-type detection** — `source_metadata.py`,
@@ -568,13 +570,13 @@ handler where one exists.
 2. ✅ **Phase 0 dispatcher skeleton** — per-page disposition classifier +
    routing manifest + region converter (`disposition_classifier.py`,
    `routing_manifest.py`, `region_converter.py`), no-op-safe for markdown.
-   *(built as library; not yet wired as a runnable phase — see "Pipeline wiring")*
+   *(built; driven by `phase0_ingest.py` for the OOB track)*
 
 **Text-producing media**
 3. ⚠️ **HTML handler** — generalize `import_hyperwar_html.py`. *(exists for ibiblio)*
 4. ✅ **PDF handler** — region converter drives Chandra OCR → markdown, with
    image/map asset extraction. *(built)*
-5. ❌ **txt / epub handlers** — trivial wrap / pandoc.
+5. ✅ **txt / epub / docx / html handlers** — `src/ingestion/text_converters.py`, run by `phase0_convert.py` (trigger convert track: `.epub .docx .html .htm .xhtml`). *(built)*
 
 **Tabular (scanned OOB — built via markdown parsers)**
 6. ✅ **OOB markdown section parsers** — command-staff, campaigns, command-posts,
@@ -586,17 +588,14 @@ handler where one exists.
    (and the eventual entity-emit shape). Still to build.
 
 **Entity convergence + wiring**
-9. ❌ **Fuzzy / LLM-verified matcher** — upgrade the crosswalk beyond exact match.
-10. ❌ **Entity-convergence emit** — turn matched OOB rows into the same
-    `people`/`people_groups`/`dates` entities so they flow through dedup (the
-    Huebner goal).
-11. ❌ **Pipeline wiring ("B")** — run the ingestion front-end as a Phase 0 step
-    in both local and AWS/ECS execution paths.
+9. ✅/❌ **Fuzzy matcher** — built (`name_resolver.py`, exact + last-name-gated fuzzy, fuzzy flagged `needs_review`). An LLM-verified matcher is not built.
+10. ✅ **Entity-convergence emit (people)** — `oob_markdown/entity_emit.py`, opt-in, default off. Groups and dates are not converged.
+11. ✅ **Pipeline wiring ("B")** — `phase0_ingest.py` locally, the `{env}-wwii-phase0-ingest` ECS task on AWS (launched by `ocr_merge_handler._route_to_oob`).
 
 **Media entities**
 12. ⚠️ **Still image / map handler** — asset register + vision caption + cross-refs.
 13. ❌ **Audio handler (oral histories)** — whisper transcript → prose path. *(future)*
-14. ❌ **Video handler** — transcript + keyframes. *(future)*
+14. ✅ **Video handler** — `phase0_video.py` (own ECS task: ffmpeg, Grok STT with timecodes, speaker identification, frames) and `src/ingestion/web_video.py`; keyframe captioning is not part of it.
 14a. ❌ **Web-page-with-video handler** — capture page (URL + capture date, text→summary later) + register embedded video with timecoded transcript; cross-link both. *(future)*
 
 **Acquisition loop (footnote extraction)**

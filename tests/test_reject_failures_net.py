@@ -105,50 +105,50 @@ def _merge_env(monkeypatch):
 
 
 def test_merge_rejects_empty_ocr(monkeypatch):
+    from tests.fake_s3 import FakeS3
+
     mh = _merge_env(monkeypatch)
-    s3 = MagicMock()
-    # no input.md keys -> empty
-    s3.get_paginator.return_value.paginate.return_value = [{"Contents": []}]
+    s3 = FakeS3()  # no input.md keys -> empty
     with (
         patch.object(mh, "_s3", return_value=s3),
         patch("src.ingestion.review_reject.reject_to_review") as rej,
     ):
         out = mh.merge_ocr_output("B9")
     assert out == ""
-    assert rej.call_args.kwargs.get("category") == "ocr-empty" or rej.call_args[0]
+    assert rej.call_args.kwargs.get("category") == "ocr-empty"
     rej.assert_called_once()
 
 
 def test_merge_rejects_near_empty_ocr(monkeypatch):
+    from tests.fake_s3 import FakeS3
+
     mh = _merge_env(monkeypatch)
-    s3 = MagicMock()
-    s3.get_paginator.return_value.paginate.return_value = [
-        {"Contents": [{"Key": "ocr-output/B9/input/input.md"}]}
-    ]
-    s3.get_object.return_value = {
-        "Body": MagicMock(read=lambda: b"   \n  ")
-    }  # whitespace
+    s3 = FakeS3({"ocr-output/B9/input/input.md": "   \n  "})  # whitespace
     with (
         patch.object(mh, "_s3", return_value=s3),
         patch("src.ingestion.review_reject.reject_to_review") as rej,
     ):
         out = mh.merge_ocr_output("B9")
     assert out == ""
-    rej.assert_called_once()
+    assert rej.call_args.kwargs.get("category") == "ocr-near-empty"
+    assert not s3.keys("contentrepository/")
 
 
 def test_merge_promotes_good_ocr(monkeypatch):
+    from tests.fake_s3 import FakeS3
+
     mh = _merge_env(monkeypatch)
-    s3 = MagicMock()
-    s3.get_paginator.return_value.paginate.return_value = [
-        {"Contents": [{"Key": "ocr-output/B9/input/input.md"}]}
-    ]
-    good = b"# Chapter\n\n" + b"Real OCR text content that is clearly usable. " * 5
-    s3.get_object.return_value = {"Body": MagicMock(read=lambda: good)}
-    s3.head_object.side_effect = Exception("404")  # no .structured marker (narrative)
+    good = "# Chapter\n\n" + "Real OCR text content that is clearly usable. " * 5
+    s3 = FakeS3(
+        {"ocr-output/B9/input/input.md": good}
+    )  # no .structured marker (narrative)
     with (
         patch.object(mh, "_s3", return_value=s3),
         patch("src.ingestion.review_reject.reject_to_review") as rej,
+        patch(
+            "src.ingestion.translation.normalize_markdown_to_english",
+            lambda md, **k: md,
+        ),
     ):
         out = mh.merge_ocr_output("B9")
     assert out == "contentrepository/B9/chapter1/chapter1-content.md"
@@ -157,5 +157,3 @@ def test_merge_promotes_good_ocr(monkeypatch):
     # ocr-empty / ocr-near-empty / ocr-media-mismatch failure category.
     reject_categories = [c.kwargs.get("category") for c in rej.call_args_list]
     assert reject_categories == ["metadata"]
-    assert "ocr-empty" not in reject_categories
-    assert "ocr-near-empty" not in reject_categories

@@ -63,40 +63,40 @@ class TestIncremental:
 
 
 class TestFindDuplicateEquipment:
-    """Tests for scripts/find_duplicate_equipment.py helpers."""
+    """Tests for src/dedup/find_duplicate_equipment.py helpers."""
 
     def test_normalize_caliber(self):
-        from scripts.find_duplicate_equipment import _normalize
+        from src.dedup.find_duplicate_equipment import _normalize
 
         assert "50 cal" in _normalize("50-caliber machine gun")
         assert "50 cal" in _normalize(".50-caliber")
 
     def test_normalize_mm(self):
-        from scripts.find_duplicate_equipment import _normalize
+        from src.dedup.find_duplicate_equipment import _normalize
 
         assert "155mm" in _normalize("155-mm howitzer")
         assert "155mm" in _normalize("155 mm")
 
     def test_similarity_identical(self):
-        from scripts.find_duplicate_equipment import _similarity
+        from src.dedup.find_duplicate_equipment import _similarity
 
         assert _similarity("Sherman Tank", "Sherman Tank") == 1.0
 
     def test_similarity_partial(self):
-        from scripts.find_duplicate_equipment import _similarity
+        from src.dedup.find_duplicate_equipment import _similarity
 
         score = _similarity("M4 Sherman", "M4A1 Sherman")
         assert score > 0.7
 
     def test_same_category(self):
-        from scripts.find_duplicate_equipment import _same_category
+        from src.dedup.find_duplicate_equipment import _same_category
 
         assert _same_category({"category": "Tank"}, {"category": "tank"}) is True
         assert _same_category({"category": "Tank"}, {"category": "Gun"}) is False
         assert _same_category({"category": ""}, {"category": "Tank"}) is False
 
     def test_score_pair_rejects_different_numbers(self):
-        from scripts.find_duplicate_equipment import _score_pair
+        from src.dedup.find_duplicate_equipment import _score_pair
 
         item1 = {"common_name": "105mm Howitzer", "country_of_origin": "USA"}
         item2 = {"common_name": "155mm Howitzer", "country_of_origin": "USA"}
@@ -104,7 +104,7 @@ class TestFindDuplicateEquipment:
         assert conf == 0.0
 
     def test_score_pair_rejects_different_countries(self):
-        from scripts.find_duplicate_equipment import _score_pair
+        from src.dedup.find_duplicate_equipment import _score_pair
 
         item1 = {"common_name": "Tiger Tank", "country_of_origin": "Germany"}
         item2 = {"common_name": "Tiger Tank", "country_of_origin": "USA"}
@@ -112,7 +112,7 @@ class TestFindDuplicateEquipment:
         assert conf == 0.0
 
     def test_score_pair_matches_similar(self):
-        from scripts.find_duplicate_equipment import _score_pair
+        from src.dedup.find_duplicate_equipment import _score_pair
 
         item1 = {
             "common_name": "M4 Sherman",
@@ -130,59 +130,59 @@ class TestFindDuplicateEquipment:
 
 
 class TestFindDuplicatePlaces:
-    """Tests for scripts/find_duplicate_places_v2.py helpers."""
+    """Tests for src/dedup/find_duplicate_places_v2.py helpers."""
 
     def test_normalize_strips_accents(self):
-        from scripts.find_duplicate_places_v2 import _normalize
+        from src.dedup.find_duplicate_places_v2 import _normalize
 
         assert _normalize("Grémecey") == "gremecey"
 
     def test_normalize_strips_fillers(self):
-        from scripts.find_duplicate_places_v2 import _normalize
+        from src.dedup.find_duplicate_places_v2 import _normalize
 
         assert "bois" in _normalize("Bois de Fréménil")
         assert " of " not in _normalize("Battle of the Bulge")
 
     def test_similarity_identical(self):
-        from scripts.find_duplicate_places_v2 import _similarity
+        from src.dedup.find_duplicate_places_v2 import _similarity
 
         assert _similarity("Nancy", "Nancy") == 1.0
 
     def test_similarity_with_geo_terms(self):
-        from scripts.find_duplicate_places_v2 import _similarity
+        from src.dedup.find_duplicate_places_v2 import _similarity
 
         # "Fort X" vs "X" should still match but with reduced score
         score = _similarity("Fort Driant", "Driant")
         assert score > 0.5
 
     def test_haversine_same_point(self):
-        from scripts.find_duplicate_places_v2 import _haversine_km
+        from src.dedup.find_duplicate_places_v2 import _haversine_km
 
         assert _haversine_km(48.69, 6.18, 48.69, 6.18) == 0.0
 
     def test_haversine_known_distance(self):
-        from scripts.find_duplicate_places_v2 import _haversine_km
+        from src.dedup.find_duplicate_places_v2 import _haversine_km
 
         # Paris to Nancy ~280km
         dist = _haversine_km(48.86, 2.35, 48.69, 6.18)
         assert 270 < dist < 300
 
     def test_get_coords_flat(self):
-        from scripts.find_duplicate_places_v2 import _get_coords
+        from src.dedup.find_duplicate_places_v2 import _get_coords
 
         lat, lon = _get_coords({"latitude": 48.69, "longitude": 6.18})
         assert lat == 48.69
         assert lon == 6.18
 
     def test_get_coords_nested(self):
-        from scripts.find_duplicate_places_v2 import _get_coords
+        from src.dedup.find_duplicate_places_v2 import _get_coords
 
         lat, lon = _get_coords({"coordinates": {"latitude": 48.69, "longitude": 6.18}})
         assert lat == 48.69
         assert lon == 6.18
 
     def test_get_coords_missing(self):
-        from scripts.find_duplicate_places_v2 import _get_coords
+        from src.dedup.find_duplicate_places_v2 import _get_coords
 
         lat, lon = _get_coords({})
         assert lat is None
@@ -190,22 +190,22 @@ class TestFindDuplicatePlaces:
 
 
 class TestFindDuplicateGroups:
-    """Tests for scripts/find_duplicate_groups.py helpers."""
+    """Tests for src/dedup/find_duplicate_groups.py helpers."""
 
     def test_normalize(self):
-        from scripts.find_duplicate_groups import _normalize
+        from src.dedup.find_duplicate_groups import _normalize
 
         assert _normalize("The 4th Infantry Division") == "4th infantry division"
         assert _normalize("U.S. Third Army") == "third army"
 
     def test_is_substring_match(self):
-        from scripts.find_duplicate_groups import _is_substring_match
+        from src.dedup.find_duplicate_groups import _is_substring_match
 
         assert _is_substring_match("4th Infantry", "4th Infantry Division") is True
         assert _is_substring_match("4th Infantry", "7th Armored") is False
 
     def test_similarity(self):
-        from scripts.find_duplicate_groups import _similarity
+        from src.dedup.find_duplicate_groups import _similarity
 
         assert _similarity("4th Infantry Division", "4th Infantry Div") > 0.8
         assert _similarity("4th Infantry", "7th Armored") < 0.5

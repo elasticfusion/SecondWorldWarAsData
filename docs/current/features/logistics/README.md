@@ -1,14 +1,14 @@
 # Logistics Extraction
 
 **Module:** `src/extraction/logistics.py`  
-**Status:** Experimental (Disabled by default)  
-**Last Updated:** 2026-10-06
+**Status:** Enabled (`logistics.enabled: true` in `config.yaml`)  
+**Last Updated:** 2026-11-16
 
 ---
 
 ## Overview
 
-Logistics extraction analyzes event files for supply chain, transportation, and resource management information. It tracks shortages, delays, disruptions, and their impacts on operations.
+Logistics extraction analyzes the chapter's raw parsed text (3-paragraph windows) for supply chain, transportation, and resource management information. It tracks shortages, delays, disruptions, and their impacts on operations.
 
 **Key Features:**
 - Supply tracking (ammunition, fuel, food, medical, equipment)
@@ -18,7 +18,7 @@ Logistics extraction analyzes event files for supply chain, transportation, and 
 - Weather impact correlation
 - Resolution tracking
 
-**Status:** Experimental feature, disabled by default in `config.yaml`
+**Status:** Switched by `logistics.enabled` (currently `true` in `config.yaml`)
 
 ---
 
@@ -29,9 +29,13 @@ Logistics extraction analyzes event files for supply chain, transportation, and 
 ```
 Event File (JSON)
     ↓
-Batch all Sub-events → Single Grok API call
+Parsed chapter text → 3-paragraph windows (src/extraction/windows.py)
+One Grok request per window (_ask_logistics, chunk_size=1)
     ↓
-Response: {Sub-eventID: {logistics: [items]}, ...}
+Response: {window id: {logistics: [items]}, ...}
+    ↓
+windows.attribute_found: settle each quote, assign the real Sub-eventID
+(unsupported quote → dropped)
     ↓
 For each item:
     ↓
@@ -68,7 +72,7 @@ GroupID + overlapping date). See [Casualties](../casualties/README.md). Note log
 records carry **no PlaceID** (place is not modeled here), so the casualty↔logistics join is
 GroupID + time, not place.
 
-**Batching:** All sub-events are sent in a single API call per chapter (via `_batch_extract_logistics`). Entity linking and file creation remain per-item.
+**Windows:** discovery runs over the chapter's windows of the parsed text, one window per request, never the events' summaries (`_ask_logistics` → `windows.window_event_for`, `windows.attribute_found`). Without a parsed file the sub-events are asked as before. Entity linking and file creation remain per-item.
 
 ### Output Structure
 
@@ -337,7 +341,7 @@ extract_logistics(
 
 ### With Events
 - Reads event files
-- Extracts logistics from sub-event text
+- Extracts logistics from the raw paragraph windows and attributes each item to a sub-event
 - Links via EventID and Sub-eventID
 
 ### With People Groups

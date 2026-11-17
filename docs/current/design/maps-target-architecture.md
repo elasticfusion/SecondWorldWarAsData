@@ -1,7 +1,9 @@
 # Maps Target Architecture (owner-specified, 2026-11-02)
 
-**Status:** DESIGN (owner direction captured) · supersedes the "Recommendation" section of
-`maps-architecture-review.md` · grounded in the real SNS→SQS→`trigger_handler` orchestration
+**Status:** BUILT through step 6 (checked 2026-11-16); the SQS Phase-3 -> Phase-2 feedback route was replaced by a
+conflict-safe find-or-create without SQS (commit 0f140773, step 7). Supersedes the "Recommendation" section of the
+archived `docs/archive/2026-11-16/design/maps-architecture-review.md` (its "three finders find 0" findings were fixed by
+step 1) · grounded in the real SNS→SQS→`trigger_handler` orchestration
 (`cloudformation/events.yaml`, `lambda_handlers/trigger_handler.py`).
 
 Owner decision: consolidate the accreted 8-module maps subsystem onto a clean per-phase split, with
@@ -33,6 +35,12 @@ Map processing here is limited to:
 - Remove `src/extraction/maps.py` from the Phase-2 flow entirely (the broken `[Map X](http://...)`
   text-regex finder + its download/classify/persist). Phase 2 no longer does ANY map work.
 - (Phase 2 continues to own the OTHER entities.)
+- BUILT (#687): the in-document map flow (`extract_maps`) is removed from Phase 2. Still in Phase 2:
+  `phase2_extract._extract_external_maps` imports maps from the local corpus `external_maps.yaml`
+  (`src/extraction/external_maps.import_maps`), when `external_maps.enabled`; that is separate from in-document maps.
+- Phase 1 also changed after this design: for an OCR'd PDF book it builds the book's own figures once
+  (`src/ingestion/book_figures.py`, `pdf_figures.py` -> `contentrepository/<book>/_figures/figures.json`), and each numbered
+  map goes to every chapter that prints or cites it.
 
 ### Phase 3 — Map ANALYSIS (consolidated home)
 All map analysis moves/stays here, for consistency with the other enrichment analysis:

@@ -1,7 +1,9 @@
 # JSON Schema Reference
 
-**Last Updated:** 2026-10-06
-**Schema Version:** per-entity (see `ENTITY_SCHEMA_VERSIONS` in `src/schemas/__init__.py`; e.g. places 2.27, images 2.26, equipment 2.25 as of 2026-10-11) — there is no single global number
+**Last Updated:** 2026-11-16
+**Schema Version:** per-entity (see `ENTITY_SCHEMA_VERSIONS` in `src/schemas/__init__.py`; as of 2026-11-16: places 2.30, equipment 2.30, people_groups 2.29, bibliography 2.29, images 2.28, people 2.27, casualties 2.27, maps 2.26, source_section 2.26, events/dates/weather/logistics 2.25, map_features 2.24) — there is no single global number
+
+> **Equipment 2.29+ (2026-11-07):** `identity_scope` (specific | generic | unresolved) decides enrichment: generic mentions are kept but never searched; named vessels are resolved to one ship by date (`identity_resolution`). Images are Phase 3 only, and an image counts as attached only when `images[].vision_check == "verified"` (`vision_verified: true`).
 
 All entity files use 26-character ULIDs for cross-referencing. Cross-references always point to top-level entity IDs (e.g., `DateMentionID` → `DateID` in a date file, `PlaceMentionID` → `PlaceID` in a place file).
 
@@ -9,7 +11,7 @@ All entity files include internal metadata fields (prefixed with `_`):
 
 | Field | Type | Description |
 |---|---|---|
-| `_schema_version` | string | Output format version — PER ENTITY (e.g. `"2.27"` places, `"2.25"` equipment); see `ENTITY_SCHEMA_VERSIONS` |
+| `_schema_version` | string | Output format version — PER ENTITY (e.g. `"2.30"` places, `"2.30"` equipment, `"2.25"` events); see `ENTITY_SCHEMA_VERSIONS` |
 | `_last_updated` | string | ISO date of last modification (e.g., "2026-10-06") |
 
 These are auto-injected by `src/schemas.inject_metadata()` at write time and excluded from schema validation via `patternProperties: {"^_": {}}`.
@@ -27,8 +29,8 @@ All entity types follow a consistent pattern for linking:
 | `DateMentionID` | `output/dates/*.json` | `DateID` (top-level) |
 | `DateID` | `output/dates/*.json` | `DateID` (top-level) |
 | `PlaceMentionID` | `output/places/*.json` | `PlaceID` (top-level) |
-| `EventID` | `output/{Book}/*-event.json` | `Event.EventID` |
-| `Sub_eventID` | `output/{Book}/*-event.json` | `Event.Sub-events[].Sub-eventID` |
+| `EventID` | `output/content/{Book}/*-event.json` | `Event.EventID` |
+| `Sub_eventID` | `output/content/{Book}/*-event.json` | `Event.Sub-events[].Sub-eventID` |
 | `PersonID` | `output/people/*.json` | `PersonID` (top-level) |
 | `GroupID` / `PeopleGroupID` | `output/people_groups/*.json` | `GroupID` (top-level) |
 | `EquipmentID` | `output/equipment/*.json` | `EquipmentID` (top-level) |
@@ -39,7 +41,7 @@ All entity types follow a consistent pattern for linking:
 
 ---
 
-## Events — `output/{Book}/*-event.json`
+## Events — `output/content/{Book}/*-event.json`
 
 Per-chapter event files containing hierarchical sub-events.
 
@@ -72,7 +74,7 @@ Sub-event entity arrays contain top-level entity IDs (DateID, PlaceID, PersonID,
 
 ---
 
-## Dates — `output/dates/*.json` (356 files)
+## Dates — `output/dates/*.json`
 
 ```json
 {
@@ -117,7 +119,7 @@ Notes:
 
 ---
 
-## Places — `output/places/*.json` (1138 files)
+## Places — `output/places/*.json`
 
 ```json
 {
@@ -167,7 +169,7 @@ Notes:
 
 ---
 
-## People — `output/people/*.json` (470 files)
+## People — `output/people/*.json`
 
 ```json
 {
@@ -220,7 +222,7 @@ Notes:
 
 ---
 
-## People Groups — `output/people_groups/*.json` (328 files)
+## People Groups — `output/people_groups/*.json`
 
 ```json
 {
@@ -269,7 +271,7 @@ Notes:
 
 ---
 
-## Weather — `output/weather/*.json` (79 files)
+## Weather — `output/weather/*.json`
 
 Deduplicated by date+location. One file per unique weather observation.
 
@@ -330,7 +332,7 @@ Deduplicated by date+location. One file per unique weather observation.
 
 ---
 
-## Equipment — `output/equipment/*.json` (100 files)
+## Equipment — `output/equipment/*.json`
 
 ```json
 {
@@ -431,7 +433,7 @@ Notes:
 ---
 
 
-## Logistics — `output/logistics/*.json` (826 files)
+## Logistics — `output/logistics/*.json`
 
 ```json
 {
@@ -530,7 +532,7 @@ Notes:
 
 ---
 
-## Images — `output/images/*.json` (86 files)
+## Images — `output/images/*.json`
 
 ```json
 {
@@ -563,7 +565,7 @@ Note: Images use `Sub-eventID` (hyphen) and `Sub-event_Name` (hyphen). No `event
 
 ---
 
-## Bibliography — `output/bibliography/*.json` (2105 files)
+## Bibliography — `output/bibliography/*.json`
 
 ```json
 {
@@ -619,7 +621,7 @@ Note: `BibliographyID` and `title` are required. Bibliography uses `Sub-eventID`
 
 ---
 
-## Maps — `output/maps/*.json` (55 files)
+## Maps — `output/maps/*.json`
 
 ```json
 {
@@ -725,6 +727,26 @@ Notes:
 
 ---
 
+## Fields Added After the Tables Above Were Written
+
+The per-entity JSON examples above predate several Phase 2 additions. The enforced schemas in `src/schemas/*_output.py` are authoritative; these nullable fields exist there and are not shown in the examples:
+
+| Entity | Field | Type / values |
+|---|---|---|
+| dates, places, bibliography | `quality_flags` | array of strings |
+| places | `place_type`, `identified_as`, `place_name`, `source` | nullable strings |
+| places | `sameAs[]`, `containedInPlace[]` / `containsPlace[]` (`{PlaceID, name}`), `geo` (point/line/polygon/circle), `additionalProperty[]`, `elevation_m` | schema 2.30 |
+| people | `name_resolution` (object), `oob_convergence_note` (string) | nullable |
+| people_groups | `organization_lifecycle` (`standing`/`ephemeral`), `active_period` `{start,end,precision(exact/approximate/unresolved),original_text}`, `constituent_units[]`, `members[]`, `member_countries[]` | schema 2.29 and earlier |
+| equipment | `variant_of`, `distinguishing_features` (lineage, 2.30), `lineage_source` (`grok_disambiguation`), `identity_scope` (`specific`/`generic`/`unresolved`), `identity_resolution`, `presence`, `absence_reason`, `extended_text` | nullable |
+| logistics | `original_text` (verbatim anchor), `weather_impact` `{WeatherID, impact_description, severity, ...}`, `impacted_places[]` | nullable |
+| casualties | `magnitude` (`none`/`light`/`moderate`/`heavy`/`severe`), `is_comparative` (bool), `impacted_equipment[]`, `impacted_logistics[]` | nullable |
+| bibliography | `source_qualification` (how a source qualifies for a fact, not veracity), `source_metadata` | nullable objects |
+| maps | `is_map`, `map_vision_checked_at`, `PeopleGroupID`, `PeopleGroupMentionID`, `PeopleGroup_Name` | nullable |
+| images | `map_check`, `map_check_basis`, `is_map`, `superseded_by_map_id`, `vision_classification`, `SourceSectionID`, schema.org fields (`contentUrl`, `caption`, `creditText`, `copyrightNotice`, `copyrightHolder`, `acquireLicensePage`, `contentLocation`, `dateCreated`, `datePublished`, `width`, `height`, `encodingFormat`, `exifData`) | nullable |
+
+---
+
 ## Known Inconsistencies
 
 | Issue | Entities Affected | Notes |
@@ -742,6 +764,8 @@ Pipeline state and coordination entries stored in the cache table (`dev-wwii-api
 
 ### Job Queue — `batch_job#{batch_id}`
 
+(Phase 2 runs in rounds: each round's batch is one `batch_job#` row; the run stops after `batch.max_rounds` = 8 rounds, `src/utils/batch_rounds.py`.)
+
 ```json
 {
   "cache_key": "batch_job#batch_abc123",
@@ -750,7 +774,7 @@ Pipeline state and coordination entries stored in the cache table (`dev-wwii-api
   "book": "BreakoutAndPursuit",
   "batch_name": "BreakoutAndPursuit-3files-45requests",
   "submitted_at": "2026-05-20T14:30:00Z",
-  "status": "pending|complete|failed|retrieved",
+  "status": "pending|ready|complete|failed|retrieved",
   "completed_at": "2026-05-20T16:45:00Z",
   "request_count": 45,
   "ttl": 1750000000
@@ -788,11 +812,13 @@ Survives file recreation — matches on normalized names rather than file IDs.
 
 Used by Phase 3 to scope S3 downloads to only the entities relevant to the current book.
 
-### Pipeline Locks — `lock#{family}`
+### Pipeline Locks — `lock#{env}-wwii-{phase}[#{book}]`
+
+Phase suffixes are `ecs_entrypoint.PHASE_SUFFIXES` (`phase1-parse`, `phase2-extract`, `phase3-enrich`, `import`); the `#{book}` suffix is added only in multi-doc mode.
 
 ```json
 {
-  "cache_key": "lock#phase2",
+  "cache_key": "lock#dev-wwii-phase2-extract",
   "task_arn": "arn:aws:ecs:...",
   "started_at": "2026-05-20T14:00:00Z"
 }
@@ -803,7 +829,7 @@ Used by Phase 3 to scope S3 downloads to only the entities relevant to the curre
 ```json
 {
   "cache_key": "pending#content",
-  "keys": ["content/Book/chapter5/chapter5-content.md"],
+  "keys": ["contentrepository/Book/chapter5/chapter5-content.md"],
   "queued_at": "2026-05-20T14:30:00Z"
 }
 ```

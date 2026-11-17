@@ -1,6 +1,6 @@
 # GPU + Networking Consolidation (design for approval)
 
-**Date:** 2026-09-29
+**Date:** 2026-09-29 · **Status (code checked 2026-11-16):** MOSTLY BUILT. Built: the deploy-time GPU AZ probe (`scripts/deploy_aws.py::_probe_gpu_azs`, `deploy_all.sh`) passes `GpuAz1`/`GpuAz2` (`cloudformation/main.yaml`) and `network.yaml` places the two private subnets, and so the Batch CE subnets, in those AZs (empty param falls back to `!GetAZs`). NOT built: the ECS / ecs-agent / ecs-telemetry interface endpoints (`network.yaml` has only s3, dynamodb, ecr.api, ecr.dkr, logs, secretsmanager), so GPU instances still register through the NAT (the trigger requests NAT before OCR, `_ensure_nat_for_ocr`). Sections 2 and 4 below remain the proposal for the missing endpoints.
 **Trigger:** OCR GPU jobs stall RUNNABLE forever. Root cause (diagnosed live): GPU
 Batch instances launch into private subnets whose AZs are **not aligned** with the
 VPC interface endpoints or a reachable NAT, and **there is no ECS interface

@@ -2,7 +2,8 @@
 paragraph_numbers starvation: LLM returns verbatim quotes, CODE assigns paragraph numbers).
 """
 
-from src.extraction.anchor_resolve import resolve_anchor_paragraphs, _normalize
+from src.extraction.anchor_resolve import resolve_anchor_paragraphs
+from src.utils.quote_match import normalize as _normalize
 
 _PARAS = [
     {

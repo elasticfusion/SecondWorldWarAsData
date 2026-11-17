@@ -27,6 +27,7 @@ def test_geocode_skip_reasons_attributed(tmp_path):
             "PlaceID": "01C",
             "current_name": "Aachen",
             "coordinates": {"latitude": 50.77, "longitude": 6.08},
+            "geocode_source": "nominatim",
         },
     )
     # already attempted (status set) + no coords + geocodable name

@@ -172,17 +172,14 @@ def _convert_documents_enabled(config: dict) -> bool:
 
 
 def _translate_enabled(config: dict) -> bool:
-    """Whether Phase 0 should detect language + translate non-English markdown.
-
-    Off by default. Enable via ``ingestion.translate: true`` in config.yaml or
-    the ``PHASE0_TRANSLATE`` env var. Detects each converted markdown's language
-    and, if not English, translates it to English via Grok (keeping the original
-    alongside). English documents pass through untouched. See
-    docs/current/dataquality/LANGUAGE_TRANSLATION.md.
+    """Whether Phase 0 detects language + translates non-English markdown: the shared switch
+    (src/ingestion/translation.translation_enabled - on by default; ``ingestion.translate:
+    false`` or ``PHASE0_TRANSLATE=0`` turns it off). English documents pass through at no cost.
+    See docs/current/dataquality/LANGUAGE_TRANSLATION.md.
     """
-    if os.environ.get("PHASE0_TRANSLATE") == "1":
-        return True
-    return bool(config.get("ingestion", {}).get("translate", False))
+    from src.ingestion.translation import translation_enabled
+
+    return translation_enabled(config)
 
 
 def discover_oob_markdown(content_root: Path) -> List[Path]:

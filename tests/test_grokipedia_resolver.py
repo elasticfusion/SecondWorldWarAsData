@@ -9,15 +9,32 @@ def _resp(status=200, text=""):
     r = MagicMock()
     r.status_code = status
     r.text = text
+    r.content = text.encode("utf-8")  # response_text decodes the bytes
+    r.headers = {}
     return r
 
 
-def test_is_clean_slug():
-    assert gk.is_clean_slug("Battle_of_the_Bulge")
-    assert gk.is_clean_slug("M4-Sherman")
-    assert not gk.is_clean_slug("' + escHtml(s.slug) + '")
-    assert not gk.is_clean_slug("has spaces")
-    assert not gk.is_clean_slug("")
+def test_resolve_keeps_dotted_slug_whole():
+    # The old [A-Za-z0-9_-]+ cut "/page/James_M._Gavin" to the WRONG page "James_M".
+    with (
+        patch("src.utils.search_cache.get_cached", return_value=None),
+        patch("src.utils.search_cache.cache_result"),
+        patch(
+            "src.utils.http_pool.get_session",
+            return_value=MagicMock(
+                request=MagicMock(
+                    return_value=_resp(
+                        text="<a data-slug=\"' + escHtml(s.slug) + '\"></a>"
+                        '<a href="/page/James_M._Gavin">x</a>'
+                    )
+                )
+            ),
+        ),
+    ):
+        assert (
+            gk.resolve_grokipedia_url("James Gavin")
+            == "https://grokipedia.com/page/James_M._Gavin"
+        )
 
 
 def test_resolve_returns_clean_url(monkeypatch):

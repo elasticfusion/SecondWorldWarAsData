@@ -12,9 +12,7 @@ import phase2_extract as p2
 
 
 def _cfg(enabled=True):
-    return {
-        "supplemental_material": {"enabled": enabled, "enrich_with_searches": False}
-    }
+    return {"supplemental_material": {"enabled": enabled}}
 
 
 class _Ev:

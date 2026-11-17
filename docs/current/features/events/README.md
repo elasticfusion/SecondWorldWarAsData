@@ -2,7 +2,7 @@
 
 **Module:** `src/extraction/events.py`  
 **Status:** Production  
-**Last Updated:** 2026-03-13
+**Last Updated:** 2026-11-16
 
 ---
 
@@ -26,26 +26,32 @@ Events extraction is the **core feature** of the pipeline. It analyzes parsed ch
 ```
 Parsed Chapter (JSON)
     ↓
-Filter Footnotes
+Filter Footnotes (footnote-only files are skipped)
     ↓
-Create Extraction Prompt
+Create Extraction Prompt (prompts/events.yaml; paragraphs shown as Paragraph_N)
     ↓
-Grok API (with retry + validation)
+Grok API (one request per chapter; batch round in batch mode)
     ↓
-ULID Validation & Auto-fix
+Validate (JSON schema, paragraph numbers in range, coverage >= 80%) - retry / auto-split on failure
     ↓
-Event JSON Output
+Code-side repair: paragraphs disjoint, orphan paragraphs claimed by the nearest earlier sub-event,
+Sub-event_fulltext rebuilt from the parsed text, note references populated
     ↓
-Extraction Summary Log
+Deterministic EventID / Sub-eventIDs (the model's IDs are replaced)
+    ↓
+Event JSON Output (+ source_section record) + OBSERV events.extract
 ```
 
 ### Key Components
 
 1. **Footnote Filtering** - Removes footnote sections from extraction
-2. **Prompt Engineering** - Structured prompt with ULID requirements
-3. **Validation Loop** - Retries with feedback on schema violations
-4. **ULID Auto-fix** - Automatically corrects invalid ULIDs
-5. **Summary Logging** - Tracks paragraph groupings and extraction metadata
+2. **Prompt** - `prompts/events.yaml`: the model returns `paragraph_numbers` per sub-event; each paragraph belongs to exactly one sub-event
+3. **Validation Loop** - `extract_events(max_retries=3)` retries with feedback on schema violations; out-of-range paragraph numbers
+   (`_validate_paragraph_range`) and coverage below 80% of the chapter's narrative text (`_MIN_COVERAGE`, `_reject_low_coverage`) are rejected and re-asked
+4. **Auto-split** - a truncated answer or a low-coverage chapter is split at a heading (or the midpoint) and the parts merged (`_auto_split_and_extract`, `_split_paragraphs`)
+5. **Paragraph repair** - `_make_paragraphs_disjoint`, `_claim_orphan_paragraphs`, `_reconstruct_fulltext`
+6. **Deterministic IDs** - `_apply_deterministic_ids` (`src/utils/deterministic_ids.py`): EventID from book + chapter title + section, Sub-eventID from the EventID + paragraph range + name
+7. **Summary Logging** - Tracks paragraph groupings and extraction metadata
 
 ---
 
@@ -79,8 +85,8 @@ Extraction Summary Log
 | Field | Type | Description |
 |-------|------|-------------|
 | `Chapter` | string | Chapter title from source |
-| `EventID` | ULID | Unique identifier for the main event |
-| `Sub-eventID` | ULID | Unique identifier for each sub-event |
+| `EventID` | ULID | Deterministic: `event_id(book, chapter_title, section_id)`; the model's value is replaced |
+| `Sub-eventID` | ULID | Deterministic: `sub_event_id(EventID, paragraph range, name)` |
 | `Sub-event_summary` | string | Brief summary of the sub-event |
 | `Sub-event_fulltext` | object | Paragraph numbers → exact text mapping |
 | `Endnote_References` | array[int] | Endnote numbers referenced |
@@ -119,7 +125,10 @@ Automatically excludes footnote sections:
 - Filters all paragraphs after footnote header
 - Skips files containing only footnotes
 
-### 4. ULID Validation & Auto-fix
+### 4. Deterministic IDs and ULID validation
+
+The EventID and Sub-eventIDs are derived by code (`_apply_deterministic_ids`), so re-extracting the same section gives the same IDs and the model's IDs are never trusted.
+`_fix_invalid_ulids` (`src/utils/json_validator.py`) still repairs malformed ULIDs in an answer during the retry path (`_try_fix_ulid_errors`).
 
 **ULID Requirements:**
 - Exactly 26 characters
@@ -183,7 +192,7 @@ LLM can reference these in sub-event context.
 
 ## Configuration
 
-Events extraction has no specific config options. It runs automatically in Phase 2 for all parsed files.
+Events extraction has no specific config options. It runs automatically in Phase 2 for all parsed files: one request per chapter (`cache_type="events"`), through the xAI batch API when `batch.phase2` is true ([batch processing](../batch_processing/README.md)).
 
 **Related Config:**
 ```yaml
@@ -234,10 +243,10 @@ print(f"Events saved to: {event_file}")
 
 ### Event File
 
-**Location:** `output/{Book}/chapter{N}-event.json`  
+**Location:** next to the parsed file, `output/content/<book>/chapterN<section>-event.json` (`_save_event_output`)  
 **Format:** JSON with event hierarchy
 
-**Example:** `output/BreakoutAndPursuit/chapter1-event.json`
+**Example:** `output/content/BreakoutAndPursuit/chapter1-event.json`
 
 ### Processing Summary
 
@@ -257,62 +266,19 @@ print(f"Events saved to: {event_file}")
 }
 ```
 
-### Extraction Summary
-
-**Location:** `logs/extraction_summary.json`  
-**Format:** JSONL (one line per file)
-
-```json
-{
-  "book": "Breakout and Pursuit",
-  "chapter": "The Situation on 1 July",
-  "section": "full",
-  "event_id": "01KHXNSE0W41DV7VV6PEMDJJ5H",
-  "sub_events": [
-    {
-      "sub_event_id": "01KHXNSE0WX99GG0CB53CD2242",
-      "summary": "Allied positions on 1 July",
-      "paragraphs": [1, 2, 3, 4, 5]
-    },
-    {
-      "sub_event_id": "01KHXNSE0WY88FF9BA42BC1131",
-      "summary": "German defensive preparations",
-      "paragraphs": [6, 7, 8, 9]
-    }
-  ]
-}
-```
+The per-sub-event paragraph groupings are in the event file itself (`Sub-events[].Sub-event_fulltext`); the old `logs/extraction_summary.json` is no longer written.
 
 ---
 
 ## Integration with Other Features
 
-Events serve as the foundation for all other extractions:
+Events are the backbone that every other entity links to through `EventID` / `Sub-eventID` and `event_mentions`.
+They are **not** the text the other extractors read. Dates, places, people, people groups, equipment, weather, logistics and casualties
+are discovered over fixed 3-paragraph windows of the raw parsed text (`src/extraction/windows.py`), and each answer item is attributed to the
+real sub-event whose paragraphs hold its quote (`windows.settle`, `windows.regroup`). The sub-event grouping decides **which sub-event a mention belongs to**,
+not what the entity extractors see. Mention identity is `entity_records.mention_identity` (same sub-event + same normalized quote = one mention).
 
-### Dates Extraction
-- Reads event file
-- Extracts temporal mentions from sub-event text
-- Links dates to EventID and Sub-eventID via MentionID
-
-### Places Extraction
-- Reads event file
-- Extracts geographic mentions from sub-event text
-- Links places to EventID and Sub-eventID via MentionID
-
-### People Extraction
-- Reads event file
-- Extracts person mentions from sub-event text
-- Links people to EventID and Sub-eventID via MentionID
-
-### Equipment Extraction (Optional)
-- Reads event file
-- Extracts equipment mentions from sub-event text
-- Links equipment to EventID and Sub-eventID via MentionID
-
-### Casualties Extraction (Optional)
-- Reads event file
-- Extracts casualty data from sub-event text
-- Links casualties to EventID and Sub-eventID
+See the per-entity READMEs: [Dates](../dates/README.md), [Places](../places/README.md), [People](../people/README.md), [People groups](../people_groups/README.md).
 
 ---
 
@@ -360,8 +326,8 @@ INFO - Skipping chapter20-footnotes-parsed.json: contains only footnotes
 **Exponential Backoff:** Handled by `GrokClient` (2s, 4s, 8s)
 
 **Cache Behavior:**
-- First attempt uses cache
-- Retries bypass cache for fresh response
+- The first attempt uses the cache
+- A rejected answer is evicted/kept aside (`_keep_rejected`) so the retry asks again
 
 ---
 
@@ -381,7 +347,7 @@ rm -rf cache/api/events/*
 
 ### Processing Time
 
-**Typical:** 10-30 seconds per chapter (depending on length)
+**Typical:** seconds per chapter live; in batch mode the events request waits for its batch round
 
 **Factors:**
 - Chapter length (paragraph count)
@@ -470,7 +436,7 @@ def extract_events(
 - `None`: If file was skipped (footnotes only)
 
 **Raises:**
-- `ValueError`: If validation fails after max_retries
+- `ValueError`: If validation fails after max_retries (in batch mode the call queues the request and raises `BatchModeCollecting`)
 
 ### `validate_event_json()`
 
@@ -536,7 +502,7 @@ def create_event_prompt(parsed_data: Dict[str, Any]) -> Optional[str]
 - [Dates Extraction](../dates/README.md)
 - [Places Extraction](../places/README.md)
 - [People Extraction](../people/README.md)
-- [Error Handling](../../core/error_handling.md)
+- [Error Handling (archived 2026-03 spec)](../../../archive/contextmanagement/Specs/error_handling.md)
 - [Pipeline Overview](../../core/PIPELINE.md)
 
 ---

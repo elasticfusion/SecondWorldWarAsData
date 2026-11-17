@@ -137,12 +137,36 @@ def test_already_geocoded_skipped(tmp_path: Path) -> None:
             "PlaceID": "01HZZZZZZZZZZZZZZZZZZZZZ01",
             "current_name": "Metz",
             "coordinates": {"latitude": 49.12, "longitude": 6.18},
+            "geocode_source": "nominatim",  # what a Phase-3 geocode records
         },
     )
     grok = _FakeGrok({})
     report = geocode_places_dir(places, grok, write=True)
     assert report.attempted == 0
     assert report.skipped == 1
+
+
+def test_a_phase2_guessed_coordinate_is_geocoded(tmp_path: Path) -> None:
+    """Phase-2 coordinates were the extraction model's guess (no geocode_source, a made-up
+    confidence 0.8): Phase 3 must geocode the place, not skip it as already placed."""
+    places = tmp_path / "places"
+    places.mkdir()
+    _place_file(
+        places,
+        "metz.json",
+        {
+            "PlaceID": "01HZZZZZZZZZZZZZZZZZZZZZ01",
+            "current_name": "Metz",
+            "coordinates": {
+                "latitude": 49.1,
+                "longitude": 6.2,
+                "precision": "approximate",
+                "confidence": 0.8,
+            },
+        },
+    )
+    report = geocode_places_dir(places, _FakeGrok({}), write=True)
+    assert report.attempted == 1 and report.skip_has_coords == 0
 
 
 def test_idempotent_after_attempt(tmp_path: Path) -> None:

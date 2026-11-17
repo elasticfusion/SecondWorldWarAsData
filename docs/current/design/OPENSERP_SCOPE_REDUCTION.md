@@ -1,6 +1,6 @@
 # OpenSERP Scope Reduction — PDF/EPUB Source Discovery + Human-Gated Acquisition
 
-**Status:** Proposal (operator-directed, 2026-10-19). **Supersedes** the broad Phase-3 OpenSERP
+**Status (2026-11-16):** still a PROPOSAL; no review queue, `needs-review/sources/` records or discard/block records exist in the code (Phase 3 topic; still referenced by `docs/current/TODO.md`). Original: Proposal (operator-directed, 2026-10-19). **Supersedes** the broad Phase-3 OpenSERP
 enrichment with a narrow, human-gated source-acquisition flow. **Related:** A00 (OpenSERP redesign),
 A0/A0+ (parallelize enrichment). **Author:** pipeline agent.
 

@@ -1,5 +1,11 @@
 # OpenSERP Search History
 
+> **Status (2026-11-16):** `src.extraction.combined_map_search` and its CLI flags (`--max-places`,
+> `--no-skip-searched`) no longer exist. The history is used by `openserp_maps.import_openserp_maps`
+> (Phase 3 step `openserp_external_maps`, `skip_searched=True` by default; no CLI flag). Wherever a
+> command below names `combined_map_search`, read it as that Phase 3 step with the matching
+> `max_places` / `skip_searched` argument.
+
 **Feature:** Track searched places and downloaded URLs to avoid duplicate work.
 
 ---
@@ -181,7 +187,7 @@ At the end of OpenSERP phase:
 ## Integration with Combined Search
 
 The combined search strategy automatically:
-1. **Phase 1 (Grok)** - No history tracking (always searches)
+1. **Grok whitelist stage** (`grok_search_maps`, manual) - No history tracking (always searches)
 2. **Phase 2 (OpenSERP)** - Uses search history (skips searched places)
 
 This ensures:

@@ -9,6 +9,7 @@ from typing import Any, Dict, Optional
 import ulid
 from pydantic import BaseModel, ConfigDict, Field
 
+from src.utils.entity_records import merge_mentions, mention_sub_event
 from src.grok_client import GrokClient
 from src.extraction.starvation_signal import (
     note_empty_fulltext_skip,
@@ -238,9 +239,9 @@ def create_place_prompt(
     sub_event_summary = sub_event.get("Sub-event_summary", "")
     fulltext = sub_event.get("Sub-event_fulltext", {})
 
-    text_parts = []
-    for key in sorted(fulltext.keys()):
-        text_parts.append(fulltext[key])
+    from src.utils.paragraph_numbers import in_paragraph_order
+
+    text_parts = [text for _key, text in in_paragraph_order(fulltext)]
     text = "\n\n".join(text_parts)
 
     if not text.strip():
@@ -354,11 +355,9 @@ def extract_places(
     book, author, series = _load_book_metadata(parsed_file)
 
     # Validate required metadata (series is optional)
-    if not book or not author:
-        raise ValueError(
-            f"Missing required book metadata in {parsed_file}: "
-            f"book={book!r}, author={author!r}"
-        )
+    from src.extraction._entity_common import require_book_provenance
+
+    require_book_provenance(book, author, "places", str(parsed_file))
 
     event_name = event_data.get("Chapter", "")
     event_obj = event_data.get("Event", {})
@@ -726,20 +725,16 @@ def _add_event_mention(
                 "original_text": mention.get("original_text", ""),
             }
 
-            # Check for duplicate mention (same sub-event). Legacy mentions may predate the
-            # Sub_eventID field — use .get() so a missing key doesn't KeyError (a legacy mention
-            # with no Sub_eventID simply doesn't match and is observably noted, not crashed on).
-            existing = []
+            # The mention may already be there (entity_records.merge_mentions: the same statement
+            # of the same sub-event). A legacy mention predating the sub-event field is noted.
             for m in place_data.get("event_mentions", []):
-                if "Sub_eventID" not in m:
+                if isinstance(m, dict) and not mention_sub_event(m):
                     logger.info(
                         "OBSERV places.legacy_mention_no_subevent file=%s",
                         place_file.name,
                     )
-                if m.get("Sub_eventID") == sub_event_id:
-                    existing.append(m)
-
-            if not existing:
-                place_data.setdefault("event_mentions", []).append(event_mention)
+            if merge_mentions(
+                place_data.setdefault("event_mentions", []), [event_mention]
+            ):
                 save(place_data)
                 logger.debug(f"  Added mention to {place_file.name}")

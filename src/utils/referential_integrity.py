@@ -1,6 +1,6 @@
 """Corpus referential-integrity: the single source of the cross-reference edge model + checker.
 
-Core (not a throwaway utility): both the read-only CLI audit (`scripts/referential_integrity_audit.py`)
+Core (not a throwaway utility): both the read-only CLI audit (`scripts/utils/referential_integrity_audit.py`)
 and the end-of-phase ENFORCEMENT pass import from here, so the edge map + resolution logic can never
 drift. The per-write guard validates each record in isolation and is structurally blind to dangling
 cross-references (a `source_section.EventID` pointing at an event that was never persisted); this
@@ -118,6 +118,26 @@ def _pk_targets() -> Dict[str, str]:
 EDGES: List[Tuple[str, str, str, bool]] = _discover_edges()
 PK_FIELD: Dict[str, str] = _pk_targets()
 _DIR: Dict[str, str] = {}  # registry entity names already equal their output subdir
+# Entities stored per book under content/<book>/<subdir>/ (beside the events), not output/<name>/.
+_NESTED_UNDER_CONTENT = {"source_section": "source_section"}
+
+
+def _record_files(storage: Any, entity_dir: str) -> List[str]:
+    """The JSON files of ``entity_dir``: ``output/<dir>/`` or, for a per-book entity, every
+    ``content/<book>/<dir>/``. (S3 listing is recursive and matches the file name; the local
+    listing globs the pattern, so both forms are tried, as for the event files.)"""
+    sub = _NESTED_UNDER_CONTENT.get(entity_dir)
+    if not sub:
+        return storage.list_files(entity_dir, "*.json")
+    for pattern in (f"*/{sub}/*.json", "*.json"):
+        found = [
+            rel
+            for rel in storage.list_files("content", pattern)
+            if f"/{sub}/" in f"/{rel}"
+        ]
+        if found:
+            return found
+    return []
 
 
 def _iter_records(storage: Any, entity_dir: str):
@@ -127,7 +147,7 @@ def _iter_records(storage: Any, entity_dir: str):
     real dangling ref — so each read failure is counted and surfaced with a loud canonical OBSERV
     (anti-swallow: the audit must never silently run on an incomplete corpus)."""
     skipped = 0
-    for rel in storage.list_files(entity_dir, "*.json"):
+    for rel in _record_files(storage, entity_dir):
         name = rel.rsplit("/", 1)[-1]
         if name == "index.json" or name.startswith(".") or "report" in name:
             continue
@@ -329,7 +349,8 @@ def _resolve_edge(
     }
 
 
-_SUBEVENT_FIELDS = ("Sub_eventID", "Sub-eventID")
+from src.utils.entity_records import SUBEVENT_FIELDS as _SUBEVENT_FIELDS  # noqa: E402
+
 # Registry entities whose records carry event_mentions with a sub-event reference that can go stale
 # when events are re-extracted (LLM segmentation can mint different deterministic Sub-eventIDs).
 _MENTION_REPAIR_ENTITIES = ("places", "people_groups", "dates", "people", "equipment")
@@ -588,14 +609,12 @@ def _alert(report: Dict[str, Any], topic_arn: str, region: str) -> None:
             lines.append(
                 f"  - {edge['edge']}: {edge['dangling']}/{edge['total_refs']} ({edge['rate'] * 100:.1f}%)"
             )
-    try:
-        import boto3
+    from src.utils.observe import publish_alert
 
-        boto3.client("sns", region_name=region).publish(
-            TopicArn=topic_arn,
-            Subject="WWII Pipeline: DATA QUALITY — dangling cross-references",
-            Message="\n".join(lines),
-        )
+    if publish_alert(
+        "WWII Pipeline: DATA QUALITY — dangling cross-references",
+        "\n".join(lines),
+        topic_arn=topic_arn,
+        region=region,
+    ):
         logger.info("Sent dangling-reference alert")
-    except Exception as e:  # noqa: BLE001
-        logger.warning("Failed to send dangling-reference alert: %s", e)

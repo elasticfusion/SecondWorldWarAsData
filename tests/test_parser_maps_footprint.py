@@ -2,7 +2,7 @@
 the per-map reference footprint (paragraph_numbers MANDATORY, OI3).
 """
 
-from src.parser import extract_maps, _map_reference_footprint, _iter_html_anchors
+from src.parser import extract_maps, map_reference_footprint, _iter_html_anchors
 from src.models import Paragraph
 
 BASE = "https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/"
@@ -34,7 +34,7 @@ def test_reference_footprint_paragraph_numbers():
         Paragraph(absolute_number=9, text="Nothing relevant here."),
         Paragraph(absolute_number=12, text="As shown on Map VIII, the beach..."),
     ]
-    refs = _map_reference_footprint("Map VIII", paras)
+    refs = map_reference_footprint("Map VIII", paras)
     assert [r["paragraph_number"] for r in refs] == [5, 12]
     assert all("paragraph_number" in r and r.get("text") for r in refs)
 
@@ -42,7 +42,7 @@ def test_reference_footprint_paragraph_numbers():
 def test_footprint_word_boundary_no_substring_bleed():
     # "Map 1" must NOT match "Map 11"
     paras = [Paragraph(absolute_number=1, text="see Map 11 for details")]
-    assert _map_reference_footprint("Map 1", paras) == []
+    assert map_reference_footprint("Map 1", paras) == []
 
 
 def test_iter_html_anchors_redos_safe():

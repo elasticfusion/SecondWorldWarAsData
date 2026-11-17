@@ -74,7 +74,10 @@ def _corpus():
             "location": {"place_name": "X", "PlaceID": MISSING},
         },
         # source_section: one dangling EventID (the live write-time-dangling regression)
-        "source_section/s.json": {"SourceSectionID": G1, "EventID": MISSING},
+        "content/TheBook/source_section/s.json": {
+            "SourceSectionID": G1,
+            "EventID": MISSING,
+        },
     }
 
 

@@ -1,9 +1,13 @@
 # Language Detection & Translation (Phase 0)
 
-**Status:** design (approved 2026-09-24; revised to **per-page** 2026-09-24) —
-**implemented** (per-page translate-at-the-seam; `prompts/translation.yaml`,
-`prompts/language_detect.yaml`, wired in ingestion; `tests/test_translation.py` +
-`tests/test_translation_wiring.py`). Status updated 2026-10-05.
+**Status:** **implemented, ON by default** (owner 2026-11-16; per-page translate-at-the-seam;
+`prompts/translation.yaml`, `prompts/language_detect.yaml`, `src/ingestion/translation.py`; tests
+`tests/test_translation.py` + `tests/test_translation_wiring.py`). `translation_enabled` is true
+unless `ingestion.translate: false` in `config.yaml` or `PHASE0_TRANSLATE=0`. English costs nothing:
+`clearly_english` decides it deterministically (Latin script; English function words present, none of
+German / French / Italian / Spanish / Dutch common; markup removed) and only a page or section that is
+not clearly English asks Grok its language (Cross-Channel Attack, 562 pages: 523 decided free, 39 -
+indexes, rosters, map pages - asked).
 **Owner decision:** **per-page** detection (revised from per-document after the
 M1019 microfilm example); convert original → markdown, then translate non-English
 pages to English via Grok; every translated page is marked (inert) as translated
@@ -31,8 +35,8 @@ document:
 3. **Translate** that Markdown → **English Markdown** via **Grok**, instructing
    it to render proper nouns (people, places, units) in their **conventional
    English forms** (München→Munich, Гудериан→Guderian, 東京→Tokyo).
-4. The **English markdown feeds Phase 1**; the **original-language markdown is
-   kept alongside** for provenance and re-translation.
+4. The **English markdown feeds Phase 1**; the **original-language text is
+   kept** for provenance and re-translation (where, per track: see "Storage layout").
 
 Rejected: Strategy A (extract in original language) would push cross-script
 entity resolution onto the dedup layer, which today cannot do it. Strategy C
@@ -56,18 +60,43 @@ emits with `--paginate_output`, split via `chunk_pages.split_pages`):
 
 - Each page is detected independently.
 - English pages pass through untouched (no Grok call).
-- Non-English pages are translated and **prefixed with an inert
+- Non-English pages are translated and **each of their paragraphs prefixed with an inert
   translation-provenance marker** (below).
 - Pages are reassembled in order into the English `.md`.
 
 This handles mixed-language rolls correctly and reassembles them into one
-normalized-English document. Detection is per-page (not batched); 1,000+ tiny
-detect calls are cheap and cached — the translations (foreign pages only) are
-the real cost, consistent with "LLM once per item at ingest."
+normalized-English document. Detection is per-page (not batched); a clearly English
+page needs no detect call at all, and the remaining detect calls are small and cached —
+the translations (foreign pages only) are the real cost, consistent with "LLM once per
+item at ingest."
+
+**Documents without pages** (converted EPUB/DOCX/HTML: `normalize_to_english`) are mixed-language
+too: they are detected per SECTION of at most 4,000 characters (`_language_runs`, on Markdown
+block boundaries), neighbouring sections of one language merged, and only the non-English runs
+translated - each with its own marker. (Before 2026-11-16 one language was taken for the whole
+document from its first 4,000 characters, so a German part after an English opening was never
+translated.)
+
+**Foreign passages inside an English page or section** (owner 2026-11-16): a page / section is
+judged by its main language, so after it is judged English each sentence is checked for free
+(`foreign_sentence`): at least 8 words, another language's function words at least 20% of them,
+from at least 3 different words, and more than twice English's - or mostly another script. Italic
+spans (the green-book convention for names, titles and terms the author kept: *Seventh Army*,
+*Grundlegender Befehl ...*), hyphenated place names (Chef-du-Pont) and note definitions (a citation
+the bibliography quotes verbatim) are never judged or translated. Only a run of foreign sentences
+goes to Grok (detect + translate), and is replaced in place by its translation, prefixed with the
+marker (`translate_embedded`); the page's `lang.json` entry reads `English (with German)`.
+
+**Marker in the parsed text:** every translated paragraph carries its own marker
+(`mark_translated`: at the end of the paragraph's first line, so every line-start structure the
+parser reads - headings, note definitions, quote / list markers, tables, `* * *` separators -
+stays intact; a block without letters is not marked; an embedded passage's marker sits right
+before it, mid-line), so a parsed paragraph's provenance never depends on the page layout. Phase 1 lifts every marker out of the file before it reads it (`lift_translation_markers`) so notes separation, headings, separators and tables read exactly the text they read without markers; it then gives each paragraph holding a marked line its `translated_from` (meaning: the paragraph holds translated text - all of it, or a passage), placing each marked line by aligning the file's lines to the paragraphs' lines in order (`difflib.SequenceMatcher`), so the same line elsewhere ("Ibid.") is never marked and the lines that structure repair adds or notes separation and nav stripping remove do not shift the placement. A marker alone on its line (the older per-page form) marks the next line with text. A marked line in the notes section gives the note it defines, or the note defined nearest above it, (`Footnote.translated_from`, serialised only when set) the language; a marked heading or nav line holds no paragraph and is skipped. Any other marked line, including one with no text or past the end of the file, raises `OBSERV parser.translated_line_unplaced`. A file without a marker is read unchanged, byte for byte; no marker reaches Phase 2 extraction or a provenance quote.
+Cross-Channel Attack (English, 562 pages): 0 passages flagged.
 
 ## Translation-provenance marker (inert)
 
-Every **translated page** is prefixed with an HTML comment:
+Every **translated paragraph** carries an HTML comment at the end of its first line (Phase 1 lifts it into `translated_from`):
 
 ```
 <!-- translated from German by grok:grok-4.6 -->
@@ -82,7 +111,20 @@ later if required.
 
 ## Storage layout
 
-Per source document, Phase 0 keeps **both** markdowns side by side:
+**As built, per track (2026-11-16).** Translation is called through one adapter,
+`translation.normalize_markdown_to_english(markdown, per_page=...)` (never raises, returns the input on
+disable / English / error):
+
+| Track | Where it runs | Per-page? | Original kept as |
+|---|---|---|---|
+| OCR narrative | `ocr_promote.promote(translate=...)`, called by `ocr_merge_handler._publish` and the `phase0_ocr_crosscheck.py` task, after sanitising | yes | `ocr-output/<slug>/merged/raw.md` (the merged OCR exactly as Chandra wrote it; the bucket keeps every version) |
+| CONVERT (epub/docx/html) | `phase0_convert.convert_key` | no (whole document) | the uploaded source file |
+| VIDEO | `phase0_video._translate_segments` | per segment | transcript timecodes and speaker labels are not sent to Grok |
+| OOB reference | `phase0_ingest._translate_converted_markdown` | yes | `<stem>.orig.md` + `<stem>.lang.json` sidecar |
+
+Only the OOB track writes the `.orig.md` / `.lang.json` / `.meta.yaml` layout below; the other
+tracks keep no per-page language sidecar, and chapter meta does not carry a `source_language` field.
+The layout below is the original design, still accurate for the OOB track:
 
 ```
 <source>/
@@ -115,7 +157,7 @@ sidecar capturing **per-page** provenance:
 
 - **Engine:** Grok via `GrokClient.chat_completion` — no new dependency, and it
   already handles the markdown. Prompt externalized to `prompts/translation.yaml`.
-- **Chunking:** long documents are translated in chunks (same discipline as OCR
+- **Chunking:** (`translation.split_markdown_chunks`) long documents are translated in chunks (same discipline as OCR
   auto-split / extraction), preserving markdown structure (headings, tables,
   image refs) across chunk boundaries. One LLM pass per document at ingest —
   consistent with the "LLM once per item at ingest, never per visit" cost

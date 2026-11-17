@@ -44,15 +44,7 @@ def test_roman_corps_numbering_unifies_with_arabic():
 
 
 def test_group_nationality_veto():
-    import importlib.util, sys
-    from pathlib import Path
-
-    spec = importlib.util.spec_from_file_location(
-        "fdg_t", Path(__file__).parent.parent / "scripts" / "find_duplicate_groups.py"
-    )
-    fdg = importlib.util.module_from_spec(spec)
-    sys.modules["fdg_t"] = fdg
-    spec.loader.exec_module(fdg)
+    import src.dedup.find_duplicate_groups as fdg
 
     def g(name, nat=None):
         return {

@@ -27,7 +27,6 @@ geocoder, before giving up.
 from __future__ import annotations
 
 import logging
-import re
 from typing import Any, List, Optional
 
 from src.enrichment.places_grok_geocode import GeocodeResult, _parse_geocode_reply
@@ -39,16 +38,12 @@ _HEADERS = {"User-Agent": "SecondWorldWarAsData/1.0 (historical place geocoding)
 # Grokipedia is a web app (no public JSON API); we search then fetch a page,
 # mirroring the project's existing Grokipedia usage in enrich_biographies.
 _GROKIPEDIA_SEARCH = "https://grokipedia.com/search"
-_GROKIPEDIA_PAGE = "https://grokipedia.com/page/"
 _BROWSER_UA = {
     "User-Agent": (
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
         "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
     )
 }
-_SLUG_RE = re.compile(r'data-slug="([^"]+)"')
-# Strip HTML tags to recover readable prose from a fetched page.
-_TAG_RE = re.compile(r"<[^>]+>")
 
 _SYSTEM_PROMPT = (
     "You are a historical military geographer for World War II (any theater — "
@@ -61,35 +56,43 @@ _SYSTEM_PROMPT = (
 )
 
 
+# Its OWN cache namespace: "grokipedia_place" holds enrich_places' page URLs, so sharing it made a
+# term looked up by both return a URL as "context" (or this text as a place's URL).
+_CACHE_NS = "grokipedia_situational"
+_CONTEXT_CHARS = 800
+
+
 def grokipedia_context(term: str, session: Any) -> Optional[str]:
-    """Return a Grokipedia page extract for ``term``, or None.
+    """Return a Grokipedia article extract for ``term``, or None.
 
-    Searches Grokipedia, follows the best matching ``/page/<slug>`` result, and
-    returns readable text from that page. Cached via the project's search cache.
-    Grokipedia has no public API, so this scrapes the web app the same way the
-    existing biography enrichment does.
+    Searches Grokipedia, takes the first real ``/page/<slug>`` result and returns the start of
+    that page's ARTICLE text (src/enrichment/grokipedia). Cached via the project's search cache
+    (genuine misses negative-cached; transient failures never).
     """
-    from src.utils.search_cache import cache_result, get_cached
+    from src.utils.search_cache import TRANSIENT, cache_result, get_cached
 
-    cached = get_cached("grokipedia_place", term)
+    cached = get_cached(_CACHE_NS, term)
     if cached == "NOT_FOUND":
         return None
     if cached:
         return cached
 
     extract = _grokipedia_fetch(term, session)
-    from src.utils.search_cache import TRANSIENT
-
     if extract is TRANSIENT:
         return None  # transient: don't negative-cache
-    cache_result("grokipedia_place", term, extract or None)
+    cache_result(_CACHE_NS, term, extract or None)
     return extract
 
 
 def _grokipedia_fetch(term: str, session: Any):
-    """Search Grokipedia for ``term`` and return prose from the top page, None on a genuine no-match,
-    or search_cache.TRANSIENT on a non-200/exception (so the caller does NOT negative-cache a one-off
-    outage for 7d)."""
+    """Search Grokipedia for ``term`` and return the top page's article text, None on a genuine
+    no-match, or search_cache.TRANSIENT on a non-200/exception (so the caller does NOT
+    negative-cache a one-off outage for 7d)."""
+    from src.enrichment.grokipedia import (
+        fetch_grokipedia_article_text,
+        first_page_url,
+        response_text,
+    )
     from src.utils.search_cache import TRANSIENT
 
     try:
@@ -107,35 +110,6 @@ def _grokipedia_fetch(term: str, session: Any):
             allow_redirects=True,
             result_summary_fn=lambda r: f"status={r.status_code} term={term[:40]!r}",
         )
-        if resp.status_code != 200:
-            logger.info(
-                "OBSERV situational.grokipedia_transient status=%d term=%r",
-                resp.status_code,
-                term[:60],
-            )
-            return TRANSIENT
-        if "/page/" not in resp.text:
-            return None  # genuine no-match
-        slugs = _SLUG_RE.findall(resp.text)
-        if not slugs:
-            return None
-        page = recorded_fetch(
-            "grokipedia",
-            _GROKIPEDIA_PAGE + slugs[0],
-            kind=STRUCTURED,
-            method="GET",
-            session=session,
-            headers=_BROWSER_UA,
-            timeout=20,
-            result_summary_fn=lambda r: f"page status={r.status_code}",
-        )
-        if page.status_code != 200:
-            logger.info(
-                "OBSERV situational.grokipedia_transient page_status=%d term=%r",
-                page.status_code,
-                term[:60],
-            )
-            return TRANSIENT
     except Exception as exc:  # noqa: BLE001 - best-effort lookup
         logger.info(
             "OBSERV situational.grokipedia_transient err=%s term=%r",
@@ -143,9 +117,28 @@ def _grokipedia_fetch(term: str, session: Any):
             term[:60],
         )
         return TRANSIENT
-    text = _TAG_RE.sub(" ", page.text)
-    text = re.sub(r"\s+", " ", text).strip()
-    return text[:800] if text else None
+    if resp.status_code != 200:
+        logger.info(
+            "OBSERV situational.grokipedia_transient status=%d term=%r",
+            resp.status_code,
+            term[:60],
+        )
+        return TRANSIENT
+    page_url = first_page_url(response_text(resp))  # UTF-8: accented terms must match
+    if not page_url:
+        return None  # genuine no-match
+    try:
+        text = fetch_grokipedia_article_text(page_url, timeout=20, session=session)
+    except Exception as exc:  # noqa: BLE001 - best-effort lookup (e.g. a parser error)
+        logger.info(
+            "OBSERV situational.grokipedia_transient err=%s term=%r",
+            str(exc)[:80],
+            term[:60],
+        )
+        return TRANSIENT
+    if text is TRANSIENT:
+        return TRANSIENT
+    return text[:_CONTEXT_CHARS] if isinstance(text, str) and text else None
 
 
 def wikipedia_context(term: str, session: Any) -> Optional[str]:
@@ -251,13 +244,13 @@ def _wiki_extract(title: str, session: Any):
     from src.utils.search_cache import TRANSIENT
 
     try:
-        from src.utils.fetch_provenance import STRUCTURED, recorded_fetch
+        from src.utils.fetch_provenance import STRUCTURED
+        from src.utils.wikimedia_client import wikimedia_get
 
-        resp = recorded_fetch(
+        resp = wikimedia_get(
             "wikipedia",
             _WIKI_ENDPOINT,
             kind=STRUCTURED,
-            method="GET",
             params={
                 "action": "query",
                 "format": "json",
@@ -270,8 +263,11 @@ def _wiki_extract(title: str, session: Any):
             session=session,
             headers=_HEADERS,
             timeout=15,
+            subject=title,
             result_summary_fn=lambda r: f"status={r.status_code} title={title[:40]!r}",
         )
+        if resp is TRANSIENT:
+            return TRANSIENT  # rate limit / block / 5xx / network (client logged it)
         if resp.status_code != 200:
             logger.info(
                 "OBSERV situational.wiki_transient status=%d title=%r",

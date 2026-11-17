@@ -1,6 +1,6 @@
 # Source Section
 
-**Entity:** `source_section` · **Output:** `output/source_section/*.json` · **Schema:**
+**Entity:** `source_section` · **Output:** `output/content/<book>/source_section/<SourceSectionID>.json` (the older top-level `output/source_section/*.json` is still read; `src/utils/source_sections.iter_section_files`) · **Schema:**
 `src/schemas/source_section_output.py` · **Phase:** 2 (producer + enrichment)
 
 ## What it is
@@ -32,10 +32,10 @@ be wrong to attach to any single granular sub-event.
 
 ## How it is produced (all Phase 2, native commit)
 
-1. **Producer** (`source_section.emit_source_section`, hooked into `events._save_event_output`):
+1. **Producer** (`source_section.emit_source_section`, called from `events._save_event_output` via `_emit_source_section_safe`, only when the event itself persisted):
    emits one bare record per section as events are finalized (title + EventID; summary and
    enrichment null).
-2. **Derivation pass** (`enrich_all_source_sections`, wired into `phase2_extract.py` step 4b):
+2. **Derivation pass** (`enrich_all_source_sections`, `phase2_extract._run_source_section_enrichment`, step 4b; runs live after the batch rounds, not in a batch):
    one LLM call over the **cumulative sub-event summaries + aggregated places/dates** (NOT the
    raw chapter — cheaper, no token-limit risk) derives:
    - `section_summary` (< 2 sentences), and

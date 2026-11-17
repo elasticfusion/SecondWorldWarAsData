@@ -1,6 +1,6 @@
 # Pipeline Documentation
 
-**Last Updated:** 2026-09-18
+**Last Updated:** 2026-11-16
 
 ## Overview
 
@@ -21,8 +21,10 @@ and [../dataquality/STRUCTURED_DATA_ROUTING.md](../dataquality/STRUCTURED_DATA_R
 - **Region conversion** — each page/region → Markdown (the universal
   intermediate) via a disposition-appropriate method, extracting image/map
   assets that the prose converter previously dropped.
-- **Language detection + translation** — a **per-page** pass detects each page's
-  language and translates non-English pages to English (`normalize_pages_to_english`),
+- **Language detection + translation** (on by default) — a **per-page** pass detects each
+  page's language (deterministically when clearly English, else via Grok) and translates
+  non-English pages to English (`normalize_pages_to_english`; documents without pages per
+  section, so a mixed-language book is handled),
   so every downstream extractor (events, people, …) sees English and needs no language
   guard. The verbatim original is kept as a `<name>.orig.md` sidecar and `source_language`
   is stamped (provenance preserved). Idempotent on re-runs. Full spec:
@@ -35,21 +37,37 @@ and [../dataquality/STRUCTURED_DATA_ROUTING.md](../dataquality/STRUCTURED_DATA_R
   division inference and verification-flagging, persisted to `output/oob/` and
   linked to `PersonID` via a non-destructive crosswalk.
 
-Phase 0 runs both locally and (primarily) in the AWS/ECS path. Its outputs feed
-Phase 1. It is now runnable: `python phase0_ingest.py` locally, or
-`ecs_entrypoint.py phase0_ingest.py` in AWS (which downloads sources from S3 and
-syncs `output/oob/` back up). The current increment wires the scanned-OOB
-structured-parsing path; generic PDF→markdown region conversion (also built in
-`src/ingestion/`) is added to the orchestrator as its Chandra-OCR path is wired.
+Phase 0 runs primarily in the AWS path, driven by uploads to `contentrepository/`.
+The trigger Lambda (`lambda_handlers/trigger_handler.py`) routes each upload by media
+type:
+- **PDF / scan** → Chandra OCR on AWS Batch GPU, chunked by pages (`src/ingestion/chunk_pages.py`;
+  the chunk manifest `ocr-output/<slug>/.chunks.json` is written before submit). The OCR merge
+  Lambda (`lambda_handlers/ocr_merge_handler.py`) waits for every chunk, then
+  `src/ingestion/ocr_promote.promote` sanitises, translates, splits into chapters, normalises the
+  markdown (`chandra_markdown`) and publishes `contentrepository/<slug>/chapterN/chapterN-{meta.yaml,content.md}`.
+  An upload with a validation URL is cross-checked against it by the `phase0_ocr_crosscheck.py` ECS task.
+- **EPUB / DOCX / HTML** → pandoc conversion (`phase0_convert.py`).
+- **Video** → `phase0_video.py`.
+- **Structured reference documents** (e.g. the ETO Order of Battle) → `phase0_ingest.py`, which
+  also runs locally (`python phase0_ingest.py`) or in AWS (`ecs_entrypoint.py phase0_ingest.py`,
+  syncing `output/oob/` back up).
+- Binaries are scanned by ClamAV (a Fargate task, `src/ingestion/av_scan.py`); rejected uploads go
+  to `needs-review/`.
+
+A book's slug (`src/ingestion/book_slug.py`) is fixed at intake and never renamed. `chandra_markdown`
+removes picture paragraphs from the chapter text (their alt text is model-written) and records them
+as figures; Phase 1 attaches them (below).
 
 ### Phase 1: Parsing
-Converts markdown source files into structured JSON with absolute paragraph numbering. On AWS, Phase 1 also:
-- Clears all DynamoDB pipeline locks
+Converts markdown source files into structured JSON with absolute paragraph numbering. On AWS, Phase 1 also (`ecs_entrypoint._prepare_phase1`, `_clear_manifest`):
+- Clears its own Phase 1 lock (not the Phase 2/3 locks)
 - Resets dedup review status (`complete: false`)
-- Clears any stale DynamoDB manifest from previous runs
+- Clears the DynamoDB manifest when it finishes
 
 ### Phase 2: Extraction
-Extracts entities and events using Grok AI. Prompts are loaded from YAML templates in `prompts/` (overridable from S3). In AWS mode, Phase 2 uses **incremental processing** — only downloads and processes parsed files that don't have a corresponding event file in S3. When `batch.phase2: true`, the task auto-delegates to submit-only mode: submits the batch, enqueues the job, tears down infrastructure, and exits. The batch poller Lambda (`dev-wwii-batch-poller`) checks every 5 minutes (configurable) and launches a retrieve task on completion. After Phase 2 completes, if no duplicates are found, Phase 3 is auto-triggered without waiting for human review.
+Extracts entities and events using Grok AI (`grok-4.3`, `config.yaml` `api.grok`). Prompts are loaded from YAML templates in `prompts/` (overridable from S3). In AWS mode, Phase 2 uses **incremental processing** — only downloads and processes parsed files that don't have a corresponding event file in S3. When `batch.phase2: true`, the task auto-delegates to submit-only mode and works in **batch rounds** (`src/utils/batch_rounds.py`): each round collects every request that can be asked now, submits them as one xAI batch, waits in-task up to `batch.in_task_wait_minutes` (5), and if the batch is not yet answered hands it to the batch poller Lambda (`dev-wwii-batch-poller`, checks every 5 minutes, configurable), which launches a `--retrieve-only` task that resumes the book. Rounds repeat until a pass queues nothing (a stage that depends on an earlier answer, e.g. an event's entities or an equipment refine, can only be asked in a later round). `batch.max_rounds` (8) caps them: past the cap the run stops and alerts (`batch.rounds_over_cap`). After Phase 2 completes, if the dedup gate finds no duplicates (and fewer than `DEDUP_ZERO_SUSPICION_THRESHOLD` entities, default 500) and provenance validation does not hold it, Phase 3 is auto-triggered without waiting for human review.
+
+Entity discovery (people, groups/units, places, dates, equipment, weather, logistics, casualties) runs over fixed 3-paragraph **windows** of the raw parsed text (`src/extraction/windows.py`), never over the events' summaries; each answer item is attributed to the real sub-event that contains its quote (`windows.settle`), and an item whose quote the source does not support is dropped (`quote_unsupported`). At the end of Phase 2, provenance validation (`scripts/validate_provenance.py`, `provenance_validation.gate` in `config.yaml`) writes `output/reports/provenance/<book>-phase2.json`.
 
 **Phase 2 owns ALL Grokipedia/Wikipedia enrichment** (the enrichment split is *by source*):
 each extractor enriches its entity natively as it writes it — people (biography + portrait +
@@ -66,9 +84,9 @@ After Phase 2, duplicate detection runs automatically:
 1. Military units in `output/places/` are auto-reclassified to `output/people_groups/`
 2. Stale index entries are cleaned up
 3. Exclusion pairs are migrated from local JSON to DynamoDB (one-time)
-4. All four dedup scripts run, reading exclusions from DynamoDB (AWS) or local JSON (local mode)
+4. All four dedup detectors run as `python -m src.dedup.<module>` (people, places_v2, groups, equipment), reading exclusions from DynamoDB (AWS) or local JSON (local mode). A detector that fails emits `OBSERV dedup.detector_failed status=error` (Slack + email), so a missing duplicate report is never silent
 
-In AWS mode, a web UI allows merging, skipping, and reclassifying entities before Phase 3 proceeds. UI actions (merge, reclassify, assign) append changed file keys to the DynamoDB manifest so Phase 3 downloads them. "Not Duplicates" decisions are stored in DynamoDB and persist across pipeline runs.
+The gate (`ecs_entrypoint._dedup_gate_decision` / `_phase3_gate_decision`) blocks when duplicate groups are pending, when detection failed or a report is missing, or when a large corpus (>= `DEDUP_ZERO_SUSPICION_THRESHOLD`, default 500 entities) shows zero groups. Provenance validation also holds Phase 3 when `provenance_validation.gate` is `block` (in `warn` it only alerts). In AWS mode, a web UI allows merging, skipping, and reclassifying entities before Phase 3 proceeds. UI actions (merge, reclassify, assign) append changed file keys to the DynamoDB manifest so Phase 3 downloads them. "Not Duplicates" decisions are stored in DynamoDB and persist across pipeline runs.
 
 ### Phase 3: Enrichment
 Enriches entities with **every external source EXCEPT Grokipedia/Wikipedia** (those moved to
@@ -97,12 +115,13 @@ falling back to a full entity directory download if no manifest exists.
 python3 phase1_parse.py
 ```
 
-**Input:** `contentrepository/{Book}/chapter*/chapter*-content.md`  
-**Output:** `output/content/{Book}/chapter*-parsed.json`
+**Input:** `contentrepository/{Book}/chapter*/chapter*-content.md` (+ `-meta.yaml`; `sourcedocument/` and `_figures/` are skipped by `src/discovery.py`)  
+**Output:** `output/content/{Book}/chapter*-parsed.json` (plus `chapter*-footnotes.json` / `chapter*-endnotes.json`)
 
 **Features:**
 - Absolute paragraph numbering across entire book
-- Inline entity extraction (images, maps, footnotes, page markers)
+- Inline entity extraction (images, maps, footnotes, page markers; per-paragraph `page_number`)
+- **Book figures:** for an OCR'd PDF book, Phase 1 builds the book's own figures once (`src/ingestion/book_figures.ensure`, from the PDF + OCR crops) into `contentrepository/<book>/_figures/figures.json`, rebuilt only when the PDF or OCR submission changes. Each picture is assigned to one chapter by PDF page, each numbered map to every chapter that prints or cites it (`book_figures.attach_book`). Web (HyperWar) sources take images/maps from links in the text (`parser.extract_images` / `extract_maps`)
 - Metadata from YAML files
 - Preserves source structure
 - **Source hash skip:** Computes content hash — unchanged files are not re-written or re-uploaded to S3
@@ -113,9 +132,9 @@ python3 phase1_parse.py
 
 **Large Chapter Handling:**
 When a chapter exceeds 400K characters (leaves 100K headroom for API responses):
-- Splits into chunks of ~50 paragraphs each
-- Names: `chapter20a-parsed.json`, `chapter20b-parsed.json`, etc.
-- Each chunk includes full metadata and all images/maps
+- Splits into chunks of 50 paragraphs, each sharing 3 paragraphs with the previous one (`phase1_parse._save_split_chapter`)
+- Names: zero-padded numeric suffix, `chapter20c00-parsed.json`, `chapter20c01-parsed.json`, etc.
+- Each chunk includes the full metadata and the images/maps that belong to its paragraphs (`_keep_chunk_figures`)
 - Original oversized file is not created
 - Prevents Phase 2 token limit issues
 
@@ -126,28 +145,29 @@ python3 phase2_extract.py
 
 # Or use Batch API for 50% cost reduction (async, may take hours)
 python3 phase2_extract.py --batch
+
+# Scope to one book; abort if the chapter count differs
+python3 phase2_extract.py --book Cross_Channel_Attack --expected-count 20
 ```
 
-**AWS batch mode:** When `batch.phase2: true` in `config.yaml`, the ECS entrypoint auto-delegates to submit-only mode. The task submits the batch job, enqueues it in DynamoDB (`batch_job#{batch_id}`), tears down infrastructure, and exits. The batch poller Lambda handles retrieval. See [Batch Processing](../features/batch_processing/README.md).
+**AWS batch mode:** When `batch.phase2: true` in `config.yaml`, the ECS entrypoint auto-delegates to submit-only mode. Each round the task submits the batch, enqueues it in DynamoDB (`batch_job#{batch_id}`) and, if not answered within `batch.in_task_wait_minutes`, exits (exit status 75, "handed off"); the networking teardown is left to the `nat_teardown` Lambda. The batch poller Lambda handles retrieval and launches the next round. See [Batch Processing](../features/batch_processing/README.md).
 
 **Pipeline Stages:**
-1. **Metadata Completion** - Auto-fills missing chapter titles/numbers
-2. **Parallel Core Extraction** - Processes all chapters concurrently (max 3):
-   - Event extraction (if event file doesn't exist)
-3. **Core Entity Extraction** - Per chapter (parallel):
-   - Dates, Places, People Groups, People (batched API calls, parallel per chapter)
-4. **Retry Missing Events** - Retries any chapters that failed event extraction (per-chapter cache clear)
-5. **Optional Entity Extraction** - Sequential per event file (batched per chapter — 1 API call per extractor):
-   - Weather (if enabled)
-   - Equipment (if enabled)
-   - Logistics (if enabled)
-   - Casualties (if enabled) — personnel only (killed, wounded, missing, POW); no equipment losses
-   - Supplemental material (if enabled) — fetches actual endnote text from ibiblio HTML pages, resolves cross-references ("cited in n. 5", "see n. 4"), passes real citation text to Grok
-   - Images (if enabled, via `src/extraction/images.py`)
-6. **Maps Extraction** - Source maps + external maps via OpenSERP (if enabled)
-7. **Analysis** - Duplicate people report + related groups report
+0. **Metadata Completion** - Auto-fills missing chapter titles/numbers (`_complete_metadata`)
+1. **Parallel Core Extraction** - `process_chapters_parallel` processes chapters concurrently (`concurrency` in `config.yaml`):
+   - Event extraction, one request per chapter (Event with Sub-events; orphan paragraphs are claimed by the nearest earlier sub-event)
+   - Dates, Places, People Groups, People discovered over 3-paragraph windows of the raw text (`src/extraction/windows.py`), attributed to the real sub-event by quote
+2. **Retry Missing Events** - Retries any chapters that failed event extraction (`_retry_missing_events`)
+3. **Deterministic bibliography pass** - a citable bibliography record per parsed footnote/endnote, no LLM (`extract_bibliography_deterministic`), when `supplemental_material.enabled`
+4. **Optional Entity Extraction** - per event file (`_extract_optional_entities`):
+   - Weather, Equipment (broad discovery + refine, over windows), Logistics, Casualties (personnel only: killed, wounded, missing, POW), Supplemental material (notes; also windowed within each sub-event, assigns `reference_number` / `verbatim_reference` deterministically) - each if enabled in `config.yaml`
+5. **Maps / Images** - external maps (`_extract_external_maps`, OpenSERP if enabled), images (`src/extraction/images.py`)
+6. **Source-section enrichment** (`[phase2 step 4b/5]`, live, not batched)
+7. **Analysis** - Duplicate people report + related groups report; then exact-duplicate auto-merge, the dedup gate and provenance validation (in `ecs_entrypoint._post_process`)
 
-**Auto-split on truncation:** If a Grok API response is truncated (>100K chars), the chapter is automatically split at section boundaries and each half is extracted separately, then merged.
+In batch mode the steps run once per round; the work that needs an earlier answer is asked in the next round.
+
+**Auto-split on truncation:** If a Grok API response is truncated, the chapter is automatically extracted in parts (`events._split_on_truncation`) and the parts are merged.
 
 **Heartbeat monitor:** Both Phase 2 and Phase 3 log progress per chapter. A warning is logged if no progress is made for 5 minutes, showing the last item processed.
 
@@ -155,7 +175,7 @@ python3 phase2_extract.py --batch
 
 **JSON quality statistics:** Extraction quality metrics (valid JSON rate, schema compliance) are tracked per batch and stored in DynamoDB for monitoring.
 
-**Output Files:**
+**Output Files:** (chapter files under `output/content/{Book}/`; entity directories are siblings under `output/`)
 - `chapter*-event.json` - Events and sub-events
 - `chapter*-notes-event.json` - Factual content from endnotes/footnotes (supplemental split)
 - `dates/{YYYYMM}_{ID}.json` - Central dates repository
@@ -171,14 +191,7 @@ python3 phase2_extract.py --batch
 
 ## Caching
 
-All Grok API responses are cached in `cache/api/`:
-- `events/` - Event extractions
-- `dates/` - Date extractions
-- `places/` - Place extractions
-- `people/` - People extractions
-- `people_groups/` - Group extractions
-- `weather/` - Weather extractions (optional)
-- `equipment/` - Equipment extractions (optional)
+All Grok API responses are cached (local mode `cache/api/`, AWS mode the DynamoDB cache table), one sub-cache per request type (`cache_type`), e.g. `events`, `dates`, `places`, `people`, `people_groups`, `weather`, `logistics`, `casualties`, `equipment_broad`, `equipment_refine`, `supplemental`, `source_section`. Cache keys are book-scoped (`GrokClient.cache_key_for`).
 
 **Cache benefits:**
 - Avoids redundant API calls
@@ -227,15 +240,15 @@ In AWS mode, each phase downloads only what it needs:
 
 **Phase 2:** S3 scan scoped by `BOOK_NAME` — compares `-parsed.json` files against `-event.json` files in S3. Only downloads parsed files that don't have a corresponding event file. Also downloads entity directories for cross-referencing.
 
-**Phase 3:** Reads the DynamoDB manifest (`manifest#phase2`) which contains S3 keys of files uploaded by Phase 2 and modified by the dedup UI. Downloads only those files. Falls back to full entity directory download if no manifest exists. Uses `book_manifest#{book}#{entity_type}` for scoped entity downloads.
+**Phase 3:** Downloads the entity files of the book (`BOOK_NAME`) listed in the book manifest (`book_manifest#{book}#{entity_type}`, `ecs_entrypoint._get_book_entity_files`), plus the shared `bibliography` and `supplemental` directories in full; with no `BOOK_NAME` it downloads every entity directory (`_download_phase3_from_s3`). It first waits for Phase 2's bibliography reconcile barrier.
 
 **Background sync mtime tracking:** S3 uploads track file modification times locally. Only files with changed mtime are uploaded, avoiding redundant S3 PutObject calls during final sync.
 
 ### DynamoDB Manifest
 
-Phase 2's final sync writes all uploaded entity file keys to `manifest#phase2` in DynamoDB. The dedup UI appends keys for any files it modifies (merge, reclassify, assign actions). Phase 3 reads this manifest to download only changed files.
+Phase 2's final sync writes all uploaded entity file keys to `manifest#phase2` in DynamoDB (`_write_manifest`). The dedup UI appends keys for any files it modifies (merge, reclassify, assign actions). `_read_manifest` also reads it as a legacy fallback for the per-book `pending#parsed#{book}` queue.
 
-Phase 1 clears the manifest at the start of each new pipeline run.
+Phase 1 clears the manifest when it finishes (`_clear_manifest`).
 
 ### Per-Book Queues
 
@@ -386,13 +399,10 @@ python3 phase3_retry.py    # Retries until all people are enriched (default: 3 a
 NAT Gateway and VPC endpoints are created/deleted dynamically to minimize costs:
 
 1. **Trigger Lambda** invokes `nat_manager(create)` before launching any ECS task
-2. NAT + VPC endpoints (ECR API, ECR DKR, CloudWatch Logs) created in private subnets
+2. NAT + VPC endpoints are created in private subnets; each task also validates NAT readiness (`_ensure_nat_if_needed`) and registers a NAT lease (`nat#lease#`)
 3. Pipeline tasks run with internet access via NAT
-4. **Submit-only task completion** → tears down NAT + scales OpenSERP to 0 immediately after batch submission
-5. **Batch poller Lambda** → on batch completion, invokes `nat_manager(create)` before launching retrieve task
-6. **Retrieve task completion** → tears down NAT + OpenSERP after results are processed
-
-Infrastructure lifecycle is deterministic — no idle timeout needed. NAT only exists during active pipeline execution.
+4. **Batch poller Lambda** → on batch completion, invokes `nat_manager(create)` before launching the retrieve task
+5. **Phases never tear down networking.** The `nat_teardown` Lambda (`lambda_handlers/nat_teardown.py`) is the sole teardown decider: it runs on a 4-hour schedule and deletes NAT + endpoints (via `nat_manager(delete)`) only when no lease, running pipeline task, in-flight OCR Batch job or pending/ready `batch_job#` row remains. While a container is still working it re-checks every 10 minutes.
 
 ## Stale Lock Detection
 
@@ -411,7 +421,7 @@ The `ecs_entrypoint.py` supports three execution modes:
 | Mode | Flag | Description |
 |------|------|-------------|
 | **Default** | (none) | Runs `run_phase` — full phase execution (parse, extract, or enrich) |
-| **Submit-only** | `--submit-only` | Submits batch to Grok API, enqueues job in DynamoDB, tears down infra, exits |
+| **Submit-only** | `--submit-only` | Submits batch to Grok API, enqueues job in DynamoDB, exits (teardown is left to `nat_teardown`) |
 | **Retrieve-only** | `--retrieve-only` | Downloads batch results, populates cache, re-runs phase with `SKIP_RETRY` |
 
 **Auto-delegation:** When `batch.phase2: true` or `batch.phase3: true` in `config.yaml`, the default mode automatically delegates to submit-only. The trigger Lambda doesn't need to know about batch mode.
@@ -421,9 +431,8 @@ The `ecs_entrypoint.py` supports three execution modes:
 2. Runs the phase — cached results return instantly, uncached requests collected
 3. Submits collected requests as one xAI batch job
 4. Writes `batch_job#{batch_id}` to DynamoDB (status: `pending`)
-5. Invokes `nat_manager(delete)` to tear down NAT Gateway
-6. Scales OpenSERP service to 0
-7. Exits with success
+5. Stops OpenSERP if the task started it
+6. Exits with success (status 75 when a Phase 2 round was handed to the poller)
 
 **Retrieve-only flow:**
 1. Downloads batch results from Grok API
@@ -431,8 +440,7 @@ The `ecs_entrypoint.py` supports three execution modes:
 3. Re-runs the phase with `SKIP_RETRY=true` — all requests hit cache
 4. Uploads results to S3
 5. Updates job status to `retrieved`
-6. Tears down networking
-7. Triggers next pipeline stage (dedup/Phase 3)
+6. Triggers the next pipeline stage (dedup gate / Phase 3); networking teardown is left to `nat_teardown`
 
 ## Recent Features (2026-06)
 
@@ -442,7 +450,7 @@ On startup, `DynamoCacheBackend` performs a single DynamoDB scan to load all cac
 
 ### DynamoDB Materialization
 
-Phase 3 can materialize entities directly from DynamoDB instead of downloading from S3. If `get_entity_store()` returns a store, `_materialize_from_dynamo()` reads all entities and writes them as local files, using the stored `filename` field (falling back to entity ID). This is faster than S3 download for large entity sets.
+Removed. The DynamoDB entity store no longer exists: S3 (`output/<entity>/*.json`) is the sole entity store, and `ecs_entrypoint._materialize_from_dynamo()` is a deprecated no-op that always returns False. DynamoDB holds only cache, queue and coordination rows.
 
 ### Incremental Dedup
 
@@ -450,7 +458,7 @@ Dedup scripts track the last run time in DynamoDB (`dedup_run#{entity_type}`). O
 
 ### Auto-Trigger Phase 3
 
-After Phase 2 dedup detection completes, if `_dedup_has_no_pending()` returns True (zero duplicate groups in all reports), Phase 3 is auto-triggered via the trigger Lambda without waiting for human review. The delayed networking teardown is only scheduled when duplicates exist.
+After Phase 2 dedup detection completes, `_dedup_gate_decision` returns `auto_proceed` only when all reports are present with zero duplicate groups and the corpus is under `DEDUP_ZERO_SUSPICION_THRESHOLD` (500) entities; Phase 3 is then triggered via the trigger Lambda without waiting for human review (unless provenance validation holds it in `block` mode). Otherwise the gate blocks and notifies.
 
 ### Prompt Validation
 
@@ -472,15 +480,15 @@ When dedup merge deletes a local entity file, `track_deletion()` records it in `
 
 ### OpenSERP Circuit Breaker
 
-`openserp_enrichment.py` tracks consecutive failures. After 5 consecutive empty responses or errors, the circuit breaker opens and all remaining searches are skipped. Resets on any successful response.
+`src/enrichment/openserp_enrichment.py` tracks consecutive failures. After 5 consecutive empty responses or errors, the circuit breaker opens and all remaining searches are skipped. Resets on any successful response.
 
 ### Configurable Intervals (CloudFormation)
 
 Timing constants are now CloudFormation parameters:
 - `BatchPollerIntervalMinutes` (default 5)
 - `ReconciliationIntervalMinutes` (default 15)
-- `NatWaitSeconds` (default 180)
-- `TeardownDelayMinutes` (default 30)
+- `NatWaitSeconds` (default 270)
+- `TeardownDelayMinutes` is still a parameter, but teardown is now owned by the 4-hour `nat_teardown` schedule (see AWS Networking Lifecycle)
 
 ### Batch Poller State Machine
 

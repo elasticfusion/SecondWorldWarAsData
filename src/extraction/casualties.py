@@ -13,10 +13,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import ulid
 
-from src.grok_client import GrokClient, BatchModeCollecting, GrokTruncationError
+from src.grok_client import (
+    BatchModeCollecting,
+    GrokClient,
+    GrokIdentityError,
+    GrokNoJsonError,
+    GrokTruncationError,
+    for_chapter_book,
+)
 from src.json_schemas import CASUALTY_ITEM_SCHEMA
 from src.utils.json_validator import _fix_invalid_ulids
 from src.utils.observe import observe, observe_error, observe_warn
+from src.utils.entity_records import is_record_file
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +32,7 @@ logger = logging.getLogger(__name__)
 GroupUnitKeyIndex = List[Tuple[str, str, Any]]
 
 
+@for_chapter_book
 def extract_casualties(
     event_file: Path,
     output_root: Path,
@@ -88,14 +97,13 @@ def extract_casualties(
 
     casualties = []
 
-    # Batch extract from all sub-events with casualty mentions
-    batch_results = _batch_extract_casualties(
+    # Batch extract from all sub-events with casualty mentions - or the chapter's paragraph windows
+    batch_results = _ask_casualties(
+        event_file,
+        {"Event": event},
         sub_events,
         grok_client,
-        dates_index,
-        places_index,
-        people_index,
-        people_groups_index,
+        (dates_index, places_index, people_index, people_groups_index),
     )
 
     # Process results for each sub-event
@@ -129,15 +137,10 @@ def extract_casualties(
                 )
                 casualties.append(casualty)
             except Exception as e:
-                logger.error("Failed to build casualty: %s", e)
+                _observe_build_failed(chapter, sub_event_id, casualty_data, e)
 
-    # Save casualties
-    for casualty in casualties:
-        try:
-            _save_casualty(casualty, casualties_dir)
-        except Exception as e:
-            casualty_id = casualty.get("CasualtyID", "unknown")
-            logger.error("Failed to save casualty %s: %s", casualty_id, e)
+    # Save casualties: each statement once
+    _save_new(casualties, casualties_dir)
 
     # #7 PATTERN-8: casualties had NO yield rollup, so a {}-batch -> [] (a dropped/empty extraction)
     # was invisible. Emit a canonical produced-count rollup so the per-event yield is always a loud,
@@ -145,6 +148,120 @@ def extract_casualties(
     _observe_casualties_rollup(event_id, len(sub_events), len(casualties))
 
     return casualties
+
+
+def _ask_casualties(
+    event_file: Path,
+    real: Dict[str, Any],
+    sub_events: List[Dict[str, Any]],
+    grok_client: GrokClient,
+    indexes: tuple,
+) -> Dict[str, List[Dict[str, Any]]]:
+    """{real Sub-eventID: casualty items} ({} when nothing could be asked - said where).
+
+    Discovery in the chapter's paragraph windows of the parsed text (src/extraction/windows): one
+    window per request, the raw text only, each item attributed to the REAL sub-event holding its
+    quote. Without a parsed file: the sub-events, as before."""
+    from src.extraction import windows
+
+    dates_index, places_index, people_index, groups_index = indexes
+    wev = windows.window_event_for(event_file, windows.window_size())
+    if wev is None:
+        return _batch_extract_casualties(
+            sub_events,
+            grok_client,
+            dates_index,
+            places_index,
+            people_index,
+            groups_index,
+        )
+    if windows.unusable(wev, real, "casualties"):
+        return {}
+    found = _batch_extract_casualties(
+        wev["Event"]["Sub-events"],
+        grok_client,
+        dates_index,
+        places_index,
+        people_index,
+        groups_index,
+        chunk_size=1,
+    )
+    return windows.attribute_found(found, wev, real, "casualties")
+
+
+def _save_new(casualties: List[Dict[str, Any]], casualties_dir: Path) -> None:
+    """Save each casualty statement once (entity_records.mention_identity - the ONE statement
+    rule): a re-run of a chapter used to write every casualty again under a new id."""
+    seen = _existing_statements(casualties_dir)
+    for casualty in casualties:
+        key = _casualty_statement(casualty)
+        if key in seen:
+            continue
+        try:
+            _save_casualty(casualty, casualties_dir)
+            seen.add(key)
+        except Exception as e:
+            casualty_id = casualty.get("CasualtyID", "unknown")
+            logger.error("Failed to save casualty %s: %s", casualty_id, e)
+
+
+def _casualty_statement(casualty: Dict[str, Any]) -> tuple:
+    """A casualty record's identity: its statement (entity_records.mention_identity - the ONE
+    statement rule) AND its claim. One quote holds several records ("100 killed and 200 wounded";
+    one per side; one per unit of a multi-unit passage), so the same quote of the same sub-event
+    is one record only for the same type, side, units and people. The same fields for a saved
+    record and a new one."""
+    from src.utils.entity_records import mention_identity
+
+    source = casualty.get("source") or {}
+    statement = mention_identity(
+        {
+            "Sub-eventID": source.get("Sub-eventID") or "",
+            "EventID": source.get("EventID") or "",
+            "original_text": casualty.get("original_text"),
+            "type": casualty.get("type"),
+            "side": casualty.get("side"),
+            "description": casualty.get("description") or "",
+        }
+    )
+    return statement + (
+        _token(casualty.get("type")),
+        _token(casualty.get("side")),
+        _names(casualty.get("impacted_organizations")),
+        _names(casualty.get("impacted_people")),
+    )
+
+
+def _token(value: Any) -> str:
+    """A claim field as a hashable, case-free string (an LLM may send a list or dict)."""
+    return str(value or "").strip().casefold()
+
+
+def _names(items: Any) -> tuple:
+    """The sorted names of a record's impacted_* list (strings or {"name": ...})."""
+    out = []
+    for item in items or []:
+        name = item.get("name") if isinstance(item, dict) else item
+        if name:
+            out.append(str(name).strip().casefold())
+    return tuple(sorted(out))
+
+
+def _existing_statements(casualties_dir: Path) -> set:
+    """The statement keys (``_casualty_statement``) of the casualties already saved."""
+    keys = set()
+    for f in casualties_dir.glob("*.json"):
+        if not is_record_file(f):
+            continue  # the index and the run's state files (.processed_events.json) hold no record
+        try:
+            keys.add(_casualty_statement(json.loads(f.read_text(encoding="utf-8"))))
+        except (OSError, ValueError, AttributeError) as e:
+            logger.warning(
+                "OBSERV casualties.unreadable_record file=%s err=%s: not deduplicated against",
+                f.name,
+                type(e).__name__,
+            )
+    return keys
 
 
 def _observe_casualties_rollup(
@@ -250,7 +367,14 @@ def _batch_extract_casualties(
         _cache_key = hashlib.sha256(
             f"casualties:v1:{_model}:0.1:{_seids}:{_chunk_sig}".encode("utf-8")
         ).hexdigest()
-        return _call_and_parse_casualties(grok_client, prompt, cache_key=_cache_key)
+        found = _call_and_parse_casualties(grok_client, prompt, cache_key=_cache_key)
+        # a one-block request's answer is all that block's, whatever key Grok echoes (a window,
+        # or a lone sub-event block on the per-sub-event path)
+        if len(chunk) == 1:
+            from src.extraction.windows import own_answer
+
+            return own_answer(chunk[0][0], found, "casualties")
+        return found
 
     return extract_with_chunk_halving(chunks, _extract_chunk, "casualties")
 
@@ -300,7 +424,9 @@ def _call_and_parse_casualties(
     max_retries = 3
     for attempt in range(max_retries):
         try:
-            response = grok_client.chat_completion(
+            # extract_json, not chat_completion: the answer is verified as THIS request's
+            # (src/utils/request_identity) and parsed/repaired in one place
+            response = grok_client.extract_json(
                 prompt,
                 use_cache=(attempt == 0),
                 cache_type="casualties",
@@ -321,6 +447,15 @@ def _call_and_parse_casualties(
                 attempt + 1,
             )
             raise
+        except GrokIdentityError:
+            raise  # another request's answer (alerted by the client): never a "no casualties"
+        except GrokNoJsonError:
+            # an answer with no JSON in it: re-asking pays again for the same prose (a malformed
+            # JSON answer is retried below - a fresh one often parses)
+            observe_error(
+                "casualties", "extract_error", produced=0, reason="no_json_object"
+            )
+            return {}
         except Exception as e:
             if attempt < max_retries - 1:
                 logger.warning(
@@ -342,8 +477,10 @@ def _call_and_parse_casualties(
     return {}
 
 
-def _parse_casualty_response(response: str) -> Dict[str, List[Dict[str, Any]]]:
-    """Parse raw Grok response into validated casualty items by sub-event."""
+def _parse_casualty_response(response: Any) -> Dict[str, List[Dict[str, Any]]]:
+    """Validated casualty items by sub-event, from the parsed answer (or raw response text)."""
+    if not isinstance(response, str):
+        return _casualties_by_sub_event(response)
     start = response.find("{")
     end = response.rfind("}") + 1
     if start == -1 or end == 0:
@@ -353,7 +490,10 @@ def _parse_casualty_response(response: str) -> Dict[str, List[Dict[str, Any]]]:
             "casualties", "extract_error", produced=0, reason="no_json_object"
         )
         return {}
-    parsed = json.loads(response[start:end])
+    return _casualties_by_sub_event(json.loads(response[start:end]))
+
+
+def _casualties_by_sub_event(parsed: Any) -> Dict[str, List[Dict[str, Any]]]:
     if not isinstance(parsed, dict):
         # #6 PATTERN-8: parsed to a non-dict (e.g. a bare list/scalar) — unusable, batch dropped.
         observe_error("casualties", "extract_error", produced=0, reason="not_a_dict")
@@ -376,16 +516,16 @@ def _book_name_from_path(event_file: Path) -> str:
 
 
 def _first_paragraph_number(sub_event: Dict[str, Any]) -> Optional[int]:
-    """Extract first paragraph number from sub-event fulltext keys."""
-    fulltext = sub_event.get("Sub-event_fulltext", {})
-    for key in fulltext:
-        # Keys like "Paragraph_7"
-        if key.startswith("Paragraph_"):
-            try:
-                return int(key.split("_", 1)[1])
-            except (ValueError, IndexError):
-                pass
-    return None
+    """The sub-event's first (lowest) paragraph number, from its fulltext keys (padded
+    "Paragraph_007" or older "Paragraph_7"); None when it has none."""
+    from src.utils.paragraph_numbers import paragraph_number
+
+    nums = [
+        n
+        for n in (paragraph_number(k) for k in sub_event.get("Sub-event_fulltext", {}))
+        if n is not None
+    ]
+    return min(nums) if nums else None
 
 
 _COUNT_RE = re.compile(r"[\d,]+")
@@ -467,6 +607,12 @@ def _has_casualty_mention(text: str) -> bool:
         "surrender",
         "men lost",
         "lost men",
+        # a 3-paragraph window must carry its own keyword (a whole sub-event used to pass on one
+        # anywhere in it): plain loss wording a window may hold alone. A false positive costs one
+        # small request; a miss loses the casualty.
+        "lost",
+        "knocked out",
+        "evacuated",
     ]
     text_lower = text.lower()
     return any(keyword in text_lower for keyword in keywords)
@@ -576,6 +722,24 @@ def _set_direct_anchors(
         casualty["PlaceID"] = place_id
 
 
+def _observe_build_failed(
+    chapter: str, sub_event_id: Any, casualty_data: Any, error: Exception
+) -> None:
+    """One casualty that could not be built: dropped, said with what identifies it."""
+    data = casualty_data if isinstance(casualty_data, dict) else {}
+    logger.error(
+        "OBSERV casualties.build_failed chapter=%s sub_event=%s type=%s quote=%r reason=%s: "
+        "%s - this casualty is dropped (fix the cause and re-run casualties for the chapter)",
+        chapter,
+        sub_event_id,
+        str(data.get("type") or "")[:40],
+        str(data.get("original_text") or "")[:80],
+        type(error).__name__,
+        error,
+        exc_info=True,
+    )
+
+
 def _resolve_impacted_entities(
     casualty_data: Dict[str, Any],
     casualty: Dict[str, Any],
@@ -594,8 +758,15 @@ def _resolve_impacted_entities(
         "impacted_equipment": lambda d: _resolve_equipment(d, equipment_index or {}),
     }
     for field, resolver in resolvers.items():
-        if field in casualty_data:
-            casualty[field] = resolver(casualty_data[field])
+        value = casualty_data.get(field)
+        if isinstance(value, list):
+            casualty[field] = resolver(value)
+        elif value is not None:  # a null answer is "none"; another shape is malformed
+            logger.info(
+                "OBSERV casualties.field_malformed field=%s shape=%s: ignored",
+                field,
+                type(value).__name__,
+            )
 
 
 def _resolve_equipment(
@@ -616,7 +787,7 @@ def _resolve_equipment(
             item = {"name": item}
         if not isinstance(item, dict):
             continue
-        name = item.get("name", "")
+        name = _name_of(item)
         if not name:
             continue
         res = resolve_designation(name)
@@ -624,9 +795,7 @@ def _resolve_equipment(
         eq_id = equipment_index.get(canonical.lower()) or equipment_index.get(
             name.lower()
         )
-        relation = item.get("relation")
-        if relation not in _VALID_EQUIPMENT_RELATIONS:
-            relation = "other"
+        relation = _known(item.get("relation"), _VALID_EQUIPMENT_RELATIONS, "other")
         resolved.append({"EquipmentID": eq_id, "name": name, "relation": relation})
     return resolved
 
@@ -642,13 +811,9 @@ def _init_casualty_record(
     """Build the base casualty record (id, clamped side, source) before enrichment."""
     return {
         "CasualtyID": str(ulid.new()),
-        "type": casualty_data.get("type", "casualties"),
-        "side": (
-            casualty_data.get("side", "unknown")
-            if casualty_data.get("side", "unknown") in VALID_SIDES
-            else "unknown"
-        ),
-        "description": casualty_data.get("description", ""),
+        "type": casualty_data.get("type") or "casualties",
+        "side": _known(casualty_data.get("side"), VALID_SIDES, "unknown"),
+        "description": casualty_data.get("description") or "",
         "source": {
             "EventID": event_id,
             "Sub-eventID": sub_event_id,
@@ -678,7 +843,7 @@ def _attach_logistics(
         date_iso = casualty["date"].get("iso_date")
         date_id = casualty["date"].get("DateID")
     links = resolve_logistics(
-        casualty_data.get("impacted_logistics", []),
+        casualty_data.get("impacted_logistics") or [],
         group_ids,
         date_iso,
         logistics_index,
@@ -807,7 +972,7 @@ def _event_year_lookup(dates_dir: Path) -> Dict[str, Optional[int]]:
     if not dates_dir.exists():
         return {}
     for f in dates_dir.glob("*.json"):
-        if f.name == "index.json":
+        if not is_record_file(f):
             continue
         _collect_event_years(f, years)
     # single-year events -> that year; multi-year -> None (ambiguous, don't guess)
@@ -931,9 +1096,10 @@ _ROLE_MAP = {
 }
 
 
-def _normalize_role(role: str) -> str:
-    """Normalize freeform role to controlled vocabulary."""
-    role_lower = role.lower().strip()
+def _normalize_role(role: Any) -> str:
+    """Normalize freeform role to controlled vocabulary (a missing or null role - Grok answers
+    ``"role": null`` - is the default, never a crash that drops the whole casualty)."""
+    role_lower = str(role or "").lower().strip()
     if role_lower in VALID_ROLES:
         return role_lower
     return _ROLE_MAP.get(role_lower, "suffered_casualties")
@@ -951,7 +1117,7 @@ def _resolve_organizations(
     resolved = []
     for org in orgs:
         if isinstance(org, dict):
-            org_name = org.get("name", "")
+            org_name = _name_of(org)
             if not org_name:
                 continue
             org_id = resolve_group_id(org_name, people_groups_index)
@@ -959,7 +1125,7 @@ def _resolve_organizations(
                 {
                     "PeopleGroupID": org_id,
                     "name": org_name,
-                    "nationality": org.get("nationality", ""),
+                    "nationality": org.get("nationality") or "",
                     "role": _normalize_role(org.get("role", "")),
                 }
             )
@@ -975,7 +1141,7 @@ def _resolve_people(
         if isinstance(person, str):
             person = {"name": person, "casualty_type": ""}
         if isinstance(person, dict):
-            person_name = person.get("name", "")
+            person_name = _name_of(person)
             if not person_name:
                 continue
             person_id = _find_person_id(person_name, people_index)
@@ -983,7 +1149,7 @@ def _resolve_people(
                 {
                     "PersonID": person_id,
                     "name": person_name,
-                    "casualty_type": person.get("casualty_type", ""),
+                    "casualty_type": person.get("casualty_type") or "",
                 }
             )
     return resolved
@@ -1002,12 +1168,25 @@ def _resolve_places(
         if isinstance(place, str):
             place = {"name": place}
         if isinstance(place, dict):
-            place_name = place.get("name", "")
+            place_name = _name_of(place)
             if not place_name:
                 continue
             place_id = _match_place_id(place_name, places_index)
             resolved.append({"PlaceID": place_id, "name": place_name})
     return resolved
+
+
+def _known(value: Any, allowed: Any, default: str) -> str:
+    """``value`` when it is one of ``allowed`` (text), else ``default`` - never a crash on a
+    list or dict answer."""
+    return value if isinstance(value, str) and value in allowed else default
+
+
+def _name_of(item: Dict[str, Any]) -> str:
+    """An answer item's name as text ("" when absent, null or not text: the item is skipped -
+    a malformed one never drops the casualty holding it)."""
+    name = item.get("name")
+    return name.strip() if isinstance(name, str) else ""
 
 
 def _find_person_id(name: str, index: Dict[str, str]) -> Optional[str]:

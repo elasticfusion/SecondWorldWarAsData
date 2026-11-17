@@ -116,7 +116,8 @@ ENTITY_REGISTRY = [
     EntitySpec(
         "source_section",
         "src.schemas.source_section_output:SOURCE_SECTION_OUTPUT_SCHEMA",
-        "output/source_section/*.json",
+        # per book, beside its events (output/content/<book>/source_section/): NOT output/source_section
+        "output/content/*/source_section/*.json",
         "src.extraction.source_section",
         "SourceSectionID",
     ),

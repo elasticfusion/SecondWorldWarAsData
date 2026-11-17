@@ -10,6 +10,11 @@ zero) — per the cost/architecture decisions.
 > facets + geo, co-ranked) which needs SQL joins + PostGIS. See
 > [SCHEMA_DESIGN_rag_store_tradeoff.md](SCHEMA_DESIGN_rag_store_tradeoff.md).
 
+> **Implementation status (2026-11-16):** this is the target design. `src/loader/` (`schema.sql`,
+> `transform.py`, `load.py`) loads `output/` into a SQLite dialect of the relational model; the
+> Postgres path (pgvector, PostGIS, HNSW, `schema_pg_extras.sql`) is not written yet
+> (`src/loader/load.py` docstring). The `~40k entity records` figure is from the original snapshot.
+
 ## The model in one sentence
 
 Every extracted fact links, via `EventID`/`Sub_eventID` and per-mention IDs,

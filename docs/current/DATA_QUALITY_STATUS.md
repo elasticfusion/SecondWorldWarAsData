@@ -3,10 +3,18 @@
 > **See also:** [Data Quality — Safeguards & Guarantees](dataquality/DATA_QUALITY_SAFEGUARDS.md) — how validation is enforced on every write (central guard, version-awareness, merge/enrichment coverage).
 
 
-**Last Updated:** 2026-10-05  
-**Schema Version:** 2.5
+**Last Updated:** 2026-11-16  
+**Schema Version:** per entity (`ENTITY_SCHEMA_VERSIONS` in `src/schemas/__init__.py`; no single global number)
 
-> This document is the **canonical source** for entity counts and enrichment
+> **STALE SNAPSHOT (flagged 2026-11-16).** Every count, rate and "Known Data Quality Issue" below
+> was measured on corpora from 2026-06 to 2026-10, before the paragraph-window entity discovery
+> (`src/extraction/windows.py`), the deterministic event IDs and the Phase 2 provenance validation
+> (`scripts/validate_provenance.py`). Do not quote these figures as current. For a live view run
+> `scripts/validate_phase2.py`, `scripts/validate_provenance.py` and
+> `scripts/utils/referential_integrity_audit.py` against the current `output/`; the numbers here
+> are to be regenerated after the next full run.
+
+> This document was the **canonical source** for entity counts and enrichment
 > rates. Other docs (e.g. `features/README.md`) link here rather than
 > duplicating numbers. Counts are a dated snapshot and drift with each pipeline
 > run; the enrichment/quality columns below predate the 2026-09 ingestion work
@@ -73,7 +81,7 @@
 
 ## Cross-Reference Integrity
 
-Regenerate with `scripts/referential_integrity_audit.py` (read-only; writes
+Regenerate with `scripts/utils/referential_integrity_audit.py` (read-only; writes
 `docs/current/dataquality/referential_integrity_report.json`). Snapshot **2026-10-10**
 (5,076 dangling refs total; PK counts: people 1,714 / places 2,855 / groups 1,682 /
 equipment 551 / dates 1,912 / events 5,953):
@@ -113,12 +121,13 @@ contains none that resolve — tracked.)
 
 ## Validation Tools
 
-- `scripts/validate_all_output.py` — Schema validation across all entities
-- `scripts/json_quality_report.py` — Field completeness report
-- `scripts/find_duplicate_people.py` — People dedup detection
-- `scripts/find_duplicate_equipment.py` — Equipment dedup detection
-- `scripts/find_duplicate_groups.py` — Groups dedup detection
-- `scripts/find_duplicate_places_v2.py` — Places dedup detection
+- `scripts/utils/validate_all_output.py` — Schema validation across all entities
+- `scripts/utils/json_quality_report.py` — Field completeness report
+- `scripts/validate_phase2.py` / `scripts/validate_provenance.py` — post-Phase-2 schema, traceability and quote checks
+- `src/dedup/find_duplicate_people.py` — People dedup detection
+- `src/dedup/find_duplicate_equipment.py` — Equipment dedup detection
+- `src/dedup/find_duplicate_groups.py` — Groups dedup detection
+- `src/dedup/find_duplicate_places_v2.py` — Places dedup detection
 
 ---
 

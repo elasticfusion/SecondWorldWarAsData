@@ -12,6 +12,7 @@ from typing import Any, Dict, Optional
 import ulid
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from src.utils.entity_records import merge_mentions
 from src.grok_client import GrokClient, BatchModeCollecting
 from src.extraction.starvation_signal import (
     note_empty_fulltext_skip,
@@ -568,9 +569,9 @@ def create_people_prompt(
     sub_event_summary = sub_event.get("Sub-event_summary", "")
     fulltext = sub_event.get("Sub-event_fulltext", {})
 
-    text_parts = []
-    for key in sorted(fulltext.keys()):
-        text_parts.append(fulltext[key])
+    from src.utils.paragraph_numbers import in_paragraph_order
+
+    text_parts = [text for _key, text in in_paragraph_order(fulltext)]
     text = "\n\n".join(text_parts)
 
     if not text.strip():
@@ -751,18 +752,10 @@ def _update_missing_fields(
 
 
 def _merge_event_mentions(existing: Dict[str, Any], new_person: Dict[str, Any]) -> None:
-    """Append new event mentions onto ``existing`` in place, deduplicating by Sub_eventID."""
+    """Append new event mentions onto ``existing`` in place (src/utils/entity_records
+    .merge_mentions: the same statement of the same sub-event is one mention)."""
     existing_mentions = existing.get("event_mentions", [])
-    new_mentions = new_person.get("event_mentions", [])
-    seen_sub_events = {
-        m.get("Sub_eventID") for m in existing_mentions if m.get("Sub_eventID")
-    }
-    for m in new_mentions:
-        sub_id = m.get("Sub_eventID")
-        if not sub_id or sub_id not in seen_sub_events:
-            existing_mentions.append(m)
-            if sub_id:
-                seen_sub_events.add(sub_id)
+    merge_mentions(existing_mentions, new_person.get("event_mentions", []))
     existing["event_mentions"] = existing_mentions
 
 

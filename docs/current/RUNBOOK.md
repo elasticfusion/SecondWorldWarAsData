@@ -12,15 +12,16 @@ Common operational tasks for the WWII Data Extraction Pipeline.
 # Re-run Phase 1 (parse)
 python phase1_parse.py
 
-# Re-run Phase 2 (extract) — uses cache, only processes new/failed files
-python phase2_extract.py
+# Re-run Phase 2 (extract) for one book — uses the cache, only processes new/failed files.
+# Without --book ALL parsed chapters are processed; --expected-count N aborts if the
+# number of chapters to process differs (run-scope guard).
+python phase2_extract.py --book TheSiegfriedLineCampaign
 
 # Re-run Phase 3 (enrich) — skips already-enriched entities
 python phase3_enrich_data.py
-
-# Force full re-process (ignores cache — expensive)
-python phase2_extract.py --force
 ```
+
+To force re-extraction of an entity type, see "Force Re-extraction of Specific Entity Type" below. For a full dev reset use `scripts/e2e_reset.sh --env dev --full`: it keeps the api-cache `grok`/`fetch`/`search`/`url`/`place_coords`/`metrics` rows (Wikipedia and Grokipedia lookups are `search#wikipedia#…` / `search#grokipedia#…` rows), the human dedup `exclusion#` rows and `contentrepository/` (`scripts/e2e_reset_data.py`).
 
 ### AWS
 
@@ -53,12 +54,12 @@ aws dynamodb scan --table-name $TABLE \
   --expression-attribute-values '{":p":{"S":"lock#"}}' \
   --projection-expression "cache_key" --region $REGION
 
-# Delete a specific lock
+# Delete a specific lock (key = lock#{env}-wwii-<phase>, plus #<book> when multi-doc mode is on)
 aws dynamodb delete-item --table-name $TABLE \
-  --key '{"cache_key":{"S":"lock#phase2-extract"}}' --region $REGION
+  --key '{"cache_key":{"S":"lock#dev-wwii-phase2-extract"}}' --region $REGION
 
-# Nuclear: delete ALL locks
-for key in lock#phase1-parse lock#phase2-extract lock#phase3-enrich lock#nat-manager; do
+# Nuclear: delete ALL phase locks (the phase suffixes are ecs_entrypoint.PHASE_SUFFIXES)
+for key in lock#dev-wwii-phase1-parse lock#dev-wwii-phase2-extract lock#dev-wwii-phase3-enrich lock#dev-wwii-import; do
   aws dynamodb delete-item --table-name $TABLE --key "{\"cache_key\":{\"S\":\"$key\"}}" --region $REGION
 done
 ```
@@ -74,8 +75,8 @@ No lock files — just re-run the phase.
 ### Access the UI (AWS)
 
 ```bash
-# Get the function URL
-aws lambda get-function-url-config --function-name dev-wwii-dedup-ui --region us-east-1
+# The UI is behind API Gateway; its URL is the DedupReviewUrl stack output
+python3 scripts/deploy_aws.py status --env dev
 ```
 
 Open the URL in a browser. Review groups, merge/skip/exclude, then click "Mark Review Complete" to unblock Phase 3.
@@ -83,9 +84,8 @@ Open the URL in a browser. Review groups, merge/skip/exclude, then click "Mark R
 ### Force-skip dedup review
 
 ```bash
-aws dynamodb put-item --table-name dev-wwii-api-cache \
-  --item '{"cache_key":{"S":"dedup_review"},"complete":{"BOOL":true},"reviewed":{"M":{}}}' \
-  --region us-east-1
+# The gate reads dedup/review_status.json from the data bucket (lambda_handlers/dedup_gate_handler.py STATUS_KEY)
+echo '{"complete": true}' | aws s3 cp - s3://dev-wwii-data-pipeline/dedup/review_status.json --region us-east-1
 ```
 
 ### Re-run dedup detection (local)
@@ -128,9 +128,9 @@ aws dynamodb update-item --table-name dev-wwii-api-cache \
 ### Batch job state machine
 
 ```
-pending  → poller checks xAI API
-ready    → poller confirmed complete, launches ECS retrieve task
-retrieved → ECS task downloaded results, processed entities
+pending  → poller checks xAI API (Phase 2 also waits up to 5 min in-task per round first)
+ready    → poller confirmed complete, launches ECS --retrieve-only task
+retrieved → ECS task downloaded results, processed entities (a later round may submit again; cap 8 rounds)
 failed   → xAI batch failed (check API dashboard)
 ```
 
@@ -205,13 +205,13 @@ aws dynamodb delete-item --table-name $TABLE \
 
 ```bash
 # Tail logs (last 5 minutes)
-bash scripts/monitor_logs.sh 5m
+bash scripts/utils/monitor_logs.sh 5m
 
 # Pipeline status summary
-python scripts/pipeline_status.py
+python scripts/utils/pipeline_status.py
 
 # Quick CLI status
-bash scripts/pipeline_status.sh
+bash scripts/utils/pipeline_status.sh
 ```
 
 ---
@@ -236,7 +236,7 @@ aws lambda invoke --function-name dev-wwii-nat-manager \
 
 ```bash
 # View cache contents
-python scripts/review_cache.py
+python scripts/utils/review_cache.py
 
 # Clear cache for a specific book
 python scripts/cleanup_book_cache.py --book TheSiegfriedLineCampaign
@@ -246,20 +246,20 @@ python scripts/cleanup_book_cache.py --book TheSiegfriedLineCampaign
 
 ```bash
 # Full schema validation
-python scripts/validate_all_output.py
+python scripts/utils/validate_all_output.py
 
 # Quick quality report
-python scripts/json_quality_report.py
+python scripts/utils/json_quality_report.py
 ```
 
 ### Enrichment not progressing
 
 ```bash
 # Check enrichment coverage
-python scripts/enrichment_stats.py
+python scripts/utils/enrichment_stats.py
 
 # Diagnose specific entity
-python scripts/diagnose_enrichment.py output/people/some_person.json
+python scripts/utils/diagnose_enrichment.py output/people/some_person.json
 ```
 
 ---
@@ -324,7 +324,7 @@ aws ecs list-tasks --cluster dev-wwii-pipeline --desired-status STOPPED --region
 
 # Clear stale lock manually
 aws dynamodb delete-item --table-name dev-wwii-api-cache \
-  --key '{"cache_key":{"S":"lock#phase2-extract"}}' --region us-east-1
+  --key '{"cache_key":{"S":"lock#dev-wwii-phase2-extract"}}' --region us-east-1
 
 # Re-trigger manually
 aws lambda invoke --function-name dev-wwii-trigger \
@@ -380,16 +380,18 @@ aws ce get-cost-and-usage \
 
 | Cause | Fix |
 |-------|-----|
-| NAT stuck up (openserp_manager not running) | Force delete via nat_manager |
+| NAT stuck up (nat-teardown / openserp_manager not running) | Force delete via nat_manager |
 | ECS task in infinite loop | Stop task, check logs, fix bug |
 | Batch poller launching tasks repeatedly | Check `batch_job#` entries in DynamoDB — mark as `failed` |
 | Spot interruption loop (task keeps getting interrupted) | Temporarily switch to regular Fargate in task definition |
 
 ### Preventive Controls
 
-- **2h NAT guardrail:** openserp_manager force-tears down NAT after 2h regardless of state
+- **NAT teardown:** `nat-teardown` (every 4 h) deletes NAT when nothing is queued or running; `idle-backstop-reaper` (hourly) force-tears-down on a confirmed no-progress stall
+- **2h NAT guardrail:** openserp_manager force-tears down NAT after 2h with no pipeline tasks
 - **AWS Budget:** $75/month with 80% alert
-- **Batch job 24h timeout:** Poller marks jobs `failed` after 24 hours
+- **Batch rounds cap:** Phase 2 stops after `batch.max_rounds` (8) rounds and raises `batch.rounds_over_cap`
+- **Batch job 24h rule:** a batch over 24 h old with some successes is forced `complete` by the poller
 - **S3 lifecycle rules:** Temp files expire after 7 days, cache after 90 days
 
 ---
@@ -454,7 +456,7 @@ aws dynamodb delete-item --table-name dev-wwii-api-cache \
 pending  → poller checks xAI API status every 5 min
 ready    → poller confirmed complete, launches ECS retrieve task
 complete → retrieve task processed results successfully
-failed   → xAI batch failed OR 24h timeout exceeded
+failed   → xAI batch failed
 ```
 
 If retrieve fails, job stays `ready` and poller retries on next cycle without re-checking Grok.

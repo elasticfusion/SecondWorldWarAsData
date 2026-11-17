@@ -380,14 +380,13 @@ def _section_book_pair(sf: Path) -> Optional[Tuple[str, str]]:
 
 def _build_book_section_index(out: Path) -> Dict[str, str]:
     """Map lowercased book name -> SourceSectionID ULID from the committed source_section records
-    (out/source_section/*.json). The source_section is the canonical source entity; this gives every
+    (content/<book>/source_section/*.json; src/utils/source_sections). The source_section is the canonical source entity; this gives every
     image link a durable ULID attribution back to its source. Fail-safe -> {}."""
     out_map: Dict[str, str] = {}
     try:
-        sec_dir = out / "source_section"
-        if not sec_dir.exists():
-            return out_map
-        for sf in sec_dir.glob("*.json"):
+        from src.utils.source_sections import iter_section_files
+
+        for sf in iter_section_files(out):
             pair = _section_book_pair(sf)
             if pair:
                 out_map.setdefault(pair[0], pair[1])

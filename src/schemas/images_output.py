@@ -49,6 +49,22 @@ IMAGES_OUTPUT_SCHEMA = {
         "caption_confidence": {"type": ["number", "null"]},
         "caption_method": make_nullable("string"),
         "needs_review": {"type": ["boolean", "null"]},
+        # Captioner's own map/photo/diagram verdict (kept so it is not silently discarded).
+        "vision_classification": make_nullable("string"),
+        # Map-vs-image decision (2.28, src/extraction/media_classify). map_check: not_map | map |
+        # pending_vision (ambiguous non-ibiblio image awaiting the Phase 3 Grok-vision check).
+        # map_check_basis: ibiblio_url | vision_required | grok_vision. When vision finds a map the
+        # Map entity is created and superseded_by_map_id points at it (provenance both ways).
+        "map_check": {
+            "type": ["string", "null"],
+            "enum": ["not_map", "map", "pending_vision", None],
+        },
+        "map_check_basis": make_nullable("string"),
+        "is_map": {"type": ["boolean", "null"]},
+        "map_vision_checked_at": make_nullable("string"),
+        # Undecided vision attempts; at the cap the image goes to a human (needs_review).
+        "map_vision_attempts": {"type": ["integer", "null"], "minimum": 0},
+        "superseded_by_map_id": ulid_field(nullable=True),
         # --- schema.org ImageObject/MediaObject-aligned additive fields (adopted 2026-10-27; see
         # docs/current/design/SCHEMA_ORG_REVIEW.md §5). All nullable; our strict idiom. Existing
         # url/local_copy/license/description/SourceSectionID(=isBasedOn)/PlaceMentionID/url_capture_date

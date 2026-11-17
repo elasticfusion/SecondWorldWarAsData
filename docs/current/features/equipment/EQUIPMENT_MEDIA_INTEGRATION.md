@@ -49,6 +49,8 @@ equipment:
   verify_media_with_vision: true   # Recommended (default: true)
 ```
 
+> The checked-in `config.yaml` currently sets `enable_enrichment: false` and `verify_media_with_vision: false` (cost). Vision-checked equipment images are then produced in Phase 3 (`src/enrichment/equipment_images.py`, called from `phase3_enrich_data._resolve_equipment_images`).
+
 ---
 
 ## Search Query Pattern
@@ -204,7 +206,7 @@ response = httpx.get(image_url, timeout=30, headers=headers, follow_redirects=Tr
 ## Related Documentation
 
 - **Error Handling:** `EQUIPMENT_ERROR_HANDLING.md` (archived 2026-10-11)
-- **Error Handling Spec:** `contextmanagement/Specs/error_handling.md` (Pattern 21)
+- **Error Handling Spec:** `docs/archive/contextmanagement/Specs/error_handling.md` (Pattern 21; archived 2026-03 spec)
 
 ---
 

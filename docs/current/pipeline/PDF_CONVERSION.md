@@ -1,8 +1,12 @@
 # PDF to Markdown Conversion
 
+**Last Updated:** 2026-11-16
+
 ## Status
 
-✅ **Supported** — `scripts/pdf_to_markdown.py`
+✅ **Supported for local, text-based PDFs** — `scripts/pdf_to_markdown.py` (pymupdf4llm).
+
+> **In AWS, PDFs are not converted this way.** A PDF uploaded to `contentrepository/` goes through Phase 0: the trigger Lambda scans it, splits it into page chunks and runs **Chandra OCR** on AWS Batch GPU; the OCR merge Lambda then sanitises, translates to English, splits into chapters, and publishes `contentrepository/<slug>/chapterN/chapterN-{meta.yaml,content.md}` (`lambda_handlers/ocr_merge_handler.py` -> `src/ingestion/ocr_promote.promote`). That path also handles scans and keeps the book's own figures (Phase 1 builds them from the PDF). See [OCR_OPERATIONS.md](../OCR_OPERATIONS.md) and [PIPELINE.md](../core/PIPELINE.md). Use this script only for a quick local conversion of a text PDF.
 
 ## Usage
 
@@ -25,7 +29,9 @@ The script uses **pymupdf4llm** (not raw PyMuPDF/fitz) to convert PDFs to struct
 2. Creates `contentrepository/<BookName>/chapter1/` with:
    - `chapter1-content.md` — extracted markdown
    - `chapter1-meta.yaml` — metadata template (fill in manually)
-3. Creates `contentrepository/<BookName>/sourcedocument/` and **moves the original PDF** there
+3. Creates `contentrepository/<BookName>/sourcedocument/` and **moves the original PDF** there (Phase 1 discovery skips `sourcedocument/`)
+
+`<BookName>` becomes the book slug and cannot be changed after ingestion (`src/ingestion/book_slug.py`).
 
 ## After Conversion
 
@@ -57,7 +63,7 @@ After conversion, review the content for:
 
 ## Handling Scanned PDFs
 
-pymupdf4llm works with text-based PDFs. For scanned documents, run OCR first:
+pymupdf4llm works with text-based PDFs. For scanned documents, upload the PDF to `contentrepository/` and let Phase 0 run Chandra OCR (see above). For a purely local run you can OCR first:
 
 ```bash
 pip install ocrmypdf

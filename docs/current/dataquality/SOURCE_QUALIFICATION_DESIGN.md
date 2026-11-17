@@ -1,6 +1,6 @@
 # Source Qualification — design
 
-**Status:** design agreed 2026-10-12 (owner). Schema change pending implementation.
+**Status:** design agreed 2026-10-12 (owner). PARTLY BUILT (checked 2026-11-16, factual status only; Phase 3 pass to re-review): the bibliography schema has `source_type` and `proximity` (`src/schemas/bibliography_output.py`) and `url_content_verdict._derive_qualification` fills a `source_qualification` object (`method: llm_assisted`).
 **Purpose:** let a reader (and the future RAG ranking + UI) judge *how a source qualifies* for an
 asserted fact — **qualification, not veracity**. "Primary" does not make a claim true; it qualifies
 it as a first-hand account. The reader must be in a position to make a quality judgement.

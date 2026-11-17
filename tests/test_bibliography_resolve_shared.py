@@ -33,8 +33,21 @@ def test_resolve_wrappers_use_scaffold(monkeypatch):
     cit = {"title": "Breakout", "author": ["Blumenson"]}
     br._resolve_book(None, cit, None, {})
     br._resolve_article(None, cit, None, {})
-    br._resolve_generic_entry(None, cit, None, {})
-    assert seen == ["Breakout", "Breakout", "Breakout"]
+    assert seen == ["Breakout", "Breakout"]
+
+
+def test_generic_entry_uses_the_verified_multi_source_search(monkeypatch):
+    """Untyped citations no longer take a title-only scaffold with an UNVERIFIED archive.org first
+    hit; they get the full verified search (NARA, OpenSERP, archive.org, Gutenberg, LLM).
+    """
+    calls = []
+    monkeypatch.setattr(
+        br, "_search_online_sources", lambda *a, **k: calls.append(a[3]) or None
+    )
+    cit = {"title": "Breakout", "author": ["Blumenson"]}
+    entry = {"verbatim_reference": "Blumenson, Breakout and Pursuit.", "citation": cit}
+    assert br._resolve_generic_entry(entry, cit, None, {}) is None
+    assert calls == ["Breakout"]
 
 
 def test_find_in_native_source_gate_and_label(monkeypatch):

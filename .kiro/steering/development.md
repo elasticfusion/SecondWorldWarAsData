@@ -1,0 +1,10 @@
+- MUST run all code through scripts/gate.sh before committing it to git
+- MUST, before committing code, pass independent MCP-based code and security sub-agent reviews.
+- MUST: all code must pass successfully through GitHub pipeline tests.
+- MUST: to find what calls a function, use trace_path from codebase-memory-mcp, not grep.
+- MUST: all code must have observability built in.
+- MUST: all generated data must have provenance back to its source. If LLM data does not include that, a deterministic mechanism must be put in place to find and fix it. If none of these are possible, the issue must be loudly called out.
+- MUST optimize for cost, AWS and Grok, unless the operator specifically overrides this.
+- MUST use DRY (don't repeat yourself) practices.
+- MUST: all log alerts must be actionable. "Benign" alerts are disallowed.
+- MUST: all code needs tests.

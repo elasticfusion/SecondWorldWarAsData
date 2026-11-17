@@ -1,6 +1,19 @@
 # File-Per-Person Implementation
 
-**Last Updated:** 2026-03-22
+**Last Updated:** 2026-11-16
+
+## How people are extracted (Phase 2)
+
+- People are discovered over fixed 3-paragraph windows of the raw parsed text (`src/extraction/windows.py`), one request per window
+  (`batch_parallel._extract_people`, `cache_type "people"`). The prompt asks for name (no rank), rank, unit, country, `position_at_event`,
+  `life_event` and a verbatim `original_text`.
+- Each item is settled against the source (`windows.settle`): a quote that is not in the window is dropped (`quote_unsupported`); the item is attributed to the
+  real sub-event whose paragraphs hold the quote.
+- Not-a-person filter: staff sections and units (`VIII Corps G-3`) are dropped (`_is_not_a_person`); ranks are stripped from the name (`_strip_rank`).
+- `PersonID` and every `MentionID` are minted by code (`people._mint_person_ids`); a model-supplied value is replaced.
+- Find-or-create is by normalized name (`people._normalize_name`); a repeat mention is merged by `entity_records.mention_identity` (same sub-event + same normalized quote = one mention).
+- Phase 2 also looks each new person up in Grokipedia/Wikipedia (`enrich_biographies.enrich_person_from_sources`, called from `people._enrich_person_phase2` /
+  `_enrich_person_batch_apply`), so `biographical_profile` can already be present at the end of Phase 2. Phase 3 enriches further (end of this page).
 
 ## Structure
 
@@ -12,7 +25,7 @@ output/people/
 ├── Bernard_Montgomery_01GHI789.json
 ├── Supreme_Commander_AEEF_01JKL012.json         # Title-based (potential duplicate)
 ├── Eisenhower_01MNO345.json                     # Last name only (potential duplicate)
-└── duplicate_report.json                         # Duplicate analysis
+└── duplicate_report.json                         # Duplicate analysis (written by dedup, end of Phase 2)
 
 ```
 
@@ -53,7 +66,9 @@ Each file contains a single person:
 ```
 
 **Notes:**
-- `biographical_profile` is populated during Phase 3 enrichment (may be absent before enrichment)
+- `biographical_profile` is populated by the Phase-2 Grokipedia/Wikipedia lookup and by Phase 3 enrichment (absent when neither found a source)
+- The filename is `{name, special characters removed, max 50 chars}_{first 12 chars of PersonID}.json` (`people._name_to_filename`)
+- Mentions carry `original_text` (the verbatim quote), `position_at_event` and `life_event` as well; `MentionID` is minted by code
 - `DateMentionID` → top-level `DateID` in `output/dates/*.json` (resolved via lookup, not LLM-provided)
 - `Sub_event_Name` uses underscore (not hyphen)
 
@@ -71,37 +86,9 @@ Fast lookup by normalized name:
 
 ## Duplicate Detection
 
-### Heuristics Used:
-
-1. **Name Similarity** (80%+ match)
-   - "Dwight D. Eisenhower" vs "Dwight Eisenhower"
-   - Uses SequenceMatcher for fuzzy matching
-
-2. **Same Last Name** (>3 chars)
-   - "George Patton" vs "George S. Patton"
-   - Filters out military titles
-
-3. **Shared Biographical Data**
-   - Same birth date
-   - Same nationality + birth year
-
-4. **Shared Positions**
-   - Both held "Supreme Commander" position
-   - Cross-references event mentions
-
-5. **Substring Match**
-   - "Eisenhower" in "Dwight D. Eisenhower"
-   - Requires >5 chars to avoid false positives
-
-### Confidence Scoring:
-
-- Name similarity: 40% weight
-- Same last name: 30% weight
-- Shared bio data: 50% weight
-- Shared positions: 30% weight
-- Substring match: 40% weight
-
-**Threshold**: 60% confidence to flag as potential duplicate
+Detection is scored, config-driven and documented in [deduplication.md](deduplication.md) and [dedup-weighting.md](dedup-weighting.md)
+(`src/dedup/find_duplicate_people.py`, `config.yaml` `dedup.people`). The 40/30/50% weights and the 60% threshold that were listed here were the
+early heuristic; current scoring is additive with `candidate_threshold: 0.5`, mention-proximity weights, and vetoes for conflicting middle initials or different surnames.
 
 ### Duplicate Report Format:
 
@@ -127,11 +114,6 @@ Fast lookup by normalized name:
           "filename": "Eisenhower_01MNO345.json",
           "name": "Eisenhower",
           "PersonID": "01MNO345..."
-        },
-        {
-          "filename": "Supreme_Commander_AEEF_01JKL012.json",
-          "name": "Supreme Commander of the Allied Expeditionary Force",
-          "PersonID": "01JKL012..."
         }
       ]
     }
@@ -147,7 +129,7 @@ python phase2_extract.py
 ```
 - Creates individual person files
 - Updates index.json
-- Generates duplicate_report.json
+- Dedup at the end of the phase generates duplicate_report.json
 
 ### 2. Review Duplicates (Manual)
 ```bash
@@ -156,16 +138,12 @@ cat output/people/duplicate_report.json
 - Review high-confidence matches
 - Verify they're actually the same person
 
-### 3. Merge Duplicates (Manual)
-```bash
-python scripts/merge_duplicate_people.py \
-  --keep Dwight_D_Eisenhower_01ABC123.json \
-  --merge Eisenhower_01MNO345.json \
-  --merge Supreme_Commander_AEEF_01JKL012.json
-```
+### 3. Merge Duplicates (Dedup Review UI)
+Groups are merged or excluded in the Dedup Review UI, which blocks Phase 3 until the review is done (`src/dedup/merge.py`).
+The old `scripts/merge_duplicate_people.py` CLI no longer exists.
 - Combines event mentions
 - Updates index
-- Deletes merged files
+- Deletes merged files (after a backup)
 
 ## Benefits
 
@@ -202,13 +180,6 @@ ls output/people/*.json | grep -v index | grep -v duplicate_report | wc -l
 ```bash
 grep -l "EventID.*01ABC123" output/people/*.json
 ```
-
-## Next Steps
-
-1. Run extraction: `./cleanup_people.sh && python phase2_extract.py`
-2. Review duplicates: `cat output/people/duplicate_report.json`
-3. Create merge script for confirmed duplicates
-4. Build query tools for common use cases
 
 ---
 

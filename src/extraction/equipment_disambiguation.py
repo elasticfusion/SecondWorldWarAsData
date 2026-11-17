@@ -34,6 +34,8 @@ from difflib import SequenceMatcher
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from src.grok_client import BatchModeCollecting
+
 logger = logging.getLogger(__name__)
 
 _CACHE: Dict[str, Dict[str, Any]] = {}
@@ -59,27 +61,31 @@ def _load_learned() -> Dict[str, Dict[str, Any]]:
         try:
             data = yaml.safe_load(_LEARNED_PATH.read_text(encoding="utf-8")) or {}
             _LEARNED_CACHE = {
-                k.lower(): v for k, v in (data.get("learned") or {}).items()
+                _designation_key(k): v for k, v in (data.get("learned") or {}).items()
             }
         except Exception:  # noqa: BLE001 - absent/malformed -> empty
             _LEARNED_CACHE = {}
     return _LEARNED_CACHE
 
 
-def _persist_learned(key: str, result: Dict[str, Any]) -> None:
+def _persist_learned(key: str, result: Dict[str, Any]) -> Dict[str, Any]:
     """Persist a resolution to the learned store, FIRST-WINS (never overwrite an existing
     learned entry -> stable canonical identity across runs). Separate from curated YAML.
-    """
+    Returns the stored entry: an entry learned before the lineage keeps its identity and gains
+    the lineage, so what the caller stamps is what every later run serves."""
     import yaml
 
     with _LEARNED_LOCK:
         learned = _load_learned()
-        if key in learned:
-            return  # first resolution wins — stability
+        old = learned.get(key)
+        if old and "variant_of" in old:
+            return old  # first resolution wins — stability
         entry = {
-            "canonical_name": result["canonical_name"],
-            "nationality_of_origin": result.get("nationality_of_origin"),
-            "equivalents": result.get("equivalents", []),
+            # an entry learned before the lineage was asked keeps its identity, gains the lineage
+            "canonical_name": (old or result)["canonical_name"],
+            "nationality_of_origin": (old or result).get("nationality_of_origin"),
+            "equivalents": (old or result).get("equivalents", []),
+            **_lineage(result),
         }
         learned[key] = entry
         try:
@@ -89,6 +95,7 @@ def _persist_learned(key: str, result: Dict[str, Any]) -> None:
             )
         except Exception as e:  # noqa: BLE001 - best-effort
             logger.debug("Could not persist learned alias: %s", e)
+        return entry
 
 
 def _aliases() -> Dict[str, str]:
@@ -103,6 +110,7 @@ def _result(
     equivalents: List[str],
     source: str,
     conf: float,
+    lineage: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     return {
         "canonical_name": canonical,
@@ -110,7 +118,30 @@ def _result(
         "equivalents": equivalents,
         "identity_source": source,
         "confidence": conf,
+        **_lineage(lineage),
     }
+
+
+# what makes a variant a variant: the base type and what physically sets it apart (Grok's
+# disambiguation answer - its provenance is lineage_source; the curated alias table carries none)
+_LINEAGE_KEYS = ("variant_of", "distinguishing_features", "lineage_source")
+
+
+def _text(value: Any) -> Optional[str]:
+    return (str(value).strip() or None) if value else None
+
+
+def _lineage(source: Optional[Dict[str, Any]]) -> Dict[str, Optional[str]]:
+    """The lineage fields of ``source``: none for a base type named as its own variant, and no
+    lineage_source without a lineage."""
+    source = source or {}
+    out = {k: _text(source.get(k)) for k in _LINEAGE_KEYS}
+    own = _designation_key(str(source.get("canonical_name") or ""))
+    if _designation_key(out["variant_of"] or "") == own:
+        out["variant_of"] = out["distinguishing_features"] = None  # a base type
+    if not (out["variant_of"] or out["distinguishing_features"]):
+        out["lineage_source"] = None
+    return out
 
 
 def resolve_designation(
@@ -121,23 +152,76 @@ def resolve_designation(
     empty input. Canonical lookup only — no specs."""
     if not name or not name.strip():
         return None
-    key = name.strip().lower()
+    key = _designation_key(name)
 
     with _CACHE_LOCK:
         if key in _CACHE:
             return _CACHE[key]
 
-    result = (
-        _try_alias(key)
-        or _try_learned(key)
-        or _try_fuzzy(key)
-        or _try_grok(name, key, grok_client)
-        or _result(name, None, [], "raw", 0.0)  # fail-open
-    )
+    legacy = _legacy_learned(key)
+    if legacy is not None:
+        # learned before the lineage was asked: upgraded when Grok can be asked; else served as
+        # learned (never downgraded to raw) and NOT cached, so a later call with a client upgrades it
+        upgraded = _try_grok(name, key, grok_client) if _can_ask(grok_client) else None
+        if upgraded is None:
+            return legacy
+        result = upgraded
+    else:
+        result = _resolve_fresh(name, key, grok_client)
 
     with _CACHE_LOCK:
         _CACHE[key] = result
     return result
+
+
+def _resolve_fresh(name: str, key: str, grok_client: Optional[Any]) -> Dict[str, Any]:
+    """exact/alias -> learned -> fuzzy -> Grok -> the raw name (fail-open)."""
+    return (
+        _try_alias(key)
+        or _try_learned(key)
+        or _try_fuzzy(key)
+        or _try_grok(name, key, grok_client)
+        or _result(name, None, [], "raw", 0.0)
+    )
+
+
+def _as_stored(result: Dict[str, Any], stored: Dict[str, Any]) -> Dict[str, Any]:
+    """``result``, or - when the learned store kept an earlier identity (first-wins) - that
+    identity with this answer's lineage."""
+    if stored.get("canonical_name") in (None, result["canonical_name"]):
+        return result
+    return _result(
+        stored["canonical_name"],
+        stored.get("nationality_of_origin"),
+        stored.get("equivalents", []),
+        "learned_alias",
+        0.95,
+        stored,
+    )
+
+
+def _can_ask(grok_client: Optional[Any]) -> bool:
+    return (
+        grok_client is not None
+        and os.getenv("EQUIPMENT_DISAMBIGUATION", "true").lower() == "true"
+    )
+
+
+def _legacy_learned(key: str) -> Optional[Dict[str, Any]]:
+    """A learned entry from before the lineage was asked (no ``variant_of`` key), as a
+    learned_alias result without lineage; None for any other key."""
+    if _try_alias(key) is not None:
+        return None  # the curated table answers first, as always
+    entry = _load_learned().get(key)
+    if not (entry and entry.get("canonical_name")) or "variant_of" in entry:
+        return None
+    return _result(
+        entry["canonical_name"],
+        entry.get("nationality_of_origin"),
+        entry.get("equivalents", []),
+        "learned_alias",
+        0.95,
+    )
 
 
 def _try_alias(key: str) -> Optional[Dict[str, Any]]:
@@ -154,15 +238,16 @@ def _try_alias(key: str) -> Optional[Dict[str, Any]]:
 def _try_learned(key: str) -> Optional[Dict[str, Any]]:
     """Served from the auto-persisted learned store (deterministic, no Grok call)."""
     entry = _load_learned().get(key)
-    if entry and entry.get("canonical_name"):
-        return _result(
-            entry["canonical_name"],
-            entry.get("nationality_of_origin"),
-            entry.get("equivalents", []),
-            "learned_alias",
-            0.95,
-        )
-    return None
+    if not (entry and entry.get("canonical_name")) or "variant_of" not in entry:
+        return None  # (a legacy entry: _legacy_learned)
+    return _result(
+        entry["canonical_name"],
+        entry.get("nationality_of_origin"),
+        entry.get("equivalents", []),
+        "learned_alias",
+        0.95,
+        entry,
+    )
 
 
 def _try_fuzzy(key: str) -> Optional[Dict[str, Any]]:
@@ -178,6 +263,25 @@ def _try_fuzzy(key: str) -> Optional[Dict[str, Any]]:
     return None
 
 
+def _designation_key(name: str) -> str:
+    """The designation as one identity: case and spacing do not make "Sherman", "SHERMAN" and
+    "Sherman  " different requests."""
+    return " ".join(name.split()).lower()
+
+
+def _grok_cache_key(key: str, grok_client: Any) -> str:
+    """Stable cache key for the Grok resolution of a designation: the normalised designation,
+    not the prompt (which quotes the name as first written)."""
+    import hashlib
+
+    get_model = getattr(grok_client, "_get_model", None)
+    model = get_model("equipment_disambiguation") if callable(get_model) else "default"
+    return hashlib.sha256(
+        # v2: the answer carries the lineage (variant_of, distinguishing_features)
+        f"equipment_disambiguation:v2:{model}:{key}".encode("utf-8")
+    ).hexdigest()
+
+
 def _try_grok(
     name: str, key: str, grok_client: Optional[Any]
 ) -> Optional[Dict[str, Any]]:
@@ -188,12 +292,13 @@ def _try_grok(
     try:
         from src.utils.prompt_loader import render_prompt
 
-        prompt = render_prompt("equipment_disambiguation", designation=name)
+        prompt = render_prompt("equipment_disambiguation", designation=name.strip())
         res = grok_client.extract_json(
             prompt,
             temperature=0.0,
             use_cache=True,
             cache_type="equipment_disambiguation",
+            cache_key=_grok_cache_key(key, grok_client),
         )
         if not isinstance(res, dict) or not res.get("canonical_name"):
             return None
@@ -203,10 +308,15 @@ def _try_grok(
             [str(e) for e in (res.get("equivalents") or [])],
             "grok_disambiguation",
             float(res.get("confidence", 0.8)),
+            {**res, "lineage_source": "grok_disambiguation"},
         )
         _write_suggestion(name, result)
-        _persist_learned(key, result)  # auto-update learned coverage (first-wins)
-        return result
+        # auto-update learned coverage (first-wins): return the identity later runs serve
+        return _as_stored(result, _persist_learned(key, result) or result)
+    except BatchModeCollecting:
+        # batch collect pass: the request is queued. Propagate - never fall through to the "raw"
+        # result, which resolve_designation would cache for the rest of the process.
+        raise
     except Exception as e:  # noqa: BLE001 - fail-open to the next fallback
         logger.warning("Grok disambiguation failed for %s: %s", name, e)
         return None
@@ -222,6 +332,7 @@ def _write_suggestion(raw: str, result: Dict[str, Any]) -> None:
             "canonical_name": result["canonical_name"],
             "nationality_of_origin": result.get("nationality_of_origin"),
             "equivalents": result.get("equivalents", []),
+            **_lineage(result),
             "confidence": result.get("confidence"),
             "suggested_at": datetime.now(timezone.utc).isoformat(),
         }

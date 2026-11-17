@@ -38,6 +38,12 @@ _DEFAULTS: Dict[str, Any] = {
         "cross_document_weight": 0.0,
     },
     "conflicting_middle_initial_weight": -5.0,
+    # Disambiguation veto: two FULL names whose surnames differ (beyond an OCR/spelling
+    # variant) are different people, however alike the first names ("William E. Dreher, Jr."
+    # vs "William R. Benn, Jr."). Lifted only by an identity signal (shared external URL,
+    # title alias).
+    "different_surname_weight": -5.0,
+    "surname_variant_ratio": 0.8,
     "frequency": {"enabled": True, "dominant_surname_boost": 0.3},
     "commonness": {"enabled": True, "common_surname_damping": 0.5},
     # Nationality-aware surname rarity prior (scales bare-surname match evidence by how
@@ -120,6 +126,8 @@ class DedupConfig:
     surname_frequency: Dict[str, Any] = field(default_factory=dict)
     rank_proximity: Dict[str, Any] = field(default_factory=dict)
     shared_unit: Dict[str, Any] = field(default_factory=dict)
+    different_surname_weight: float = -5.0
+    surname_variant_ratio: float = 0.8
 
     def weight(self, key: str) -> float:
         return float(self.weights.get(key, _DEFAULTS["weights"].get(key, 0.0)))
@@ -179,6 +187,13 @@ def load_dedup_config(config: Dict[str, Any] | None = None) -> DedupConfig:
             people.get("rank_proximity", {}), _DEFAULTS["rank_proximity"]
         ),
         shared_unit=_merge_shared_unit(people.get("shared_unit", {})),
+        different_surname_weight=_num(
+            people.get("different_surname_weight"),
+            _DEFAULTS["different_surname_weight"],
+        ),
+        surname_variant_ratio=_num(
+            people.get("surname_variant_ratio"), _DEFAULTS["surname_variant_ratio"]
+        ),
     )
 
 

@@ -1,13 +1,15 @@
 # Project: Second World War As Data
 
-WWII (European Theater of Operations, 1944 — Normandy through the Siegfried
-Line / Lorraine campaigns) turned into structured, citable data. The long-term
-goal is a low-cost, mostly-static website backed by this data, with a
+This project revolves around using WWII unstructured data and turning it into structured, citable data. 
+
+The long-term goal is a low-cost, mostly-static website backed by this data, with a
 continuous stream of new data added over time, and eventually a paid API.
+
+In addition to the static data, there will be RAG for AI queries. Allowing users to interact with the data.
 
 ## Current focus
 
-Finish the ETO campaign data ingestion **before** building the RAG/search
+Finish the data ingestion and validating data quality **before** building the RAG/search
 layer. RAG is a derived layer that sits on top of the extracted data, so it
 does not block current work and should be built against the *complete*,
 schema-stable corpus to avoid re-embedding.
@@ -21,7 +23,7 @@ LLM-extraction pipeline.
 1. **Narrative sources** (`output/`) — free-text primary records (after-action
    reports, unit journals, German KTBs, combat interviews, official "green
    book" histories). Handled by LLM **extraction** into typed entities, then
-   embedded for semantic retrieval. Uncertainty is inherent.
+   embedded for semantic retrieval. Uncertainty is inherent.  Languages vary.
 
 2. **Structured / reference data** (e.g. the ETO Order of Battle under
    `contentrepository/`) — already-tabular reference material trapped in a
@@ -41,18 +43,6 @@ LLM-extraction pipeline.
   `original_text`, page/line numbers. This is citation-ready.
 - Records are versioned via `_schema_version` (currently 2.6) and
   `_last_updated` — usable for incremental ingestion / change detection.
-
-## Known data-quality gaps (planned enrichment, not bugs)
-
-- Places have placeholder `latitude/longitude = 0.0` and empty `country` →
-  needs a geocoding pass before map/geo features.
-- People / units (`people_groups`) are per-mention → needs entity
-  resolution / de-duplication. The ETO Order of Battle is the authoritative
-  spine to resolve these against.
-- Image `description` fields are empty → vision-model captioning opportunity;
-  index caption + existing `Event_Name`/`Sub-event_Name` + metadata.
-- Bibliography has some stub entries (endnote fragments like `ibid`, `1`,
-  `26`) → cleanup/merge so citations resolve to real sources.
 
 ## Audiences (drives features and, later, pricing tiers)
 

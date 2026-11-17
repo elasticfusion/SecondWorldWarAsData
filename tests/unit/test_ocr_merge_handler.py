@@ -1,7 +1,7 @@
 """Tests for the OCR->parse handoff merge Lambda (UNATTENDED_READINESS #1)."""
 
 import os
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import yaml
 
@@ -61,101 +61,73 @@ def test_handler_ignores_non_chandra_queue():
     assert out["action"] == "none"
 
 
+def _merge(objects, book):
+    from tests.fake_s3 import FakeS3
+
+    s3 = FakeS3(objects, bucket=om.BUCKET)
+    with (
+        patch.object(om, "_s3", return_value=s3),
+        patch(
+            "src.ingestion.translation.normalize_markdown_to_english",
+            lambda md, **k: md,
+        ),
+        patch("src.ingestion.review_reject.reject_to_review") as rej,
+    ):
+        out = om.merge_ocr_output(book)
+    return out, s3, rej
+
+
 def test_merge_whole_pdf_layout():
     """Whole-PDF OCR: ocr-output/{book}/input/input.md (no chunk dir)."""
-    s3 = MagicMock()
-    paginator = MagicMock()
-    paginator.paginate.return_value = [
+    out, s3, rej = _merge(
         {
-            "Contents": [
-                {"Key": "ocr-output/B460/input/input.md"},
-                {"Key": "ocr-output/B460/input/input.html"},  # ignored
-                {"Key": "ocr-output/B460/input/input_metadata.json"},  # ignored
-            ]
-        }
-    ]
-    s3.get_paginator.return_value = paginator
-    s3.get_object.return_value = {
-        "Body": MagicMock(
-            read=lambda: b"# B460 page 1\n\nReal OCR markdown body with enough usable text to pass the near-empty gate."
-        )
-    }
-    s3.head_object.side_effect = Exception("404")  # no .structured marker (narrative)
-    with patch.object(om, "_s3", return_value=s3):
-        out = om.merge_ocr_output("B460")
+            "ocr-output/B460/input/input.md": "# B460 page 1\n\nReal OCR markdown body with "
+            "enough usable text to pass the near-empty gate.",
+            "ocr-output/B460/input/input.html": "<p>ignored</p>",
+            "ocr-output/B460/input/input_metadata.json": "{}",
+        },
+        "B460",
+    )
     assert out == "contentrepository/B460/chapter1/chapter1-content.md"
-    # both meta + content written under the chapter structure
-    keys = {c.kwargs["Key"] for c in s3.put_object.call_args_list}
-    assert "contentrepository/B460/chapter1/chapter1-content.md" in keys
+    keys = s3.keys("contentrepository/", bucket=om.BUCKET)
     assert "contentrepository/B460/chapter1/chapter1-meta.yaml" in keys
-    # P2-C1: the deferred-metadata gap is recorded as a detectable
-    # needs-review/metadata marker (book via the shared SAFE book_slug).
-    assert "needs-review/metadata/B460.json" in keys
-    # content body carries the merged markdown
-    content_call = next(
-        c
-        for c in s3.put_object.call_args_list
-        if c.kwargs["Key"].endswith("chapter1-content.md")
+    # P2-C1: the deferred-metadata gap is recorded as a needs-review/metadata marker.
+    assert [c.kwargs.get("category") for c in rej.call_args_list] == ["metadata"]
+    assert "B460 page 1" in s3.text(out, bucket=om.BUCKET)
+    raw_meta = s3.text(
+        "contentrepository/B460/chapter1/chapter1-meta.yaml", bucket=om.BUCKET
     )
-    assert b"B460 page 1" in content_call.kwargs["Body"]
-    # meta names the book — now SAFE yaml.safe_dump (P2-C1): author/series/
-    # chapter_title/license are '' (empty), NOT a 'TODO ...' masquerade.
-    meta_call = next(
-        c
-        for c in s3.put_object.call_args_list
-        if c.kwargs["Key"].endswith("chapter1-meta.yaml")
-    )
-    meta = yaml.safe_load(meta_call.kwargs["Body"])
+    meta = yaml.safe_load(raw_meta)
+    # SAFE yaml.safe_dump (P2-C1): author/series/chapter_title/license are '' (empty), NOT a
+    # 'TODO ...' masquerade.
     assert meta["book"] == "B460"
-    assert meta["author"] == ""
-    assert meta["series"] == ""
+    assert meta["author"] == "" and meta["series"] == "" and meta["license"] == ""
     assert meta["chapter_title"] == ""
-    assert meta["license"] == ""
-    assert b"TODO" not in meta_call.kwargs["Body"]
+    assert "TODO" not in raw_meta
 
 
 def test_merge_chunked_layout_sorts_pages():
-    """Chunked OCR: multiple chunk-*/input/input.md, merged in key order."""
-    s3 = MagicMock()
-    paginator = MagicMock()
-    paginator.paginate.return_value = [
+    """Chunked OCR (no manifest: the legacy layout): chunk-*/input/input.md, merged in page
+    order whatever the listing order."""
+    out, s3, _ = _merge(
         {
-            "Contents": [
-                {"Key": "ocr-output/Big/chunk-p0051-0100/input/input.md"},
-                {"Key": "ocr-output/Big/chunk-p0001-0050/input/input.md"},
-            ]
-        }
-    ]
-    s3.get_paginator.return_value = paginator
-    bodies = {
-        "ocr-output/Big/chunk-p0001-0050/input/input.md": b"PAGES 1-50 of real OCR'd markdown content for the first chunk.",
-        "ocr-output/Big/chunk-p0051-0100/input/input.md": b"PAGES 51-100 of real OCR'd markdown content for the second chunk.",
-    }
-    s3.get_object.side_effect = lambda Bucket, Key: {
-        "Body": MagicMock(read=lambda k=Key: bodies[k])
-    }
-    s3.head_object.side_effect = Exception("404")  # no .structured marker (narrative)
-    with patch.object(om, "_s3", return_value=s3):
-        om.merge_ocr_output("Big")
-    # Select the CONTENT put specifically — the final put_object call is now the
-    # P2-C1 needs-review/metadata marker, not the merged content.
-    content_call = next(
-        c
-        for c in s3.put_object.call_args_list
-        if c.kwargs["Key"].endswith("chapter1-content.md")
+            "ocr-output/Big/chunk-p0051-0100/input/input.md": "PAGES 51-100 of real OCR'd "
+            "markdown content for the second chunk.",
+            "ocr-output/Big/chunk-p0001-0050/input/input.md": "PAGES 1-50 of real OCR'd "
+            "markdown content for the first chunk.",
+        },
+        "Big",
     )
-    merged = content_call.kwargs["Body"].decode()
-    # sorted by key => p0001-0050 chunk first
+    merged = s3.text(out, bucket=om.BUCKET)
     assert merged.index("PAGES 1-50") < merged.index("PAGES 51-100")
+    assert (
+        '<a id="page51"></a>' in merged
+    )  # each part's first PDF page from its chunk dir
 
 
 def test_merge_no_markdown_returns_empty():
-    s3 = MagicMock()
-    paginator = MagicMock()
-    paginator.paginate.return_value = [{"Contents": []}]
-    s3.get_paginator.return_value = paginator
-    with patch.object(om, "_s3", return_value=s3):
-        assert om.merge_ocr_output("Empty") == ""
+    out, s3, _ = _merge({}, "Empty")
+    assert out == "" and not s3.keys("contentrepository/", bucket=om.BUCKET)
 
 
 def test_handler_full_promote_path():

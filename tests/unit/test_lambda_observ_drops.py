@@ -67,14 +67,16 @@ def test_11_book_underivable_emits_canonical_observ(caplog):
 
 
 def _structured_s3():
-    s3 = MagicMock()
-    s3.get_paginator.return_value.paginate.return_value = [
-        {"Contents": [{"Key": "ocr-output/ETO_OOB/input/input.md"}]}
-    ]
-    good = b"# OOB\n\n" + b"| Unit | Commander |\n|---|---|\n|1st Inf|Smith|\n" * 4
-    s3.get_object.return_value = {"Body": MagicMock(read=lambda: good)}
-    s3.head_object.return_value = {}  # .structured marker EXISTS -> OOB route
-    return s3
+    from tests.fake_s3 import FakeS3
+
+    good = "# OOB\n\n" + "| Unit | Commander |\n|---|---|\n|1st Inf|Smith|\n" * 4
+    # .structured marker EXISTS -> OOB route
+    return FakeS3(
+        {
+            "ocr-output/ETO_OOB/input/input.md": good,
+            "ocr-output/ETO_OOB/.structured": "oob",
+        }
+    )
 
 
 def test_44_oob_launch_exception_no_success_key(caplog):

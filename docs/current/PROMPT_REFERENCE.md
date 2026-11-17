@@ -15,26 +15,34 @@ interpolated into the template, and what the call produces).
 - **Cache lane** = the `cache_type` the request is stored/batched under (groups a prompt's
   calls in the Grok Batch API and the on-disk cache).
 
-> Generated 2026-10-22. Prompt count: **31**. Links are repo-relative.
+> Generated 2026-10-22, updated 2026-11-16. Prompt count: **34** (`prompts/*.yaml`). Links are repo-relative.
 
 ---
 
 ## Phase 2 — Core extraction (events + dependent entities)
 
 These run inside `phase2_extract.py` → `src/extraction/*`. Events are extracted first
-(one batch), then per-event dependent entities (a second "optional" batch).
+(one request per chapter). All other entity discovery (dates, places, people, people_groups,
+equipment, weather, logistics, casualties) runs over fixed 3-paragraph **windows** of the raw
+parsed text (`src/extraction/windows.py`), presented to the extractors as one-"sub-event" views
+with no names or summaries, so for those prompts `event_name` / `sub_event_summary` are empty and
+`text` is the window text. A window's answer is attributed to the real sub-event that holds the
+paragraph its quote came from. Requests go out in batch rounds (cap 8, `src/utils/batch_rounds.py`).
+The notes (`supplemental`) prompt runs within each sub-event.
 
 | Prompt | Invoked in (context) | Context vars | Output |
 |--------|----------------------|--------------|--------|
 | [`events`](../../prompts/events.yaml) | [`src/extraction/events.py`](../../src/extraction/events.py) `extract_events` / `_build_*` — the top-level event+sub-event extraction per chapter (live AND batch-collect path; this is the ONLY events prompt the pipeline uses) | `book`, `author`, `chapter`, `paragraphs`, `images_text`, `maps_text` | JSON event tree (schema) |
-| [`dates`](../../prompts/dates.yaml) | [`src/extraction/dates.py`](../../src/extraction/dates.py) (`get_system_prompt("dates")`) — per sub-event date extraction | `event_id`, `event_name`, `sub_event_id`, `sub_event_summary`, `text` | JSON dates (schema) |
-| [`places`](../../prompts/places.yaml) | [`src/extraction/places.py`](../../src/extraction/places.py) (`get_system_prompt("places")`) — per sub-event place extraction. Settlements/regions get coordinates; HILLS (`Hill N` = elevation) and RELATIVE/SITUATIONAL features ("east bank of…", "Aachen Gap") are extracted with **null lat/long** (not fabricated) + anchor context in `role_in_event`, for the Phase-3 geocoders (`hill_geocode` / situational+Grok) to resolve. `original_text` = verbatim source (diacritics preserved); `current_name` = canonical native toponym derived from context. | `event_id`, `event_name`, `sub_event_id`, `sub_event_summary`, `text` | JSON places (schema) |
-| [`people`](../../prompts/people.yaml) | [`src/extraction/people.py`](../../src/extraction/people.py) (`get_system_prompt("people")`) — per sub-event person extraction | `book`, `author`, `series`, `event_id`, `event_name`, `sub_event_id`, `sub_event_summary`, `text` | JSON people (schema) |
+| [`dates`](../../prompts/dates.yaml) | [`src/extraction/dates.py`](../../src/extraction/dates.py) (`get_system_prompt("dates")`) — date extraction (per window) | `event_id`, `event_name`, `sub_event_id`, `sub_event_summary`, `text` | JSON dates (schema) |
+| [`places`](../../prompts/places.yaml) | [`src/extraction/places.py`](../../src/extraction/places.py) (`get_system_prompt("places")`) — place extraction (per window). Settlements/regions get coordinates; HILLS (`Hill N` = elevation) and RELATIVE/SITUATIONAL features ("east bank of…", "Aachen Gap") are extracted with **null lat/long** (not fabricated) + anchor context in `role_in_event`, for the Phase-3 geocoders (`hill_geocode` / situational+Grok) to resolve. `original_text` = verbatim source (diacritics preserved); `current_name` = canonical native toponym derived from context. | `event_id`, `event_name`, `sub_event_id`, `sub_event_summary`, `text` | JSON places (schema) |
+| [`people`](../../prompts/people.yaml) | [`src/extraction/people.py`](../../src/extraction/people.py) (`get_system_prompt("people")`) — person extraction (per window) | `book`, `author`, `series`, `event_id`, `event_name`, `sub_event_id`, `sub_event_summary`, `text` | JSON people (schema) |
 | [`people_groups`](../../prompts/people_groups.yaml) | [`src/extraction/people_groups.py`](../../src/extraction/people_groups.py) `render_prompt("people_groups")` — military unit / group extraction | `text` | JSON groups (schema) |
-| [`equipment`](../../prompts/equipment.yaml) | [`src/extraction/equipment.py`](../../src/extraction/equipment.py) — per-event equipment extraction (optional batch) | `event_data` | JSON equipment (schema) |
-| [`weather_batch`](../../prompts/weather_batch.yaml) | [`src/extraction/weather_central.py`](../../src/extraction/weather_central.py:820) (`get_system_prompt("weather_batch")`) — per-event weather extraction (optional batch) | `event_id`, `event_name`, `sub_event_blocks` | JSON weather (schema) |
-| [`casualties`](../../prompts/casualties.yaml) | [`src/extraction/casualties.py`](../../src/extraction/casualties.py) — per sub-event casualty extraction (optional batch) | `entity_context`, `sub_event_block` | JSON casualties (schema) |
-| [`logistics`](../../prompts/logistics.yaml) | [`src/extraction/casualties.py`](../../src/extraction/casualties.py) / [`equipment.py`](../../src/extraction/equipment.py) — per sub-event logistics extraction (optional batch) | `sub_event_block` | JSON logistics (schema) |
+| [`equipment_extract_broad`](../../prompts/equipment_extract_broad.yaml) | [`src/extraction/equipment.py`](../../src/extraction/equipment.py) `_extract_equipment_broad_one` — broad equipment discovery (cache_type `equipment_broad`) | `event_data` (JSON view of the window/sub-event) | JSON equipment (schema) |
+| [`equipment_refine`](../../prompts/equipment_refine.yaml) | [`src/extraction/equipment.py`](../../src/extraction/equipment.py) (cache_type `equipment_refine`) — refine each discovered item (lineage fields `variant_of` / `distinguishing_features`) | `item_name`, `item_original_text`, `context`, `theater_hint` | JSON equipment item (schema) |
+| [`equipment_vessel_choice`](../../prompts/equipment_vessel_choice.yaml) | [`src/extraction/equipment_identity.py`](../../src/extraction/equipment_identity.py) `_choice_prompt` — choose which named vessel is meant, by date | `vessel_name`, `date`, `paragraph`, `candidates` | choice |
+| [`weather_batch`](../../prompts/weather_batch.yaml) | [`src/extraction/weather_central.py`](../../src/extraction/weather_central.py:820) (`get_system_prompt("weather_batch")`) — weather extraction over the text windows of each sub-event | `event_id`, `event_name`, `quote_rule`, `sub_event_blocks` | JSON weather (schema) |
+| [`casualties`](../../prompts/casualties.yaml) | [`src/extraction/casualties.py`](../../src/extraction/casualties.py) — casualty discovery over the chapter's paragraph windows | `entity_context`, `sub_event_block` | JSON casualties (schema) |
+| [`logistics`](../../prompts/logistics.yaml) | [`src/extraction/logistics.py`](../../src/extraction/logistics.py) (`_rp("logistics", ...)`) — logistics extraction | `sub_event_block` | JSON logistics (schema) |
 | [`supplemental`](../../prompts/supplemental.yaml) | [`src/extraction/supplemental.py`](../../src/extraction/supplemental.py:493) (`get_system_prompt("supplemental")`) — endnote/footnote citation classification + extraction | `event_id`, `event_title`, `sub_event_id`, `sub_event_summary`, `text`, `endnote_block`, `endnote_refs`, `footnote_refs`, `ref_type_hint` | JSON citations (schema) |
 | [`source_section`](../../prompts/source_section.yaml) | [`src/extraction/source_section.py`](../../src/extraction/source_section.py:219) (`get_system_prompt("source_section")`) — operation/section anchor derivation per event | `book`, `series`, `section_title`, `event_name`, `sub_event_summaries`, `dates`, `places` | JSON section (schema) |
 
@@ -46,6 +54,7 @@ These run inside `phase2_extract.py` → `src/extraction/*`. Events are extracte
 |--------|----------------------|--------------|--------|
 | [`map_search`](../../prompts/map_search.yaml) | [`src/extraction/grok_search_maps.py`](../../src/extraction/grok_search_maps.py) — Grok-assisted historical map search | `place_name`, `date`, `event_context` | JSON map hits (schema) |
 | [`map_vision`](../../prompts/map_vision.yaml) | [`src/extraction/grok_search_maps.py`](../../src/extraction/grok_search_maps.py) — vision verify a candidate is a relevant WWII map | `title`, `place_name`, `date`, `event_context` | JSON verdict (schema) |
+| [`chart_vision`](../../prompts/chart_vision.yaml) | [`src/extraction/chart_source_adapter.py`](../../src/extraction/chart_source_adapter.py) `_chart_vision_read` — read the commands/units a chart image depicts | `event_context`, `title` | JSON depicted (schema) |
 | [`license_check`](../../prompts/license_check.yaml) | [`src/extraction/openserp_maps.py`](../../src/extraction/openserp_maps.py:119) `render_prompt("license_check")` — analyze a page's terms for image-use permission | `url`, `page_content` | JSON license (schema) |
 | [`equipment_vision`](../../prompts/equipment_vision.yaml) | [`src/extraction/equipment.py`](../../src/extraction/equipment.py) — vision verify an image is the equipment | `equipment_name`, `equipment_category`, `image_title` | JSON verdict (schema) |
 | [`equipment_urls`](../../prompts/equipment_urls.yaml) | [`src/extraction/equipment.py`](../../src/extraction/equipment.py) — pull image URLs from a Wikipedia/Commons page | `equipment_name`, `page_content` | JSON URLs (schema) |
@@ -64,7 +73,7 @@ These run inside `phase3_enrich_data.py` → `src/enrichment/*` and the suppleme
 | [`people_consolidation`](../../prompts/people_consolidation.yaml) | [`src/extraction/people_consolidation.py`](../../src/extraction/people_consolidation.py) — dedup candidate person entries | `entries` | JSON merge decision (schema) |
 | [`bibliography_verify`](../../prompts/bibliography_verify.yaml) | [`src/enrichment/bibliography_resolver.py`](../../src/enrichment/bibliography_resolver.py:959) `render_prompt("bibliography_verify")` — verify a search result matches a citation (wraps `verify_prompt`) | `verify_prompt` | `YES`/`NO` |
 | [`bibliography_alt_title`](../../prompts/bibliography_alt_title.yaml) | [`src/extraction/supplemental_advanced.py`](../../src/extraction/supplemental_advanced.py:449) `render_prompt("bibliography_alt_title")` — expand Green-Book citation shorthand | `verbatim` | expanded title |
-| [`nara_identify`](../../prompts/nara_identify.yaml) | **Not used by the pipeline** — in [`src/enrichment/bibliography_resolver.py`](../../src/enrichment/bibliography_resolver.py) NARA record-group ID is DETERMINISTIC (`_identify_nara_record` → `_lookup_record_group`, an RG alias table; `grok_client` accepted but unused). The prompt IS invoked by the dev tool [`scripts/debug_nara_search.py`](../../scripts/debug_nara_search.py) (`render_prompt("nara_identify")`) to A/B the Grok RG approach against the deterministic one — so it is a live debug dependency, kept. | `verbatim` | RG label (debug only) |
+| [`nara_identify`](../../prompts/nara_identify.yaml) | **Not used by the pipeline** — in [`src/enrichment/bibliography_resolver.py`](../../src/enrichment/bibliography_resolver.py) NARA record-group ID is DETERMINISTIC (`_identify_nara_record` → `_lookup_record_group`, an RG alias table; `grok_client` accepted but unused). The prompt IS invoked by the dev tool [`scripts/utils/debug_nara_search.py`](../../scripts/utils/debug_nara_search.py) (`render_prompt("nara_identify")`) to A/B the Grok RG approach against the deterministic one — so it is a live debug dependency, kept. | `verbatim` | RG label (debug only) |
 | [`nara_verify`](../../prompts/nara_verify.yaml) | [`src/enrichment/bibliography_resolver.py`](../../src/enrichment/bibliography_resolver.py) — strict verify a NARA catalog record IS the cited document | `citation`, `nara_title`, `nara_description` | `YES`/`NO` |
 | [`publication_search`](../../prompts/publication_search.yaml) | [`src/extraction/supplemental_search.py`](../../src/extraction/supplemental_search.py) — LLM search for an online copy of a publication | `title`, `author`, `doc_type` | URL or `NOT_FOUND` |
 | [`isbn_lookup`](../../prompts/isbn_lookup.yaml) | [`src/extraction/supplemental_advanced.py`](../../src/extraction/supplemental_advanced.py) — ISBN lookup for a book | `title`, `author`, `publisher`, `pub_date` | JSON ISBN (schema) |
@@ -73,11 +82,12 @@ These run inside `phase3_enrich_data.py` → `src/enrichment/*` and the suppleme
 
 ---
 
-## Phase 0 — Ingestion (language / translation)
+## Phase 0 — Ingestion (language / translation / book metadata)
 
 | Prompt | Invoked in (context) | Context vars | Output |
 |--------|----------------------|--------------|--------|
 | [`language_detect`](../../prompts/language_detect.yaml) | [`src/ingestion/translation.py`](../../src/ingestion/translation.py:82) `render_prompt("language_detect")` — detect a document's primary language | `sample` | ISO language code |
+| [`book_metadata`](../../prompts/book_metadata.yaml) | [`src/ingestion/book_metadata.py`](../../src/ingestion/book_metadata.py:299) (`get_system_prompt("book_metadata")`) — book title/author/etc. found by Grok, with evidence quotes, for the chapter meta | `sample`, `hint` | JSON book metadata |
 | [`translation`](../../prompts/translation.yaml) | [`src/ingestion/translation.py`](../../src/ingestion/translation.py:131) (`get_system_prompt("translation")`) — translate non-English markdown to English | `source_language`, `markdown` | translated markdown |
 
 ---
@@ -88,7 +98,7 @@ These run inside `phase3_enrich_data.py` → `src/enrichment/*` and the suppleme
   (`src/utils/prompt_loader.py`), so values containing brace-like text are not
   re-interpreted (injection-safe). Unfilled `{lowercase}` placeholders are detected by
   `grok_client._validate_prompt`.
-- **System vs user prompt.** All 31 prompts carry a `system_prompt` (set via
+- **System vs user prompt.** All 34 prompts carry a `system_prompt` (set via
   `get_system_prompt`) establishing the WWII-domain role; the `prompt_template` is the
   user message with the interpolated context above.
 - **Structured output.** Prompts with a `schema` block inject it as `{schema}` and the
@@ -96,5 +106,7 @@ These run inside `phase3_enrich_data.py` → `src/enrichment/*` and the suppleme
   [`src/schemas/`](../../src/schemas/). The non-schema prompts return a short string
   (`YES`/`NO`, a URL, a language code, or free text).
 - **Batch vs live.** In batch mode (`phase2`), extractor calls are *collected* under their
-  `cache_type` lane and submitted to the Grok Batch API in two waves (events, then the
-  per-event "optional" entities); in live mode the same prompts are called real-time.
+  `cache_type` lane and submitted to the Grok Batch API per round; a window's request depends
+  only on the parsed chapter, so it is asked in the same round as the chapter's events. Later
+  rounds carry follow-ups (for example `equipment_refine`). In live mode the same prompts are
+  called real-time.

@@ -42,9 +42,10 @@ environment's requests:
 
 ## Architecture (built)
 - `src/enrichment/award_sources.py` — pluggable `AwardCitationSource` protocol +
-  `enrich_person_awards(person, sources)` orchestration. **Gated**: runs only for
-  `nationality == USA` people with ≥1 award (the "award context"); other
-  nationalities are a future extension with their own sources. Gap-fill only
+  `enrich_person_awards(person, sources)` orchestration. **Gated** (corrected 2026-11-16 against
+  `award_sources.should_source_awards`): runs for a person with ≥1 award who INDICATES a nationality
+  or serving power; each award is routed to the sources of its awarding power only when the person
+  indicates that country (`award_source_nationality`, `awarding_power`). It is no longer USA-only. Gap-fill only
   (never overwrites an existing citation). Verification-not-fabrication: a citation
   is attached only when `verified` and the award matches.
 - `src/enrichment/award_offline_source.py` — `OfflineAwardDataset`: a local JSON

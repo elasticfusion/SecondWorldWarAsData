@@ -14,9 +14,12 @@ aspirational.
 ## End-to-end flow
 
 ```
-Phase 2 extract (per event file)
+Phase 2 extract (per chapter's event file)
   1. load indices  → people, people_groups, dates, places (name→ID), equipment index
-  2. Grok extract  → equipment list from the event (prompts/equipment.yaml)
+  2. Grok extract  → three runs (`_extract_equipment_with_llm`): BROAD recall over the
+       chapter's 3-paragraph raw-text windows (prompts/equipment_extract_broad.yaml; each
+       item pinned to the window paragraphs its quote came from), REFINE per item
+       (prompts/equipment_refine.yaml, never drops a broad find), then disambiguation
        assertion gate: only extract when the SOURCE ASSERTS presence
        (narrative text or a video/audio narration); ambient/stock footage ignored
   3. per equipment item (_process_equipment_item):
@@ -71,16 +74,16 @@ Enrichment-on-identity (follows identity resolution)
 |---|---|
 | Extraction, mention building, **ingest-time merge, enrichment, media/vision (ALL LIVE)** | `src/extraction/equipment.py` |
 | Dedup — how it works (spec) | [EQUIPMENT_DEDUPLICATION.md](EQUIPMENT_DEDUPLICATION.md) |
-| Dedup (detection scoring) | `scripts/find_duplicate_equipment.py` |
-| Merge tool | `scripts/merge_equipment.py`, `scripts/merge_equipment_dupes.py` |
-| Media backfill | `scripts/backfill_equipment_media.py` |
+| Dedup (detection scoring) | `src/dedup/find_duplicate_equipment.py` |
+| Merge tool | `scripts/merge_equipment.py`, `scripts/archive/merge_equipment_dupes.py` |
+| Media backfill | `scripts/archive/backfill_equipment_media.py` |
 | Wikipedia enrichment | `src/enrichment/equipment_wikipedia.py` |
 | Enrichment staleness gate | `src/enrichment/enrichment_gate.py` |
 | Source-recheck gap-fill | `src/extraction/equipment_source_recheck.py` (uses the reusable `src/extraction/source_recheck.py`) |
 | Canonical designation disambiguator | `src/extraction/equipment_disambiguation.py` (exact→alias→fuzzy→Grok, cached) |
 | **Enforced output schema (source of truth)** | `src/schemas/equipment_output.py` |
 | Alias table | `config/equipment_aliases.yaml` |
-| Prompt | `prompts/equipment.yaml` |
+| Prompts | `prompts/equipment_extract_broad.yaml`, `equipment_refine.yaml`, `equipment_disambiguation.yaml` (enrichment/vision prompts: `equipment_enrichment.yaml`, `equipment_vision.yaml`) |
 
 > Note: a former `src/extraction/equipment_ext/` sub-package held dead duplicate copies of
 > the merge/enrichment/media code (no importers). It was **deleted** — `equipment.py` is
@@ -93,12 +96,12 @@ identity gate, enrich-on-identity, cross-entity staleness/diff, disambiguation +
 aliases, supporting-unit alias/fuzzy linking, merge reference-redirect — are described in
 [EQUIPMENT_FLOW.md](EQUIPMENT_FLOW.md), not here.)
 
-- **No live end-to-end run.** Validated by hermetic tests only; no equipment records exist
-  in `output/` and the full `_process_equipment_item` path has not run against a real
-  chapter. Origin/operator, quantity/place, assertion gate, related_equipment,
-  crew_accounts, and enrichment-on-identity are unit-tested but unconfirmed on real Grok
-  output. **This is the top gap** — several silent bugs were already caught only by partial
-  live runs.
+- **Live-run confirmation is partial.** The broad+refine path has run on real chapters in the
+  AWS pipeline (see the `_extract_equipment_broad` docstring: per-chapter counts of 358 / 331 /
+  317 items on 2026-11-12), but the local `output/` holds no equipment records, and origin/
+  operator, crew_accounts and enrichment-on-identity are still mostly confirmed by hermetic
+  tests only. Several silent bugs were caught only by live runs, so check a real chapter after
+  any change here.
 - **Vision verification + OpenSERP image path untested live (equipment).** Wikipedia
   image/license + Grok text/specs enrichment are live-validated; the equipment **vision
   TYPE verification** and **OpenSERP image search** are not (the `search_media` binary is
@@ -142,8 +145,8 @@ aliases, supporting-unit alias/fuzzy linking, merge reference-redirect — are d
 - **Enforced schema:** `src/schemas/equipment_output.py` (`additionalProperties: false`).
 - **Canonical structure example:** `EQUIPMENT_FINAL_STRUCTURE.md` (other docs link here
   rather than repeating the JSON).
-- **Schema version:** per-entity via `ENTITY_SCHEMA_VERSIONS` in `src/schemas/__init__.py` (equipment currently **2.25**).
-  History: 2.15 environmental_performance (condition-linked equipment performance; weather/terrain -> effect, source-tracked); 2.14 `crew_accounts` + `timeline`/`technical_evolution`/`logistics` (source-
+- **Schema version:** per-entity via `ENTITY_SCHEMA_VERSIONS` in `src/schemas/__init__.py` (equipment currently **2.30**).
+  History: 2.30 lineage fields `variant_of` / `distinguishing_features` / `lineage_source` (from the designation disambiguator, `lineage_source: grok_disambiguation`); 2.15 environmental_performance (condition-linked equipment performance; weather/terrain -> effect, source-tracked); 2.14 `crew_accounts` + `timeline`/`technical_evolution`/`logistics` (source-
   tracked); 2.13 structured `specifications`/`external_data`/`images`/in-file `variants`;
   2.12 `canonical_name` + `identity_source` (designation disambiguator); 2.11
   `enrichment_checked_at` (staleness gate); 2.10 `image_scope` + enrichment-on-identity;

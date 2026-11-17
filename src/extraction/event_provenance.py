@@ -46,16 +46,12 @@ def _build_event_section_index(out: Path) -> Dict[str, str]:
     """
     index: Dict[str, str] = {}
     try:
-        seen = set()
-        patterns = ("content/*/source_section/*.json", "source_section/*.json")
-        for pat in patterns:
-            for sf in out.glob(pat):
-                if sf.name == "index.json" or sf in seen:
-                    continue
-                seen.add(sf)
-                pair = _section_event_pair(sf)
-                if pair:
-                    index.setdefault(pair[0], pair[1])
+        from src.utils.source_sections import iter_section_files
+
+        for sf in iter_section_files(out):
+            pair = _section_event_pair(sf)
+            if pair:
+                index.setdefault(pair[0], pair[1])
     except Exception as e:  # noqa: BLE001
         logger.debug("event->section index skipped: %s", e)
     return index

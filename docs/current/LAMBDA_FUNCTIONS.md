@@ -10,12 +10,22 @@
 |----------|---------|----------|---------|
 | trigger | SQS (S3 notifications) | configurable (ReconciliationIntervalMinutes, default 15 min) | Orchestrates pipeline — launches ECS tasks |
 | batch-poller | — | 5 minutes | Checks Grok batch job status, triggers retrieval |
-| nat-manager | SNS, Lambda invoke | — | Creates/deletes NAT gateway + VPC endpoints |
-| openserp-manager | — | 10 minutes | Idle monitoring, force-teardown NAT if stale |
+| nat-manager | Lambda invoke (SNS records are a no-op) | — | Creates NAT gateway + VPC endpoints; delete primitive (called by nat-teardown, idle-backstop-reaper, openserp-manager) |
+| nat-teardown | EventBridge | 4 hours (+ 10-min self-rescheduled re-check while work runs) | Scheduled NAT/endpoint teardown decider (the `nat_teardown.py` docstring names it the sole owner; `openserp_manager` and the reaper still carry their own guardrails) |
+| openserp-manager | EventBridge | 10 minutes | Idle monitoring, scales OpenSERP to 0, force-tears-down NAT up >2 h with no pipeline tasks |
+| openserp-worker-autoscaler | EventBridge | `WorkerAutoscalerIntervalMinutes` | Scales the OpenSERP SQS worker service on queue depth |
+| idle-backstop-reaper | EventBridge | 1 hour | Force-teardown of NAT/Fargate on a confirmed no-progress stall |
+| ocr-merge | EventBridge (Batch job SUCCEEDED on a Chandra queue) + ECS task state change | — | Merges OCR chunks, promotes chapters to `contentrepository/` |
+| ocr-spot-controller | EventBridge | 1 hour | Routes spot-starved OCR jobs to the on-demand queue (48 h cap) |
+| slack-formatter | SNS (`phase2-complete`) | — | Wraps free-form alerts in Chatbot's schema and republishes to the Slack topic |
+| s3-validation-backstop | S3 event on `output/` | — | Schema-validates every object written under `output/`; tags invalid ones `quarantine=true` |
 | metrics | API Gateway GET | — | Pipeline metrics dashboard |
 | dedup-gate | — | — | Blocks Phase 3 until dedup review is complete |
 | dedup-ui | API Gateway (GET/POST) | — | Web UI for dedup review |
-| dedup-auth | API Gateway Authorizer | — | Basic auth for dedup + metrics APIs |
+| mdreview-ui | API Gateway | — | OCR markdown-review UI (page image beside editable snippet) |
+| urlreview-ui | API Gateway | — | Review UI for textual fetch finds (Phase 3) |
+| dedup-auth | API Gateway Authorizer | — | Basic auth for dedup, mdreview, urlreview + metrics APIs |
+| enumerate-pending / clamp-pool / human-gate | Step Functions (`cloudformation/dispatcher.yaml`) | — | Dispatcher state-machine helpers (`lambda_handlers/dispatcher_handlers.py`) |
 | s3-notif-setup | CloudFormation Custom Resource | — | Configures S3 bucket notifications |
 
 ---
@@ -32,7 +42,7 @@
 - Manual: `aws lambda invoke --function-name dev-wwii-trigger --payload '{"source": "manual", "book": "BookName", "phase": "2"}'`
 
 **What it does:**
-- Routes S3 events by topic (content uploaded → queue for Phase 1, parsed file → queue for Phase 2)
+- Routes S3 events by topic (content uploaded → ingestion routing by media type: PDF/scan → Chandra OCR, EPUB/DOCX/HTML → convert, video, structured reference docs → OOB track, chapters → Phase 1; parsed file → queue for Phase 2)
 - Checks for running ECS tasks before launching new ones (single-task concurrency)
 - Extracts `BOOK_NAME` from pending queues and passes to ECS tasks
 - Reconciles stale locks — detects dead tasks and re-triggers
@@ -48,11 +58,12 @@
 
 **Schedule:** Every 5 minutes (configurable via `BatchPollerIntervalMinutes` CloudFormation parameter).
 
-**State machine:** Jobs flow through: `pending` → `ready` → `complete` (or `failed`).
+**State machine:** Jobs flow through: `pending` → `ready` → `complete` (or `failed`). Phase 2 first waits in-task for the batch (`batch.in_task_wait_minutes`, 5 min); only a batch still unanswered is left to this Lambda.
+
 **What it does:**
-- Scans DynamoDB for batch jobs with `status: "pending"` or `status: "ready"`
+- Scans DynamoDB for `batch_job#` rows with `status: "pending"` or `status: "ready"`
 - For pending jobs: checks status via Grok API (`GET /batch/{id}`)
-- When a batch completes: atomically marks as `ready`, invokes nat-manager (synchronous), waits for NAT, launches ECS retrieve task
+- When a batch completes: atomically marks as `ready`, invokes nat-manager (synchronous), waits for NAT, launches the Phase 2 ECS task with `--retrieve-only` (the task then starts the next batch round, up to 8 rounds)
 - For ready jobs (retrieve previously failed): retries launching the retrieve task
 - Guards against duplicate retrieve tasks (checks for running ECS tasks before launching)
 - Updates job status in DynamoDB (pending → ready → complete, or failed)
@@ -66,15 +77,16 @@
 **Purpose:** Dynamic networking lifecycle — creates/deletes NAT gateway and VPC endpoints on demand.
 
 **Invocation sources:**
-- Lambda invoke from trigger/batch-poller (action: "create")
-- SNS subscription (any "completed successfully" message → action: "delete")
-- EventBridge Scheduler (delayed teardown)
+- Lambda invoke from trigger/batch-poller/ocr-merge (action: "create")
+- Lambda invoke from nat-teardown / idle-backstop-reaper / openserp-manager (action: "delete")
+- SNS subscription to `phase2-complete`: still subscribed but a no-op (teardown is owned by nat-teardown)
 
 **What it does:**
 - `{"action": "create"}` — Creates NAT gateway, allocates EIP, updates route tables, ensures VPC endpoints (ECR, logs, S3, Secrets Manager)
 - `{"action": "delete"}` — Deletes NAT, releases EIP, removes routes, deletes non-essential VPC endpoints
+- `{"action": "verify"}` — Returns `{ready, missing}` (NAT and every required interface endpoint available)
 - `{"action": "status"}` — Returns current NAT state
-- On SNS: tears down on ANY "completed successfully" message (not just Phase 3)
+- On SNS: no-op. Phases never tear down NAT; `nat-teardown` (every 4 h) deletes only when the DynamoDB queue is empty and no container is processing
 
 **Cost impact:** NAT gateway = $0.045/hr + $0.045/GB processed. Only runs during active pipeline execution.
 
@@ -151,8 +163,8 @@
 **What it does:**
 - Called by CloudFormation on stack create/update/delete
 - Configures two S3 → SNS notifications:
-  - `contentrepository/*.md` → `content-uploaded` topic
-  - `output/*-parsed.json` → `chapter-parsed` topic
+  - prefix `contentrepository/` (no suffix filter: raw PDFs, EPUBs, images and markdown all count) → `content-uploaded` topic
+  - prefix `output/content/`, suffix `-parsed.json` → `chapter-parsed` topic
 - Bump `ConfigVersion` property in CloudFormation to force re-execution
 
 ---
@@ -175,7 +187,7 @@
 | `trigger` via `aws lambda invoke` | Manual pipeline trigger | Operator |
 | `batch-poller` via EventBridge | Poll Grok batch status | Scheduled (5 min) |
 | `nat-manager` via Lambda invoke | Create/delete NAT | batch-poller, trigger |
-| `nat-manager` via SNS | Teardown after Phase 2 | phase2-complete topic |
+| `nat-teardown` via EventBridge | NAT/endpoint teardown decision | Scheduled (4 h) |
 | `openserp-manager` via EventBridge | Idle cost monitoring | Scheduled (10 min) |
 | `dedup-gate` via Lambda invoke | Check review status | trigger |
 | `s3-notif-setup` via CloudFormation | Configure S3 notifications | Stack deploy only |
@@ -195,6 +207,7 @@ aws cloudformation describe-stacks --stack-name wwii-pipeline-dev --region us-ea
 | `dev-wwii-stale-lock-check` | configurable (default 15 min) | trigger (with `{"source": "scheduled"}`) |
 | `dev-wwii-batch-poller-schedule` | configurable (default 5 min) | batch-poller |
 | `dev-wwii-openserp-idle-monitor` | 10 min | openserp-manager |
+| nat-teardown (4 h), idle-backstop-reaper (`rate(1 hour)`), ocr-spot-controller (`rate(1 hour)`) | see Function Overview | `cloudformation/compute.yaml`, `cloudformation/ocr.yaml` |
 
 ---
 
@@ -202,10 +215,10 @@ aws cloudformation describe-stacks --stack-name wwii-pipeline-dev --region us-ea
 
 | Topic | Publishers | Subscribers |
 |-------|-----------|-------------|
-| `dev-wwii-content-uploaded` | S3 (contentrepository/*.md) | SQS → trigger |
-| `dev-wwii-chapter-parsed` | S3 (output/*-parsed.json) | SQS → trigger |
+| `dev-wwii-content-uploaded` | S3 (`contentrepository/` prefix) | SQS → trigger |
+| `dev-wwii-chapter-parsed` | S3 (`output/content/*-parsed.json`) | SQS → trigger |
 | `dev-wwii-entity-created` | S3 (output/entity files) | SQS → trigger |
-| `dev-wwii-phase2-complete` | ECS task | nat-manager, email |
+| `dev-wwii-phase2-complete` | ECS tasks, Lambdas (all operator alerts) | email, slack-formatter (→ `dev-wwii-slack` → Chatbot), nat-manager (no-op) |
 | `dev-wwii-dedup-complete` | dedup-ui | trigger |
 | `dev-wwii-alarms` | CloudWatch Alarms | email |
 
@@ -215,5 +228,5 @@ aws cloudformation describe-stacks --stack-name wwii-pipeline-dev --region us-ea
 
 - **Batch poller:** Runs every 5 min regardless of activity (~$0.60/month). Cold starts each time.
 - **OpenSERP manager:** Runs every 10 min (~$0.20/month). Most invocations are no-ops.
-- **Trigger:** Only runs on S3 events + hourly schedule. Minimal cost.
+- **Trigger:** Only runs on S3 events + the reconciliation schedule. Minimal cost.
 - **NAT gateway:** $0.045/hr when active. The 2-hour guardrail caps worst-case to ~$0.09 per orphan.

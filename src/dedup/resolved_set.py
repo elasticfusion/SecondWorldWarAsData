@@ -11,7 +11,7 @@ merge_entity); ambiguous pairs go to a rolling review queue.
 
 This module owns the mechanism (index + candidate lookup + auto/review split);
 the pairwise match SCORE reuses the existing heuristics in
-scripts.find_duplicate_people so behavior matches the batch path.
+src.dedup.find_duplicate_people so behavior matches the batch path.
 """
 
 from __future__ import annotations
@@ -33,15 +33,12 @@ def _norm_key(name: str) -> str:
     bucket so we compare small candidate sets. Reuses the project's unicode/last
     -name normalization for consistency with the batch matcher.
     """
-    try:
-        from scripts.find_duplicate_people import (
-            _extract_last_name,
-            _normalize_unicode,
-        )
+    from src.dedup.find_duplicate_people import (
+        _extract_last_name,
+        _normalize_unicode,
+    )
 
-        last = _extract_last_name(_normalize_unicode(name or ""))
-    except Exception:  # pragma: no cover - fallback if import shape changes
-        last = (name or "").split()[-1] if name else ""
+    last = _extract_last_name(_normalize_unicode(name or ""))
     return last.lower()[:4]
 
 
@@ -113,7 +110,7 @@ class ResolvedSetIndex:
 
 def _score(a: Dict[str, Any], b: Dict[str, Any]) -> float:
     """Similarity score for two entities, reusing the batch matcher's ratio."""
-    from scripts.find_duplicate_people import _similarity_ratio
+    from src.dedup.find_duplicate_people import _similarity_ratio
 
     def _name(e: Dict[str, Any]) -> str:
         return (

@@ -1,6 +1,6 @@
 # URL-Sourced Enrichment + URL Registry (design)
 
-**Date:** 2026-10-13 · **Status:** DESIGN (not yet implemented) · **Priority:** HIGH
+**Date:** 2026-10-13 · **Status:** PARTLY BUILT (checked 2026-11-16, factual status only; Phase 3 pass to re-review): `src/utils/url_registry.py` (registry + per-domain gate) is used by `enrich_places.py`, `fetch_review.py` and `openserp_enrichment.py`; `src/utils/url_content_verdict.py` evaluates fetched content with Grok; DESIGN for the rest · **Priority:** HIGH
 
 ---
 

@@ -216,6 +216,42 @@ class TestMergeGeneric:
         merge_generic(equip_dir, people, primary_idx=0)
 
         merged = json.loads((equip_dir / "tiger.json").read_text(encoding="utf-8"))
+        # no quote on either: they cannot be told to be the same statement - both kept (a lost
+        # statement cannot be recovered; a duplicate can be cleaned up)
+        assert len(merged["event_mentions"]) == 2
+
+    def test_deduplicates_the_same_statement_of_a_sub_event(self, output_root):
+        from src.dedup.merge import merge_generic
+
+        equip_dir = output_root / "equipment"
+        equip_dir.mkdir()
+        mention = {
+            "EventID": "01HX7YZABCDEFGHJKMNPQRSTVM",
+            "Sub_eventID": "01HX7YZABCDEFGHJKMNPQRSTVN",
+            "original_text": "a Tiger was knocked out",
+        }
+        primary = {
+            "EquipmentID": "01HX7YZABCDEFGHJKMNPQRSTVJ",
+            "common_name": "Tiger",
+            "event_mentions": [dict(mention, MentionID="01HX7YZABCDEFGHJKMNPQRSTVK")],
+            "aliases": [],
+        }
+        secondary = {
+            "EquipmentID": "01HX7YZABCDEFGHJKMNPQRSTVP",
+            "common_name": "Tiger I",
+            "event_mentions": [dict(mention, MentionID="01HX7YZABCDEFGHJKMNPQRSTVQ")],
+        }
+        (equip_dir / "tiger.json").write_text(json.dumps(primary), encoding="utf-8")
+        (equip_dir / "tiger i.json").write_text(json.dumps(secondary), encoding="utf-8")
+        merge_generic(
+            equip_dir,
+            [
+                {"filename": "tiger.json", "name": "Tiger"},
+                {"filename": "tiger i.json", "name": "Tiger I"},
+            ],
+            primary_idx=0,
+        )
+        merged = json.loads((equip_dir / "tiger.json").read_text(encoding="utf-8"))
         assert len(merged["event_mentions"]) == 1  # Deduped
 
     def test_returns_none_on_missing_primary(self, tmp_path):

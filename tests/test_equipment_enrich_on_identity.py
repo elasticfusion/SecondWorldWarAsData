@@ -1,12 +1,12 @@
 """Enrichment follows identity resolution: specific records get enriched once; generic
-records skipped; never re-enriched; auto-created stubs (Pershing) enriched. image_scope
-defaults to representative."""
+records are stamped generic and skipped (kept in the JSON, never searched); never re-enriched;
+auto-created stubs (Pershing) enriched. image_scope defaults to representative."""
 
 from pathlib import Path
 
 from src.extraction.equipment import (
     MediaItem,
-    _is_specific_identity,
+    _identity_scope,
     _enrich_on_identity,
     _autocreate_minimal_equipment,
 )
@@ -28,12 +28,19 @@ class _Grok:
 
 
 def test_specific_identity_gate():
-    assert _is_specific_identity({"technical_identifier": "M4"})
-    assert _is_specific_identity({"common_name": "M4 Sherman"})
-    assert _is_specific_identity({"common_name": "M26 Pershing"})
-    assert not _is_specific_identity({"common_name": "tank"})
-    assert not _is_specific_identity({"common_name": "machine guns"})
-    assert not _is_specific_identity({"common_name": ""})
+    grok = _Grok()  # returns {} -> the canonical resolver finds nothing
+    assert _identity_scope({"common_name": "M4 Sherman"}, grok) == "specific"
+    assert _identity_scope({"common_name": "M26 Pershing"}, grok) == "specific"
+    assert _identity_scope({"common_name": "tank"}, grok) == "generic"
+    assert _identity_scope({"common_name": "machine guns"}, grok) == "generic"
+    assert _identity_scope({"common_name": ""}, grok) == "generic"
+    # technical_identifier is NOT evidence: the extractor fills it with the bare name
+    assert (
+        _identity_scope(
+            {"common_name": "trench", "technical_identifier": "trench"}, grok
+        )
+        == "generic"
+    )
 
 
 def test_generic_record_not_enriched(monkeypatch):
@@ -42,13 +49,14 @@ def test_generic_record_not_enriched(monkeypatch):
     hit = {"n": 0}
     monkeypatch.setattr(
         eqmod,
-        "_enrich_and_add_media",
+        "_enrich_from_encyclopedias",
         lambda *a, **k: hit.__setitem__("n", hit["n"] + 1),
     )
     data = {"common_name": "tank"}
-    _enrich_on_identity(data, _Grok(), False, None, None)
+    _enrich_on_identity(data, _Grok())
     assert hit["n"] == 0
     assert "enrichment_status" not in data
+    assert data["identity_scope"] == "generic"  # kept in the JSON, never searched
 
 
 def test_specific_record_enriched_and_stamped(monkeypatch):
@@ -57,7 +65,7 @@ def test_specific_record_enriched_and_stamped(monkeypatch):
     hit = {"n": 0}
     monkeypatch.setattr(
         eqmod,
-        "_enrich_and_add_media",
+        "_enrich_from_encyclopedias",
         lambda *a, **k: hit.__setitem__("n", hit["n"] + 1),
     )
     data = {
@@ -65,7 +73,7 @@ def test_specific_record_enriched_and_stamped(monkeypatch):
         "technical_identifier": "M4",
         "category": "armor",
     }
-    _enrich_on_identity(data, _Grok(), False, None, None)
+    _enrich_on_identity(data, _Grok())
     assert hit["n"] == 1
     assert data["enrichment_status"] == "enriched"
 
@@ -76,11 +84,11 @@ def test_never_re_enriched(monkeypatch):
     hit = {"n": 0}
     monkeypatch.setattr(
         eqmod,
-        "_enrich_and_add_media",
+        "_enrich_from_encyclopedias",
         lambda *a, **k: hit.__setitem__("n", hit["n"] + 1),
     )
     data = {"common_name": "M4 Sherman", "enrichment_status": "enriched"}
-    _enrich_on_identity(data, _Grok(), False, None, None)
+    _enrich_on_identity(data, _Grok())
     assert hit["n"] == 0  # already stamped -> skipped
 
 
@@ -93,9 +101,9 @@ def test_autocreated_pershing_stub_enriched(monkeypatch, tmp_path):
         seen["name"] = data["common_name"]
         data["category"] = "armor"
 
-    monkeypatch.setattr(eqmod, "_enrich_and_add_media", fake_enrich)
+    monkeypatch.setattr(eqmod, "_enrich_from_encyclopedias", fake_enrich)
     idx = {}
-    eid = _autocreate_minimal_equipment("M26 Pershing", idx, tmp_path, _Grok(), False)
+    eid = _autocreate_minimal_equipment("M26 Pershing", idx, tmp_path, _Grok())
     assert eid and seen["name"] == "M26 Pershing"  # stub was enriched on creation
     import json
 

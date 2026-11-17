@@ -6,7 +6,7 @@ import jsonschema
 import pytest
 
 from src.schemas.equipment_output import EQUIPMENT_OUTPUT_SCHEMA as S
-from src.extraction.equipment import _to_structured_images
+from src.enrichment.equipment_images import _as_candidate
 
 UL = "01ABCDEFGH0123456789ABCDEF"
 
@@ -94,20 +94,18 @@ def test_bad_image_scope_rejected():
 
 
 def test_images_mapper_shape():
-    media = [
-        {
-            "media_type": "photo",
-            "url": "https://u/i.jpg",
-            "local_path": "f/x.jpg",
-            "source": "commons",
-            "license": "CC",
-            "title": "M4 tank",
-        }
-    ]
-    imgs = _to_structured_images(media, vision_verified=True)
-    assert imgs[0]["url"] == "https://u/i.jpg"
-    assert (
-        imgs[0]["image_scope"] == "representative"
-    )  # default: type reference, not event
-    assert imgs[0]["vision_verified"] is True
-    assert imgs[0]["caption"] == "M4 tank"
+    # Phase 3 candidate shape: a type reference image, UNVERIFIED until Grok vision confirms it
+    # (the Phase 2 mapper that stamped vision_verified without a check was removed).
+    item = {
+        "media_type": "photo",
+        "url": "https://u/i.jpg",
+        "source": "commons",
+        "license": "CC",
+        "title": "M4 tank",
+    }
+    img = _as_candidate(item, "wikipedia")
+    assert img["url"] == "https://u/i.jpg"
+    assert img["image_scope"] == "representative"  # default: type reference, not event
+    assert img["vision_verified"] is False and img["vision_check"] == "pending"
+    assert img["caption"] == "M4 tank" and img["candidate_source"] == "wikipedia"
+    jsonschema.validate({"EquipmentID": UL, "images": [img]}, S)

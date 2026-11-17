@@ -1,6 +1,6 @@
 # Tier-2 schema.org population — SCOPE (geocoder/source "capture more")
 
-**Status:** SCOPE ONLY. No code written. This plans the Tier-2 orphan-field population deferred by
+**Status (2026-11-16):** T2-A and T2-B implemented, T2-C OSM implemented, GeoNames not (see the section headings). All Phase-3 (places enrichment). Original: SCOPE ONLY. No code written. This plans the Tier-2 orphan-field population deferred by
 the Tier-1 work (see `SCHEMA_ORG_REVIEW.md` §11). Tier-1 populated fields from data the pipeline
 already fetched then discarded (image dims, `contentLocation`, `sameAs` from the Wikipedia URL we
 already resolve). **Tier-2 = fields that require CAPTURING data we don't currently request.**

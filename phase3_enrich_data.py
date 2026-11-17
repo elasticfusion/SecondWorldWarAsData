@@ -241,6 +241,31 @@ def _enrich_places_and_geocode(
         return enriched
 
 
+def _run_document_media_steps(args, config, grok_client, run_step) -> int:
+    """Maps + images that are IN the source document. Deliberately NOT inside the OpenSERP group
+    and NOT gated by external_maps.enabled / use_openserp: those flags control the paid web search;
+    gating document media with them silently dropped every in-doc map (and would skip the
+    deferred map vision). Returns the count produced."""
+    out = args.output_dir
+    ext_config = config.get("external_maps", {})
+    produced = 0
+    # M1: IN-DOCUMENT map links (author-curated maps linked from the narrative, e.g.
+    # [Map VIII](maps/*.jpg)) -> Map entities ALWAYS (Phase 2 skips these as images, so not
+    # persisting them would lose them); the paid map-as-source recycle stays behind
+    # external_maps.recycle_in_doc_maps (+ follow_in_doc_links). Fail-safe.
+    produced += run_step(
+        "in_doc_map_links",
+        lambda: _ingest_in_doc_map_links(out, grok_client, ext_config),
+    )
+    # Deferred map-vs-image vision: Phase 2 marks non-ibiblio (ambiguous) images pending_vision;
+    # they MUST be decided here (maps become Map entities). Never skipped; leftovers alert.
+    produced += run_step(
+        "image_map_vision",
+        lambda: _resolve_pending_image_map_vision(out, grok_client, config),
+    )
+    return produced
+
+
 def _run_openserp_enrichment(args, config, grok_client, run_step) -> int:
     """Run the OpenSERP enrichment step-group (people/equipment/groups/places/
     source-sections + optional external maps + metrics). Returns total enriched."""
@@ -299,7 +324,7 @@ def _run_openserp_enrichment(args, config, grok_client, run_step) -> int:
     enriched += run_step(
         "openserp_source_sections",
         lambda: enrich_source_sections_with_openserp(
-            out / "source_section", openserp_url, grok_client, args.max_items
+            out, openserp_url, grok_client, args.max_items
         ),
     )
     # External maps via live web search — MOVED FROM PHASE 2 so OpenSERP/NAT come up
@@ -323,15 +348,6 @@ def _run_openserp_enrichment(args, config, grok_client, run_step) -> int:
                 image_storage_path=ext_config.get("image_storage_path"),
             ),
         )
-        # M1: FOLLOW IN-DOCUMENT map links (author-curated maps linked from the narrative, e.g.
-        # [Map VIII](maps/*.jpg)) -> map-as-source. Distinct from the OpenSERP web search above:
-        # the link is already a direct image URL in the parsed doc's maps[]. Gated with the maps
-        # feature; fail-safe.
-        if ext_config.get("follow_in_doc_links", True):
-            enriched += run_step(
-                "in_doc_map_links",
-                lambda: _ingest_in_doc_map_links(out, grok_client, ext_config),
-            )
     # M3: link document photos to the PersonIDs they depict (caption-driven). Independent of the
     # maps feature; runs after people are written. Gated by images.link_people (default on).
     if config.get("images", {}).get("link_people", True):
@@ -420,7 +436,29 @@ def _load_parsed_docs(out) -> list:
             len(docs),
             unreadable,
         )
+    if not docs:
+        _warn_no_parsed_docs(out)
     return docs
+
+
+def _warn_no_parsed_docs(out) -> None:
+    """No parsed documents are available: every step that reads the source document (in-document
+    maps, image->person links, link review, ...) will silently produce nothing. Alert once.
+    """
+    from src.utils.observe import observe_warn_counted
+
+    observe_warn_counted(
+        "phase3",
+        "no_parsed_docs",
+        key=("no_parsed_docs",),
+        every=10**9,
+        note=(
+            f"no *-parsed.json under {out}/content, so in-document maps, image-person links and "
+            "link review are SKIPPED; Phase 3 must download output/content/ (it does for book-"
+            "scoped and unscoped runs) - check the S3 sync in this task's log and re-run Phase 3"
+        ),
+        out=str(out),
+    )
 
 
 def _link_images_to_people(out, grok_client) -> int:
@@ -563,36 +601,97 @@ def _book_section_index(out):
         return {}
 
 
+def _recycle_in_doc_maps(ext_config) -> bool:
+    """Recycle in-document maps as map-as-source? Its OWN flag: external_maps.enabled also turns on
+    the paid OpenSERP web search, which must stay independent of reading the maps already in the
+    document. Default off (cost); config.yaml turns it on."""
+    return bool(
+        ext_config.get("recycle_in_doc_maps", False)
+        and ext_config.get("follow_in_doc_links", True)
+    )
+
+
 def _ingest_in_doc_map_links(out, grok_client, ext_config) -> int:
-    """Load parsed docs' maps[] (in-document map links) and ingest each via map-as-source. Returns
-    the count recycled. Fail-safe."""
+    """Persist parsed docs' maps[] (in-document map links) as Map entities — ALWAYS — and, only when
+    external_maps.recycle_in_doc_maps, also recycle each as a map-as-source (a paid Grok place-relevance vision
+    call + re-ingestion per map; unchanged cost gate). Returns the count recycled. Fail-safe.
+    """
     from src.extraction.map_link_source import ingest_in_doc_map_links
 
     docs = _load_parsed_docs(out)
     if not docs:
         return 0
-    summary = ingest_in_doc_map_links(
-        docs,
-        grok_client,
-        image_timeout=ext_config.get("image_download_timeout", 30),
-    )
+    summary: dict = {}
+    recycle = _recycle_in_doc_maps(ext_config)
+    if recycle:
+        summary = ingest_in_doc_map_links(
+            docs,
+            grok_client,
+            image_timeout=ext_config.get("image_download_timeout", 30),
+            allowed_hosts=tuple(ext_config.get("allowed_hosts") or ()),
+            max_per_doc=int(ext_config.get("max_recycled_per_doc", 50)),
+        )
     # Step 5a: persist Map ENTITIES (URL-keyed, cross-chapter footprint accumulation) alongside the
     # map-as-source recycle above. Reuses find_or_create_map_by_url (dedup + append across chapters).
     from src.extraction.map_link_source import persist_map_entities
 
     persist_map_entities(
-        docs, out / "maps", download=ext_config.get("download", True), output_root=out
+        docs,
+        out / "maps",
+        download=ext_config.get("download", True),
+        output_root=out,
+        grok_client=grok_client,
     )
     logging.getLogger("root").info(
-        "OBSERV phase3.step name=in_doc_map_links docs=%d links=%d recycled=%d "
+        "OBSERV phase3.step name=in_doc_map_links docs=%d recycle=%s links=%d recycled=%d "
         "deduped=%d skipped=%d status=ok",
         len(docs),
+        ("on" if recycle else "off(external_maps.recycle_in_doc_maps=false)"),
         summary.get("links", 0),
         summary.get("recycled", 0),
         summary.get("deduped", 0),
         summary.get("skipped", 0),
     )
     return int(summary.get("recycled", 0))
+
+
+def _resolve_equipment_images(out, grok_client, config) -> int:
+    """Vision-checked equipment images (src/enrichment/equipment_images). Returns images verified."""
+    from src.enrichment.equipment_images import resolve_equipment_images
+
+    counts = resolve_equipment_images(
+        out / "equipment",
+        grok_client,
+        images_per_record=int(config.get("equipment", {}).get("images_per_record", 3)),
+    )
+    return int(counts.get("verified", 0))
+
+
+def _resolve_pending_image_map_vision(out, grok_client, config) -> int:
+    """Run the deferred Grok map-vision check on pending images. Returns maps created."""
+    from src.extraction.image_map_vision import resolve_pending
+
+    counts = resolve_pending(
+        out, grok_client, download=config.get("images", {}).get("download", True)
+    )
+    return int(counts.get("map", 0))
+
+
+def _bibliography_resolve_config(config: dict) -> dict:
+    """Config for ``resolve_bibliography_dir`` - ONE definition for both call sites. Every
+    supplemental search (NARA, archive.org, Gutenberg, OpenSERP, Grok LLM search) is a Phase 3
+    concern; Phase 2 performs none."""
+    supplemental = config.get("supplemental_material", {})
+    return {
+        "nara_api_key": config.get("api", {}).get("nara_api_key"),
+        "search_gutenberg": supplemental.get("search_gutenberg", True),
+        "search_archive_org": supplemental.get("search_archive_org", True),
+        "llm_search": supplemental.get("llm_search", True),
+        "use_openserp": supplemental.get("use_openserp", False),
+        "openserp_url": config.get("external_maps", {}).get(
+            "openserp_url", "http://localhost:7001"
+        ),
+    }
 
 
 def _run_batch_rerun(args, config, grok_client) -> int:
@@ -641,20 +740,18 @@ def _run_batch_rerun(args, config, grok_client) -> int:
 
     from src.enrichment.bibliography_resolver import resolve_bibliography_dir
 
-    resolve_config = {
-        "nara_api_key": config.get("api", {}).get("nara_api_key"),
-        "search_gutenberg": supplemental_config.get("search_gutenberg", True),
-        "search_archive_org": supplemental_config.get("search_archive_org", True),
-        "use_openserp": supplemental_config.get("use_openserp", False),
-        "openserp_url": config.get("external_maps", {}).get(
-            "openserp_url", "http://localhost:7001"
-        ),
-    }
+    resolve_config = _bibliography_resolve_config(config)
     total += _step(
         "bibliography_resolve",
         lambda: resolve_bibliography_dir(
             bib_dir, grok_client, resolve_config, max_items=args.max_items
         ).get("resolved", 0),
+    )
+    # Equipment scope decisions queued on the collect pass (legacy records with no identity_scope)
+    # are now cached: decide them and vision-check their images.
+    total += _step(
+        "equipment_images",
+        lambda: _resolve_equipment_images(args.output_dir, grok_client, config),
     )
     return total
 
@@ -805,15 +902,7 @@ def main():
         # Resolve bibliography sources (NARA, Archive.org, LOC)
         from src.enrichment.bibliography_resolver import resolve_bibliography_dir
 
-        resolve_config = {
-            "nara_api_key": config.get("api", {}).get("nara_api_key"),
-            "search_gutenberg": supplemental_config.get("search_gutenberg", True),
-            "search_archive_org": supplemental_config.get("search_archive_org", True),
-            "use_openserp": supplemental_config.get("use_openserp", False),
-            "openserp_url": config.get("external_maps", {}).get(
-                "openserp_url", "http://localhost:7001"
-            ),
-        }
+        resolve_config = _bibliography_resolve_config(config)
         total_enriched += _run_step(
             "bibliography_resolve",
             lambda: resolve_bibliography_dir(
@@ -831,11 +920,26 @@ def main():
     # NOT a Phase-3 step anymore: Phase 2 owns ALL Grokipedia/Wikipedia enrichment;
     # Phase 3 owns only OTHER external enrichment (geocoding, NOAA, OpenSERP, NARA).
 
+    # Document media (in-doc maps + deferred map vision) — independent of OpenSERP.
+    if not args.people_only:
+        total_enriched += _run_document_media_steps(
+            args, config, grok_client, _run_step
+        )
+
     # OpenSERP enrichment (images, academic sources) — requires OpenSERP running
     if not args.people_only and config.get("supplemental_material", {}).get(
         "use_openserp", False
     ):
         total_enriched += _run_openserp_enrichment(args, config, grok_client, _run_step)
+
+    # Equipment images: candidates for SPECIFIC equipment only (qualified Wikipedia article +
+    # any OpenSERP candidates above), each confirmed by Grok vision; generic records are cleaned.
+    # NOT gated by use_openserp (it is not a web search). Never skipped; leftovers alert.
+    if not args.people_only:
+        total_enriched += _run_step(
+            "equipment_images",
+            lambda: _resolve_equipment_images(args.output_dir, grok_client, config),
+        )
 
     # NOAA weather enrichment (observed data to supplement Open-Meteo)
     noaa_token = config.get("api", {}).get("noaa_api_token", "")

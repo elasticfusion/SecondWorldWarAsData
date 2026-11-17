@@ -97,6 +97,41 @@ def _should_escalate(key: str, now: float) -> bool:
     return False
 
 
+def publish_alert(
+    subject: str,
+    message: str,
+    topic_arn: str = "",
+    region: str = "",
+) -> bool:
+    """Publish an operator alert to the notify topic (``NOTIFICATION_TOPIC_ARN``, the
+    ``{env}-wwii-phase2-complete`` topic: email + Slack via the formatter). The ONE publisher for
+    pipeline alerts. True when published. Best-effort: no topic -> False; never raises. Put counts
+    and ids in ``message``, never record values."""
+    topic = topic_arn or os.environ.get("NOTIFICATION_TOPIC_ARN", "")
+    if not topic:
+        logger.debug("No NOTIFICATION_TOPIC_ARN - alert not sent: %s", subject)
+        return False
+    try:
+        import boto3  # lazy: keep boto3 out of the hot path / local imports
+        from botocore.config import Config
+
+        region = (
+            region
+            or os.getenv("AWS_REGION")
+            or os.getenv("AWS_DEFAULT_REGION", "us-east-1")
+        )
+        # short timeouts, one attempt: an alert must never hold up the pipeline (e.g. a
+        # spot-termination handler with a 30 s window)
+        quick = Config(connect_timeout=3, read_timeout=5, retries={"max_attempts": 1})
+        boto3.client("sns", region_name=region, config=quick).publish(
+            TopicArn=topic, Subject=subject[:100], Message=message
+        )
+        return True
+    except Exception as e:  # noqa: BLE001 - alerting must NEVER stop the pipeline
+        logger.warning("Failed to send alert %r: %s", subject, type(e).__name__)
+        return False
+
+
 def _escalate_to_slack(scope: str, event: str, line: str) -> None:
     """Publish a status=error OBSERV line to the notify SNS topic (-> formatter -> Slack).
 
@@ -108,15 +143,7 @@ def _escalate_to_slack(scope: str, event: str, line: str) -> None:
             return
         if not _should_escalate(f"{scope}.{event}", time.time()):
             return
-        import boto3  # lazy: keep boto3 out of the hot path / local imports
-
-        topic = os.environ["NOTIFICATION_TOPIC_ARN"]
-        region = os.getenv("AWS_REGION") or os.getenv("AWS_DEFAULT_REGION", "us-east-1")
-        boto3.client("sns", region_name=region).publish(
-            TopicArn=topic,
-            Subject=f"WWII Pipeline: OBSERV error — {scope}.{event}"[:100],
-            Message=line,
-        )
+        publish_alert(f"WWII Pipeline: OBSERV error — {scope}.{event}", line)
     except Exception:  # noqa: BLE001 - Slack escalation must NEVER stop the pipeline
         logger.debug("observe slack-escalation failed (swallowed)", exc_info=True)
 
@@ -220,3 +247,50 @@ def observe_error(scope: str, event: str, *, note: str = "", **fields: Any) -> s
 def observe_warn(scope: str, event: str, *, note: str = "", **fields: Any) -> str:
     """Convenience: a degraded-but-recovered path (status=warn). Never raises."""
     return observe(scope, event, status="warn", note=note, **fields)
+
+
+# --- Counted warnings: actionable, not noisy ------------------------------------------------------
+# A condition that repeats per item (one bad paragraph list, one rate-limited lookup) must not emit
+# one alert per occurrence: the 40th identical line carries no new information and buries the real
+# ones. observe_warn_counted() warns on the FIRST occurrence of a key and every `every`-th after,
+# with the running count, and logs the rest at DEBUG. Pair every call with an actionable `note`.
+_counts: dict = {}
+_counts_lock = __import__("threading").Lock()
+
+
+def observe_warn_counted(
+    scope: str,
+    event: str,
+    *,
+    key: tuple,
+    note: str,
+    every: int = 25,
+    **fields: Any,
+) -> int:
+    """Count ``key``; emit observe_warn on count 1 and every ``every``-th. Returns the new count.
+    ``note`` is REQUIRED: it must say what to do. Never raises."""
+    try:
+        with _counts_lock:
+            n = _counts.get((scope, event) + tuple(key), 0) + 1
+            _counts[(scope, event) + tuple(key)] = n
+        if n == 1 or n % every == 0:
+            observe_warn(scope, event, note=note, count=n, **fields)
+        else:
+            logger.debug(
+                "%s.%s key=%s count=%d (suppressed repeat)", scope, event, key, n
+            )
+        return n
+    except Exception:  # noqa: BLE001 - the sink must never raise into the phase
+        return 0
+
+
+def reset_counted_warnings() -> None:
+    """Forget all counted-warning state (tests / a new run)."""
+    with _counts_lock:
+        _counts.clear()
+
+
+def counted_warning_totals(scope: str, event: str) -> dict:
+    """{key-tuple: count} for one (scope, event): feeds end-of-phase rollups."""
+    with _counts_lock:
+        return {k[2:]: v for k, v in _counts.items() if k[0] == scope and k[1] == event}

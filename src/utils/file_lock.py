@@ -81,11 +81,11 @@ def _guarded_save(filepath: Path, new_data: Any) -> bool:
     # parent dir name for ANY path, so gate on membership in ENTITY_SCHEMA_VERSIONS AND exclude
     # non-entity files (index.json/duplicate_report.json/dotfiles) that live inside an entity dir
     # (also avoids a min-version mis-stamp for an unknown dir, cf. the #498 unknown-entity guard).
-    entity = _resolve_entity_type(filepath)
     try:
-        from src.schemas import ENTITY_SCHEMA_VERSIONS, inject_metadata
+        from src.schemas import inject_metadata
 
-        if entity in ENTITY_SCHEMA_VERSIONS and not _is_non_entity_file(filepath):
+        entity = _stamp_entity(filepath)
+        if entity:
             inject_metadata(new_data, entity=entity)
     except Exception as e:  # noqa: BLE001 - stamping must never block a validated write
         logger.debug("locked_json metadata stamp skipped for %s: %s", filepath, e)
@@ -381,7 +381,33 @@ def _is_non_entity_file(filepath: Path) -> bool:
         "not_related.json",
         "related_groups_report.json",
         "review_queue.json",
+        "not_groups.json",
+        "coords.json",
     ) or filepath.name.startswith(".")
+
+
+def _stamp_entity(filepath: Path, explicit: Optional[str] = None) -> Optional[str]:
+    """The entity whose schema version to stamp on ``filepath``, or None to NOT stamp.
+
+    One rule for every writer (write_json_with_lock and locked_json):
+    * a non-record file (index.json, reports, sidecars, dotfiles) is NEVER stamped, even if the
+      caller passed ``entity=``: stamping it inserts ``_schema_version`` / ``_last_updated`` as if
+      they were names in a name->file index;
+    * else an explicit entity wins;
+    * else a KNOWN entity record is stamped with its own version, resolved from the path;
+    * an unknown location returns None here; write_json_with_lock keeps its prior fallback for it.
+    Before this, ~30 write_json_with_lock callers omitted ``entity=`` and every one stamped the MINIMUM
+    version (2.24): logistics/casualties/events then failed the validator's A1 check, and every
+    entity index.json was polluted with the stamp keys (XChannel-8 dev E2E, 2026-11-06).
+    """
+    if _is_non_entity_file(filepath):
+        return None
+    if explicit:
+        return explicit
+    from src.schemas import ENTITY_SCHEMA_VERSIONS
+
+    inferred = _resolve_entity_type(filepath)
+    return inferred if inferred in ENTITY_SCHEMA_VERSIONS else None
 
 
 def _resolve_entity_type(filepath: Path) -> str:
@@ -604,11 +630,10 @@ def write_json_with_lock(
     written, False if the central guard BLOCKED it (schema-invalid). Callers may gate follow-on
     work (e.g. metrics) on the return value instead of a separate pre-check.
 
-    `entity` selects the per-entity schema version to stamp. When omitted, the
-    stamp falls back to the MIN version across entities — which SILENTLY DOWNGRADES
-    records whose true entity version is above the min (people_groups/equipment at
-    2.25). Callers that know their entity MUST pass it so the stamp lands at the
-    record's real version (otherwise needs_migration() stays True forever).
+    `entity` selects the per-entity schema version to stamp. When omitted it is resolved from the
+    path (see ``_stamp_entity``): a known entity dir (or ``*-event.json``) gets its own version;
+    a non-record file (index.json, reports, sidecars) is not stamped; only an UNKNOWN location
+    falls back to the MIN version across entities. Passing ``entity`` explicitly is still preferred.
     """
     from src.schemas import inject_metadata
 
@@ -620,7 +645,11 @@ def write_json_with_lock(
     if not _validate_entity(filepath, data):
         # Schema-invalid record — do NOT persist it (guard logged the reason).
         return False
-    inject_metadata(data, entity=entity)
+    stamp = _stamp_entity(filepath, entity)
+    if stamp:
+        inject_metadata(data, entity=stamp)
+    elif not _is_non_entity_file(filepath):
+        inject_metadata(data)  # unknown location: prior fallback (minimum version)
     filepath.parent.mkdir(parents=True, exist_ok=True)
 
     # Disk space check (local mode only — skip in /tmp/pipeline ECS workdir)

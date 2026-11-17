@@ -7,7 +7,9 @@ import src.extraction.equipment as eq
 class _FencedGrok:
     """extract_json is what strips the fence in production; emulate its contract."""
 
-    def extract_json(self, prompt, temperature=0.1, use_cache=True, cache_type=""):
+    def extract_json(
+        self, prompt, temperature=0.1, use_cache=True, cache_type="", cache_key=None
+    ):
         # extract_json returns a parsed dict (fence already stripped by the client)
         return {"specifications": {"weight_kg": 30300}, "type": "medium_tank"}
 
@@ -16,6 +18,12 @@ class _FencedGrok:
 
 
 def test_enrichment_parses_via_extract_json():
-    out = eq._enrich_equipment_data("M4 Sherman", "M4", "armor", _FencedGrok())
+    out = eq._enrich_equipment_data(
+        "M4 Sherman",
+        "M4",
+        "armor",
+        _FencedGrok(),
+        source_text="[url]\nThe M4 Sherman...",
+    )
     assert out["specifications"]["weight_kg"] == 30300
     assert out["type"] == "medium_tank"

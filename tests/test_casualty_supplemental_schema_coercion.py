@@ -92,3 +92,66 @@ def test_shared_strip_unmodeled_keys_respects_patternproperties():
     assert "_schema_version" in rec  # patternProperties-permitted kept
     assert "type" in rec and "description" in rec  # modeled kept
     assert seen == ["bogus"]
+
+
+def test_a_null_organization_role_is_the_default_not_a_dropped_casualty():
+    """Grok answered ``"role": null`` (USA-E-XChannel 2026-11-15): .lower() on None dropped 10
+    casualties whole."""
+    from src.extraction.casualties import _normalize_role, _resolve_organizations
+
+    assert _normalize_role(None) == "suffered_casualties"
+    assert _normalize_role(" Attacker ") == _normalize_role("attacker")
+    (org,) = _resolve_organizations([{"name": "116th Infantry", "role": None}], {})
+    assert (org["name"], org["role"]) == ("116th Infantry", "suffered_casualties")
+
+
+def test_null_or_malformed_answer_fields_never_drop_a_casualty():
+    """Every field Grok may answer null (or as a non-text name) is skipped or defaulted: the
+    casualty itself is built (the null-role crash dropped 10, 2026-11-15)."""
+    from unittest import mock
+
+    from src.extraction import casualties as C
+
+    data = {
+        "type": None,
+        "description": None,
+        "side": "allied",
+        "impacted_organizations": None,
+        "impacted_people": [{"name": 5}, {"name": " Gerow ", "casualty_type": None}],
+        "impacted_places": [{"name": None}],
+        "impacted_equipment": [{"name": ["x"]}],
+        "impacted_logistics": None,
+        "original_text": "Intense small arms fire took toll of Company A.",
+    }
+    with mock.patch(
+        "src.extraction.equipment_disambiguation.resolve_designation", return_value=None
+    ):
+        casualty = C._build_casualty(
+            data, "01HZZZZZZZZZZZZZZZZZZZZZE0", "01HZZZZZZZZZZZZZZZZZZZZZS1", "B",
+            "ch8", 3, {}, {}, {}, {}, {}, logistics_index={},
+        )  # fmt: skip
+    assert (casualty["type"], casualty["description"]) == ("casualties", "")
+    assert "impacted_organizations" not in casualty  # null: absent, not a crash
+    assert casualty["impacted_people"] == [
+        {"PersonID": None, "name": "Gerow", "casualty_type": ""}
+    ]
+    assert casualty["impacted_places"] == [] and casualty["impacted_equipment"] == []
+
+
+def test_an_empty_list_stays_empty_and_odd_shapes_are_defaults():
+    from unittest import mock
+
+    from src.extraction import casualties as C
+
+    data = {"impacted_people": [], "impacted_places": "Omaha", "side": ["allied"],
+            "impacted_equipment": [{"name": "M4", "relation": {"x": 1}}]}  # fmt: skip
+    with mock.patch(
+        "src.extraction.equipment_disambiguation.resolve_designation", return_value=None
+    ):
+        casualty = C._build_casualty(
+            data, "01HZZZZZZZZZZZZZZZZZZZZZE0", "01HZZZZZZZZZZZZZZZZZZZZZS1", "B",
+            "ch8", 3, {}, {}, {}, {}, {},
+        )  # fmt: skip
+    assert casualty["impacted_people"] == [] and "impacted_places" not in casualty
+    assert casualty["side"] == "unknown"
+    assert casualty["impacted_equipment"][0]["relation"] == "other"

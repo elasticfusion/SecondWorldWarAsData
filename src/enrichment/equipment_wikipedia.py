@@ -31,44 +31,22 @@ def get_equipment_wikipedia_image(name: str) -> Optional[dict]:
 
 
 def search_equipment_wikipedia(name: str) -> Optional[dict]:
-    """Search Wikipedia for an equipment article. Returns {extract, url, image, license} or None."""
-    from src.utils.search_cache import cache_result, get_cached, TRANSIENT
+    """Search Wikipedia for an equipment article. Returns {extract, url, image, license} or None.
+    Direct title first, then common type suffixes."""
+    from src.enrichment._wikipedia_common import cached_variant_search
+    from src.utils.wikimedia_client import EQUIPMENT
 
-    cached = get_cached("wikipedia_equipment", name)
-    if cached == "NOT_FOUND":
-        return None
-    if cached:
-        return json.loads(cached)
-
-    # Direct title lookup, then common suffixes. Track whether any attempt hit a TRANSIENT failure
-    # (non-200 / network) so a Wikipedia outage is not negative-cached as a genuine miss for 7d.
-    transient = False
-    result = _lookup_equipment(name)
-    if result is TRANSIENT:
-        transient = True
-        result = None
-    if not result:
-        for suffix in [" tank", " aircraft", " gun", " rifle", " vehicle", " ship"]:
-            r = _lookup_equipment(name + suffix)
-            if r is TRANSIENT:
-                transient = True
-                continue
-            if r:
-                result = r
-                break
-
-    if result:
-        cache_result("wikipedia_equipment", name, json.dumps(result))
-        with _equipment_wiki_images_lock:
-            _equipment_wiki_images[name] = {
-                "url": result.get("image", ""),
-                "license": result.get("license", "unknown"),
-            }
-    elif not transient:
-        cache_result(
-            "wikipedia_equipment", name, None
-        )  # genuine miss -> negative-cache
-    return result
+    suffixes = [" tank", " aircraft", " gun", " rifle", " vehicle", " ship"]
+    return cached_variant_search(
+        EQUIPMENT,
+        name,
+        lambda title: _lookup_equipment(
+            title
+        ),  # late-bound (tests patch _lookup_equipment)
+        [name] + [name + s for s in suffixes],
+        _equipment_wiki_images,
+        _equipment_wiki_images_lock,
+    )
 
 
 def _lookup_equipment(title: str):  # -> dict | None | search_cache.TRANSIENT sentinel
@@ -83,13 +61,11 @@ def _lookup_equipment(title: str):  # -> dict | None | search_cache.TRANSIENT se
     except Exception:  # noqa: BLE001
         pass
     try:
-        from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
+        from src.utils.wikimedia_client import TRANSIENT, wikimedia_get
 
-        resp = recorded_fetch(
+        resp = wikimedia_get(
             "wikipedia",
             "https://en.wikipedia.org/w/api.php",
-            kind=TEXTUAL,
-            method="GET",
             params={
                 "action": "query",
                 "format": "json",
@@ -102,12 +78,15 @@ def _lookup_equipment(title: str):  # -> dict | None | search_cache.TRANSIENT se
             },
             headers=_HEADERS,
             timeout=15,
+            subject=title,
             result_summary_fn=lambda r: f"status={r.status_code} title={title[:40]!r}",
         )
+        if resp is TRANSIENT:
+            return TRANSIENT  # rate limit / block / 5xx / network: not a genuine miss
         if resp.status_code != 200:
-            from src.utils.search_cache import TRANSIENT
-
-            return TRANSIENT  # transient server error, not a genuine miss
+            return (
+                TRANSIENT  # other non-200: not a genuine miss either (prior behaviour)
+            )
 
         pages = resp.json().get("query", {}).get("pages", {})
         for page_id, page_data in pages.items():
@@ -236,6 +215,10 @@ def _enrich_one_equipment_file(f: Path) -> tuple[bool, bool]:
         return False, False
 
     result = search_equipment_wikipedia(name)
+    from src.utils.wikimedia_client import EQUIPMENT, lookup_was_transient
+
+    if lookup_was_transient(EQUIPMENT, name, result):
+        return True, False  # unknown, not a miss: do NOT stamp wikipedia_checked_at
 
     def _apply(rec, _result=result):
         return _apply_equipment_wikipedia(rec, _result)

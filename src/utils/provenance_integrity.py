@@ -17,7 +17,6 @@ weak-provenance anomaly rather than silently passing. Read-only, non-fatal — e
 report, exactly like ``referential_integrity.audit``.
 """
 
-import json
 import logging
 import re
 from pathlib import Path
@@ -37,15 +36,6 @@ _NESTED_EVENT_REFS = ("source", "event_context")
 # note-type mentions only — an ordinary entity mention must carry an EventID.
 _NOTE_REFERENCE_TYPES = ("footnote", "endnote")
 _MENTION_LOCATORS = ("verbatim_reference", "reference_number", "paragraph_number")
-# Curated exclusion lists that live beside entity records (explicit — never a prefix match, so
-# a real record can never be hidden from the audit).
-_AUX_LIST_FILES = (
-    "not_people.json",
-    "not_groups.json",
-    "not_related.json",
-    "not_citation.json",
-    "not_equipment.json",
-)
 # Indirect-only edges: resolve to another entity, not to the source directly (casualties).
 _INDIRECT_FIELDS = ("PersonID", "PlaceID")
 
@@ -151,24 +141,15 @@ def _find_placeholders(node: Any, path: str = "") -> List[str]:
 
 
 def _iter_entity_records(out: Path, glob_pat: str) -> List[Tuple[str, Dict[str, Any]]]:
-    """Load (name, record) for an entity's output glob. Skips report/index sidecars. Fail-safe."""
-    skip = {
-        "index.json",
-        "duplicate_report.json",
-        "not_duplicates.json",
-        "review_queue.json",
-        "related_groups_report.json",
-    }
+    """Load (name, record) for an entity's output glob (src/utils/entity_records). Fail-safe."""
+    from src.utils.entity_records import entity_files, load_json
+
     recs: List[Tuple[str, Dict[str, Any]]] = []
-    for f in out.glob(glob_pat):
-        if f.name in skip or f.name in _AUX_LIST_FILES or f.name.startswith("."):
-            continue
-        try:
-            data = json.loads(f.read_text(encoding="utf-8"))
-        except Exception as e:  # noqa: BLE001
-            _note_unreadable(f, type(e).__name__)
-            continue
-        if isinstance(data, dict):
+    for f in entity_files(out, glob_pat):
+        data = load_json(f)
+        if data is None:
+            _note_unreadable(f, "unreadable")
+        elif isinstance(data, dict):
             recs.append((f.name, data))
         else:
             _note_unreadable(f, "not_a_json_object")
@@ -325,8 +306,9 @@ def _alert(report: Dict[str, Any], phase: str) -> None:
     """
     import os
 
-    topic = os.environ.get("NOTIFICATION_TOPIC_ARN", "")
-    if not topic:
+    from src.utils.observe import publish_alert
+
+    if not os.environ.get("NOTIFICATION_TOPIC_ARN", ""):
         logger.debug("No NOTIFICATION_TOPIC_ARN — skipping provenance alert")
         return
     lines = [
@@ -338,15 +320,7 @@ def _alert(report: Dict[str, Any], phase: str) -> None:
         f"Structural gaps (schema declares no source edge): "
         f"{','.join(report.get('structural_gaps', [])) or 'none'}",
     ]
-    try:
-        import boto3
-
-        region = os.environ.get("AWS_DEFAULT_REGION", "us-east-1")
-        boto3.client("sns", region_name=region).publish(
-            TopicArn=topic,
-            Subject="WWII Pipeline: DATA QUALITY — provenance anomalies",
-            Message="\n".join(lines),
-        )
+    if publish_alert(
+        "WWII Pipeline: DATA QUALITY — provenance anomalies", "\n".join(lines)
+    ):
         logger.info("Sent provenance anomaly alert")
-    except Exception as e:  # noqa: BLE001 - alerting is best-effort
-        logger.warning("Failed to send provenance anomaly alert: %s", e)

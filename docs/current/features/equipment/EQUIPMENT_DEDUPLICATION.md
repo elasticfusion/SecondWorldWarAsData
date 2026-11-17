@@ -14,7 +14,7 @@ Equipment deduplication has been implemented to consolidate multiple mentions of
 ## How deduplication works (authoritative)
 
 Equipment dedup runs in **two stages**, both living in **`src/extraction/equipment.py`**
-(the detection scorer is `scripts/find_duplicate_equipment.py`). There is **one** live
+(the detection scorer is `src/dedup/find_duplicate_equipment.py`). There is **one** live
 implementation — a former duplicate copy under `src/extraction/equipment_ext/` was dead
 (no importers) and has been **deleted** to prevent drift.
 
@@ -23,7 +23,8 @@ implementation — a former duplicate copy under `src/extraction/equipment_ext/`
 `merge_or_create_equipment(equipment_data, mention, dir, index, …)` decides, for each
 extracted equipment item, whether it is a NEW type or another mention of an existing one:
 
-1. **Match** (`_find_matching_equipment`): try `technical_identifier` → exact
+1. **Match** (`_find_matching_equipment`): try `canonical_name` (the resolved identity, the
+   most stable key; the only key for named vessels) → `technical_identifier` → exact
    `common_name` → **fuzzy** (`_fuzzy_match_equipment`, `SequenceMatcher ≥ 0.80`, also
    checking `alternate_names`).
 2. **Match found → `_merge_into_existing`**: append the mention (deduped by
@@ -36,7 +37,7 @@ extracted equipment item, whether it is a NEW type or another mention of an exis
 
 ### Stage 2 — detection-time scoring (catch near-duplicate records post-hoc)
 
-Wired into `ecs_entrypoint._run_dedup_detection` → `scripts/find_duplicate_equipment.py`:
+Wired into `ecs_entrypoint._run_dedup_detection` → `src/dedup/find_duplicate_equipment.py`:
 
 1. **Normalize** names (caliber/mm/cm) and **alias-expand** via
    `config/equipment_aliases.yaml` (Sherman→M4, 88→88mm Flak 36, …).
@@ -316,7 +317,7 @@ Dedup is **not** exact-match-only. Both stages resolve name variations:
 - **Ingest-time merge** (`src/extraction/equipment.py`): `_find_matching_equipment` tries
   **canonical_name** → `technical_identifier` → exact `common_name` → **fuzzy match**
   (`SequenceMatcher ≥ 0.80`, also checking `alternate_names`).
-- **Detection-time scoring** (`scripts/find_duplicate_equipment.py`, wired into
+- **Detection-time scoring** (`src/dedup/find_duplicate_equipment.py`, wired into
   `ecs_entrypoint._run_dedup_detection`): normalizes names (caliber/mm/cm), expands via the
   **alias table** (`config/equipment_aliases.yaml`: Sherman→M4, 88→88mm Flak 36, …), then
   scores name-similarity + name-contained + same-category with the origin veto above.

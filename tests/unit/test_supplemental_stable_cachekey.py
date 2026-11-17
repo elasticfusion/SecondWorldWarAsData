@@ -44,8 +44,8 @@ def test_stable_material_invariant_to_fulltext_drift():
         "p1": "COMPLETELY DIFFERENT regenerated/summarized fulltext across the re-run"
     }
 
-    _, prompt_a, material_a = create_supplemental_prompt(ev_a)[0]
-    _, prompt_b, material_b = create_supplemental_prompt(ev_b)[0]
+    _, prompt_a, material_a, _ = create_supplemental_prompt(ev_a)[0]
+    _, prompt_b, material_b, _ = create_supplemental_prompt(ev_b)[0]
 
     # The prompt text DOES change (fulltext is embedded for context)...
     assert prompt_a != prompt_b
@@ -59,10 +59,10 @@ def test_stable_material_invariant_to_fulltext_drift():
 
 def test_stable_material_distinguishes_different_refs():
     ev = _event()
-    _, _, material_refs13 = create_supplemental_prompt(ev)[0]
+    _, _, material_refs13, _ = create_supplemental_prompt(ev)[0]
     ev2 = _event()
     ev2["Event"]["Sub-events"][0]["Footnote_References"] = [9, 9, 2]
-    _, _, material_refs92 = create_supplemental_prompt(ev2)[0]
+    _, _, material_refs92, _ = create_supplemental_prompt(ev2)[0]
     # Different reference numbers -> different identity -> different key.
     assert material_refs13 != material_refs92
     assert _key(material_refs13) != _key(material_refs92)

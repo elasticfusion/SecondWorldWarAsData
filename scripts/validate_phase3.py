@@ -49,6 +49,8 @@ from scripts.validate_phase2 import (  # type: ignore[import-not-found]
     check_source_traceback,
 )
 from src.schemas import ENTITY_SCHEMA_VERSIONS
+from src.utils.entity_records import ENRICHED_ENTITIES, is_enriched
+from src.utils.entity_records import has_source_link as _has_link
 from src.schemas import entity_registry as _er
 
 
@@ -67,8 +69,6 @@ def _entity_schema(entity: str):
 
 
 # --- P3-A5: enriched-record source linkage -----------------------------------------------------
-# Fields that signal an external-source LINK; checked at top level and inside biographical_profile.
-_LINK_FIELDS = ("wikipedia_url", "grokipedia_url", "source_url", "archive_url")
 # Entity dirs gated by P3-A5. ONLY entities whose ``enrichment_status == "enriched"`` means a
 # DESCRIPTIVE external-source enrichment (so a link is genuinely expected) are listed here:
 #   • people / people_groups : Wikipedia/Grokipedia descriptive enrichment -> link expected.
@@ -79,40 +79,7 @@ _LINK_FIELDS = ("wikipedia_url", "grokipedia_url", "source_url", "archive_url")
 #                     deliberately link-free — a place with no Wikipedia article is still enriched).
 #   • bibliography  : has NO enrichment_status field (uses search_status) -> never matches this gate.
 #   • weather       : attribution is covered at the aggregate level by P3-B4 (NOAA coverage).
-_ENRICHED_ENTITIES = {
-    "people": "output/people/*.json",
-    "people_groups": "output/people_groups/*.json",
-    "equipment": "output/equipment/*.json",
-}
-
-
-def _has_link(rec: Dict[str, Any]) -> bool:
-    if any(rec.get(k) for k in _LINK_FIELDS):
-        return True
-    bp = rec.get("biographical_profile")
-    if isinstance(bp, dict) and any(bp.get(k) for k in _LINK_FIELDS):
-        return True
-    # Equipment stores its source link ONLY nested under external_data (the equipment output schema
-    # has additionalProperties:false and forbids a top-level wikipedia_url/grokipedia_url).
-    ext = rec.get("external_data")
-    if isinstance(ext, dict):
-        if any(ext.get(k) for k in _LINK_FIELDS):
-            return True
-        for src in ext.get("additional_sources") or []:
-            if isinstance(src, dict) and src.get("url"):
-                return True
-    urls = rec.get("resource_urls")
-    if isinstance(urls, list) and urls:
-        return True
-    # Structured-facts enrichment (e.g. groups via the Grok group_enrichment prompt) records its
-    # provenance under enrichment_data._source = {type, query, retrieved_at} rather than a
-    # descriptive top-level URL. A populated _source IS traceable attribution.
-    ed = rec.get("enrichment_data")
-    if isinstance(ed, dict):
-        src = ed.get("_source")
-        if isinstance(src, dict) and src.get("type"):
-            return True
-    return False
+_ENRICHED_ENTITIES = {e: f"output/{e}/*.json" for e in ENRICHED_ENTITIES}
 
 
 def _check_enriched_record_compliance(entity, f, rec, schema, target_ver, rep) -> None:
@@ -178,7 +145,7 @@ def check_enriched_source_linkage(root: Path, rep: Report) -> None:
             rec = _load(f)
             if not isinstance(rec, dict):
                 continue
-            if str(rec.get("enrichment_status", "")).strip() != "enriched":
+            if not is_enriched(rec):
                 continue
             _check_enriched_record_compliance(entity, f, rec, schema, target_ver, rep)
 

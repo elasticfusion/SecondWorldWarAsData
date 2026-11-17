@@ -1,7 +1,7 @@
 # Testing Documentation
 
 **Version:** 2.0.0  
-**Last Updated:** 2026-06-13  
+**Last Updated:** 2026-11-16  
 **Status:** Active
 
 ---
@@ -23,7 +23,10 @@ pytest tests/ -m "not slow and not requires_api" -q
 # Run unit tests only
 pytest tests/unit/ -q
 
-# Run with coverage
+# Same selection plus the linters: the quality gate (run before every commit)
+bash scripts/gate.sh
+
+# Run with coverage (needs pytest-cov; pyproject.toml already adds --cov=src)
 pytest tests/ --cov=src --cov-report=term-missing
 ```
 
@@ -31,52 +34,26 @@ pytest tests/ --cov=src --cov-report=term-missing
 
 ## Test Structure
 
+About 535 `test_*.py` files (counted 2026-11-16). Most are **flat in `tests/`** (about 456 files), named for the feature they pin. There are also `tests/unit/` (78 files), `tests/unit/test_extraction/`, `tests/integration/` (3 files) and `tests/fixtures/`. Do not look for a fixed catalogue of files here; `ls tests/` and `grep -l` are accurate, a list in this file is not. Shape of the tree:
+
 ```
 tests/
-├── conftest.py                          # Shared fixtures
-├── test_golden_files.py                 # Output structure regression
-├── test_prompt_schema_alignment.py      # Prompt↔schema consistency
-├── test_json_validator.py               # JSON validation + schemas
-├── test_schemas.py                      # Schema integrity (all 9 types)
-├── test_integration.py                  # Validation workflows
-├── test_validation_performance.py       # Performance benchmarks
-├── test_people_deduplication.py         # People dedup logic
-├── test_equipment_deduplication.py      # Equipment image hashing
-├── test_custom_validators.py            # Custom validator rules
-├── test_fetch_endnotes.py              # HTML footnote parsing
-├── test_supplemental.py                 # Supplemental extraction (API)
-├── test_supplemental_complete.py        # Full supplemental pipeline (API)
-├── unit/
-│   ├── test_batch_parallel.py           # Entity extraction orchestration
-│   ├── test_batch_poller.py             # Batch job Lambda polling
-│   ├── test_cache_backend.py            # Disk + DynamoDB cache backends
-│   ├── test_container_code.py           # ECS entrypoint + batch API
-│   ├── test_dedup_scripts.py            # All find_duplicate_* scripts
-│   ├── test_dedup_ui_handler.py         # Dedup UI Lambda (security + logic)
-│   ├── test_duplicate_detection.py      # People duplicate heuristics
-│   ├── test_empty_content_guards.py     # LLM prompt empty-input guards
-│   ├── test_entity_store.py             # DynamoDB entity store (moto)
-│   ├── test_entrypoint_modes.py         # ECS argument routing
-│   ├── test_event_mention_race.py       # Thread-safety (10 threads)
-│   ├── test_grok_client.py              # LLM client + caching
-│   ├── test_job_queue.py                # DynamoDB job queue (moto)
-│   ├── test_lambda_handlers.py          # All Lambda handler imports
-│   ├── test_llm_response_handling.py    # Malformed LLM output handling
-│   ├── test_merge.py                    # Entity merge + event ref updates
-│   ├── test_phase3_retry.py             # Phase 3 retry logic
-│   ├── test_prompt_loader.py            # YAML prompt loading + rendering
-│   ├── test_resolve_people.py           # Name resolution scripts
-│   ├── test_s3_storage.py              # S3 storage (moto)
-│   ├── test_text_utils.py              # Text normalization (31 tests)
-│   ├── test_trigger_handler.py          # Trigger Lambda logic
-│   ├── test_weather_central.py          # Weather extraction helpers
-│   └── test_extraction/
-│       └── test_people.py               # People name/rank normalization
-├── integration/
-│   ├── test_phase2_pipeline.py          # Full Phase 2 with mocked LLM
-│   ├── test_phase3_enrichment.py        # Phase 3 biography enrichment
-│   └── test_local_e2e.py               # Full Phase 1→2 simulation
+├── conftest.py                  # shared fixtures + env isolation (see below)
+├── fake_s3.py                   # in-memory S3 stand-in used by many tests
+├── fixtures/                    # dedup_golden/, hyperwar/, notes/, validation/ sample data
+├── test_<feature>.py  (x ~456)  # e.g. test_book_slug.py, test_batch_rounds.py, test_chandra_markdown.py,
+│                                #      test_book_figures.py, test_cache_killswitch.py, test_golden_files.py,
+│                                #      test_prompt_schema_alignment.py, test_schemas.py, test_json_validator.py
+├── unit/                        # older unit tests: test_grok_client.py, test_trigger_handler.py,
+│                                #   test_batch_poller.py, test_prompt_loader.py, test_merge.py, test_job_queue.py, ...
+│   └── test_extraction/         # test_people.py
+└── integration/
+    ├── test_phase2_pipeline.py  # Phase 2 with a mocked LLM
+    ├── test_phase3_enrichment.py
+    └── test_local_e2e.py        # Phase 1 -> 2 simulation
 ```
+
+Naming: `test_<module-or-feature>.py`, classes `Test*`, functions `test_*` (`pyproject.toml` `[tool.pytest.ini_options]`). Prefer a name that states the invariant (`test_bibliography_reconcile_no_loss.py`, `test_batch_failfast.py`).
 
 ---
 
@@ -105,7 +82,9 @@ pytest -x
 pytest --log-cli-level=DEBUG -s
 ```
 
-### Markers
+### Markers and default selection
+
+`pyproject.toml` runs `-m "not requires_api and not slow and not integration"` by default (so a bare `pytest` skips `integration`-marked tests too) and `--strict-markers`. The gate, CI and `deploy_all.sh` override it with `-m "not slow and not requires_api"`, which includes `integration`. Markers: `unit`, `integration`, `slow` (real API / slow), `requires_api` (needs credentials).
 
 ```bash
 # Skip slow tests
@@ -122,16 +101,15 @@ pytest -m "not slow and not requires_api"
 
 ## Test Categories
 
-### Unit Tests (24 files, ~250 tests)
-- Fast (< 1 second each)
-- No external dependencies
-- Uses `tmp_path`, `moto` (AWS mocking), `Mock`
-- Tests single functions/methods
+### Unit Tests
+- Fast, no external dependencies
+- Use `tmp_path`, `moto` (AWS mocking) or `tests/fake_s3.py`, and `Mock` / stub Grok clients
+- Test single functions or one module's behaviour, including the Phase 0-2 invariants (slug immutability, deterministic ids, batch rounds, window attribution, provenance checks)
 
-### Integration Tests (3 files, ~8 tests)
+### Integration Tests (`tests/integration/`, 3 files)
 - Test multi-component workflows
 - Mocked LLM/AWS but real file I/O
-- Phase 2 pipeline, Phase 3 enrichment, full E2E
+- Phase 2 pipeline, Phase 3 enrichment, local Phase 1 -> 2 E2E
 
 ### Regression Tests (golden files, schema alignment)
 - Verify output structure hasn't drifted
@@ -185,11 +163,9 @@ def dynamodb_table():
 
 ## Coverage
 
-### Current State (2026-06-13)
+### Current State
 
-```
-~555 tests, all passing in typical run
-```
+The suite is large (hundreds of files); the exact count changes every commit, so read it from `pytest --collect-only -q` rather than from this file. CI (`.github/workflows/tests.yml`) and the gate must pass before any commit.
 
 Key covered areas:
 - All Lambda handlers (import + logic tests)
@@ -197,7 +173,7 @@ Key covered areas:
 - LLM client (caching, error handling, JSON parsing)
 - AWS integrations (S3, DynamoDB — via moto)
 - Thread-safety (concurrent file access)
-- Schema validation (all 9 entity types)
+- Schema validation (per-entity `src/schemas/*_output.py`, versions in `ENTITY_SCHEMA_VERSIONS`)
 
 ### Generate Reports
 
@@ -214,13 +190,14 @@ open htmlcov/index.html
 
 ## CI/CD Integration
 
-### GitHub Actions (`tests.yml`)
+### GitHub Actions (`tests.yml`, `lint.yml`)
 
 ```yaml
-- pytest tests/ -m "not slow and not requires_api" --cov=src --cov-report=xml -q
+- cp config.yaml.example config.yaml
+- python -m pytest tests/ -m "not slow and not requires_api" --cov=src --cov-report=term-missing --cov-report=xml --tb=short -q
 ```
 
-Runs on push/PR. Excludes API-dependent and slow tests.
+Runs on push/PR to `main`/`master` under Python 3.12 (`config.yaml` comes from `config.yaml.example`, so tests must pass with the shipped defaults). Excludes API-dependent and slow tests. `lint.yml` runs the linters; `scripts/gate.sh` runs both locally.
 
 ### Pre-Deploy Gate (`deploy_all.sh`)
 
@@ -234,33 +211,19 @@ Aborts deployment if tests fail.
 
 ## Linting (QA Gate)
 
-Run against changed files only:
-
-```bash
-FILES=$(git diff --name-only HEAD -- '*.py')
-black --check $FILES
-pylint --disable=C0301,C0103,C0116,R0913,R0914,R0915,W0511,R0917,W0718,W0212,W1203,C0415 $FILES
-mypy --ignore-missing-imports --no-strict-optional $FILES
-bandit -ll -q $FILES
-radon cc $FILES --min D --show-complexity
-vulture $FILES --min-confidence 80
-```
+Run `bash scripts/gate.sh` (full, mirrors CI) or `bash scripts/gate.sh --no-tests`. It runs black, pylint (`--fail-under=5.0`), mypy, basedpyright (baselined), bandit, ruff (B), radon, vulture, the unreachable-module check, cfn-lint, a JSON lint, pip-audit and the test selection above. See `scripts/gate.sh` for the exact commands and the pylint disable list.
 
 ### Accepted Warnings
 - B108 `/tmp` usage (container environment)
 - B324 MD5 (content hashing, not security)
 - `msvcrt` import error (Windows-only in `file_lock.py`)
 - `W0621` pytest fixture redefinitions
-- Unused `kw` variables in `ecs_entrypoint.py`
 
 ---
 
 ## Known Test Gaps
 
-All previously-xfailed tests now pass (fixed 2026-06-13):
-- `create_date_prompt` empty guard — added
-- `equipment.yaml` malformed YAML — fixed
-- `casualties.yaml` / `weather.yaml` invalid JSON schema — fixed (`{{` → `{`)
+No gaps are tracked in this file. Open test work is in [TODO.md](../TODO.md). Data-dependent tests (golden files) use `pytest.skip()` when `output/` data is not present.
 
 ---
 
@@ -271,18 +234,23 @@ All previously-xfailed tests now pass (fixed 2026-06-13):
 ```python
 """Tests for src/extraction/new_module.py."""
 import json
+from unittest.mock import Mock
+
 import pytest
+
+from src.utils.prompt_loader import render_prompt
 
 class TestNewExtractor:
     def test_creates_prompt_with_content(self):
-        sub_event = {"Sub-eventID": "01ABC", "Sub-event_fulltext": {"p1": "text"}}
-        result = create_prompt(sub_event=sub_event, event_id="01X", event_name="Test")
-        assert result != ""
+        # render_prompt reads prompts/<name>.yaml; pass the variables the template names
+        result = render_prompt("new_entity", text="The 1st Division landed.", book="Test")
+        assert "The 1st Division landed." in result
 
-    def test_returns_empty_on_no_content(self):
-        sub_event = {"Sub-eventID": "01ABC", "Sub-event_fulltext": {}}
-        result = create_prompt(sub_event=sub_event, event_id="01X", event_name="Test")
-        assert result == ""
+    def test_returns_empty_on_no_content(self, tmp_path):
+        # guard: an empty window must not cost an API call
+        grok = Mock()
+        assert extract_new_entity(empty_event_file(tmp_path), grok, tmp_path) is None
+        grok.extract_json.assert_not_called()
 ```
 
 ### For a new Lambda handler
@@ -322,7 +290,7 @@ def table():
 ## Troubleshooting
 
 ### Import Errors
-Project uses `sys.path.insert(0, ...)` in scripts. For tests, ensure `PYTHONPATH` includes project root or run from project root.
+`pyproject.toml` sets `pythonpath = ["."]`, so run `pytest` from the repository root (root-level modules such as `ecs_entrypoint` and `phase1_parse` import without `sys.path` edits). `pip install -e .` also works.
 
 ### Fixture Not Found
 Check `conftest.py` location — fixtures are scoped to their directory and below.

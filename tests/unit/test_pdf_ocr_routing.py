@@ -8,7 +8,20 @@ os.environ.setdefault("ECS_CLUSTER", "dev-wwii-pipeline")
 os.environ.setdefault("CACHE_TABLE", "dev-wwii-api-cache")
 os.environ.setdefault("S3_BUCKET", "dev-wwii-data-pipeline")
 
+import pytest
+
 from lambda_handlers import trigger_handler as th
+
+
+@pytest.fixture(autouse=True)
+def _no_s3_for_the_chunk_manifest():
+    """_submit_ocr records the submission's chunk manifest in S3 before submitting
+    (tests/test_trigger_ocr_manifest.py covers it); these tests are about the jobs."""
+    with (
+        patch("src.ingestion.ocr_chunk_manifest.write_manifest"),
+        patch.object(th, "_validation_url", return_value=""),
+    ):
+        yield
 
 
 def test_split_by_media_separates_pdf_from_parseable():
@@ -237,5 +250,11 @@ def test_submit_ocr_large_pdf_submits_chunk_set():
         c.kwargs["containerOverrides"]["command"]
         for c in batch.submit_job.call_args_list
     ]
-    assert any("--page-range" in c and "1-50" in c for c in cmds)
-    assert any("--page-range" in c and "51-100" in c for c in cmds)
+    # Chandra's --page-range is 0-based: physical pages 1-50 are indices 0-49 (passing "1-50"
+    # dropped every chunk's first page); the output directories stay 1-based physical.
+    assert any("--page-range" in c and "0-49" in c for c in cmds)
+    assert any("--page-range" in c and "50-99" in c for c in cmds)
+    assert not any("1-50" in c for c in cmds)
+    outs = [c[1] for c in cmds]
+    assert any(o.endswith("/chunk-p0001-0050/") for o in outs)
+    assert any(o.endswith("/chunk-p0051-0100/") for o in outs)

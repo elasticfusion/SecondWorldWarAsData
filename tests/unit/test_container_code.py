@@ -133,7 +133,7 @@ class TestPhase1Parse:
 
 class TestFindDuplicateGroups:
     def test_numbers_match(self):
-        from scripts.find_duplicate_groups import _numbers_match
+        from src.dedup.find_duplicate_groups import _numbers_match
 
         assert _numbers_match("1st Infantry", "1st Infantry Division")
         assert not _numbers_match("1st Infantry", "2nd Infantry")
@@ -144,7 +144,7 @@ class TestFindDuplicateGroups:
         assert _numbers_match("2d Infantry", "2nd Infantry")
 
     def test_extract_numbers(self):
-        from scripts.find_duplicate_groups import _extract_numbers
+        from src.dedup.find_duplicate_groups import _extract_numbers
 
         assert "1" in _extract_numbers("1st Infantry Division")
         assert "2" in _extract_numbers("2d Panzer")
@@ -152,7 +152,7 @@ class TestFindDuplicateGroups:
         assert _extract_numbers("Panzer Lehr") == set()
 
     def test_find_duplicate_groups(self, tmp_path):
-        from scripts.find_duplicate_groups import find_duplicate_groups
+        from src.dedup.find_duplicate_groups import find_duplicate_groups
 
         # Create test group files
         (tmp_path / "1st infantry.json").write_text(
@@ -172,7 +172,7 @@ class TestFindDuplicateGroups:
 
 class TestFindDuplicatePlaces:
     def test_get_coords_nested(self):
-        from scripts.find_duplicate_places_v2 import _get_coords
+        from src.dedup.find_duplicate_places_v2 import _get_coords
 
         data = {"coordinates": {"latitude": 49.18, "longitude": -0.37}}
         lat, lon = _get_coords(data)
@@ -180,20 +180,20 @@ class TestFindDuplicatePlaces:
         assert lon == -0.37
 
     def test_get_coords_flat(self):
-        from scripts.find_duplicate_places_v2 import _get_coords
+        from src.dedup.find_duplicate_places_v2 import _get_coords
 
         data = {"latitude": 49.18, "longitude": -0.37}
         lat, lon = _get_coords(data)
         assert lat == 49.18
 
     def test_get_coords_missing(self):
-        from scripts.find_duplicate_places_v2 import _get_coords
+        from src.dedup.find_duplicate_places_v2 import _get_coords
 
         lat, lon = _get_coords({})
         assert lat is None
 
     def test_check_match_far_apart(self):
-        from scripts.find_duplicate_places_v2 import _check_match
+        from src.dedup.find_duplicate_places_v2 import _check_match
 
         p1 = {"name": "Caen", "lat": 49.18, "lon": -0.37}
         p2 = {"name": "Caen copy", "lat": 48.0, "lon": 2.0}  # ~300km away
@@ -201,7 +201,7 @@ class TestFindDuplicatePlaces:
         assert not match
 
     def test_check_match_nearby_similar(self):
-        from scripts.find_duplicate_places_v2 import _check_match
+        from src.dedup.find_duplicate_places_v2 import _check_match
 
         p1 = {"name": "Marseille", "lat": 43.3, "lon": 5.37}
         p2 = {"name": "Marseilles", "lat": 43.3, "lon": 5.37}

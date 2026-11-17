@@ -6,6 +6,7 @@ import re
 from pathlib import Path
 
 from src.discovery import discover_content_structure
+from src.utils.deterministic_ids import book_id
 from src.parser import parse_chapter
 from src.utils.config import load_config, get_paths
 from src.utils.logger import setup_logging
@@ -31,6 +32,7 @@ def _doc_to_dict(doc):
     """Convert a MarkdownDocument to a serializable dict."""
     return {
         "book": doc.book,
+        "BookID": book_id(doc.book),
         "chapter_number": doc.chapter_number,
         "chapter_title": doc.chapter_title,
         "section_id": doc.section_id,
@@ -39,33 +41,8 @@ def _doc_to_dict(doc):
         "license": doc.license,
         "source_file": _repo_relative(doc.file_path),
         "_source_url": doc.source_url,
-        "paragraphs": [
-            {
-                "absolute_number": p.absolute_number,
-                "text": p.text,
-                "page_number": p.page_number,
-                "section_id": p.section_id,
-                "source_file": p.source_file,
-                **({"is_quote": True} if p.is_quote else {}),
-                **(
-                    {"quote_attribution": p.quote_attribution}
-                    if p.quote_attribution
-                    else {}
-                ),
-            }
-            for p in doc.paragraphs
-        ],
-        "images": [
-            {
-                "type": img.type,
-                "resource_id": img.resource_id,
-                "url": img.url,
-                "alt_text": img.alt_text,
-                "caption": img.caption,
-                "paragraph_number": img.paragraph_number,
-            }
-            for img in doc.images
-        ],
+        "paragraphs": [_paragraph_dict(p) for p in doc.paragraphs],
+        "images": [img.to_dict() for img in doc.images],
         "maps": [
             {
                 "url": m.url,
@@ -76,9 +53,7 @@ def _doc_to_dict(doc):
             }
             for m in doc.maps
         ],
-        "footnotes": [
-            {"number": f.number, "url": f.url, "text": f.text} for f in doc.footnotes
-        ],
+        "footnotes": [f.to_dict() for f in doc.footnotes],
         # Page-marker provenance (anchor/separator -> paragraph mapping): a first-class populated
         # model field that was previously dropped from serialization, losing the explicit
         # page-structure provenance even though per-paragraph page_number survived.
@@ -91,6 +66,27 @@ def _doc_to_dict(doc):
             for pm in doc.page_markers
         ],
         **({"table_hints": doc.table_hints} if doc.table_hints else {}),
+    }
+
+
+def _paragraph_dict(p) -> dict:
+    """One paragraph of a parsed chapter (whole-chapter and chunk files alike)."""
+    return {
+        "absolute_number": p.absolute_number,
+        "text": p.text,
+        "page_number": p.page_number,
+        **(
+            {"page_end": p.page_end} if getattr(p, "page_end", None) is not None else {}
+        ),
+        "section_id": p.section_id,
+        "source_file": p.source_file,
+        **({"is_quote": True} if p.is_quote else {}),
+        **({"quote_attribution": p.quote_attribution} if p.quote_attribution else {}),
+        **(
+            {"translated_from": p.translated_from}
+            if getattr(p, "translated_from", None)
+            else {}
+        ),
     }
 
 
@@ -131,6 +127,7 @@ def _save_footnotes_chapter(doc, section_suffix, book_output, logger):
     )
     notes_data = {
         "book": doc.book,
+        "BookID": book_id(doc.book),
         "chapter_number": doc.chapter_number,
         "chapter_title": doc.chapter_title,
         file_suffix: notes_content,
@@ -183,22 +180,10 @@ def _save_split_chapter(doc, book_output, logger):
         )
         chunk_data = _doc_to_dict(doc)
         chunk_data["section_id"] = f"{doc.section_id or 'full'}-{chunk_suffix}"
-        chunk_data["paragraphs"] = [
-            {
-                "absolute_number": p.absolute_number,
-                "text": p.text,
-                "page_number": p.page_number,
-                "section_id": p.section_id,
-                "source_file": p.source_file,
-                **({"is_quote": True} if p.is_quote else {}),
-                **(
-                    {"quote_attribution": p.quote_attribution}
-                    if p.quote_attribution
-                    else {}
-                ),
-            }
-            for p in chunk_paras
-        ]
+        chunk_data["paragraphs"] = [_paragraph_dict(p) for p in chunk_paras]
+        _keep_chunk_figures(
+            chunk_data, {p.absolute_number for p in chunk_paras}, chunk_idx == 0
+        )
         from src.utils.file_lock import write_parsed_with_guard
 
         if write_parsed_with_guard(chunk_file, chunk_data):
@@ -224,6 +209,27 @@ def _save_split_chapter(doc, book_output, logger):
     return True
 
 
+def _keep_chunk_figures(chunk_data, numbers, first: bool) -> None:
+    """A chunk of a split chapter carries only the images anchored in its paragraphs, and the
+    maps it cites or prints (their references narrowed to it) - never every figure of the
+    chapter in every chunk. A figure with no anchor (paragraph 0: a leading image, or one the
+    parser could not place) is the chapter's: kept in the ``first`` chunk only. A paragraph two
+    chunks share (the overlap) may give both one."""
+
+    def here(number) -> bool:
+        return number in numbers or (not number and first)
+
+    chunk_data["images"] = [
+        i for i in chunk_data["images"] if here(i.get("paragraph_number"))
+    ]
+    maps = []
+    for m in chunk_data["maps"]:
+        refs = [r for r in m["references"] if r.get("paragraph_number") in numbers]
+        if refs or here(m.get("paragraph_number")):
+            maps.append({**m, "references": refs})
+    chunk_data["maps"] = maps
+
+
 def _save_endnote_refs(doc, section_suffix, book_output, logger):
     """Save endnote/footnote references from main content."""
     if not doc.footnotes:
@@ -236,11 +242,10 @@ def _save_endnote_refs(doc, section_suffix, book_output, logger):
     )
     endnotes_data = {
         "book": doc.book,
+        "BookID": book_id(doc.book),
         "chapter_number": doc.chapter_number,
         "chapter_title": doc.chapter_title,
-        "endnotes": [
-            {"number": f.number, "url": f.url, "text": f.text} for f in doc.footnotes
-        ],
+        "endnotes": [f.to_dict() for f in doc.footnotes],
     }
     from src.utils.file_lock import write_json_with_lock
 
@@ -362,6 +367,62 @@ def _observe_phase1_book(book_name, chapters, book_output, logger) -> None:
         )
 
 
+def _enforce_book_slug(doc, book_name: str) -> None:
+    """A chapter's ``book`` IS its folder slug (immutable, src/ingestion/book_slug): the parsed
+    data, its EventIDs (``event_id(book, ...)``) and its BookID all derive from it. A chapter meta
+    naming another ``book`` (hand-written, legacy, an import script) would otherwise give the same
+    book a second identity: the slug wins, loudly."""
+    if not book_name or doc.book == book_name:
+        return
+    from src.utils.observe import observe_error
+
+    observe_error(
+        "phase1",
+        "book_slug_mismatch",
+        note=(
+            "the chapter meta's book differs from its folder: the folder slug is used (the "
+            "book's identity); correct the chapter meta's book to the slug"
+        ),
+        book=book_name,
+        meta_book=str(doc.book)[:80],
+        chapter=getattr(doc, "chapter_number", ""),
+    )
+    doc.book = book_name
+
+
+def _book_figures(book_name, book_dir):
+    """The book's own figures report (src/ingestion/book_figures.ensure: built once from an OCR'd
+    PDF, stored under contentrepository/<book>/_figures/), else the stored one (a local run: no
+    S3 to read the OCR from or store figures in - never a parse that drops them), else None.
+    """
+    from src.ingestion import book_figures
+
+    bucket = os.environ.get("S3_BUCKET", "")
+    in_task = os.environ.get("ECS_CONTAINER_METADATA_URI_V4") or os.environ.get(
+        "ECS_TASK_ID"
+    )
+    if not (bucket and in_task):
+        return book_figures.stored(Path(book_dir))
+    import tempfile
+
+    import boto3
+
+    with tempfile.TemporaryDirectory(prefix="figures-") as work:
+        return book_figures.ensure(
+            boto3.client("s3"), bucket, book_name, Path(book_dir), Path(work)
+        )
+
+
+def _chapter_error(logger, book_name, chapter_group, error) -> None:
+    logger.error(
+        "OBSERV phase1.chapter_error book=%s chapter=%s reason=%s",
+        book_name,
+        getattr(chapter_group, "chapter_number", "?"),
+        type(error).__name__,
+        exc_info=True,
+    )
+
+
 def _parse_one_book(
     book_name,
     chapters,
@@ -370,13 +431,16 @@ def _parse_one_book(
     total_chapters,
     repair_structure,
     logger,
+    figures=None,
 ):
-    """Parse every chapter in one book. Fail-safe per chapter: one bad chapter
-    (malformed meta/file) is logged + counted + skipped, never aborting the rest.
-    Returns ``(chapters_processed, chapter_errors)``."""
-    processed = 0
-    errors = 0
-    for chapter_group in chapters:
+    """Parse every chapter in one book, give the book's chapters its figures (``figures``: its
+    figures report; assigned book-wide, src/ingestion/book_figures.attach_book), then save them.
+    Fail-safe per chapter: one bad chapter (malformed meta/file) is logged + counted + skipped,
+    never aborting the rest. Returns ``(chapters_processed, chapter_errors)``."""
+    from src.ingestion import book_figures
+
+    parsed, errors = [], 0
+    for processed, chapter_group in enumerate(chapters):
         logger.info(
             "  Parsing %s ch%s (%d/%d)",
             book_name,
@@ -388,19 +452,29 @@ def _parse_one_book(
             documents = parse_chapter(
                 chapter_group, apply_structure_repair=repair_structure
             )
-            for doc in documents:
-                _process_document(doc, book_output, logger)
         except Exception as _e:  # noqa: BLE001 - one bad chapter must not abort the run
             errors += 1
-            logger.error(
-                "OBSERV phase1.chapter_error book=%s chapter=%s reason=%s",
-                book_name,
-                getattr(chapter_group, "chapter_number", "?"),
-                type(_e).__name__,
-                exc_info=True,
-            )
-        processed += 1
-    return processed, errors
+            _chapter_error(logger, book_name, chapter_group, _e)
+            continue
+        for doc in documents:
+            _enforce_book_slug(doc, book_name)
+            parsed.append((chapter_group, doc))
+    narrative = [doc for _g, doc in parsed if not _is_footnotes_chapter(doc)]
+    counts = book_figures.attach_book(narrative, figures, book_name)
+    coverage = book_figures.Coverage(book_name)
+    for doc in narrative:
+        coverage.add(doc)
+    coverage.observe(counts["unplaced"])
+    failed = set()
+    for chapter_group, doc in parsed:
+        try:
+            _process_document(doc, book_output, logger)
+        except Exception as _e:  # noqa: BLE001 - one bad chapter must not abort the run
+            if id(chapter_group) not in failed:
+                errors += 1
+                failed.add(id(chapter_group))
+            _chapter_error(logger, book_name, chapter_group, _e)
+    return len(chapters), errors
 
 
 def main():
@@ -466,6 +540,7 @@ def main():
             total_chapters,
             repair_structure,
             logger,
+            figures=_book_figures(book_name, content_root / book_name),
         )
         parsed += book_parsed
         chapter_errors += book_errors

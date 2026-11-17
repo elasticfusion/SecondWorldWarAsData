@@ -1,5 +1,7 @@
 # Handling Papers and Articles
 
+**Last Updated:** 2026-11-16
+
 ## Overview
 
 The pipeline is designed for chapter-based books but can handle papers, articles, and other non-chapter documents with minimal adaptation.
@@ -352,7 +354,7 @@ After processing:
 
 ```
 output/
-└── JonesAnalysis2023/
+└── content/JonesAnalysis2023/
     ├── chapter1-parsed.json      # Parsed content with footnotes
     ├── chapter1-event.json       # Extracted events
     ├── chapter1-dates.json       # Temporal entities
@@ -364,13 +366,13 @@ output/
 
 ```bash
 # Check parsed output
-jq '.metadata' output/JonesAnalysis2023/chapter1-parsed.json
+jq '{book, author, chapter_title}' output/content/JonesAnalysis2023/chapter1-parsed.json
 
 # Check footnotes
-jq '.footnotes | length' output/JonesAnalysis2023/chapter1-parsed.json
+jq '.footnotes | length' output/content/JonesAnalysis2023/chapter1-parsed.json
 
 # View footnotes
-jq '.footnotes' output/JonesAnalysis2023/chapter1-parsed.json
+jq '.footnotes' output/content/JonesAnalysis2023/chapter1-parsed.json
 ```
 
 ## Limitations
@@ -381,7 +383,7 @@ jq '.footnotes' output/JonesAnalysis2023/chapter1-parsed.json
 - ✅ Extracts citations
 - ⚠️ Requires "chapter" naming convention
 - ⚠️ No special handling for abstracts
-- ⚠️ No citation parsing (preserved as text)
+- ✅ Each parsed footnote/endnote gets a citable bibliography record without an LLM (`extract_bibliography_deterministic`); the notes prompt then extracts structured references (`supplemental_material.extract_citations`)
 
 ### Workarounds
 - Use `chapter1` for single papers
@@ -391,13 +393,12 @@ jq '.footnotes' output/JonesAnalysis2023/chapter1-parsed.json
 
 ## Future Enhancements
 
-Potential improvements for better paper support:
+Potential improvements for better paper support (the book slug is the folder name, e.g. `JonesAnalysis2023`, and is permanent once ingested; see [ADDING_DATA_SOURCES.md](ADDING_DATA_SOURCES.md)):
 
 1. **Flexible naming**: Accept `paper1`, `article1`, etc.
 2. **Abstract extraction**: Separate abstract field
-3. **Citation parsing**: Extract structured citations
-4. **Author metadata**: Multiple authors with affiliations
-5. **Keywords**: Extract and index keywords
+3. **Author metadata**: Multiple authors with affiliations
+4. **Keywords**: Extract and index keywords
 6. **DOI handling**: Automatic DOI validation
 
 ## Best Practices

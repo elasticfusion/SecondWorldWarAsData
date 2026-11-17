@@ -160,8 +160,8 @@ To test with OpenSERP running:
 # Start OpenSERP
 cd openserp && ./openserp serve -p 7001 &
 
-# Run phase 2 extraction (will use vision verification)
-python3 phase2_extract.py
+# Run Phase 3 enrichment (external_maps.enabled: true; the OpenSERP step uses vision verification)
+python3 phase3_enrich_data.py
 ```
 
 Check logs for:

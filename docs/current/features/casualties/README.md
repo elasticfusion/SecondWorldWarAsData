@@ -2,19 +2,20 @@
 
 **Module:** `src/extraction/casualties.py`
 **Schema:** `src/schemas/casualties_output.py` (enforced, `additionalProperties: False`)
-**Status:** Experimental (disabled by default in `config.yaml`)
+**Status:** Enabled (`casualties.enabled: true` in `config.yaml`)
 
 ---
 
 ## Overview
 
 Casualties extraction captures **personnel** losses — killed, wounded, missing, and prisoners
-of war — from event sub-event text. Equipment/materiel losses belong to the Equipment entity,
+of war — from the chapter's raw parsed text (3-paragraph windows). Equipment/materiel losses belong to the Equipment entity,
 not here. Each casualty is cross-referenced to the people, units, places, and date it
 involves, so it is queryable by who/where/when rather than only as free text.
 
 **Key features:**
-- Batched extraction (one Grok call per chapter via `_batch_extract_casualties`)
+- Window extraction: one Grok request per 3-paragraph window of the raw parsed text (`_ask_casualties` -> `windows.window_event_for`, `chunk_size=1`), never the events' summaries. Each item is attributed to the sub-event that holds its quote (`windows.attribute_found` / `settle`); an item the text does not support is dropped
+- Null-tolerant: a null or wrong-shape answer field (role, side, relation, type, description, nationality, names, `impacted_*`) is defaulted or skipped and never drops the casualty (commit 96c31bb1); a casualty that still fails is logged with chapter, sub-event, type, quote and traceback (`_observe_build_failed`)
 - A `cause` dimension (combat / weather_exposure / disease / accident / other) — enabling
   queries like weather-caused casualties (frostbite / trench foot / exposure)
 - A `side` dimension (allied / axis / civilian / unknown) — who **suffered** the loss
@@ -79,9 +80,10 @@ involves, so it is queryable by who/where/when rather than only as free text.
 ## Flow
 
 ```
-Event sub-events
-  ↓ _has_casualty_mention gate (skip sub-events with no casualty language)
-Batched Grok call per chapter (_batch_extract_casualties)
+Parsed chapter text -> 3-paragraph windows (src/extraction/windows.py)
+  ↓ _has_casualty_mention gate (skip windows with no casualty language)
+One Grok request per window (_ask_casualties -> _batch_extract_casualties, chunk_size=1)
+  ↓ windows.attribute_found (settle the quote, assign the real sub-event; else drop)
   ↓ _validate_items
 For each casualty (_build_casualty):
   ↓ resolve date   -> DateID            (_resolve_casualty_date / dates index)
@@ -122,10 +124,9 @@ Resolution reuses each category's **shared library** (not bespoke exact-string m
 
 Unresolved references keep the name with a `null` ID (never fabricated).
 
-> **Note:** these cross-reference improvements populate on **re-extraction** — the current
-> on-disk corpus predates them, so existing records show the old (sparser) resolution. The
-> join substrate exists (e.g. 414 GroupIDs shared between casualties and logistics); it fires
-> once casualties are re-run through the upgraded pipeline.
+> **Note:** corpus counts quoted above (608→1058 dates, 414 shared GroupIDs) were measured on
+> an earlier run; records written before these resolvers existed show the older, sparser
+> resolution until re-extracted.
 
 ---
 

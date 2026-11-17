@@ -321,7 +321,7 @@ REQUIRED = ['events', 'people', 'places', 'dates',
             'isbn_lookup', 'author_death_date', 'publication_search',
             'bibliography_verify', 'bibliography_alt_title', 'nara_identify',
             'nara_verify', 'date_summary', 'equipment_disambiguation',
-            'language_detect', 'source_section', 'translation']
+            'language_detect', 'source_section', 'translation', 'book_metadata']
 errors = []
 for name in REQUIRED:
     p = Path(f'prompts/{name}.yaml')
@@ -516,4 +516,4 @@ echo "Monitor with:"
 echo "  aws logs tail /ecs/dev-wwii-pipeline --follow --region $REGION --since 2m"
 echo ""
 echo "Analyze logs with:"
-echo "  bash scripts/analyze_logs.sh"
+echo "  bash scripts/utils/analyze_logs.sh"

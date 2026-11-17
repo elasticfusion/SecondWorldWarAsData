@@ -10,8 +10,8 @@ How to customize the AI extraction prompts used by the pipeline.
 
 All LLM prompts are externalized to YAML files. There are NO inline prompts in Python code — if a YAML file is missing or malformed, the pipeline fails at build time (deploy_all.sh validates) or at runtime (hard error, no silent fallback).
 
-**Prompt files:** `prompts/*.yaml` (31 files)  
-**Search query files:** `search_queries/*.yaml` (8 files)
+**Prompt files:** `prompts/*.yaml` (34 files; full catalog with invoking code in [PROMPT_REFERENCE.md](PROMPT_REFERENCE.md))  
+**Search query files:** `search_queries/*.yaml` (8 files: bibliography, equipment, events, maps, nara, people, people_groups, places)
 
 ### Extraction Prompts
 
@@ -22,7 +22,12 @@ All LLM prompts are externalized to YAML files. There are NO inline prompts in P
 | `places.yaml` | Geographic locations with coordinates |
 | `people.yaml` | Biographical profiles |
 | `people_groups.yaml` | Military units, organizations |
-| `equipment.yaml` | Military equipment mentions |
+| `equipment_extract_broad.yaml` | Broad equipment discovery (replaces the old single `equipment.yaml`) |
+| `equipment_refine.yaml` | Per-item equipment refinement (lineage fields) |
+| `equipment_vessel_choice.yaml` | Pick the named vessel by date |
+| `equipment_disambiguation.yaml` | Resolve a raw designation to a canonical item |
+| `book_metadata.yaml` | Phase 0: book metadata with evidence quotes |
+| `language_detect.yaml`, `translation.yaml` | Phase 0: language detection and translation to English |
 | `weather_batch.yaml` | Weather extraction (batched; the live weather prompt) |
 | `casualties.yaml` | Personnel casualty data |
 | `logistics.yaml` | Supply chain issues |
@@ -57,11 +62,7 @@ All LLM prompts are externalized to YAML files. There are NO inline prompts in P
 | `search_queries/bibliography.yaml` | Gutenberg/Archive.org searches |
 | `search_queries/maps.yaml` | External map searches |
 | `search_queries/nara.yaml` | NARA catalog searches |
-| `equipment.yaml` | Weapons, vehicles, specifications |
-| `weather_batch.yaml` | Historical weather conditions (batched; the live weather prompt) |
-| `logistics.yaml` | Supply chain issues |
-| `casualties.yaml` | Casualty tracking |
-| `supplemental.yaml` | Bibliography and citations |
+| `search_queries/people_groups.yaml`, `search_queries/places.yaml` | Group and place searches |
 
 ---
 
@@ -268,10 +269,10 @@ Shorter prompts use fewer input tokens. To reduce costs:
 
 ```bash
 # Test with a single chapter
-python3 phase2_extract.py --chapters chapter1
+python3 phase2_extract.py --book BookName --expected-count 1
 
 # Check the output
-cat output/BookName/chapter1-event.json | python3 -m json.tool
+cat output/content/BookName/chapter1-event.json | python3 -m json.tool
 ```
 
 ### AWS testing
@@ -282,10 +283,12 @@ aws s3 cp prompts/people.yaml s3://dev-wwii-data-pipeline/prompts/people.yaml --
 
 # Clear cache for the entity type to force re-extraction
 # (otherwise cached results are returned)
-python3 /tmp/clear_cache.py
+python3 scripts/cleanup_book_cache.py --book BookName
 
 # Trigger a pipeline run
-aws s3 sync contentrepository/ s3://dev-wwii-data-pipeline/content/ --region us-east-1
+aws lambda invoke --function-name dev-wwii-trigger \
+  --payload '{"source": "manual", "book": "BookName", "phase": "2"}' \
+  --cli-binary-format raw-in-base64-out --region us-east-1 /tmp/out.json
 ```
 
 ### Reverting to defaults

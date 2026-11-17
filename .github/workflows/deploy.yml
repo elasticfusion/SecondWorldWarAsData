@@ -126,7 +126,7 @@ jobs:
       - name: Build Lambda package
         run: |
           pip install -r requirements-lambda.txt -t lambda_package/ -q
-          cp -r src/ lambda_handlers/ scripts/ config.yaml lambda_package/
+          cp -r src/ lambda_handlers/ scripts/ prompts/ config.yaml lambda_package/
           cd lambda_package && zip -r ../lambda-code.zip . -x "*.pyc" "*__pycache__*" > /dev/null
 
       - name: Upload to S3

@@ -1,7 +1,7 @@
 # Ingestion Front-End: Media Detection & Disposition Routing
 
 Status: built (phased) — front-end steps 1–6 and OOB parser track implemented; see "Implementation status" for remaining items
-Last updated: 2026-09-23
+Last updated: 2026-11-16
 
 ## Purpose
 
@@ -24,7 +24,16 @@ Markdown into JSON records.
 This document describes the whole design. Implementation is phased; see
 "Implementation status" at the end.
 
-## Background: the pipeline today
+> **Reviewed against the code 2026-11-16.** The modules in `src/ingestion/` (`source_metadata`,
+> `media_detection`, `disposition_classifier`, `routing_manifest`, `region_converter`, `pdf_pipeline`,
+> `oob_markdown/`) are built and are driven by `phase0_ingest.py` for the structured-reference (OOB)
+> track. The routing of ordinary uploads is done by `lambda_handlers/trigger_handler.py` (see
+> `INGESTION_PATHS.md`): scanned PDFs go to Chandra OCR and then `ocr_promote`, not through this
+> disposition front-end, and the OOB track is chosen by the `_oob/` path or `ingestion.structured_stems`,
+> not by per-page classification. The "Background" section below describes the pipeline as it was
+> when this was designed.
+
+## Background: the pipeline today (as of 2026-09; historical)
 
 ```
 Original (HTML | PDF)                         source of truth
@@ -358,7 +367,7 @@ rows, below). Findings that shaped the implementation:
       the normalization fix + fuzzy tier).
 - [x] Piece 2 / entity convergence — Consume the crosswalk into the people
       entity space (`src/ingestion/oob_markdown/entity_emit.py`) so the existing
-      dedup pass (`scripts/find_duplicate_people.py` + dedup UI) unifies
+      dedup pass (`src/dedup/find_duplicate_people.py` + dedup UI) unifies
       OOB-derived and narrative-derived people into single `PersonID`s (the
       "Huebner goal"). OOB data is treated as **biographical, not narrative**: a
       command-staff row maps to `biographical_profile` (`ranks`/`units_served`/
@@ -424,6 +433,7 @@ rows, below). Findings that shaped the implementation:
       orchestrator as its Chandra-OCR path is wired.)
 - [ ] Later — relocate OOB table normalization into the `structured` converter
 - [ ] Later — parser extension so local map assets populate the `Map` slot
-      (currently emitted as embedded images; parser's map regex is URL-only)
+      (partly superseded: for an OCR'd PDF book Phase 1 builds the book's own figures and maps once
+      via `src/ingestion/book_figures` into `contentrepository/<slug>/_figures/`)
 - [ ] Later — resolve `(unknown)`-division command-staff rows and the two
       division files with no detected table (`2nd_french_armored`, `71st_infantry`)

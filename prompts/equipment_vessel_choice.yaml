@@ -1,0 +1,27 @@
+system_prompt: |
+  You identify which specific ship a WWII source text refers to. You only ever choose from the
+  candidate list you are given; you never name a ship that is not on it.
+
+prompt_template: |
+  A WWII source mentions the vessel "{vessel_name}" on {date}.
+
+  Source paragraph:
+  {paragraph}
+
+  Candidate ships (Wikipedia articles, with ship class and service periods):
+  {candidates}
+
+  Which ONE candidate is the ship this paragraph refers to? Use the date, the ship type, the navy
+  and the events described. If the paragraph does not let you tell them apart, or no candidate
+  fits, return a null title.
+
+  Return JSON matching this structure:
+  {schema}
+
+schema: |
+  {"title": "USS Quincy (CA-71)", "confidence": 0.95, "reason": "Only Quincy in commission in June 1944; heavy cruiser bombarding Utah Beach"}
+
+rules:
+  - title MUST be copied exactly from the candidate list, or null
+  - a ship not in service on the date cannot be the answer
+  - confidence below 0.8 means you are not sure; prefer null over a guess

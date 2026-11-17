@@ -44,11 +44,13 @@ Parameters:
     Description: M4 concurrency kill-switch — 'true' routes triggers to the SFN dispatcher
   BatchPhase2:
     Type: String
-    Default: 'false'
+    Default: 'true'
     AllowedValues: ['true', 'false']
     Description: >-
       Phase-2 extraction mode, passed through to ComputeStack (BATCH_PHASE2 task-def env).
-      'true' = async xAI Batch API (submit -> poller -> result mapping); 'false' = synchronous.
+      'true' = async xAI Batch API (submit -> poller -> result mapping; 50% cheaper, and the path
+      production uses - batch results are mapped differently from live calls, so it must be the
+      exercised path); 'false' = synchronous. This env OVERRIDES config.yaml batch.phase2.
       scripts/deploy_aws.py keeps the live value unless --batch-phase2 is given.
   PoolMin:
     Type: String

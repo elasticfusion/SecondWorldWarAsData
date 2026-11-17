@@ -1,5 +1,21 @@
 """Shared pytest fixtures for testing."""
 
+import os
+
+# The import step's title-page metadata request (src/ingestion/book_metadata) is ON in production;
+# in tests it is OFF unless a test turns it on and injects a fake client - no test may reach Grok
+# (a developer's .env key would otherwise make real, billed calls).
+os.environ.setdefault("BOOK_METADATA", "0")
+# Wikimedia pacing (src/utils/wikimedia_client._pace) would sleep 1 s per mocked request
+os.environ.setdefault("WIKIMEDIA_MIN_INTERVAL_SECONDS", "0")
+# Phase 2's place/unit Grokipedia + Wikipedia lookups (batch_parallel._enrich_in_place) reach the
+# network: off unless a test turns them on and mocks them
+os.environ.setdefault("PHASE2_REFERENCE_LOOKUPS", "0")
+# Phase-0 translation is ON by default (production); tests that exercise it set it themselves
+os.environ.setdefault("PHASE0_TRANSLATE", "0")
+# small batches are answered live in production (batch.min_requests); tests batch everything
+os.environ.setdefault("BATCH_MIN_REQUESTS", "0")
+
 import json
 from pathlib import Path
 from typing import Any, Dict

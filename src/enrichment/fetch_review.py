@@ -5,7 +5,7 @@ review; **on affirm** it flows through the SAME path as a deliberately-uploaded 
 a ``SourceMetadata`` record handed to the ingestion front-end (Phase 0/1), rather than being
 written directly as facts by an enrichment side-channel.
 
-This closes the gap identified in docs/current/FETCH_PROVENANCE_DESIGN.md: ``source_retrieval``
+This closes the gap identified in docs/archive/2026-11-16/FETCH_PROVENANCE_DESIGN.md: ``source_retrieval``
 already quarantines internet content for review, but nothing promoted an AFFIRMED item into
 ingestion. ``affirm_fetch_find`` is that bridge (minimal function/CLI first; a UI can call it
 later). Reuses: fetch_provenance (the review_status), source_retrieval quarantine, SourceMetadata.

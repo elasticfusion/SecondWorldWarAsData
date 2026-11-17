@@ -3,7 +3,7 @@
 This is the step that makes the OOB crosswalk *matter*: it consumes the
 resolved :class:`~src.ingestion.oob_markdown.crosswalk.CrosswalkLink` records and
 emits/merges them into ``output/people/`` so the existing dedup pass
-(``scripts/find_duplicate_people.py`` + the dedup review UI) unifies OOB-derived
+(``src/dedup/find_duplicate_people.py`` + the dedup review UI) unifies OOB-derived
 people with narrative-derived people into single ``PersonID``\\s — the "Huebner
 goal".
 

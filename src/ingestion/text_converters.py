@@ -222,8 +222,52 @@ def html_to_markdown(path: Path) -> str:
     if not path.is_file():
         raise ConverterError(f"input file does not exist: {path}")
     raw = path.read_text(encoding="utf-8", errors="replace")
+    # HyperWar transcriptions first, on the RAW page: the boilerplate pass re-serialises through
+    # html.parser, which nests bare <p> tags (src/ingestion/hyperwar_html).
+    raw = _normalise_hyperwar(raw, path.name)
     cleaned = _strip_html_boilerplate(raw)
     return _run_pandoc_text(cleaned, "html")
+
+
+def _normalise_hyperwar(raw: str, name: str) -> str:
+    """One paragraph per source paragraph for ibiblio HyperWar pages (others unchanged). A missing
+    html5lib raises ConverterUnavailable: never a silent page-as-paragraph conversion.
+    """
+    from src.ingestion.hyperwar_html import (
+        HyperWarParserUnavailable,
+        normalise_hyperwar_html,
+    )
+
+    try:
+        html, report = normalise_hyperwar_html(raw)
+    except HyperWarParserUnavailable as e:
+        raise ConverterUnavailable(str(e)) from e
+    if report.labels and report.pages < report.labels:
+        # Some page footers were NOT split into page breaks: those pages may still read as one
+        # paragraph each. Never silent.
+        logger.warning(
+            "OBSERV convert.hyperwar_unsplit status=warn file=%s labels=%d pages=%d — some page "
+            "footers were not recognised (unusual markup); check this page's footers and extend "
+            "src/ingestion/hyperwar_html for it before parsing",
+            name,
+            report.labels,
+            report.pages,
+        )
+    if report.labels:
+        logger.info(
+            "OBSERV convert.hyperwar file=%s pages=%d paragraphs=%d joined=%d kept_apart=%d "
+            "figures_moved=%d quotes=%d captions=%d labels_without_anchor=%d",
+            name,
+            report.pages,
+            report.paragraphs,
+            report.joined,
+            report.kept_apart,
+            report.figures_moved,
+            report.quotes,
+            report.captions,
+            len(report.labels_without_anchor),
+        )
+    return html
 
 
 def _run_pandoc_text(text: str, from_format: str) -> str:

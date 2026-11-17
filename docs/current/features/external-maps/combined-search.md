@@ -1,5 +1,14 @@
 # Combined Map Search Strategy
 
+> **Status (2026-11-16):** the combined orchestrator (`src.extraction.combined_map_search`, its
+> `import_all_external_maps`, and `test_grok_search.sh`) no longer exists; `scripts/archive/test_grok_search.sh`
+> is the stale leftover. What runs today: Phase 3 step `openserp_external_maps`
+> (`phase3_enrich_data.py` → `openserp_maps.import_openserp_maps`) when `external_maps.enabled` is true
+> (currently `false` in `config.yaml`: expensive); the Grok whitelist search is a separate manual entry
+> point, `python3 -m src.extraction.grok_search_maps` (5 places, hard-coded in `main()`). The
+> two-phase "Grok first, then OpenSERP" flow below is the design, not an automated run. "Phase 1/2"
+> in this doc mean search stages, not pipeline phases.
+
 **Approach:** Run Grok whitelist search first (high quality), then OpenSERP (broader coverage).
 
 ## Strategy
@@ -27,7 +36,7 @@ Phase 2: OpenSERP Search
 
 ## Whitelisted Sites (Phase 1)
 
-Sites are loaded from `domain_blacklist.yaml` whitelist section:
+Sites are loaded from the `whitelist:` section of `config/domain_blacklist.yaml` (excerpt):
 
 ```yaml
 whitelist:
@@ -39,42 +48,26 @@ whitelist:
 - dhc.westpoint.edu/atlases/
 ```
 
-**To add sites**: Edit `domain_blacklist.yaml` and add to the `whitelist:` section.
+**To add sites**: Edit `config/domain_blacklist.yaml` and add to the `whitelist:` section.
 
-**Current whitelist** (as of 2026-03-02):
-- `dhc.westpoint.edu/atlases/` - West Point Digital History Center ⭐
-- `wikipedia.org` - Wikipedia
-- `grokipedia.com` - Grokipedia
-- `alaskool.org` - Alaska history
-- `www.ww2alaska.com` - WWII Alaska
-- `www.normandywarguide.com` - Normandy War Guide
+**Current whitelist** (`config/domain_blacklist.yaml`, 2026-11-16): `alaskool.org`,
+`www.ww2alaska.com`, `www.normandywarguide.com`, `wikipedia.org`, `grokipedia.com`,
+`dhc.westpoint.edu/atlases/` (West Point Digital History Center), `ibiblio.org` (HyperWar host).
+`load_whitelisted_sites` falls back to `loc.gov`, `archives.gov`, `wikipedia.org` when the file or
+list is missing.
 
 ## Usage
 
-### Quick Test (5 places)
+### Grok whitelist search (manual, 5 places)
 ```bash
-./test_grok_search.sh
+python3 -m src.extraction.grok_search_maps
 ```
 
-Or directly:
-```bash
-python3 -m src.extraction.combined_map_search --max-places 5
-```
-
-### Process All Places
-```bash
-python3 -m src.extraction.combined_map_search --max-places 220
-```
-
-### Grok Only (Skip OpenSERP)
-```bash
-python3 -m src.extraction.combined_map_search --skip-openserp
-```
-
-### Custom OpenSERP URL
-```bash
-python3 -m src.extraction.combined_map_search --openserp-url http://localhost:7002
-```
+### OpenSERP search (Phase 3)
+Runs inside `phase3_enrich_data.py` as step `openserp_external_maps` when
+`external_maps.enabled: true` (OpenSERP service scaled up on demand). Tunables in `config.yaml`
+`external_maps`: `max_places`, `search_limit`, `page_download_timeout`, `image_download_timeout`,
+`image_storage_path`. There is no standalone CLI for it.
 
 ## Output
 
@@ -140,7 +133,7 @@ Maps are deduplicated by URL:
 
 ### Adding Whitelisted Sites
 
-Edit `domain_blacklist.yaml`:
+Edit `config/domain_blacklist.yaml`:
 
 ```yaml
 whitelist:
@@ -158,24 +151,11 @@ Sites in the whitelist are:
 
 Simply remove the line from `domain_blacklist.yaml` whitelist section.
 
-## Integration with Phase 2
+## Integration with the pipeline
 
-Add to `phase2_extract.py`:
-
-```python
-from src.extraction.combined_map_search import import_all_external_maps
-
-if config.get("external_maps", {}).get("enabled"):
-    grok_count, openserp_count = import_all_external_maps(
-        places_dir=paths["places_dir"],
-        output_dir=paths["external_maps_dir"],
-        image_storage_path=paths["image_storage_path"],
-        grok_client=grok_client,
-        max_places=config.get("external_maps", {}).get("max_places"),
-        use_openserp=config.get("external_maps", {}).get("use_openserp", True),
-    )
-    logger.info(f"Imported {grok_count + openserp_count} external maps")
-```
+Only the OpenSERP stage is wired in, in **Phase 3** (see Usage). External maps are no longer
+imported from Phase 2 by web search; Phase 2 imports only the local `external_maps.yaml` corpus
+(`phase2_extract._extract_external_maps`, also gated on `external_maps.enabled`).
 
 ## Advantages
 
@@ -211,9 +191,8 @@ Watch for:
 
 ## Files
 
-- `src/extraction/combined_map_search.py` - Orchestrator
 - `src/extraction/grok_search_maps.py` - Phase 1 (whitelist; whitelist loaded from
-  `config/domain_blacklist.yaml`, NOT a hardcoded constant — see `whitelist-config.md`)
+  `config/domain_blacklist.yaml`, NOT a hardcoded constant — see "Whitelisted Sites" above; the dated change note is in `docs/archive/2026-11-16/features/external-maps/whitelist-config.md`)
 - `src/extraction/openserp_maps.py` - Phase 2 (broader)
 - `tools/setup_openserp.sh` / `tools/search_maps.go` - OpenSERP tooling (under `tools/`)
 

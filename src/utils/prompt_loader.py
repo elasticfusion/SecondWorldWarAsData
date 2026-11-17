@@ -52,6 +52,10 @@ def render_prompt(name: str, **kwargs: Any) -> str:
     """
     tmpl = load_prompt(name)
     prompt = tmpl["prompt_template"]
+    # shared, trusted prompt text every template may reference
+    from src.utils.quote_match import QUOTE_RULE
+
+    kwargs.setdefault("quote_rule", QUOTE_RULE)
 
     # Inject schema if referenced. The schema is a STATIC, trusted template (our own YAML), and its
     # worked example embeds structural placeholders ({event_id}/{sub_event_id}/{event_name}/

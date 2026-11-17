@@ -273,3 +273,20 @@ def write_geo_report(output_root: Path, report: PlaceGeoReport) -> Path:
 def _asdict_report(report: PlaceGeoReport) -> Dict[str, Any]:
     """Expose dataclass conversion for callers/tests."""
     return asdict(report)
+
+
+def coords_verified(data: dict) -> bool:
+    """True if a place's coordinates come from a real geocode (Phase 3) or are stated exact.
+
+    Phase-2 coordinates are the extraction LLM's GUESS (``precision: approximate`` and no
+    ``geocode_source``). Two guesses landing within 5 km says nothing about identity, so they must
+    not power the weak "nearby + partial name" rule (XChannel ch8: Merderet River vs
+    Ste. Mère-Eglise at 42% name similarity), and Phase 3 geocodes them (a guess is not a geocode).
+    Shared by the place dedup and the Phase-3 geocoder.
+    """
+    coords = data.get("coordinates")
+    if not isinstance(coords, dict) or coords.get("latitude") in (None, 0, 0.0):
+        return False  # no coordinates: nothing verified (a not-found geocode still sets a source)
+    if data.get("geocode_source") or data.get("enrichment_status") == "geocoded":
+        return True
+    return coords.get("precision") == "exact"

@@ -176,3 +176,14 @@ def _reconcile_known_against_keyed(known: list, keyed: dict):
             reconciled[real] = keyed[cand[0]]
             recovered += 1
     return reconciled, exact, recovered
+
+
+def book_id(book: Optional[str]) -> str:
+    """Deterministic ``BookID`` (ULID) for a book, from its slug.
+
+    Stable for the book's lifetime because the slug is IMMUTABLE (owner rule, 2026-11-11): once
+    assigned at intake a slug is never renamed - a colliding new upload gets a different, unique
+    title instead (src/ingestion/title_uniqueness). Changing that rule would re-key every BookID.
+    The slug is used as given (not normalised): it is already a safe, exact identifier.
+    """
+    return _ulid_from_key("|".join(["book", _SCHEMA, str(book or "")]))

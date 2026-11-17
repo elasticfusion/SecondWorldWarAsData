@@ -90,8 +90,12 @@ class TestPromptLoading:
             common_name="Sherman",
             category="armor",
             country="USA",
+            source_text="[https://en.wikipedia.org/wiki/M4_Sherman]\nThe M4 Sherman...",
         )
         assert "M4A3" in prompt
+        assert (
+            "The M4 Sherman..." in prompt
+        )  # grounded: the source text is in the prompt
         _assert_no_unfilled(prompt)
         assert "Sherman" in prompt
         _assert_no_unfilled(prompt)

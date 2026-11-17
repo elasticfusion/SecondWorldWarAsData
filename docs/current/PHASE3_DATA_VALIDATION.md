@@ -30,11 +30,12 @@ augments them in place (idempotent/resumable). The write-guard (`write_json_with
 - ✅ **places** (`enrich_places`) + **geocode** (`places_grok_geocode`) — guarded.
 - ✅ **OpenSERP** (`openserp_enrichment`) — uses `write_json_with_lock` (has a few raw writes to
   verify are metrics/cache, not entities).
+- ✅ **FIXED (verified 2026-11-16):** `noaa_weather.py` `_enrich_weather_file` now writes via `write_json_with_lock(f, data, entity="weather")` (src/enrichment/noaa_weather.py:354-356). Original finding follows.
 - 🔴 **weather** (`noaa_weather.py:327` `_enrich_weather_file`) — **RAW `f.write_text(json.dumps(...))`
   of a weather ENTITY → BYPASSES the schema guard.** A NOAA-enriched weather record is not
   schema-validated on write; a malformed/missing-mandatory record is neither caught nor alerted.
   (Contrast: `weather_central.py` Phase-2 writes DO use the guard.)
-- 🔴 **bibliography** (`supplemental_advanced.py:348`) — **RAW `json.dump(data, f)` of the enriched
+- ⚠ **bibliography** (`src/extraction/supplemental_advanced.py`; guarded via `write_json_with_lock` when an `entity` argument is passed (~line 358); a raw `json.dump` fallback remains at ~line 372 when it is not; callers not re-audited in the 2026-11-16 pass) — **RAW `json.dump(data, f)` of the enriched
   bibliography ENTITY → BYPASSES the guard.** Same gap.
 - ◻ **geocode helpers** (`nominatim`/`hill`) — return coords to a guarded caller; they don't write
   entities themselves (OK) — confirm.

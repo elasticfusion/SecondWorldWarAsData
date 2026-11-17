@@ -28,19 +28,27 @@ def test_estimate_no_discount_when_not_batch():
     assert abs(cost - 3.75) < 1e-6
 
 
-def test_estimate_grok_46_has_no_batch_discount():
-    # grok-4.6: 1M in @ $2 + 1M out @ $6 = $8.00, no batch discount
+def test_estimate_grok_46_batch_discount():
+    # grok-4.6: 1M in @ $2 + 1M out @ $6 = $8.00, 20% batch discount -> $6.40
+    # (docs.x.ai/developers/pricing, 2026-11-12: grok-4.5/4.6/4.7 now get the batch discount)
     cost = credit_gate.estimate_cost_usd(
         1_000_000, 1_000_000, model="grok-4.6", is_batch=True
     )
-    assert abs(cost - 8.00) < 1e-6
+    assert abs(cost - 6.40) < 1e-6
+
+
+def test_estimate_grok_build_has_no_batch_discount():
+    cost = credit_gate.estimate_cost_usd(
+        1_000_000, 1_000_000, model="grok-build-0.1", is_batch=True
+    )
+    assert abs(cost - 3.00) < 1e-6
 
 
 def test_estimate_unknown_model_falls_back_to_default():
     cost = credit_gate.estimate_cost_usd(
         1_000_000, 0, model="mystery-model", is_batch=False
     )
-    assert abs(cost - 1.25) < 1e-6  # default grok-4.20 input price
+    assert abs(cost - 1.25) < 1e-6  # default grok-4.3 input price
 
 
 def test_config_pricing_override():

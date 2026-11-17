@@ -106,9 +106,9 @@ Validation automatically runs during extraction:
 python3 phase2_extract.py
 ```
 
-Or test standalone:
+Or run the tests:
 ```bash
-python3 tests/test_supplemental.py
+pytest tests -k supplemental
 ```
 
 Check logs for validation errors:
@@ -129,4 +129,4 @@ Follows same validation pattern as other extractors:
 - `people_groups.py`: Uses `PEOPLE_GROUP_ITEM_SCHEMA` per item + `_fix_invalid_ulids`
 - `supplemental.py`: Uses `validate_supplemental_json()` + `_fix_invalid_ulids` ✅
 
-All extractors use jsonschema or Pydantic for validation, and `_fix_invalid_ulids` from `src/utils/json_validator.py` for ULID repair. Weather, logistics, and casualties use batched API calls (1 per chapter) with per-item validation on the response.
+All extractors use jsonschema or Pydantic for validation, and `_fix_invalid_ulids` from `src/utils/json_validator.py` for ULID repair. Weather, logistics, and casualties send one request per 3-paragraph window of the raw text (`src/extraction/windows.py`), each answer attributed to the sub-event that holds its quote, with per-item validation on the response.

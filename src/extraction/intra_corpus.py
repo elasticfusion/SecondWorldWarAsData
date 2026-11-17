@@ -78,10 +78,10 @@ def _corpus_volumes_present(out: Path) -> set:
     dedup: we don't re-queue a volume we already have. Fail-safe."""
     vols: set = set()
     try:
-        sec_dir = out / "source_section"
-        if sec_dir.exists():
-            for sf in sec_dir.glob("*.json"):
-                vols |= _section_volumes(sf)
+        from src.utils.source_sections import iter_section_files
+
+        for sf in iter_section_files(out):
+            vols |= _section_volumes(sf)
     except Exception as e:  # noqa: BLE001
         logger.debug("corpus-volumes scan skipped: %s", e)
     return vols

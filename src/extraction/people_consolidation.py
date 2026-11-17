@@ -5,6 +5,7 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, List
 
+from src.utils.entity_records import merge_mentions
 from src.grok_client import GrokClient
 
 logger = logging.getLogger(__name__)
@@ -93,12 +94,12 @@ def _merge_person_group(people_list: list, indices: list, canonical_name: str) -
     base_person = people_list[indices[0]].copy()
     base_person["name"] = canonical_name
 
-    all_mentions = []
+    all_mentions: List[Dict[str, Any]] = []
     all_awards = []
 
     for idx in indices:
         person = people_list[idx]
-        all_mentions.extend(person.get("event_mentions", []))
+        merge_mentions(all_mentions, person.get("event_mentions", []))
 
         bio = person.get("biographical_profile", {})
         if bio:

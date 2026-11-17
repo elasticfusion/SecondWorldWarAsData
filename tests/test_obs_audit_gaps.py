@@ -63,7 +63,7 @@ def test_chapter_failure_emits_canonical_observ(monkeypatch):
 
 
 def test_incompatible_group_candidate_is_counted(caplog):
-    import scripts.find_duplicate_groups as fdg
+    import src.dedup.find_duplicate_groups as fdg
     from src.dedup.unit_key import derive_unit_key
 
     cluster = [{"name": "9th Division"}, {"name": "9th Infantry Division"}]

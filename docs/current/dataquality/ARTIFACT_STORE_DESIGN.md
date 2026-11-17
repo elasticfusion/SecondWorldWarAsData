@@ -1,7 +1,7 @@
 # Artifact / Document Store — Design (DRAFT, design-first)
 
-Status: DRAFT — design under discussion with the owner. No code yet.
-Last updated: 2026-10-14
+Status: PARTLY BUILT (checked 2026-11-16, factual status only; the design text below was not re-reviewed — Phase 3 pass). `src/utils/artifact_store.py` exists (`artifacts/<source>/<artifact_id>/original/` + `manifest.json`), is used by `src/enrichment/unit_patch.py`, and `cloudformation/storage.yaml` has a rule for `artifacts/` originals. The earlier "No code yet" was wrong.
+Last updated: 2026-11-16
 
 Companion docs: `INGESTION_PATHS.md` (the existing S3 front door + four tracks),
 `INGESTION_FRONT_END.md` (per-page disposition), `MAP_IMAGE_AV_INGESTION.md`

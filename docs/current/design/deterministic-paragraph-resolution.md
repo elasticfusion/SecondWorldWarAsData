@@ -1,6 +1,20 @@
 # Design: Deterministic paragraph resolution (stop the LLM transcribing identifiers we own)
 
 **Status:** DESIGN + PROTOTYPE (2026-10-30). Owner-raised. Provenance is the #1 project goal.
+**Last Updated:** 2026-11-16 — **the resolver is NOT wired in.** `src/extraction/anchor_resolve.py`
+(`resolve_anchor_paragraphs`) and `tests/test_anchor_resolve.py` exist, but nothing in `src/` calls it,
+`prompts/events.yaml` still asks for `paragraph_numbers`, and no `anchor_quotes` field exists in the
+events contract. What the code does instead (all in `src/extraction/events.py`): out-of-range numbers
+are rejected and the call resubmitted (`_validate_paragraph_range` / `_cited_paragraph_numbers`);
+orphan paragraphs are claimed by the nearest earlier sub-event (`_claim_orphan_paragraphs`); a
+sub-event's numbers are rewritten to the paragraphs it owns (disjointness pass); then
+`_reconstruct_fulltext` builds `Sub-event_fulltext`.
+**Changed since this was written:** entity discovery (people, groups, places, dates, equipment,
+weather, logistics, casualties) no longer reads `Sub-event_fulltext`. It runs over fixed 3-paragraph
+windows of the raw parsed text (`src/extraction/windows.py`) and attributes each item to the sub-event
+by where its quote sits (`windows.settle`). A bad `paragraph_numbers` array therefore mis-groups
+sub-events but no longer starves the entity extractors; the "every entity extractor starves" failure
+below is the pre-windows behaviour.
 
 ## Problem
 

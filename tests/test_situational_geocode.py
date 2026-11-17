@@ -10,6 +10,11 @@ from src.enrichment.situational_geocode import (
 class _Resp:
     def __init__(self, text="", status=200):
         self.text = text
+        self.content = text.encode(
+            "utf-8"
+        )  # real responses carry bytes (response_text)
+        self.headers = {}
+        self.encoding = None
         self.status_code = status
 
     def json(self):
@@ -58,7 +63,10 @@ def test_grokipedia_strictly_preferred_over_wikipedia(monkeypatch) -> None:
                     return _Resp("", 200)  # no /page/, no data-slug
                 return _Resp('data-slug="aachen" /page/aachen', 200)
             if "grokipedia.com/page/" in url:
-                return _Resp("<p>Aachen, a German city near the border.</p>", 200)
+                return _Resp(
+                    "<article><p>Aachen, a German city near the border.</p></article>",
+                    200,
+                )
             if "wikipedia.org" in url:
                 return _Resp(
                     '{"query":{"pages":{"1":{"extract":"wiki full term"}}}}', 200
@@ -79,8 +87,8 @@ def test_encyclopedia_prefers_grokipedia(tmp_path, monkeypatch) -> None:
 
     session = _FakeSession(
         grok_search='<a data-slug="aachen-gap">Aachen Gap</a> /page/aachen-gap',
-        grok_page="<html><body>The Aachen Gap is the Stolberg Corridor "
-        "between the Huertgen Forest and the Dutch border.</body></html>",
+        grok_page="<html><body><article>The Aachen Gap is the Stolberg Corridor "
+        "between the Huertgen Forest and the Dutch border.</article></body></html>",
         wiki='{"query":{"pages":{"1":{"extract":"wiki text"}}}}',
     )
     extract, source = encyclopedia_context("Aachen Gap", session)
@@ -134,7 +142,7 @@ def test_situational_geocode_caps_confidence_and_flags(monkeypatch) -> None:
 
     session = _FakeSession(
         grok_search='data-slug="aachen-gap" /page/aachen-gap',
-        grok_page="<p>Stolberg Corridor near Aachen.</p>",
+        grok_page="<article><p>Stolberg Corridor near Aachen.</p></article>",
     )
     grok = _FakeGrok(
         GeocodeResult(
@@ -188,12 +196,13 @@ def test_situational_grokipedia_emits_structured_provenance(
 
     session = _FakeSession(
         grok_search='<a data-slug="aachen">Aachen</a> /page/aachen',
-        grok_page="<html><body>Aachen is a German border city.</body></html>",
+        grok_page="<html><body><article>Aachen is a German border city.</article></body></html>",
     )
     encyclopedia_context("Aachen", session)
 
     f = store / "grokipedia.jsonl"
     assert f.exists(), "no fetch-provenance record for the grokipedia lookup"
     evs = [_json.loads(x) for x in f.read_text().splitlines()]
-    assert all(e["kind"] == fp.STRUCTURED for e in evs)
-    assert any(e["provider"] == "grokipedia" and e["outcome"] == fp.HIT for e in evs)
+    # the search is a STRUCTURED lookup; the article itself is the shared TEXTUAL fetch
+    assert {e["kind"] for e in evs} == {fp.STRUCTURED, fp.TEXTUAL}
+    assert all(e["provider"] == "grokipedia" and e["outcome"] == fp.HIT for e in evs)

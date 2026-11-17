@@ -38,6 +38,9 @@ jobs:
       - name: Mypy (type checking)
         run: python -m mypy src/ lambda_handlers/ --ignore-missing-imports --no-strict-optional
 
+      - name: Basedpyright (type checking, baselined — only new errors fail)
+        run: python -m basedpyright
+
       - name: Bandit (security)
         run: python -m bandit -r src/ lambda_handlers/ -ll -q
 
@@ -60,7 +63,7 @@ jobs:
         run: |
           python - <<'PYJSON'
           import json, subprocess, sys
-          _EXCL = ("aws/", ".venv/", "node_modules/", "dist/", "build/", ".git/", "contentrepository/", "logs/")
+          _EXCL = (".venv/", "node_modules/", "dist/", "build/", ".git/", "contentrepository/", "logs/")
           files = subprocess.check_output(["git", "ls-files", "*.json"], text=True).split()
           bad, checked = [], 0
           for f in files:
@@ -91,6 +94,7 @@ jobs:
           # diskcache ships a fix or the cache backend changes.
           pip-audit -r requirements.txt --ignore-vuln PYSEC-2026-2447
           pip-audit -r requirements-lambda.txt --ignore-vuln PYSEC-2026-2447
+          pip-audit -r requirements-ci.txt --ignore-vuln PYSEC-2026-2447
 
       - name: Raw-write bypass gate (data-quality)
         run: bash scripts/check_raw_writes.sh

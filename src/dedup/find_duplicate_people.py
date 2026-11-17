@@ -1,0 +1,1568 @@
+#!/usr/bin/env python3
+"""
+Identify possible duplicate people based on spelling variations, aliases,
+and text proximity (names appearing near each other in source text).
+"""
+
+import json
+import logging
+import re
+import sys
+import unicodedata
+from functools import lru_cache
+from pathlib import Path
+from typing import List, Dict, Any, Set, Optional
+from difflib import SequenceMatcher
+
+logger = logging.getLogger(__name__)
+
+# Repo root (src/dedup/<this>.py -> parents[2]); output/ and config/ resolve from here.
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+
+
+@lru_cache(maxsize=10000)
+def _normalize_unicode(text: str) -> str:
+    """Normalize Unicode to ASCII for comparison (ö -> o, é -> e)."""
+    return unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode("ascii")
+
+
+def _normalize_german(text: str) -> str:
+    """Normalize German umlauts to their common transliterations."""
+    replacements = {
+        "ö": "oe",
+        "ä": "ae",
+        "ü": "ue",
+        "Ö": "Oe",
+        "Ä": "Ae",
+        "Ü": "Ue",
+        "ß": "ss",
+    }
+    for umlaut, replacement in replacements.items():
+        text = text.replace(umlaut, replacement)
+    return text
+
+
+@lru_cache(maxsize=10000)
+def _similarity_ratio(name1: str, name2: str) -> float:
+    """Calculate similarity ratio between two names."""
+    # Compare both original and ASCII-normalized versions
+    original_ratio = SequenceMatcher(None, name1.lower(), name2.lower()).ratio()
+    normalized_ratio = SequenceMatcher(
+        None, _normalize_unicode(name1).lower(), _normalize_unicode(name2).lower()
+    ).ratio()
+    return max(original_ratio, normalized_ratio)
+
+
+@lru_cache(maxsize=5000)
+def _core_name_tokens(name: str) -> tuple:
+    """The name's words without ranks/titles and suffixes ("Lt. Col. Robert G. Cole, Jr." ->
+    ("Robert", "G", "Cole"))."""
+    titles = {
+        "general",
+        "colonel",
+        "major",
+        "captain",
+        "lieutenant",
+        "field",
+        "marshal",
+        "admiral",
+        "commander",
+        "sergeant",
+    }
+    suffixes = {"jr.", "jr", "sr.", "sr", "ii", "iii", "iv"}
+    return tuple(
+        p.strip(".,")
+        for p in name.split()
+        if p.strip(".,")
+        and p.lower().strip(".,") not in titles
+        and p.lower().strip(".,") not in suffixes
+    )
+
+
+@lru_cache(maxsize=5000)
+def _extract_last_name(name: str) -> str:
+    """Extract likely last name from full name."""
+    parts = name.split()
+    if len(parts) > 1:
+        # Skip titles/ranks and suffixes
+        filtered = _core_name_tokens(name)
+        if filtered:
+            return filtered[-1].lower()
+    return name.lower()
+
+
+def _has_shared_biographical_data(person1: Dict, person2: Dict) -> bool:
+    """Check if two people share biographical data."""
+    bio1 = person1.get("biographical_profile", {})
+    bio2 = person2.get("biographical_profile", {})
+
+    if not bio1 or not bio2:
+        return False
+
+    # Check birth date
+    if bio1.get("birth_date") and bio2.get("birth_date"):
+        if bio1["birth_date"] == bio2["birth_date"]:
+            return True
+
+    # Check nationality + birth year
+    if bio1.get("nationality") and bio2.get("nationality"):
+        if bio1["nationality"] == bio2["nationality"]:
+            birth1 = bio1.get("birth_date") or ""
+            birth2 = bio2.get("birth_date") or ""
+            if len(birth1) >= 4 and len(birth2) >= 4:
+                if birth1[:4] == birth2[:4]:
+                    return True
+
+    return False
+
+
+def _has_shared_positions(person1: Dict, person2: Dict) -> bool:
+    """Check if two people held the same specific positions."""
+    # Generic titles that many people share — not useful for dedup
+    generic = {
+        "commander",
+        "commanding general",
+        "commanding officer",
+        "general",
+        "chief of staff",
+        "deputy commander",
+        "assistant commander",
+        "division commander",
+        "corps commander",
+        "army commander",
+    }
+
+    positions1 = set()
+    positions2 = set()
+
+    for mention in person1.get("event_mentions", []):
+        pos = mention.get("position_at_event")
+        if pos and pos.lower() not in generic:
+            positions1.add(pos.lower())
+
+    for mention in person2.get("event_mentions", []):
+        pos = mention.get("position_at_event")
+        if pos and pos.lower() not in generic:
+            positions2.add(pos.lower())
+
+    return bool(positions1 & positions2)
+
+
+# ---------------------------------------------------------------------------
+# Text proximity helpers
+# ---------------------------------------------------------------------------
+
+_WORD_SPLIT = re.compile(r"\s+")
+
+# ---- Corpus surname statistics (for commonness damping + dominant-surname boost) ----
+# Populated once per run from the people set via build_surname_stats(). A surname is
+# "common" if many DISTINCT first names share it (ambiguous); "dominant" if it accounts
+# for a large share of all people (the Patton-book effect).
+_surname_distinct_firsts: Dict[str, set] = {}
+_surname_person_count: Dict[str, int] = {}
+_total_people: int = 0
+# thresholds (kept simple; tunable later if needed)
+_COMMON_DISTINCT_FIRSTS = (
+    3  # >=3 different first names on one surname -> common/ambiguous
+)
+_DOMINANT_SHARE = 0.10  # a surname on >=10% of all people -> book's dominant subject
+
+
+def build_surname_stats(people: List[Dict]) -> None:
+    """Compute per-corpus surname statistics once (distinct first names + share)."""
+    global _total_people
+    _surname_distinct_firsts.clear()
+    _surname_person_count.clear()
+    _total_people = len(people)
+    for p in people:
+        name = p.get("name", "")
+        if not name:
+            continue
+        last = _extract_last_name(name)
+        first = name.split()[0].lower().strip(".,") if name.split() else ""
+        _surname_distinct_firsts.setdefault(last, set()).add(first)
+        _surname_person_count[last] = _surname_person_count.get(last, 0) + 1
+
+
+def _is_common_surname(last: str) -> bool:
+    return len(_surname_distinct_firsts.get(last, set())) >= _COMMON_DISTINCT_FIRSTS
+
+
+def _is_dominant_surname(last: str) -> bool:
+    if _total_people <= 0:
+        return False
+    return _surname_person_count.get(last, 0) / _total_people >= _DOMINANT_SHARE
+
+
+# Canonical rank tokens for rank-set comparison (point-in-time; promotion-aware).
+_RANK_TOKENS = {
+    "general",
+    "lieutenant general",
+    "major general",
+    "brigadier general",
+    "colonel",
+    "lieutenant colonel",
+    "major",
+    "captain",
+    "lieutenant",
+    "first lieutenant",
+    "second lieutenant",
+    "sergeant",
+    "corporal",
+    "private",
+    "admiral",
+    "commander",
+    "field marshal",
+    "marshal",
+}
+
+
+def _rank_set(person: Dict) -> set:
+    """Set of normalized rank strings a person held (ranks are point-in-time; a record
+    may span several). Used so 'Major' vs 'Colonel' only counts as DIFFERENT when the
+    two records' rank sets are genuinely disjoint."""
+    bp = person.get("biographical_profile", {}) or {}
+    ranks = set()
+    for r in bp.get("ranks", []) or []:
+        val = (r.get("rank") if isinstance(r, dict) else str(r)) or ""
+        v = val.strip().lower().rstrip(".")
+        if v:
+            ranks.add(v)
+    return ranks
+
+
+def _ranks_differ(p1: Dict, p2: Dict) -> bool:
+    """True when both people have known ranks and the rank sets are DISJOINT (no shared
+    rank) — e.g. one is only-Major, the other only-Colonel. False if either is unknown
+    or the sets overlap (same rank somewhere, or one spans both)."""
+    r1, r2 = _rank_set(p1), _rank_set(p2)
+    if not r1 or not r2:
+        return False
+    return r1.isdisjoint(r2)
+
+
+def _person_nat(person: Dict) -> str:
+    bp = person.get("biographical_profile", {}) or {}
+    return (
+        bp.get("nationality")
+        or person.get("nationality")
+        or bp.get("nationality_served")
+        or ""
+    )
+
+
+def _person_units(person: Dict) -> list:
+    """Units a person served in, as (group_id, normalized_designation, echelon) tuples."""
+    bp = person.get("biographical_profile", {}) or {}
+    out = []
+    for u in bp.get("units_served", []) or []:
+        if not isinstance(u, dict):
+            continue
+        gid = (u.get("GroupID") or "").strip() or None
+        desig = (u.get("designation") or u.get("unit") or "").strip().lower() or None
+        ech = (u.get("echelon") or "").strip().lower() or None
+        if gid or desig:
+            out.append((gid, desig, ech))
+    return out
+
+
+def _shared_unit_affiliation(
+    person1: Dict, person2: Dict, cfg
+) -> tuple[list[str], float]:
+    """WEAK positive for a shared people-group (unit). Strength scales INVERSELY with
+    unit size via echelon (company > battalion > regiment > division ~ noise). Matches
+    on resolved GroupID first, then normalized designation. Returns the weight of the
+    STRONGEST (smallest-echelon) shared unit — a nudge, never decisive."""
+    su = cfg.shared_unit
+    if not su.get("enabled", True):
+        return [], 0.0
+    units1 = _person_units(person1)
+    units2 = _person_units(person2)
+    if not units1 or not units2:
+        return [], 0.0
+    ew = su.get("echelon_weights", {})
+    unknown_w = float(su.get("unknown_echelon_weight", 0.1))
+
+    best_w = 0.0
+    best_desc = ""
+    for u1 in units1:
+        for u2 in units2:
+            w, desc = _unit_pair_weight(u1, u2, ew, unknown_w)
+            if w > best_w:
+                best_w, best_desc = w, desc
+    if best_w > 0 and best_desc:
+        return [best_desc], best_w
+    return [], 0.0
+
+
+def _person_group_affiliations(person: Dict) -> list:
+    """Civilian group memberships as (group_id, normalized_group, kind, verified)."""
+    bp = person.get("biographical_profile", {}) or {}
+    out = []
+    for a in bp.get("group_affiliations", []) or []:
+        if not isinstance(a, dict):
+            continue
+        gid = (a.get("GroupID") or "").strip() or None
+        name = (a.get("group") or "").strip().lower() or None
+        kind = (a.get("group_kind") or "").strip().lower() or None
+        verified = bool(a.get("date_verified"))
+        if gid or name:
+            out.append((gid, name, kind, verified))
+    return out
+
+
+# Weak base weights by civilian group kind (size-inverse, like echelon). A shared
+# tiny constituency is stronger evidence than a shared national party.
+_GROUP_KIND_WEIGHT = {
+    "state": 0.1,  # a whole state's delegation — weak
+    "party": 0.03,  # a national party — ~noise
+    "legislature": 0.15,  # a chamber — weak
+    "executive": 0.2,
+    "judiciary": 0.2,
+    "civilian_org": 0.15,
+}
+# Date-UNVERIFIED title memberships are discounted hard (point-in-time, unconfirmed).
+_UNVERIFIED_DISCOUNT = 0.25
+
+
+def _shared_group_affiliation(
+    person1: Dict, person2: Dict, cfg
+) -> tuple[list[str], float]:
+    """WEAK positive for a shared CIVILIAN group membership (legislature/state/party).
+    Size-inverse base weight; a date-UNVERIFIED (title-implied, unconfirmed) membership
+    is discounted hard — it must not act as strong same-person evidence until a
+    temporal-validation step confirms it. Returns the strongest shared membership."""
+    a1 = _person_group_affiliations(person1)
+    a2 = _person_group_affiliations(person2)
+    if not a1 or not a2:
+        return [], 0.0
+    best_w = 0.0
+    best_desc = ""
+    for g1, n1, k1, v1 in a1:
+        for g2, n2, k2, v2 in a2:
+            if (g1 and g2 and g1 == g2) or (n1 and n2 and n1 == n2):
+                kind = k1 or k2
+                w = _GROUP_KIND_WEIGHT.get(kind, 0.1)
+                verified = v1 and v2
+                if not verified:
+                    w *= _UNVERIFIED_DISCOUNT  # unconfirmed -> weak
+                if w > best_w:
+                    best_w = w
+                    tag = "verified" if verified else "date-unverified"
+                    best_desc = f"Shared group [{kind or 'org'}, {tag}] (+{w:.3f})"
+    if best_w > 0 and best_desc:
+        return [best_desc], best_w
+    return [], 0.0
+
+
+def _unit_pair_weight(u1, u2, ew: dict, unknown_w: float) -> tuple[float, str]:
+    """Weight + description for one unit pair (GroupID match preferred, else
+    designation). 0 if no match."""
+    g1, d1, e1 = u1
+    g2, d2, e2 = u2
+    if g1 and g2 and g1 == g2:
+        matched_by = "GroupID"
+    elif d1 and d2 and d1 == d2:
+        matched_by = "designation"
+    else:
+        return 0.0, ""
+    echelon = e1 or e2  # size proxy; may be None
+    w = float(ew.get(echelon, unknown_w)) if echelon else unknown_w
+    return (
+        w,
+        f"Shared unit [{echelon or 'unknown echelon'}] via {matched_by} (+{w:.2f})",
+    )
+
+
+# People with more than this many event_mentions are considered high-frequency.
+# For these, name-similarity alone is not enough — proximity or biographical
+# evidence is required to flag a duplicate.
+
+
+def _build_text_index(
+    output_root: Path,
+) -> Dict[str, str]:
+    """Build sub-event ID → concatenated fulltext mapping.
+
+    Returns dict mapping Sub-eventID → full text string.
+    """
+    index: Dict[str, str] = {}
+    for event_file in output_root.rglob("*-event.json"):
+        if "notes-event" in event_file.name:
+            continue
+        try:
+            data = json.loads(event_file.read_text(encoding="utf-8"))
+            event = data.get("Event", data)
+            for se in event.get("Sub-events", []):
+                seid = se.get("Sub-eventID", "")
+                ft = se.get("Sub-event_fulltext", {})
+                if seid and ft:
+                    index[seid] = " ".join(ft.values())
+        except Exception:
+            continue
+    return index
+
+
+def _person_sub_event_ids(person: Dict) -> Set[str]:
+    """Get set of Sub-eventIDs a person is mentioned in."""
+    return {
+        m["Sub_eventID"]
+        for m in person.get("event_mentions", [])
+        if m.get("Sub_eventID")
+    }
+
+
+def _get_person_titles(person: Dict) -> List[str]:
+    """Extract distinctive titles/ranks from biographical profile."""
+    bp = person.get("biographical_profile", {})
+    titles = []
+    for rank_entry in bp.get("ranks", []):
+        rank = rank_entry.get("rank", "")
+        # Only keep multi-word titles (not generic "General", "Colonel")
+        if rank and len(rank.split()) > 1:
+            titles.append(rank.lower())
+    return titles
+
+
+def _names_within_distance(
+    text: str, name1: str, name2: str, max_words: int = 1000
+) -> bool:
+    """Check if any occurrence of name1 is within max_words of name2 in text."""
+    text_lower = text.lower()
+    n1 = name1.lower()
+    n2 = name2.lower()
+
+    # Also check last-name-only variants
+    last1 = _extract_last_name(name1)
+    last2 = _extract_last_name(name2)
+    variants1 = {n1, last1}
+    variants2 = {n2, last2}
+
+    words = _WORD_SPLIT.split(text_lower)
+    word_text = " ".join(words)  # normalized spacing
+
+    for v1 in variants1:
+        for v2 in variants2:
+            if v1 == v2:
+                continue  # same string, skip
+            # Find all positions of each variant
+            pos1 = [m.start() for m in re.finditer(re.escape(v1), word_text)]
+            pos2 = [m.start() for m in re.finditer(re.escape(v2), word_text)]
+            if not pos1 or not pos2:
+                continue
+            for p1 in pos1:
+                for p2 in pos2:
+                    # Count words between the two positions
+                    start = min(p1, p2)
+                    end = max(p1, p2)
+                    between = word_text[start:end]
+                    word_count = len(_WORD_SPLIT.split(between))
+                    if word_count <= max_words:
+                        return True
+    return False
+
+
+def _check_proximity(
+    person1: Dict,
+    person2: Dict,
+    text_index: Dict[str, str],
+) -> bool:
+    """Check if two people's names or titles appear near each other in source text."""
+    name1 = person1.get("name", "")
+    name2 = person2.get("name", "")
+    if not name1 or not name2:
+        return False
+
+    # Get sub-events where either person is mentioned
+    se_ids = _person_sub_event_ids(person1) | _person_sub_event_ids(person2)
+
+    # Also check if one person's title appears near the other's name
+    titles1 = _get_person_titles(person1)
+    titles2 = _get_person_titles(person2)
+
+    for seid in se_ids:
+        text = text_index.get(seid, "")
+        if not text:
+            continue
+        # Name-to-name proximity
+        if _names_within_distance(text, name1, name2):
+            return True
+        # Title-to-name proximity (person1's title near person2's name)
+        for title in titles1:
+            if _names_within_distance(text, title, name2):
+                return True
+        for title in titles2:
+            if _names_within_distance(text, title, name1):
+                return True
+    return False
+
+
+def _min_distance_in_text(text: str, name1: str, name2: str):
+    """Minimum word-distance between any occurrence of name1 and name2 (incl.
+    last-name variants) within one text, or None if both never co-occur."""
+    word_text = " ".join(_WORD_SPLIT.split(text.lower()))
+    variants1 = {name1.lower(), _extract_last_name(name1)}
+    variants2 = {name2.lower(), _extract_last_name(name2)}
+    best = None
+    for v1 in variants1:
+        for v2 in variants2:
+            if v1 == v2 or not v1 or not v2:
+                continue
+            pos1 = [m.start() for m in re.finditer(re.escape(v1), word_text)]
+            pos2 = [m.start() for m in re.finditer(re.escape(v2), word_text)]
+            for p1 in pos1:
+                for p2 in pos2:
+                    between = word_text[min(p1, p2) : max(p1, p2)]
+                    d = len(_WORD_SPLIT.split(between))
+                    if best is None or d < best:
+                        best = d
+    return best
+
+
+def _min_name_distance(person1: Dict, person2: Dict, text_index: Dict[str, str]):
+    """Smallest mention radius (in words) between the two people across the source
+    text of their shared sub-events, or None if they never co-occur."""
+    se_ids = _person_sub_event_ids(person1) & _person_sub_event_ids(person2)
+    name1 = person1.get("name", "")
+    name2 = person2.get("name", "")
+    if not name1 or not name2:
+        return None
+    best = None
+    for seid in se_ids:
+        text = text_index.get(seid, "")
+        if not text:
+            continue
+        d = _min_distance_in_text(text, name1, name2)
+        if d is not None and (best is None or d < best):
+            best = d
+    return best
+
+
+def _proximity_weight(distance, cfg) -> float:
+    """Continuous radius -> weight. Tighter mention radius = stronger same-person
+    evidence (PRIMARY signal). Reads tiers/weights from config."""
+    p = cfg.proximity
+    if distance is None:
+        return float(p.get("cross_document_weight", 0.0))
+    if distance <= p.get("tight_radius_words", 60):
+        return float(p.get("tight_weight", 0.8))
+    if distance <= p.get("near_radius_words", 400):
+        return float(p.get("near_weight", 0.4))
+    if distance <= p.get("loose_radius_words", 4000):
+        return float(p.get("loose_weight", 0.15))
+    return float(p.get("cross_document_weight", 0.0))
+
+
+def _check_name_similarity(name1: str, name2: str) -> tuple[list[str], float]:
+    """Check 1: High name similarity."""
+    similarity = _similarity_ratio(name1, name2)
+    if similarity > 0.7:
+        return [f"Name similarity: {similarity:.2f}"], similarity * 0.5
+    return [], 0.0
+
+
+def _check_same_last_name(last1: str, last2: str) -> tuple[list[str], float]:
+    """Check 2: Same last name (only distinctive names, >4 chars)."""
+    if last1 == last2 and len(last1) > 4:
+        return [f"Same last name: {last1}"], 0.4
+    return [], 0.0
+
+
+def _check_shared_bio(
+    p1: Dict, p2: Dict, has_name_match: bool
+) -> tuple[list[str], float]:
+    """Check 3: Shared biographical data (only boosts existing name match)."""
+    if has_name_match and _has_shared_biographical_data(p1, p2):
+        return ["Shared biographical data"], 0.5
+    return [], 0.0
+
+
+def _check_shared_external_urls(p1: Dict, p2: Dict) -> tuple[list[str], float]:
+    """Check: Shared Wikipedia or Grokipedia URLs — very high confidence match."""
+    urls1: set = set()
+    urls2: set = set()
+    for p, urls in [(p1, urls1), (p2, urls2)]:
+        # Wikipedia URL
+        wiki = p.get("wikipedia_url") or p.get("source_metadata", {}).get(
+            "wikipedia_url", ""
+        )
+        if wiki:
+            urls.add(wiki)
+        # Grokipedia URLs
+        for u in p.get("grokipedia_urls", []):
+            urls.add(u)
+        # Also check biography_sources
+        for src in p.get("biographical_profile", {}).get("biography_sources", []):
+            url = src.get("url", "")
+            if "wikipedia.org" in url or "grokipedia.com" in url:
+                urls.add(url)
+    shared = urls1 & urls2
+    if shared:
+        return [f"Shared external URL: {next(iter(shared))}"], 3.0
+    return [], 0.0
+
+
+def _check_shared_positions(p1: Dict, p2: Dict) -> tuple[list[str], float]:
+    """Check 4: Shared positions."""
+    if _has_shared_positions(p1, p2):
+        return ["Shared positions"], 0.3
+    return [], 0.0
+
+
+def _check_substring_match(
+    name1: str, name2: str, last1: str, last2: str
+) -> tuple[list[str], float]:
+    """Check 5: Single-word name matches a multi-word name's last name exactly."""
+    # Only triggers when one name is a single word (e.g. "Dollman")
+    # and it matches the other's last name exactly
+    parts1 = name1.split()
+    parts2 = name2.split()
+    if len(parts1) == 1 and len(parts2) > 1 and last1 == last2 and len(last1) > 3:
+        return ["Name substring match"], 0.5
+    if len(parts2) == 1 and len(parts1) > 1 and last1 == last2 and len(last2) > 3:
+        return ["Name substring match"], 0.5
+    return [], 0.0
+
+
+def _check_single_name(
+    name1: str, name2: str, last1: str, last2: str, p1: Dict, p2: Dict
+) -> tuple[list[str], float]:
+    """Check 5b: Single last name vs full name with matching last name.
+
+    Requires shared biographical/positional context to avoid false positives
+    from common names matching unrelated people.
+    """
+    is_single = len(name1.split()) == 1 or len(name2.split()) == 1
+    if not is_single or len(last1) < 3:
+        return [], 0.0
+    # Exact or fuzzy last name match (handles Dollman/Dollmann)
+    last_sim = _similarity_ratio(last1, last2)
+    if last_sim >= 0.85:
+        if _has_shared_biographical_data(p1, p2) or _has_shared_positions(p1, p2):
+            return ["Single name match with shared context"], 0.6
+        # Without shared context, only match if the name is long enough
+        # to be distinctive (>5 chars avoids "John", "Smith" false positives)
+        if len(last1) > 5:
+            return ["Single name match (distinctive)"], 0.4
+    return [], 0.0
+
+
+def _check_unicode_variants(name1: str, name2: str) -> tuple[list[str], float]:
+    """Check 6: ASCII/Unicode and German transliteration variants."""
+    n1a = _normalize_unicode(name1).lower()
+    n2a = _normalize_unicode(name2).lower()
+    n1g = _normalize_german(name1).lower()
+    n2g = _normalize_german(name2).lower()
+
+    if n1a == n2a:
+        return ["ASCII/Unicode variant"], 0.6
+    if n1g == n2g or n1g == n2a or n1a == n2g:
+        return ["German transliteration variant"], 0.6
+    return [], 0.0
+
+
+def _check_middle_name_variant(
+    name1: str, name2: str, last1: str, last2: str
+) -> tuple[list[str], float]:
+    """Check 7: Same first+last name, differing only by middle name/initial.
+
+    Matches: 'Omar N. Bradley' vs 'Omar Bradley',
+             'J. Lawton Collins' vs 'Lawton Collins',
+             'George S. Patton, Jr.' vs 'George Patton'.
+    """
+    if last1 != last2:
+        return [], 0.0
+
+    suffixes = {"jr.", "jr", "sr.", "sr", "ii", "iii", "iv"}
+
+    def _core_parts(name: str) -> list[str]:
+        return [
+            p.strip(".,").lower()
+            for p in name.split()
+            if p.strip(".,").lower() not in suffixes and len(p.strip(".,")) > 1
+        ]
+
+    parts1 = _core_parts(name1)
+    parts2 = _core_parts(name2)
+    if not parts1 or not parts2:
+        return [], 0.0
+
+    # If both carry a comparable middle initial/name and they CONFLICT (George S. vs
+    # George P. Patton), this is NOT a variant match — it is an author disambiguation.
+    # Return no positive match here; the conflict is scored (negatively) separately.
+    if _conflicting_middle_initial(name1, name2):
+        return [], 0.0
+
+    # Same first name and same last name — middle differs
+    if parts1[0] == parts2[0] and parts1[-1] == parts2[-1]:
+        return ["Middle name/initial variant"], 0.5
+
+    # One has initial that matches the other's first letter
+    # e.g., "J. Lawton Collins" vs "Lawton Collins"
+    shorter, longer = (
+        (parts1, parts2) if len(parts1) <= len(parts2) else (parts2, parts1)
+    )
+    if shorter[-1] == longer[-1]:  # same last name
+        # Check if shorter's non-last parts are a subset of longer's
+        short_firsts = set(shorter[:-1])
+        long_firsts = set(longer[:-1])
+        if short_firsts and short_firsts <= long_firsts:
+            return ["Middle name/initial variant"], 0.5
+
+    return [], 0.0
+
+
+def _middle_tokens(name: str) -> list[str]:
+    """Core (non-suffix, len>1) tokens EXCLUDING first + last — i.e. middle names."""
+    suffixes = {"jr.", "jr", "sr.", "sr", "ii", "iii", "iv"}
+    core = [
+        p.strip(".,").lower()
+        for p in name.split()
+        if p.strip(".,").lower() not in suffixes and len(p.strip(".,")) > 1
+    ]
+    # include single-letter initials as middles too (compare on first letter)
+    initials = [
+        p.strip(".,").lower()
+        for p in name.split()
+        if len(p.strip(".,")) == 1 and p.strip(".,").isalpha()
+    ]
+    mids = core[1:-1] if len(core) >= 2 else []
+    return [m[0] for m in mids] + [i for i in initials]
+
+
+def _conflicting_middle_initial(name1: str, name2: str) -> bool:
+    """True when both names carry a middle initial/name and NONE overlap on first
+    letter — the author is distinguishing two different people (George S. vs George
+    P. Patton). False when either lacks a middle (one simply omits it) or they share
+    one."""
+    m1 = {t[0] for t in _middle_tokens(name1) if t}
+    m2 = {t[0] for t in _middle_tokens(name2) if t}
+    if not m1 or not m2:
+        return False  # one omits the middle -> not a conflict (handled as subset match)
+    return m1.isdisjoint(m2)
+
+
+def _check_conflicting_middle(
+    name1: str, name2: str, last1: str, last2: str, cfg
+) -> tuple[list[str], float]:
+    """Disambiguation veto: same surname but conflicting middle initials -> negative."""
+    if last1 != last2:
+        return [], 0.0
+    if _conflicting_middle_initial(name1, name2):
+        return (
+            ["Conflicting middle initial (author disambiguation)"],
+            cfg.conflicting_middle_initial_weight,
+        )
+    return [], 0.0
+
+
+def _is_full_name(name: str) -> bool:
+    """A given name (or initial) and a surname, not a bare surname ("Paget", "Rundstedt")."""
+    return len(_core_name_tokens(name)) >= 2
+
+
+def _name_words(name: str) -> set:
+    """The name's words of three letters or more, hyphenated parts split too ("Trafford
+    Leigh-Mallory" -> {"trafford", "leigh-mallory", "leigh", "mallory"})."""
+    words = set()
+    for token in _core_name_tokens(name):
+        t = token.lower().strip(",")
+        words.add(t)
+        words.update(t.split("-"))
+    return {w for w in words if len(w) >= 3}
+
+
+def _surname_in(last: str, words: set, ratio: float) -> bool:
+    """Whether ``last`` is (within ``ratio``) one of ``words``, or contains / is contained in one
+    of four letters or more ("brooke" in "alanbrooke")."""
+    for w in words:
+        if _similarity_ratio(last, w) >= ratio:
+            return True
+        short, long_ = sorted((last, w), key=len)
+        if len(short) >= 4 and short in long_:
+            return True
+    return False
+
+
+def _check_different_surname(
+    name1: str, name2: str, last1: str, last2: str, cfg, identity: bool
+) -> tuple[list[str], float]:
+    """Disambiguation veto: two full names with different surnames are two people, however
+    alike their first names ("William E. Dreher, Jr." vs "William R. Benn, Jr.": the shared
+    "William ... Jr." alone made the whole names 0.76 alike). The veto holds only when NEITHER
+    surname is among the other name's words: a surname spelt within ``surname_variant_ratio`` (an
+    OCR or spelling variant: Schwarzwalder/Schwarzwaldor), in another order ("Tojo Hideki"), in a
+    title ("Viscount Montgomery of Alamein", "Viscount Alanbrooke") or a hyphenated name
+    ("Leigh Mallory" / "Leigh-Mallory") is the same person's. An identity signal - a shared
+    Wikipedia/Grokipedia URL, a title alias - lifts the veto too."""
+    if identity or last1 == last2:
+        return [], 0.0
+    if not (_is_full_name(name1) and _is_full_name(name2)):
+        return [], 0.0
+    ratio = cfg.surname_variant_ratio
+    if _surname_in(last1, _name_words(name2), ratio) or _surname_in(
+        last2, _name_words(name1), ratio
+    ):
+        return [], 0.0
+    return [f"Different surnames: {last1} vs {last2}"], cfg.different_surname_weight
+
+
+def _check_event_overlap(p1: Dict, p2: Dict) -> tuple[list[str], float]:
+    """Check: High overlap in Sub-eventIDs suggests same entity with different name/title."""
+    mentions1 = p1.get("event_mentions", [])
+    mentions2 = p2.get("event_mentions", [])
+    if not mentions1 or not mentions2:
+        return [], 0.0
+
+    se_ids1 = {m.get("Sub-eventID") or m.get("Sub_eventID") for m in mentions1} - {None}
+    se_ids2 = {m.get("Sub-eventID") or m.get("Sub_eventID") for m in mentions2} - {None}
+
+    if not se_ids1 or not se_ids2:
+        return [], 0.0
+
+    overlap = se_ids1 & se_ids2
+    smaller = min(len(se_ids1), len(se_ids2))
+    if smaller == 0:
+        return [], 0.0
+
+    ratio = len(overlap) / smaller
+    if ratio >= 0.5 and len(overlap) >= 3:
+        return [
+            f"High event overlap ({len(overlap)} shared sub-events, {ratio:.0%})"
+        ], 1.5
+    if ratio >= 0.3 and len(overlap) >= 2:
+        return [f"Event overlap ({len(overlap)} shared sub-events, {ratio:.0%})"], 0.8
+    return [], 0.0
+
+
+# Known title/role → person name mappings for dedup
+# Format: alias → (target_name, earliest_date, latest_date)
+_TITLE_ALIASES = {
+    "supreme commander": ("eisenhower", "1943-12", "1945-12"),
+    "supreme allied commander": ("eisenhower", "1943-12", "1945-12"),
+    "supreme commander allied expeditionary force": (
+        "eisenhower",
+        "1944-01",
+        "1945-12",
+    ),
+    "supreme command": ("eisenhower", "1943-12", "1945-12"),
+    "hitler": ("adolf hitler", "1889-01", "1945-04"),
+    "patton": ("george patton", "1885-01", "1945-12"),
+    "george patton": ("george s. patton, jr.", "1885-01", "1945-12"),
+    "eisenhower": ("dwight d. eisenhower", "1890-01", "1969-03"),
+    "bradley": ("omar n. bradley", "1893-01", "1981-04"),
+    "montgomery": ("bernard l. montgomery", "1887-01", "1976-03"),
+    "rommel": ("erwin rommel", "1891-01", "1944-10"),
+    "churchill": ("winston s. churchill", "1874-01", "1965-01"),
+}
+
+_ALLIED = {"american", "british", "french", "canadian", "polish", "us", "uk"}
+_AXIS = {"german", "japanese", "italian"}
+
+
+def _nationality_mismatch(p1: Optional[Dict], p2: Optional[Dict]) -> bool:
+    """Return True if persons are on opposite sides (Allied vs Axis)."""
+    if not p1 or not p2:
+        return False
+    nat1 = (p1.get("nationality") or "").lower()
+    nat2 = (p2.get("nationality") or "").lower()
+    if not nat1 or not nat2:
+        return False
+    return (nat1 in _ALLIED and nat2 in _AXIS) or (nat1 in _AXIS and nat2 in _ALLIED)
+
+
+def _alias_matches_name(target: str, name: str) -> bool:
+    """Check if alias target matches a name (substring in either direction)."""
+    return target == name or target in name or name in target
+
+
+def _date_in_range(entry: Optional[tuple], person: Optional[Dict]) -> bool:
+    """Check if person's event mentions fall within the alias date range."""
+    if not entry or not person:
+        return True
+    _, earliest, latest = entry
+    mentions = person.get("event_mentions", [])
+    dates = [m.get("date_context") or m.get("date") or "" for m in mentions]
+    dates = [d for d in dates if d]
+    if not dates:
+        return True
+    return any(earliest <= d <= latest for d in dates)
+
+
+def _check_title_alias(
+    name1: str, name2: str, p1: Dict = None, p2: Dict = None
+) -> tuple[list[str], float]:
+    """Check: Known title/alias maps to a person name."""
+    n1 = name1.lower().strip()
+    n2 = name2.lower().strip()
+
+    if _nationality_mismatch(p1, p2):
+        return [], 0.0
+
+    entry1 = _TITLE_ALIASES.get(n1)
+    entry2 = _TITLE_ALIASES.get(n2)
+    target1 = entry1[0] if entry1 else ""
+    target2 = entry2[0] if entry2 else ""
+
+    if target1 and _alias_matches_name(target1, n2) and _date_in_range(entry1, p1):
+        return [f"Title/alias match: '{name1}' → '{name2}'"], 2.0
+    if target2 and _alias_matches_name(target2, n1) and _date_in_range(entry2, p2):
+        return [f"Title/alias match: '{name2}' → '{name1}'"], 2.0
+    if target1 and target2 and target1 == target2:
+        return [f"Both aliases of same person: '{target1}'"], 2.0
+
+    return [], 0.0
+
+
+def _score_pair(
+    person1: Dict, person2: Dict, text_index: Dict[str, str], cfg=None
+) -> tuple[list[str], float]:
+    """Score a pair of people for duplicate likelihood."""
+    if cfg is None:
+        from src.dedup.config import default_dedup_config
+
+        cfg = default_dedup_config()
+    name1 = person1["name"]
+    name2 = person2["name"]
+    last1 = _extract_last_name(name1)
+    last2 = _extract_last_name(name2)
+
+    all_reasons: list[str] = []
+    total_confidence = 0.0
+
+    alias = _check_title_alias(name1, name2, person1, person2)
+    urls = _check_shared_external_urls(person1, person2)
+    checks = [
+        _check_name_similarity(name1, name2),
+        _check_same_last_name(last1, last2),
+        _check_shared_positions(person1, person2),
+        _check_substring_match(name1, name2, last1, last2),
+        _check_single_name(name1, name2, last1, last2, person1, person2),
+        _check_unicode_variants(name1, name2),
+        _check_middle_name_variant(name1, name2, last1, last2),
+        _check_event_overlap(person1, person2),
+        alias,
+        urls,
+    ]
+
+    for reasons, conf in checks:
+        all_reasons.extend(reasons)
+        total_confidence += conf
+
+    # Disambiguation veto: different surnames on two full names (config-weighted); lifted only
+    # by an identity signal (a title alias, a shared external URL)
+    identity = bool(alias[0] or urls[0])
+    r, c = _check_different_surname(name1, name2, last1, last2, cfg, identity)
+    all_reasons.extend(r)
+    total_confidence += c
+
+    # Check 3 depends on whether we have a name match
+    r, c = _check_shared_bio(person1, person2, total_confidence > 0)
+    all_reasons.extend(r)
+    total_confidence += c
+
+    # Disambiguation veto: conflicting middle initials (George S. vs George P. Patton)
+    # -> strong negative that can override proximity. (config-weighted)
+    r, c = _check_conflicting_middle(name1, name2, last1, last2, cfg)
+    all_reasons.extend(r)
+    total_confidence += c
+
+    # PRIMARY signal: continuous proximity by mention radius + rarity + rank×proximity.
+    if text_index and total_confidence > -1.0:
+        r, c = _proximity_and_rank_score(
+            person1, person2, text_index, cfg, name1, name2, last1
+        )
+        all_reasons.extend(r)
+        total_confidence += c
+
+    # WEAK corroborator: shared people-group (unit), echelon-scaled (smaller = stronger).
+    r, c = _shared_unit_affiliation(person1, person2, cfg)
+    all_reasons.extend(r)
+    total_confidence += c
+
+    # WEAK corroborator: shared CIVILIAN group (legislature/state/party), size-scaled;
+    # date-unverified title memberships are discounted hard (not strong evidence).
+    r, c = _shared_group_affiliation(person1, person2, cfg)
+    all_reasons.extend(r)
+    total_confidence += c
+
+    return all_reasons, total_confidence
+
+
+def _proximity_and_rank_score(
+    person1, person2, text_index, cfg, name1, name2, last1
+) -> tuple[list[str], float]:
+    """Proximity (radius-decay) scaled by nationality-aware surname rarity (fallback:
+    corpus commonness) + dominant-surname boost, then rank-difference×proximity damping.
+    Returns (reasons, score_delta)."""
+    from src.dedup.config import surname_rarity_multiplier
+
+    reasons: list[str] = []
+    score = 0.0
+    distance = _min_name_distance(person1, person2, text_index)
+    pweight = _proximity_weight(distance, cfg)
+    if pweight > 0:
+        nat = _person_nat(person1) or _person_nat(person2)
+        mult = surname_rarity_multiplier(cfg, last1, nat)
+        if mult is not None:
+            pweight *= mult
+            reasons.append(f"Surname rarity[{nat}]×{mult:.2f}")
+        elif cfg.commonness.get("enabled", True) and _is_common_surname(last1):
+            pweight *= float(cfg.commonness.get("common_surname_damping", 0.5))
+        if (
+            cfg.frequency.get("enabled", True)
+            and _is_dominant_surname(last1)
+            and not _conflicting_middle_initial(name1, name2)
+        ):
+            pweight += float(cfg.frequency.get("dominant_surname_boost", 0.3))
+        reasons.append(f"Mention proximity (radius={distance}w, +{pweight:.2f})")
+        score += pweight
+
+    penalty = _rank_proximity_penalty(person1, person2, distance, cfg)
+    if penalty:
+        reasons.append(f"Rank differs @ radius={distance}w ({penalty:+.2f})")
+        score += penalty
+    return reasons, score
+
+
+def _rank_proximity_penalty(person1, person2, distance, cfg) -> float:
+    """Different rank-set + tight proximity = mild negative; far = neutral. Dampen."""
+    rp = cfg.rank_proximity
+    if not rp.get("enabled", True) or distance is None:
+        return 0.0
+    if not _ranks_differ(person1, person2):
+        return 0.0
+    prox = cfg.proximity
+    if distance <= prox.get("tight_radius_words", 60):
+        return float(rp.get("tight_penalty", -0.6))
+    if distance <= prox.get("near_radius_words", 400):
+        return float(rp.get("near_penalty", -0.2))
+    return float(rp.get("loose_penalty", 0.0))
+
+
+def find_potential_duplicates(
+    people_dir_path: Path,
+    output_root: Optional[Path] = None,
+) -> List[Dict[str, Any]]:
+    """
+    Find potential duplicate people based on various heuristics.
+
+    Args:
+        people_dir_path: Path to output/people directory.
+        output_root: Path to output/ root (for text proximity). If None,
+                     proximity checking is skipped.
+
+    Returns list of duplicate groups with similarity scores.
+    """
+    # Build text index for proximity checking
+    text_index: Dict[str, str] = {}
+    if output_root:
+        logger.info("Building text index for proximity checking...")
+        text_index = _build_text_index(output_root)
+        logger.info("Indexed %d sub-events", len(text_index))
+    # Load exclusion list
+    from src.dedup.exclusions import get_exclusion_store
+
+    store = get_exclusion_store("people", people_dir_path)
+    excluded_pairs = store.load()
+    excluded_names = store.load_name_exclusions()
+
+    # Load all people files
+    people_data = _load_people_data(people_dir_path)
+    logger.info("Analyzing %d people for duplicates...", len(people_data))
+
+    # Incremental: only compare pairs with new files
+    from src.dedup.incremental import get_last_dedup_run, get_new_files
+
+    since = get_last_dedup_run("people")
+    new_files = get_new_files(people_dir_path, since)
+    if new_files:
+        logger.info(
+            "Incremental dedup: %d new people files since last run", len(new_files)
+        )
+
+    return _find_duplicate_groups(
+        people_data, excluded_pairs, text_index, excluded_names, new_files
+    )
+
+
+def _load_people_data(people_dir_path: Path) -> List[Dict[str, Any]]:
+    """Load people data, preferring file contents when available, filenames otherwise.
+
+    For files that exist locally (current run), reads full JSON for richer
+    comparison signals (event_mentions, biographical_details).
+    For files known only by name (e.g., from index.json), builds minimal
+    records from the filename — sufficient for name-based dedup.
+    """
+    skip = {
+        "index.json",
+        "duplicate_report.json",
+        "not_duplicates.json",
+        "not_related.json",
+        ".processed_events.json",
+    }
+    people_data = []
+    seen_filenames: set = set()
+
+    # Load full data from local files. sorted(): deterministic across filesystems (glob order is
+    # filesystem-dependent), matching the other dedup loaders.
+    for person_file in sorted(people_dir_path.glob("*.json")):
+        if person_file.name in skip:
+            continue
+        seen_filenames.add(person_file.name)
+        try:
+            with open(person_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                data["_filename"] = person_file.name
+                if "name" not in data:
+                    data["name"] = (
+                        person_file.stem.replace("_", " ").replace(".", " ").strip()
+                    )
+                people_data.append(data)
+        except (json.JSONDecodeError, OSError):
+            pass
+
+    # Add entries from index.json that aren't local (previous runs on S3)
+    index_file = people_dir_path / "index.json"
+    if index_file.exists():
+        try:
+            raw = json.loads(index_file.read_text(encoding="utf-8"))
+            for name, filename in raw.items():
+                if filename not in seen_filenames and filename not in skip:
+                    people_data.append(
+                        {"name": name, "_filename": filename, "event_mentions": []}
+                    )
+        except (json.JSONDecodeError, OSError):
+            pass
+
+    return people_data
+
+
+def _union_find_groups(
+    pairs: list[tuple[int, int, list[str], float]],
+) -> dict[int, list[tuple[int, list[str], float]]]:
+    """Group pairwise matches using union-find."""
+    parent: dict[int, int] = {}
+
+    def find(x: int) -> int:
+        while parent.get(x, x) != x:
+            parent[x] = parent.get(parent[x], parent[x])
+            x = parent[x]
+        return x
+
+    def union(a: int, b: int):
+        ra, rb = find(a), find(b)
+        if ra != rb:
+            parent[ra] = rb
+
+    for i, j, _, _ in pairs:
+        union(i, j)
+
+    groups: dict[int, list[tuple[int, list[str], float]]] = {}
+    for i, j, reasons, confidence in pairs:
+        root = find(i)
+        if root not in groups:
+            groups[root] = []
+        groups[root].append((i, reasons, confidence))
+        groups[root].append((j, reasons, confidence))
+    return groups
+
+
+def _is_pair_excluded(p1: Dict, p2: Dict, excluded_pairs: Set, excluded_names) -> bool:
+    """Check if a pair is excluded by filename or name-based exclusions."""
+    pair_key = tuple(sorted([p1["_filename"], p2["_filename"]]))
+    if pair_key in excluded_pairs:
+        return True
+    if excluded_names:
+        from src.dedup.exclusions import _normalize_exclusion_name
+
+        name_pair = tuple(
+            sorted(
+                [
+                    _normalize_exclusion_name(p1["name"]),
+                    _normalize_exclusion_name(p2["name"]),
+                ]
+            )
+        )
+        if name_pair in excluded_names:
+            return True
+    return False
+
+
+def _build_pairwise_matches(
+    people_data: List[Dict[str, Any]],
+    excluded_pairs: Set[tuple],
+    text_index: Dict[str, str],
+    excluded_names: Optional[Set[tuple]] = None,
+    new_files: Optional[Set[str]] = None,
+    cfg=None,
+) -> list[tuple[int, int, list[str], float]]:
+    """Score all pairs and return those with name-based evidence above threshold.
+
+    Single-word names (e.g. "Marshall") are limited to their single best match
+    to prevent bridging unrelated people (e.g. George C. Marshall and S.L.A. Marshall).
+    """
+    if cfg is None:
+        from src.dedup.config import load_dedup_config
+
+        try:
+            from src.utils.config import load_config
+
+            cfg = load_dedup_config(load_config())
+        except Exception:  # noqa: BLE001 - fall back to built-in defaults
+            cfg = load_dedup_config(None)
+    # Compute corpus surname stats once (commonness + dominant-surname signals).
+    build_surname_stats(people_data)
+    name_reasons = {
+        "Name similarity",
+        "Same last name",
+        "Name substring match",
+        "Single name match",
+        "ASCII/Unicode variant",
+        "German transliteration",
+        "Title/alias match",
+    }
+    raw_pairs: list[tuple[int, int, list[str], float]] = []
+
+    # Incremental: only compare pairs where at least one file is new
+    from src.dedup.incremental import should_compare
+
+    for i, person1 in enumerate(people_data):
+        if "name" not in person1:
+            continue
+        for j in range(i + 1, len(people_data)):
+            person2 = people_data[j]
+            if "name" not in person2:
+                continue
+            if not should_compare(
+                person1.get("_filename", ""), person2.get("_filename", ""), new_files
+            ):
+                continue
+
+            if _is_pair_excluded(person1, person2, excluded_pairs, excluded_names):
+                continue
+
+            # Skip if both entries point to the same file or same PersonID
+            if person1["_filename"] == person2["_filename"]:
+                continue
+            if person1.get("PersonID") and person1.get("PersonID") == person2.get(
+                "PersonID"
+            ):
+                continue
+
+            reasons, confidence = _score_pair(person1, person2, text_index, cfg)
+
+            if confidence > cfg.candidate_threshold and reasons:
+                has_name_evidence = any(
+                    any(r.startswith(nr) for nr in name_reasons) for r in reasons
+                )
+                if has_name_evidence:
+                    raw_pairs.append((i, j, reasons, confidence))
+
+    # Limit single-word names to their best match only
+    return _limit_single_name_matches(raw_pairs, people_data)
+
+
+def _is_ambiguous_name(name: str) -> bool:
+    """Check if a name is ambiguous (could match multiple different people).
+
+    Ambiguous = single word OR title/rank + single last name only.
+    """
+    titles = {
+        "general",
+        "colonel",
+        "major",
+        "captain",
+        "lieutenant",
+        "field",
+        "marshal",
+        "admiral",
+        "commander",
+        "sergeant",
+        "gen",
+        "col",
+        "maj",
+        "lt",
+        "brig",
+        "sir",
+    }
+    parts = name.split()
+    if len(parts) <= 1:
+        return True
+    non_title = [p for p in parts if p.lower().rstrip(".") not in titles]
+    return len(non_title) <= 1
+
+
+def _best_nonambiguous_match(
+    pairs: list[tuple[int, int, list[str], float]],
+    ambiguous_indices: set[int],
+) -> dict[int, tuple[int, int, list[str], float]]:
+    """For each ambiguous person, find their best match to a non-ambiguous name."""
+    best: dict[int, tuple[int, int, list[str], float]] = {}
+    for pair in pairs:
+        i, j, reasons, confidence = pair
+        for idx, other in ((i, j), (j, i)):
+            if idx in ambiguous_indices and other not in ambiguous_indices:
+                if idx not in best or confidence > best[idx][3]:
+                    best[idx] = pair
+    return best
+
+
+def _limit_single_name_matches(
+    pairs: list[tuple[int, int, list[str], float]],
+    people_data: List[Dict[str, Any]],
+) -> list[tuple[int, int, list[str], float]]:
+    """For each ambiguous person, keep only their best match to a non-ambiguous name.
+
+    Ambiguous names (e.g. "Marshall", "General Marshall") can match multiple
+    different people. To prevent bridging, each ambiguous name only connects
+    to its best non-ambiguous match. Ambiguous-to-ambiguous pairs are dropped.
+    """
+    ambiguous_indices = {
+        i
+        for i, p in enumerate(people_data)
+        if "name" in p and _is_ambiguous_name(p["name"])
+    }
+
+    if not ambiguous_indices:
+        return pairs
+
+    best = _best_nonambiguous_match(pairs, ambiguous_indices)
+    best_pair_ids = {id(p) for p in best.values()}
+
+    return [
+        pair
+        for pair in pairs
+        if (pair[0] not in ambiguous_indices and pair[1] not in ambiguous_indices)
+        or id(pair) in best_pair_ids
+    ]
+
+
+def _find_duplicate_groups(
+    people_data: List[Dict[str, Any]],
+    excluded_pairs: Set[tuple],
+    text_index: Dict[str, str],
+    excluded_names: Optional[Set[tuple]] = None,
+    new_files: Optional[Set[str]] = None,
+) -> List[Dict[str, Any]]:
+    """Find duplicate groups from scored pairs using union-find.
+
+    Only people with a direct pairwise match are grouped together.
+    Requires name-based evidence for any pair.
+    """
+    pairs = _build_pairwise_matches(
+        people_data, excluded_pairs, text_index, excluded_names, new_files
+    )
+    groups = _union_find_groups(pairs)
+
+    duplicates = []
+    for entries in groups.values():
+        seen: dict[int, bool] = {}
+        people_list = []
+        all_reasons: set[str] = set()
+        max_confidence = 0.0
+
+        for idx, reasons, confidence in entries:
+            if idx not in seen:
+                seen[idx] = True
+                p = people_data[idx]
+                people_list.append(
+                    {
+                        "filename": p["_filename"],
+                        "name": p["name"],
+                        "PersonID": p.get("PersonID", ""),
+                    }
+                )
+            all_reasons.update(reasons)
+            max_confidence = max(max_confidence, confidence)
+
+        if len(people_list) >= 2:
+            duplicates.append(
+                {
+                    "confidence": max_confidence,
+                    "reasons": list(all_reasons),
+                    "people": people_list,
+                }
+            )
+
+    return duplicates
+
+
+def _verify_ambiguous_matches(
+    duplicates: List[Dict], people_dir: Path, grok_client
+) -> List[Dict]:
+    """Use Grok to verify ambiguous single-name matches with event context."""
+    from src.dedup.exclusions import get_exclusion_store
+
+    store = get_exclusion_store("people", people_dir)
+    verified = []
+
+    for group in duplicates:
+        people = group.get("people", [])
+        if len(people) != 2:
+            verified.append(group)
+            continue
+
+        # Only verify single-name vs full-name pairs
+        names = [p.get("name", "") for p in people]
+        if not any(len(n.split()) == 1 for n in names):
+            verified.append(group)
+            continue
+
+        # Load event context from files
+        contexts = []
+        for p in people:
+            ctx = _get_person_context(people_dir / p["filename"])
+            contexts.append(f"{p['name']}: {ctx}")
+
+        prompt = (
+            f"Are these the same person?\n\n"
+            f"Person 1: {contexts[0]}\n"
+            f"Person 2: {contexts[1]}\n\n"
+            f"Return ONLY 'YES' or 'NO'."
+        )
+
+        try:
+            response = grok_client.chat_completion(
+                prompt=prompt,
+                system_prompt="You determine if two military personnel references are the same person based on context.",
+                temperature=0.0,
+                use_cache=True,
+                cache_type="people",
+            )
+            if response.strip().upper().startswith("NO"):
+                # Not the same person — auto-exclude
+                store.add(people[0]["filename"], people[1]["filename"])
+                logger.info(
+                    "Grok verified NOT same: %s ≠ %s",
+                    people[0]["name"],
+                    people[1]["name"],
+                )
+                continue
+        except Exception as e:
+            logger.debug("Grok verification failed: %s", e)
+
+        verified.append(group)
+
+    removed = len(duplicates) - len(verified)
+    if removed:
+        logger.info("Grok verification removed %d false-positive groups", removed)
+    return verified
+
+
+def _get_person_context(person_file: Path) -> str:
+    """Extract brief context from a person file for verification."""
+    try:
+        data = json.loads(person_file.read_text(encoding="utf-8"))
+        parts = []
+        if data.get("positions"):
+            parts.append(f"positions: {', '.join(data['positions'][:3])}")
+        mentions = data.get("event_mentions", [])
+        if mentions:
+            events = [
+                m.get("event_name", "") for m in mentions[:3] if m.get("event_name")
+            ]
+            if events:
+                parts.append(f"events: {', '.join(events)}")
+        if data.get("nationality"):
+            parts.append(f"nationality: {data['nationality']}")
+        return "; ".join(parts) if parts else "no context available"
+    except Exception:
+        return "no context available"
+
+
+def generate_duplicate_report(
+    people_dir_path: Path,
+    output_file_path: Path,
+    output_root: Optional[Path] = None,
+    grok_client=None,
+) -> None:
+    """Generate a report of potential duplicates."""
+    duplicates = find_potential_duplicates(people_dir_path, output_root=output_root)
+
+    # Filter out entries whose files don't exist
+    from src.dedup.validation import validate_report_groups
+
+    duplicates = validate_report_groups(duplicates, people_dir_path)
+
+    # Verify ambiguous single-name matches with Grok
+    if grok_client:
+        duplicates = _verify_ambiguous_matches(duplicates, people_dir_path, grok_client)
+
+    # Sort alphabetically by the most complete name (longest) in each group
+    def _sort_key(group):
+        names = [p.get("name", "") for p in group.get("people", [])]
+        best = max(names, key=len) if names else ""
+        return best.lower()
+
+    # Within each group, put the most complete name first
+    for group in duplicates:
+        group["people"].sort(key=lambda p: len(p.get("name", "")), reverse=True)
+
+    duplicates.sort(key=_sort_key)
+
+    report = {
+        "total_people": len(list(people_dir_path.glob("*.json")))
+        - 1,  # Exclude index.json
+        "duplicate_groups": len(duplicates),
+        "duplicates": duplicates,
+    }
+
+    with open(output_file_path, "w", encoding="utf-8") as f:
+        json.dump(report, f, indent=2, ensure_ascii=False)
+
+    logger.info("Found %d potential duplicate groups", len(duplicates))
+    logger.info("Report saved to: %s", output_file_path)
+
+    # Print summary
+    print("\n" + "=" * 80)
+    print("POTENTIAL DUPLICATES REPORT")
+    print("=" * 80)
+    print(f"Total people: {report['total_people']}")
+    print(f"Duplicate groups found: {len(duplicates)}")
+    print()
+
+    for i, dup in enumerate(duplicates[:10], 1):  # Show top 10
+        print(f"{i}. Confidence: {dup['confidence']:.2f}")
+        print(f"   Reasons: {', '.join(dup['reasons'])}")
+        for person in dup["people"]:
+            print(f"   - {person['name']} ({person['filename']})")
+        print()
+
+    if len(duplicates) > 10:
+        print(f"... and {len(duplicates) - 10} more groups")
+        print(f"See full report: {output_file_path}")
+
+
+def main() -> int:
+    """CLI / ECS entry point: write output/people/duplicate_report.json. Returns exit code."""
+    logging.basicConfig(level=logging.INFO)
+
+    people_dir = PROJECT_ROOT / "output/people"
+    output_file = PROJECT_ROOT / "output/people/duplicate_report.json"
+
+    if not people_dir.exists():
+        logger.error("People directory not found: %s", people_dir)
+        logger.info("Run phase2_extract.py first to extract people")
+        return 1
+
+    # Check if directory has any JSON files
+    people_files = [
+        f
+        for f in people_dir.glob("*.json")
+        if f.name not in ["index.json", "duplicate_report.json"]
+    ]
+    if not people_files:
+        logger.error("No people files found in: %s", people_dir)
+        logger.info("Run phase2_extract.py first to extract people")
+        return 1
+
+    logger.info("Found %d people file(s)", len(people_files))
+    generate_duplicate_report(
+        people_dir, output_file, output_root=PROJECT_ROOT / "output"
+    )
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

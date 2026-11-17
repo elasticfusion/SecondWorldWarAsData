@@ -1,6 +1,10 @@
 # Design decision: unify schema enforcement (json_schemas.py ↔ src/schemas registry)
 
-Status: PROPOSED (PR-B of the "same validators across the project" audit; PR-A consolidated the ULID pattern).
+Status: PARTLY DONE (checked 2026-11-16). Decision phase 1 is in: `src/json_schemas.py` now holds 11 schemas
+(`WEATHER_SCHEMA`, `LOGISTICS_SCHEMA`, `BIBLIOGRAPHY_SCHEMA`, `IMAGES_SCHEMA` are gone). Phases 2 and 3 are NOT done: the 7 test-coupled
+schemas (DATE, PLACE, PEOPLE, PEOPLE_GROUPS, EQUIPMENT, MAP, CASUALTIES) are still in the file, the 4 live ones are still imported by
+`events.py`, `supplemental.py`, `casualties.py`, `people_groups.py` (all under `src/extraction/`), and `supplemental` is still not in `ENTITY_REGISTRY`.
+The counts below are the original findings (2026-10). (PR-B of the "same validators across the project" audit; PR-A consolidated the ULID pattern).
 
 ## Problem
 

@@ -40,10 +40,12 @@ def test_extract_maps_absolute_unchanged_and_relative_needs_base():
 def test_host_allowed():
     assert MLS._host_allowed("https://www.ibiblio.org/x/maps/m.jpg") is True
     assert MLS._host_allowed("https://evil.example/m.jpg") is False
-    assert (
-        MLS._host_allowed("https://cdn.example/m.jpg", source_host="cdn.example")
-        is True
-    )
+    # The uploaded document's OWN host is not trusted (its URL is uploader-supplied metadata);
+    # only ibiblio and operator-configured hosts are.
+    assert MLS._host_allowed("https://cdn.example/m.jpg") is False
+    assert MLS._host_allowed("https://cdn.example/m.jpg", ("cdn.example",)) is True
+    assert MLS._host_allowed("https://x.cdn.example/m.jpg", ("cdn.example",)) is True
+    assert MLS._host_allowed("https://notcdn.example/m.jpg", ("cdn.example",)) is False
 
 
 # --- ingest: fetch -> vision -> recycle ---
@@ -160,9 +162,12 @@ def test_ingest_failsafe_on_bad_doc():
     assert out["recycled"] == 0
 
 
-def test_ingest_allows_same_host_via_source_url(tmp_path, monkeypatch):
-    """A map link on the SAME host as the source doc (_source_url) is allowed even if the host is
-    not on the static ibiblio allowlist."""
+def test_ingest_trusts_only_configured_hosts_not_the_documents_own(
+    tmp_path, monkeypatch
+):
+    """A map link on a non-ibiblio host is fetched ONLY if the host is in the operator's
+    external_maps.allowed_hosts; the document's own (uploader-supplied) _source_url host is NOT
+    trusted."""
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr(MLS, "_ssrf_safe_image_url", lambda u: u)
     import src.extraction.search_external_maps as SEM
@@ -174,18 +179,23 @@ def test_ingest_allows_same_host_via_source_url(tmp_path, monkeypatch):
         def extract_json_with_image(self, **k):
             return {"is_relevant": True, "depicted": {"description": "map"}}
 
-    docs = [
-        {
-            "book": "SomeBook",
-            "_source_url": "https://archive.example/books/x/ch8.html",
-            "maps": [
-                {
-                    "url": "https://archive.example/books/x/maps/m.jpg",
-                    "map_id": "M",
-                    "description": "Map M",
-                }
-            ],
-        }
-    ]
-    out = MLS.ingest_in_doc_map_links(docs, _GC())
-    assert out["recycled"] == 1  # same-host allowed via _source_url
+    def _docs():
+        return [
+            {
+                "book": "SomeBook",
+                "_source_url": "https://archive.example/books/x/ch8.html",
+                "maps": [
+                    {
+                        "url": "https://archive.example/books/x/maps/m.jpg",
+                        "map_id": "M",
+                        "description": "Map M",
+                    }
+                ],
+            }
+        ]
+
+    assert MLS.ingest_in_doc_map_links(_docs(), _GC())["recycled"] == 0
+    out = MLS.ingest_in_doc_map_links(
+        _docs(), _GC(), allowed_hosts=("archive.example",)
+    )
+    assert out["recycled"] == 1

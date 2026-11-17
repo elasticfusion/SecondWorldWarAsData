@@ -1,6 +1,6 @@
 # Cache Corruption Auto-Recovery
 
-**Date:** 2026-03-13  
+**Date:** 2026-03-13 (updated 2026-11-16 to match `src/grok_client.py`)  
 **Issue:** API responses being truncated/corrupted in cache  
 **Solution:** Automatic cache clearing for corrupted entries
 
@@ -30,10 +30,11 @@ ERROR - Dates batch extraction failed: API returned invalid response: Extra data
 
 The `GrokClient` now automatically detects and clears corrupted cache entries:
 
-1. **Short Response Detection** - Responses < 500 chars are validated
+0. **Poisoned Entry Detection** - A cached answer with no JSON anywhere in it is evicted and re-fetched once (`_should_evict_and_retry`)
+1. **Short Response Detection** - A JSON payload < 500 chars that does not parse is evicted and re-fetched once
 2. **Truncation Detection** - JSON parsing errors trigger validation
 3. **Auto-Clear** - Corrupted entries are removed automatically
-4. **Retry** - Next run will make a fresh API call
+4. **Retry** - Poisoned / short answers are retried once in the same call (`_retried` flag); other errors raise and the next run makes a fresh API call
 
 ### Implementation
 
@@ -41,20 +42,7 @@ The `GrokClient` now automatically detects and clears corrupted cache entries:
 
 #### 1. Response Validation in `_call_api`
 
-```python
-def _call_api(self, messages: list, temperature: float = 0.1) -> Dict[str, Any]:
-    # ... API call ...
-    
-    # Validate response structure
-    if "choices" not in result or not result["choices"]:
-        raise GrokAPIError(f"Invalid API response structure: {result}")
-    
-    content = result["choices"][0]["message"]["content"]
-    
-    # Validate minimum response length
-    if len(content) < 10:
-        raise GrokAPIError(f"API returned suspiciously short response ({len(content)} chars)")
-```
+`_call_api` validates the response structure and raises `GrokAPIError` on a bad one; `_log_response_warnings` logs truncation (`finish_reason`) and suspiciously short JSON. The exact checks change often, so read `_call_api` rather than a copy here.
 
 #### 2. Auto-Clear in `_handle_short_response_error`
 
@@ -62,14 +50,15 @@ def _call_api(self, messages: list, temperature: float = 0.1) -> Dict[str, Any]:
 def _handle_short_response_error(
     self, response: str, error_msg: str, cache_type: str, prompt: str, temperature: float
 ) -> None:
-    logger.error("API returned short/invalid response (%d chars)", len(response))
-    
-    # Auto-clear corrupted cache entry
+    logger.error("API returned short/invalid response (%d chars) - cache cleared, will retry", len(response))
+
+    # Auto-clear corrupted cache entry. The key includes the model (and, for the truncation
+    # handler, the system prompt), so the same prompt on another model is untouched.
     cache = self._get_cache(cache_type)
-    cache_key = self._make_cache_key(prompt, temperature)
+    cache_key = self._make_cache_key(prompt, temperature, self._get_model(cache_type))
     if cache_key in cache:
         cache.pop(cache_key, None)
-        logger.warning("Corrupted cache entry cleared automatically")
+    raise _parse_error(...)   # callers retry
 ```
 
 #### 3. Auto-Clear in `_handle_truncation_error`
@@ -79,14 +68,16 @@ def _handle_truncation_error(
     self, response: str, error_msg: str, cache_type: str, prompt: str, temperature: float
 ) -> None:
     response_len = len(response)
-    
-    if response_len < 100000:  # Not a max_tokens issue
-        # Auto-clear corrupted cache entry
-        cache = self._get_cache(cache_type)
-        cache_key = self._make_cache_key(prompt, temperature)
-        if cache_key in cache:
-            cache.pop(cache_key, None)
-            logger.warning("Corrupted cache entry cleared automatically")
+
+    # ALWAYS evict: chat_completion caches the response before it is parsed, so a kept truncated
+    # answer would cache-hit and re-truncate forever.
+    cache = self._get_cache(cache_type)
+    evicted = cache.pop(cache_key, None) is not None
+    if response_len > 100000:
+        logger.error("Response truncated at %d chars - likely hit max_tokens limit (manual split needed)", response_len)
+    else:
+        logger.error("Response truncated at %d chars - transient API error, cache cleared", response_len)
+    logger.info("OBSERV grok.truncation_cache_evicted len=%d evicted=%s", response_len, evicted)
 ```
 
 ---
@@ -130,7 +121,7 @@ ERROR - 💡 To clear cache and retry: rm -rf cache/api/events
 
 ```
 ERROR - API returned short/invalid response (401 chars)
-WARNING - Corrupted cache entry cleared automatically
+ERROR - API returned short/invalid response (401 chars) - cache cleared, will retry
 ```
 
 **User Action Required:** Just retry (corrupted entry already cleared automatically)
@@ -149,8 +140,8 @@ WARNING - Corrupted cache entry cleared automatically
 
 - "Unterminated string" error
 - "Expecting" error (incomplete JSON)
-- Auto-cleared if < 100,000 chars
-- If > 100,000 chars: Likely max_tokens limit (not cleared)
+- Always evicted (a kept truncated answer would cache-hit and truncate again)
+- If > 100,000 chars: likely the max_tokens limit; the log says a manual split is needed
 
 ### Valid Response
 
@@ -179,7 +170,7 @@ All existing tests pass:
 - ✅ `test_cache_hit` - Cache retrieval
 - ✅ `test_api_error_handling` - Error handling
 - ✅ `test_clear_cache` - Cache clearing
-- ✅ `test_extract_json` - JSON extraction
+- ✅ `test_extract_json_validation` - JSON extraction
 
 **No regressions introduced.**
 
@@ -190,13 +181,13 @@ All existing tests pass:
 ### 1. Large Response Truncation (> 100,000 chars)
 
 **Cause:** Hit max_tokens limit  
-**Behavior:** Not auto-cleared (legitimate limit)  
+**Behavior:** Evicted too, but retrying will truncate again (legitimate limit)  
 **Solution:** Split chapter into smaller sections
 
 ### 2. Persistent API Errors
 
 **Cause:** API consistently returns bad responses  
-**Behavior:** Auto-clear on each run, fresh API call each time  
+**Behavior:** Evicted each time, fresh API call each time  
 **Solution:** Check API status, network connectivity
 
 ### 3. Valid Short Responses
@@ -213,14 +204,15 @@ All existing tests pass:
 
 **Auto-Recovery Success:**
 ```
-WARNING - Corrupted cache entry cleared automatically
+WARNING - Poisoned cache entry detected ... clearing
+WARNING - Short response (N chars), clearing cache and retrying
+INFO OBSERV grok.truncation_cache_evicted len=N evicted=True
 ```
 
 **Persistent Issues:**
 ```
-ERROR - API returned short/invalid response (401 chars)
-WARNING - Corrupted cache entry cleared automatically
-ERROR - API returned short/invalid response (401 chars)  # Again on next run
+ERROR - API returned short/invalid response (401 chars) - cache cleared, will retry
+ERROR - API returned short/invalid response (401 chars) - cache cleared, will retry   # Again on next run
 ```
 
 **Action:** Check API status, network, or increase timeout
@@ -249,13 +241,12 @@ grok_client.extract_json(prompt, use_cache=False)
 
 ## Future Improvements
 
-1. **Retry Logic** - Auto-retry on corruption detection (instead of requiring manual retry)
-2. **Cache Validation** - Validate all cache entries on startup
-3. **Metrics** - Track corruption rate, auto-recovery success rate
-4. **Alerts** - Notify if corruption rate exceeds threshold
+1. **Cache Validation** - Validate all cache entries on startup
+2. **Metrics** - Track corruption rate, auto-recovery success rate
+3. **Alerts** - Notify if corruption rate exceeds threshold
 
 ---
 
-**Status:** ✅ Implemented and tested  
+**Status:** ✅ Implemented and tested (re-checked 2026-11-16)  
 **Impact:** Improved reliability and user experience  
 **Breaking Changes:** None

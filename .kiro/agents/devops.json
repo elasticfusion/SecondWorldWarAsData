@@ -36,7 +36,16 @@
       {
         "capability": "shell",
         "effect": "allow"
+      },
+      {
+        "capability": "skill",
+        "effect": "allow"
       }
     ]
+  },
+  "kiroUpgrade": {
+    "revision": 2,
+    "fingerprint": "sha256:df15155e6d93f4fe6d6119bdc78c99c7bcd90412d18d1408c703299e753cba11",
+    "source": "sha256:3511d1abb5c868849cdaecfb2aa338cbac86f85b78f624df5d5dbc6fd4d7775b"
   }
 }

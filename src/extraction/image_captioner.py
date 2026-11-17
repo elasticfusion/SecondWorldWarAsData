@@ -63,6 +63,7 @@ class ImageCaption:
 
 def _prompt(context: dict) -> str:
     alt = (context.get("alt_text") or "").strip()
+    printed = (context.get("caption") or "").strip()
     sub_event = (context.get("sub_event_name") or "").strip()
     place = (context.get("place_name") or "").strip()
     date = (context.get("date") or "").strip()
@@ -71,6 +72,7 @@ def _prompt(context: dict) -> str:
         f"- {label}: {val}"
         for label, val in (
             ("Source document", book),
+            ("Printed caption (from the source page)", printed),
             ("Caption / alt text", alt),
             ("Nearby event", sub_event),
             ("Linked place", place),

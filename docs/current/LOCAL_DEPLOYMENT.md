@@ -2,7 +2,7 @@
 
 Run the WWII Data Extraction Pipeline on your local machine with filesystem storage.
 
-**Last Updated:** 2026-05-23
+**Last Updated:** 2026-11-16
 
 ---
 
@@ -135,7 +135,8 @@ Output is in `output/` as JSON files.
 # From HyperWar HTML
 python3 scripts/import_hyperwar_html.py <index_url>
 
-# From PDF
+# From PDF (local conversion; uploaded PDFs on AWS are OCR'd with Chandra instead,
+# see OCR_OPERATIONS.md and CONTENT_CONTRIBUTOR_GUIDE.md)
 python3 scripts/pdf_to_markdown.py book.pdf "BookName"
 
 # Generate metadata and run pipeline
@@ -160,13 +161,13 @@ python3 scripts/archive/merge_duplicate_people.py
 python3 scripts/fix_orphaned_person_refs.py --dry-run
 
 # Validate data
-python3 scripts/validate_output.py
+python3 scripts/utils/validate_output.py
 
 # JSON quality report (extraction quality metrics)
-python3 scripts/json_quality_report.py
+python3 scripts/utils/json_quality_report.py
 
 # Monitor pipeline logs (polling-based, color-coded)
-bash scripts/monitor_logs.sh
+bash scripts/utils/monitor_logs.sh
 
 # Clean up cache for completed books
 python3 scripts/cleanup_book_cache.py --all --dry-run
@@ -229,7 +230,7 @@ rm -rf cache/api/books/BookName/events/*
 rm -rf cache/api/*
 ```
 
-See [Error Handling Guide](core/error_handling.md)
+See [Error Handling Guide (archived 2026-03 spec)](../archive/contextmanagement/Specs/error_handling.md)
 
 ---
 
@@ -255,6 +256,6 @@ See [Testing Guide](core/TESTING.md)
 | Extract | ~30-60s/chapter | API-bound, parallel processing |
 | Enrich | ~5-10s/entity | API-bound, per-entity |
 
-Use `--batch` flag for 50% cost reduction via xAI Batch API (async processing).
+Use `--batch` flag for 50% cost reduction via xAI Batch API (async processing). A batch run proceeds in rounds (requests collected, submitted, answered, then the follow-up requests of the next round) and stops after `batch.max_rounds` (8) rounds with a `batch.rounds_over_cap` alert; in AWS it waits in-task up to `batch.in_task_wait_minutes` (5) before handing the batch to the poller Lambda.
 
 See [Batch Processing](features/batch_processing/README.md)

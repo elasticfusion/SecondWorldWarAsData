@@ -2,7 +2,7 @@
 manufacture origin, stable identity) ONLY — never on who was using it. British-used US
 Shermans and German-captured US gear must NOT be split."""
 
-from scripts.find_duplicate_equipment import _score_pair, _any_captured
+from src.dedup.find_duplicate_equipment import _score_pair, _any_captured
 
 
 def _eq(name, origin, operating=None, captured=False, category="armor"):

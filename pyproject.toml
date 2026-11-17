@@ -83,6 +83,19 @@ exclude_lines = [
 [tool.black]
 target-version = ["py312"]
 
+[tool.basedpyright]
+# Same scope as mypy/pylint/vulture in scripts/gate.sh and .github/workflows/lint.yml.
+include = ["src", "lambda_handlers"]
+exclude = ["**/__pycache__", "**/.venv"]
+# Deployed runtime is Python 3.12 (Lambda/ECS image); the dev venv is newer.
+pythonVersion = "3.12"
+# "standard" ~ mypy's strictness. "recommended" (the default) adds ~22k opinionated warnings.
+typeCheckingMode = "standard"
+# Ratchet: .basedpyright/baseline.json records today's findings; only NEW errors fail the gate.
+# Regenerate after FIXING (never to hide a regression): basedpyright --writebaseline
+baselineFile = ".basedpyright/baseline.json"
+failOnWarnings = false
+
 [tool.vulture]
 exclude = ["scripts/archive", "ecs_modules", ".venv"]
 min_confidence = 80

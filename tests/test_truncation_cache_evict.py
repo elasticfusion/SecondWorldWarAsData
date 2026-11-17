@@ -36,9 +36,15 @@ def test_truncation_evicts_cache_both_sizes(length):
 
 
 def test_batch_collector_logs_duplicate_request_id(caplog):
+    """Two DIFFERENT requests on one key: the second is lost, so it is logged loudly. (An
+    identical request is folded silently: tests/test_request_dedup.py.)"""
     c = BatchCollector()
-    r1 = BatchRequest("samekey", [], "model", 0.1, "events")
-    r2 = BatchRequest("samekey", [], "model", 0.1, "events")  # collides
+    r1 = BatchRequest(
+        "samekey", [{"role": "user", "content": "a"}], "model", 0.1, "events"
+    )
+    r2 = BatchRequest(
+        "samekey", [{"role": "user", "content": "b"}], "model", 0.1, "events"
+    )
     c.add(r1)
     with caplog.at_level(logging.WARNING):
         c.add(r2)

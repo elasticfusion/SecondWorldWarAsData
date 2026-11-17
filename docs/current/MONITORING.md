@@ -2,7 +2,7 @@
 
 CloudWatch alarms, dashboard, notifications, and cost controls.
 
-**Last Updated:** 2026-06-13
+**Last Updated:** 2026-11-16
 
 ---
 
@@ -34,8 +34,19 @@ All alarms publish to the SNS topic `dev-wwii-alarms` → email notification.
 | Trigger Lambda Errors | Errors | ≥ 3 | 5 min | Pipeline orchestrator failing |
 | Batch Poller Errors | Errors | ≥ 3 | 5 min | Batch job polling failing |
 | NAT Manager Errors | Errors | ≥ 3 | 5 min | Networking lifecycle failing |
+| Phase 2 Duration | Duration | ≥ 840000 ms | 5 min | Phase 2 Lambda running too long (`phase2-duration`) |
+| Lambda Throttles | Throttles | ≥ 1 | 5 min | A Lambda was throttled |
+| DLQ Messages | ApproximateNumberOfMessagesVisible | ≥ 1 | 5 min | Message in a dead-letter queue |
+| Credit Hold | CreditHolds | ≥ 1 | 5 min | Credit gate is holding work: top up credit / raise budget |
+| Spend Alert | SpendAlerts | ≥ 1 | 5 min | Accrued Grok spend crossed a $10 multiple (heads-up) |
+| Merge Retry Exhausted | MergeRetryExhausted | ≥ 1 | 5 min | An entity mention merge exhausted retries; a cross-book write was lost |
+| Batch Submission Error | BatchSubmissionErrors | ≥ 1 | 5 min | xAI rejected/cancelled a batch |
+| NAT Lease Failures | NatLeaseFailures | ≥ 5 | 5 min | NAT lease accounting may drift |
+| Dispatcher / enumerate-pending / clamp-pool / human-gate | ExecutionsFailed, TimedOut, Lambda Errors | see `cloudformation/events.yaml` | 5 min | Step Functions dispatcher failures |
+| OpenSERP work DLQ | queue depth | ≥ 1 | — | OpenSERP worker message dead-lettered |
 | ECS Task Failures | — | SNS publish on task stop | — | Pipeline task crashed (SNS notification from ECS entrypoint) |
-| Batch Job Failures | — | SNS publish from poller | — | Grok batch job failed (24h timeout or API error) |
+
+Pipeline alerts that are not CloudWatch alarms (for example `batch.rounds_over_cap`, `ocr_merge.crosscheck_died`, `ocr_merge.claim_stale`) publish to `dev-wwii-phase2-complete`, which fans out to email and, via the slack-formatter Lambda, to Slack.
 
 ### Check Alarm State
 
@@ -67,7 +78,7 @@ aws cloudwatch enable-alarm-actions \
 | Topic | Subscribers | Triggers |
 |-------|-------------|----------|
 | `dev-wwii-alarms` | Email | CloudWatch alarms (Lambda errors, threshold breaches) |
-| `dev-wwii-phase2-complete` | Email, nat-manager Lambda | Phase 2 ECS task completes |
+| `dev-wwii-phase2-complete` | Email, slack-formatter Lambda (→ `dev-wwii-slack` → Chatbot), nat-manager Lambda (no-op) | Every operator alert (phase completion, errors, pipeline alerts) |
 | `dev-wwii-dedup-complete` | Trigger Lambda | Dedup review marked complete in UI |
 
 ### Notification Events
@@ -125,9 +136,9 @@ echo "https://us-east-1.console.aws.amazon.com/ecs/v2/clusters/dev-wwii-pipeline
 
 | Service | Risk | Mitigation |
 |---------|------|-----------|
-| NAT Gateway | $0.045/hr if left running | 2h max-age guardrail in openserp_manager |
+| NAT Gateway | $0.045/hr if left running | `nat-teardown` (4 h cron), 2h max-age guardrail in openserp_manager, hourly `idle-backstop-reaper` |
 | ECS Fargate | Spot interruption → relaunch → double cost | SIGTERM handler saves progress |
-| Grok API | Large books = many API calls | Batch API (50% discount), DynamoDB cache |
+| Grok API | Large books = many API calls | Batch API (50% discount), DynamoDB cache, `batch.max_rounds: 8` cap per run |
 | S3 data transfer | Phase 2/3 downloads | Incremental processing, manifest-scoped downloads |
 
 ### Check Current Month Spend
@@ -167,7 +178,9 @@ aws lambda invoke --function-name dev-wwii-nat-manager \
 
 | Log Group | Source |
 |-----------|--------|
-| `/ecs/dev-wwii-pipeline` | Pipeline ECS tasks (Phase 1/2/3, import) |
+| `/ecs/dev-wwii-pipeline` | Pipeline ECS tasks (Phase 0/1/2/3, import) |
+| `/aws/batch/dev-wwii-chandra` | Chandra OCR jobs |
+| `/aws/lambda/dev-wwii-ocr-merge` | OCR merge / promote Lambda |
 | `/ecs/dev-wwii-openserp` | OpenSERP service |
 | `/aws/lambda/dev-wwii-trigger` | Trigger Lambda |
 | `/aws/lambda/dev-wwii-batch-poller` | Batch poller Lambda |
@@ -195,9 +208,6 @@ aws logs filter-log-events \
   --start-time $(date -d '24 hours ago' +%s)000 \
   --filter-pattern "?create ?delete ?NAT" \
   --region us-east-1
-
-# Pipeline status script (color-coded, polling)
-bash scripts/monitor_logs.sh 5m
 ```
 
 ### CloudWatch Insights Query
@@ -235,7 +245,8 @@ aws cloudformation describe-stacks --stack-name wwii-pipeline-dev --region us-ea
 | Temp cleanup | `tmp/` | Delete after 7 days |
 | Cache expiry | `cache/` | Delete after 90 days |
 | Output tiering | `output/` | → Standard-IA at 30 days → Glacier IR at 90 days |
-| Version expiry | All | Noncurrent versions expire after 30 days |
+| Version expiry | `tmp/`, `cache/`, `relocated/` rules | Noncurrent versions expire after 7-30 days (see `cloudformation/storage.yaml`) |
+| Source PDFs | `source/`, `contentrepository/NARA/` | → Glacier IR at 30 days / 1 day |
 
 ---
 

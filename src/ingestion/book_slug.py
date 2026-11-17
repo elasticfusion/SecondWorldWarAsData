@@ -1,48 +1,104 @@
-"""Shared, converged book/title slug derivation for the untrusted-upload boundary.
+"""The derivation of a book's slug from an S3 key - the only one (owner rule 2026-11-11: a slug is
+IMMUTABLE: assigned once at intake, never renamed).
 
-Phase-0's three self-fetching tasks (convert, video, OCR-merge) each derived a
-"book" name from an S3 key with their OWN hand-rolled logic (``_book_from_key``),
-and the derivations had DIVERGED — a subtle correctness + security hazard, since
-that name flows into S3 prefixes, DynamoDB keys, a ``--book`` subprocess arg, and
-(via ``reject_to_review``) a ``needs-review/{category}/{book}.json`` object key.
+The slug is a book's identity everywhere: the S3 prefixes (``contentrepository/<slug>/``,
+``ocr-output/<slug>/``, ``output/content/<slug>/``), DynamoDB keys, the ``--book`` argument,
+``BOOK_NAME``, every EventID and the deterministic ``BookID`` (``deterministic_ids.book_id``).
 
-This module is the single converged derivation (P1-S4 + P1-C2):
+Two keys name a book, by two rules that always agree:
 
-    stem of the filename  ->  spaces replaced with '_'  ->  must fully match
-    ``[A-Za-z0-9._-]+`` (and not be '.'/'..') else fall back to 'unknown'.
+* a SOURCE document (a PDF/EPUB/DOCX/video/image upload, anywhere under ``contentrepository/``)
+  is named by its FILE: ``book_slug`` - the filename stem, spaces as ``_``
+  (``contentrepository/books/Patton at the Bulge.epub`` -> ``Patton_at_the_Bulge``). Phase 0 then
+  writes the book's chapters to ``contentrepository/<slug>/chapterN/...``;
+* CHAPTER CONTENT (the ``.md`` Phase 1 parses) is named by its FOLDER: ``content_slug`` -
+  ``contentrepository/[<source>/]<slug>/...`` (a leading source segment - ``_system`` or a
+  ``user-``/``contrib-``/``org-`` namespace - skipped; a loose file: its stem).
 
-The fallback is LOUD: an ``OBSERV book.slug_rejected`` WARNING is emitted so a
-rejected (possibly hostile / path-traversal) key is diagnosable rather than a
-silent collapse. Fail-safe: this helper never raises into the phase.
+So a source and the chapters made from it get the same slug (tests/test_book_slug.py pins it, and
+both rules: changing one re-keys future uploads relative to existing books). The folder a source
+was dropped in does not name it.
+
+Both validate: the result must fully match ``[A-Za-z0-9._-]+`` (not '.'/'..'), else ``UNKNOWN`` -
+loudly - which callers REJECT, never use (every unnamed upload would otherwise share one book).
+Never raises.
 """
 
 from __future__ import annotations
 
 import logging
 import re
+from pathlib import Path
+from typing import Any, List, Optional
 
 logger = logging.getLogger(__name__)
 
-# A book slug becomes a filesystem path segment, an S3/DynamoDB key component, and
-# a subprocess ``--book`` argument, so it must be a plain safe token — no path
-# separators, no '..', no whitespace, no shell/YAML metacharacters.
+UNKNOWN = "unknown"
 _SAFE_SLUG_RE = re.compile(r"[A-Za-z0-9._-]+")
+_SYSTEM_SOURCE_ID = "_system"
+_SOURCE_PREFIXES = ("user-", "contrib-", "org-")
+
+
+def is_source_segment(segment: str) -> bool:
+    """A path segment naming a content SOURCE (not a title)."""
+    return segment == _SYSTEM_SOURCE_ID or segment.lower().startswith(_SOURCE_PREFIXES)
+
+
+def is_safe_slug(slug: str) -> bool:
+    return (
+        bool(slug) and slug not in (".", "..") and bool(_SAFE_SLUG_RE.fullmatch(slug))
+    )
+
+
+def source_candidate(key: str) -> str:
+    """The raw slug of a SOURCE document key: its filename stem, spaces as ``_``."""
+    return (key or "").rsplit("/", 1)[-1].rsplit(".", 1)[0].replace(" ", "_")
+
+
+def content_candidate(key: str) -> str:
+    """The raw slug of a CHAPTER CONTENT key: its book folder (see the module docstring)."""
+    parts: List[str] = [p for p in (key or "").split("/") if p]
+    if parts and parts[0] == "contentrepository":
+        rest = parts[1:]
+        if rest and is_source_segment(rest[0]):
+            rest = rest[1:]
+        if len(rest) >= 2:
+            return rest[0].replace(" ", "_")
+        parts = rest
+    return source_candidate("/".join(parts))
+
+
+def _validated(candidate: str, key: str) -> str:
+    if not is_safe_slug(candidate):
+        logger.warning(
+            "OBSERV book.slug_rejected key=%r (unsafe/untitled -> %r)", key, UNKNOWN
+        )
+        return UNKNOWN
+    return candidate
 
 
 def book_slug(key: str) -> str:
-    """Derive a SAFE book slug from an S3 key (filename stem, spaces->_).
-
-    Returns the validated slug, or ``'unknown'`` (with a loud ``OBSERV
-    book.slug_rejected`` WARNING) when the derived candidate is empty, '.'/'..',
-    or contains any char outside ``[A-Za-z0-9._-]``. Never raises.
-    """
+    """The slug of a SOURCE document key (or a bare book name), or ``UNKNOWN``."""
     try:
-        stem = (key or "").rsplit("/", 1)[-1].rsplit(".", 1)[0].replace(" ", "_")
+        return _validated(source_candidate(key), key)
     except Exception:  # noqa: BLE001 - derivation must never crash the phase
-        stem = ""
-    if stem in ("", ".", "..") or not _SAFE_SLUG_RE.fullmatch(stem):
-        logger.warning(
-            "OBSERV book.slug_rejected key=%r (unsafe/untitled -> 'unknown')", key
-        )
-        return "unknown"
-    return stem
+        return _validated("", key)
+
+
+def content_slug(key: str) -> str:
+    """The slug of a CHAPTER CONTENT key, or ``UNKNOWN``."""
+    try:
+        return _validated(content_candidate(key), key)
+    except Exception:  # noqa: BLE001
+        return _validated("", key)
+
+
+def chapter_file_book(path: Any) -> Optional[str]:
+    """The slug of a Phase-1/2 chapter file (``<root>/<slug>/chapterN-parsed.json`` /
+    ``-event.json``): its folder - the same folder rule as chapter content. None when the folder
+    is not a safe slug (the caller then names no book rather than a wrong one)."""
+    try:
+        name = Path(path).parent.name
+    except TypeError:
+        return None
+    return name if is_safe_slug(name) else None

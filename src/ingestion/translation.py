@@ -8,7 +8,9 @@ docs/current/dataquality/LANGUAGE_TRANSLATION.md.
 Flow per document (operating on the original-language Markdown that the Phase 0
 converters produce):
 
-1. :func:`detect_language` — ask Grok for the document's primary language.
+1. :func:`detect_language` — a deterministic check first (:func:`clearly_english`: English
+   function words dominate, no other language's do, no non-Latin script), so an English page
+   costs nothing; only a page that is not clearly English asks Grok for its language.
 2. If English → **no-op** (no Grok translation call, no ``.orig.md``): the
    markdown passes straight through. This is the common, zero-cost case.
 3. Else :func:`translate_markdown` — translate to English via Grok, chunked on
@@ -24,7 +26,7 @@ from __future__ import annotations
 import logging
 import re
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from src.utils.prompt_loader import get_system_prompt, render_prompt
 
@@ -33,6 +35,8 @@ logger = logging.getLogger(__name__)
 # Characters of leading text used for language detection — enough to be
 # decisive, small enough to keep the detect call cheap.
 _DETECT_SAMPLE_CHARS = 4000
+# ... of which Grok is sent this much when the deterministic check cannot decide
+_GROK_DETECT_CHARS = 1500
 
 # Soft cap on characters per translation chunk. Long documents are split on
 # Markdown boundaries below this size so each Grok call stays well within
@@ -69,17 +73,105 @@ def is_english(language: str) -> bool:
     return language.strip().lower() in _ENGLISH_NAMES
 
 
+# Function words of English and of the languages a WWII source is most often in: a page is
+# CLEARLY English when English's dominate and no other language's are common. Words two
+# languages share ("in", "die", "a") are left out.
+_FUNCTION_WORDS = {
+    "English": {"the", "and", "of", "to", "was", "were", "with", "which", "that", "had",
+                "from", "by", "on", "at", "for", "this", "their", "they", "been", "would"},
+    "German": {"der", "und", "das", "nicht", "mit", "dem", "den", "ist", "auf", "sich", "wurde",
+               "eine", "einer", "auch", "nach", "zu", "von", "bei", "wir", "sie"},
+    "French": {"le", "les", "et", "des", "du", "une", "dans", "est", "pour", "qui", "sur",
+               "au", "aux", "pas", "par", "ont", "été", "avec", "nous", "sont"},
+    "Italian": {"il", "della", "che", "di", "del", "per", "una", "sono", "nel", "dei",
+                "alla", "gli", "delle", "anche", "più", "non", "si", "ha", "dalla", "questo"},
+    "Spanish": {"el", "los", "las", "del", "que", "por", "una", "con", "para", "se", "su",
+                "fue", "como", "más", "pero", "sus", "este", "entre", "cuando", "muy"},
+    "Dutch": {"het", "een", "van", "en", "niet", "zijn", "voor", "dat", "met", "wordt", "werd",
+              "ook", "bij", "naar", "uit", "worden", "deze", "wij", "hij", "zij"},
+    "Polish": {"w", "nie", "na", "się", "jest", "z", "do", "że", "jak", "dla", "przez",
+               "był", "była", "oraz", "jego", "ale", "od", "po", "tak", "który"},
+    "Czech": {"je", "se", "na", "že", "jako", "byl", "byla", "jsou", "pro", "jeho", "ale",
+              "nebo", "který", "která", "také", "podle", "při", "až", "už", "jen"},
+    "Portuguese": {"os", "as", "do", "da", "dos", "das", "em", "um", "uma", "não", "foi", "com",
+                   "ao", "pelo", "pela", "seu", "sua", "mas", "como", "são"},
+    "Scandinavian": {"og", "er", "ikke", "det", "som", "med", "har", "til", "av", "på", "var",
+                     "fra", "jeg", "vi", "och", "inte", "att", "är", "den", "kan"},
+}  # fmt: skip
+_WORD = re.compile(r"[^\W\d_]+", re.UNICODE)
+_LATIN_LETTER = re.compile(r"[A-Za-z\u00C0-\u024F]")
+# a word with a letter English does not use (ä ö ü ß é è à ł ą ę ě ř æ ø å ç ñ ...): an English
+# history prints some (Saint-Lô, la Fière), a foreign passage many
+_ACCENTED = re.compile(r"[\u00C0-\u024F]")
+_MAX_ACCENTED_SHARE = 0.02
+# markup is not language: HTML tags (tables), image / link targets, code fences (charts)
+_MARKUP = re.compile(r"<[^>]*>|!?\[[^\]]*\]\([^)]*\)|```.*?```", re.DOTALL)
+_MIN_JUDGED_WORDS = 25  # below it, the share of function words says little
+_MIN_ENGLISH_SHARE = (
+    0.15  # English function words / all words; ordinary English prose ~0.3
+)
+_MAX_OTHER_SHARE = 0.02  # another language's function words above this: ask Grok
+_LIST_ENGLISH_SHARE = 0.03  # a table or list: few function words, but only English ones
+_LIST_OTHER_SHARE = 0.005
+
+
+def clearly_english(text: str) -> bool:
+    """True when ``text`` (markup removed) is English beyond doubt, deterministically: Latin
+    script; English function words present, NO other language's common and few accented words.
+    A short text needs two distinct English function words and nothing foreign. False means "ask Grok" -
+    never "not English": a page of a mixed-language book that quotes a German order, or a
+    German page, goes to Grok."""
+    words = [w.lower() for w in _WORD.findall(_MARKUP.sub(" ", text or ""))]
+    if not _latin("".join(words)):
+        return False  # Cyrillic, Greek, CJK...: not English (Grok names the language)
+    return _english_words(words) if words else True  # no text: nothing to translate
+
+
+def _english_words(words: List[str]) -> bool:
+    """``clearly_english`` for a text's (Latin-script) words."""
+    english, other = _function_word_shares(words)
+    accented = sum(1 for w in words if _ACCENTED.search(w)) / len(words)
+    if len(words) < _MIN_JUDGED_WORDS:
+        return _short_english(words, other, accented)
+    prose = english >= _MIN_ENGLISH_SHARE and other <= _MAX_OTHER_SHARE
+    listing = english >= _LIST_ENGLISH_SHARE and other <= _LIST_OTHER_SHARE
+    return accented <= _MAX_ACCENTED_SHARE and (prose or listing)
+
+
+def _short_english(words: List[str], other: float, accented: float) -> bool:
+    """A few words prove little: two distinct English function words, nothing foreign."""
+    distinct = {w for w in words if w in _FUNCTION_WORDS["English"]}
+    return len(distinct) >= 2 and other == 0 and accented == 0
+
+
+def _latin(letters: str) -> bool:
+    """At least 90% of the letters are Latin script (an empty string is)."""
+    return not letters or len(_LATIN_LETTER.findall(letters)) >= 0.9 * len(letters)
+
+
+def _function_word_shares(words: List[str]) -> "tuple[float, float]":
+    """(share of English function words, the highest share of another language's)."""
+    share = {
+        lang: sum(1 for w in words if w in vocab) / len(words)
+        for lang, vocab in _FUNCTION_WORDS.items()
+    }
+    english = share.pop("English")
+    return english, max(share.values())
+
+
 def detect_language(markdown: str, grok, *, use_cache: bool = True) -> str:
-    """Detect the primary language of a Markdown document via Grok.
+    """The primary language of a Markdown document: "English" at no cost when it is
+    :func:`clearly_english`, else Grok's answer.
 
     Returns the English name of the language (e.g. "German"). Falls back to
     "English" on an empty document or an unusable response, so a detection
     hiccup never diverts an English-looking doc into translation.
     """
     sample = markdown.strip()[:_DETECT_SAMPLE_CHARS]
-    if not sample:
+    if not sample or clearly_english(sample):
         return "English"
-    prompt = render_prompt("language_detect", sample=sample)
+    # Grok names a language from a short sample; the whole block is not needed
+    prompt = render_prompt("language_detect", sample=sample[:_GROK_DETECT_CHARS])
     system = get_system_prompt("language_detect")
     resp = grok.chat_completion(
         prompt,
@@ -153,6 +245,157 @@ def translate_markdown(
     return "\n\n".join(out)
 
 
+# --- Foreign passages inside an English page / section --------------------------------------
+# A page or section is judged by its main language, so a short quotation in another language (a
+# German order quoted in an English narrative) would stay in the original. After the page is judged
+# English, each sentence is checked for free (``foreign_sentence``); a run of foreign sentences -
+# and only that - goes to Grok (detect + translate) and is replaced in place by its translation,
+# marked with :func:`translation_marker`. The page's original is kept whole as before.
+_SENTENCE_END = re.compile(r"(?<=[.!?:;])\s+(?=[\"'(\[]?[A-ZÀ-ÖØ-Þ0-9])")
+# shorter: a name, a title, a citation fragment ("MS, II, 112 ff.")
+_MIN_FOREIGN_WORDS = 8
+_MIN_FOREIGN_SHARE = 0.2  # another language's function words / all words, at least ...
+_MIN_FOREIGN_DISTINCT = (
+    3  # ... of 3 different words ("General der Panzertruppen von X": 2)
+)
+_NAME_WORD = re.compile(r"[^\W\d_]+(?:[-'\u2019][^\W\d_]+)*", re.UNICODE)
+_FOREIGN_OVER_ENGLISH = 2.0  # ... and this many times English's
+
+
+# italic spans are names, titles and foreign terms the author kept on purpose ("*Grundlegender
+# Befehl des Oberbefehlshabers West*", "*Seventh Army*"): never translated
+_ITALIC = re.compile(r"(?<![*\w])\*[^*\n]+\*(?!\*)|(?<![_\w])_[^_\n]+_(?!\w)")
+# a note definition ("<sup>12</sup> General der Kavallerie ...", "[12] ..."): a citation, kept as
+# the book prints it (the bibliography quotes it verbatim)
+_NOTE_DEFINITION = re.compile(r"^\s*(?:<sup>\s*\[?\d+[a-z]?\]?|\[\d+[a-z]?\])")
+
+
+def foreign_sentence(sentence: str) -> bool:
+    """True when ``sentence`` is in another language than English, for free: Latin script with
+    another language's function words common and well above English's, or another script
+    altogether - markup, italic spans (names, titles, terms the author kept) and short
+    fragments are not judged. A name or unit designation ("352. Infanterie-Division", "*Seventh
+    Army*") is not a sentence in another language."""
+    text = _ITALIC.sub(" ", _MARKUP.sub(" ", sentence or ""))
+    # a hyphenated or elided name ("Chef-du-Pont", "Pont l'Abbé") is one word, not "du"
+    words = [w.lower() for w in _NAME_WORD.findall(text)]
+    if len(words) < _MIN_FOREIGN_WORDS:
+        return False
+    letters = "".join(_WORD.findall(text))
+    if len(_LATIN_LETTER.findall(letters)) < 0.5 * len(letters):
+        return True  # mostly another script (a few look-alike letters are the OCR's)
+    english, other, distinct = _foreign_shares(words)
+    return (
+        distinct >= _MIN_FOREIGN_DISTINCT
+        and other >= _MIN_FOREIGN_SHARE
+        and other > _FOREIGN_OVER_ENGLISH * english
+    )
+
+
+def _foreign_shares(words: List[str]) -> "tuple[float, float, int]":
+    """(English function-word share, the most common other language's share, how many
+    distinct function words of that language)."""
+    english = sum(1 for w in words if w in _FUNCTION_WORDS["English"]) / len(words)
+    best, distinct = 0.0, 0
+    for lang, vocab in _FUNCTION_WORDS.items():
+        if lang == "English":
+            continue
+        share = sum(1 for w in words if w in vocab) / len(words)
+        if share > best:
+            best, distinct = share, len({w for w in words if w in vocab})
+    return english, best, distinct
+
+
+# what starts a markdown line and is not prose: a heading, quote, list or table marker
+_LINE_PREFIX = re.compile(r"[ \t]*(?:(?:#{1,6}|>|[-*+]|\d+[.)]|\|)[ \t]*)*")
+
+
+def _sentence_spans(block: str) -> List[Tuple[int, int]]:
+    """(start, end) of each sentence of ``block``: cut at a sentence end and at every line
+    break; a line's markdown prefix (``#``, ``>``, ``-``, ``1.``, ``|``) and leading whitespace
+    are not part of its sentence, so a translation never displaces them."""
+    cuts = sorted(
+        {0, len(block)}
+        | {m.end() for m in _SENTENCE_END.finditer(block)}
+        | {m.end() for m in re.finditer(r"\n", block)}
+    )
+    spans = []
+    for a, b in zip(cuts, cuts[1:]):
+        if a == 0 or block[a - 1] == "\n":
+            prefix = _LINE_PREFIX.match(block, a)  # always matches (all optional)
+            a = prefix.end() if prefix else a
+        if a < b and block[a:b].strip():
+            spans.append((a, b))
+    return spans
+
+
+def _foreign_runs(block: str) -> List[Tuple[int, int]]:
+    """(start, end) character spans of the runs of consecutive foreign sentences in ``block``."""
+    runs: List[Tuple[int, int]] = []
+    for start, end in _sentence_spans(block):
+        if not foreign_sentence(block[start:end]):
+            continue
+        if runs and runs[-1][1] == start:
+            runs[-1] = (runs[-1][0], end)
+        else:
+            runs.append((start, end))
+    return [(a, a + len(block[a:b].rstrip())) for a, b in runs]
+
+
+def _one_paragraph(text: str) -> str:
+    """A translation replacing a passage stays one paragraph (no blank line inside it)."""
+    return re.sub(r"\n\s*\n", "\n", (text or "").strip())
+
+
+def translate_embedded(
+    markdown: str, grok, *, tag: str = "grok", use_cache: bool = True
+) -> Tuple[str, List[str]]:
+    """``markdown`` (judged English) with each foreign passage translated in place (marked);
+    returns (text, the languages translated). No foreign-looking sentence: unchanged, no call.
+    A passage Grok calls English after all is left as it is."""
+    out: List[str] = []
+    languages: List[str] = []
+    for block in re.split(r"(\n\s*\n)", markdown):
+        pieces, last = [], 0
+        runs = [] if _NOTE_DEFINITION.match(block) else _foreign_runs(block)
+        for start, end in runs:
+            passage = block[start:end]
+            lang = detect_language(passage, grok, use_cache=use_cache)
+            if is_english(lang):
+                continue
+            english = _one_paragraph(
+                translate_markdown(passage, lang, grok, use_cache=use_cache)
+            )
+            # mid-line (after any line prefix): the marker right before the passage it covers
+            pieces += [block[last:start], f"{translation_marker(lang, tag)} {english}"]
+            last = end
+            languages.append(lang)
+        out.append("".join(pieces) + block[last:])
+    return "".join(out), list(dict.fromkeys(languages))
+
+
+def _language_runs(
+    markdown: str, grok, use_cache: bool
+) -> "tuple[List[str], List[str]]":
+    """(sections, their languages): the document's blocks in detection-sized sections (each at
+    most ``_DETECT_SAMPLE_CHARS``, so every character is looked at), neighbouring sections of
+    one language merged - a translation request is one run of one language."""
+    blocks = split_markdown_chunks(markdown, max_chars=_DETECT_SAMPLE_CHARS) or [
+        markdown
+    ]
+    sections: List[str] = []
+    languages: List[str] = []
+    for block in blocks:
+        lang = detect_language(block, grok, use_cache=use_cache)
+        lang = "English" if is_english(lang) else lang
+        if languages and languages[-1] == lang:
+            sections[-1] += "\n\n" + block
+        else:
+            sections.append(block)
+            languages.append(lang)
+    return sections, languages
+
+
 def normalize_to_english(
     markdown: str,
     grok,
@@ -160,26 +403,45 @@ def normalize_to_english(
     model_name: Optional[str] = None,
     use_cache: bool = True,
 ) -> TranslationResult:
-    """Detect language and, if non-English, translate the document to English.
-
-    English documents pass through untouched (no translation call). Non-English
-    documents are translated; the original is returned alongside for provenance.
+    """Detect the language of each SECTION (``_language_runs``) and translate the
+    non-English ones to English - a book may mix languages (an English history quoting a German
+    order, a German document with an English cover sheet): one language for the whole document
+    from its first page would leave the rest untranslated. English sections pass through
+    untouched (no translation call; clearly English ones no detection call either); each
+    translated section is marked (:func:`translation_marker`); the original is kept whole.
     """
-    language = detect_language(markdown, grok, use_cache=use_cache)
-    if is_english(language):
+    sections, languages = _language_runs(markdown, grok, use_cache)
+    tag = f"grok:{model_name}" if model_name else "grok"
+    embedded: List[str] = []
+    for i, (sec, lang) in enumerate(zip(sections, languages)):
+        if is_english(lang):
+            sections[i], found = translate_embedded(
+                sec, grok, tag=tag, use_cache=use_cache
+            )
+            embedded += found
+    foreign = [lang for lang in languages if not is_english(lang)] + embedded
+    if not foreign:
         logger.info("Document detected as English — no translation")
         return TranslationResult(
             source_language="English",
             translated=False,
             english_markdown=markdown,
         )
-    logger.info("Document detected as %s — translating to English", language)
-    english = translate_markdown(markdown, language, grok, use_cache=use_cache)
-    tag = f"grok:{model_name}" if model_name else "grok"
+    out = []
+    for sec, lang in zip(sections, languages):
+        if is_english(lang):
+            out.append(sec)
+            continue
+        logger.info("Section detected as %s — translating to English", lang)
+        out.append(
+            mark_translated(
+                translate_markdown(sec, lang, grok, use_cache=use_cache), lang, tag
+            )
+        )
     return TranslationResult(
-        source_language=language,
+        source_language=", ".join(dict.fromkeys(foreign)),
         translated=True,
-        english_markdown=english,
+        english_markdown="\n\n".join(out),
         original_markdown=markdown,
         translator=tag,
     )
@@ -240,6 +502,78 @@ class PageNormalizationResult:
         return seen
 
 
+_MARKER = re.compile(r"<!--\s*translated from (?P<lang>.+?) by (?P<by>\S+?)\s*-->")
+# a marker with the horizontal space around it ("A <!-- m --> B" -> "A B", "<!-- m --> B" -> "B")
+_MARKER_WITH_SPACE = re.compile(
+    r"([ \t]*)<!--\s*translated from .+? by \S+?\s*-->([ \t]*)"
+)
+
+
+def strip_translation_markers(text: str) -> "tuple[str, List[str]]":
+    """(``text`` without its translation markers, the languages they name). A text without a
+    marker comes back unchanged, byte for byte."""
+    if not _MARKER.search(text or ""):
+        return text, []
+    languages = list(dict.fromkeys(m["lang"] for m in _MARKER.finditer(text)))
+    cleaned = _MARKER_WITH_SPACE.sub(
+        lambda m: " " if m.group(1) and m.group(2) else "", text
+    )
+    return cleaned, languages
+
+
+# a line's text for matching it to a parsed paragraph: no markdown line prefix, no note markers,
+# whitespace collapsed (the parser first removes its own page / footnote markers)
+_NOTE_MARKUP = re.compile(r"<sup>.*?</sup>|\[\^?\d+[a-z]?\]", re.DOTALL)
+
+
+def line_key(line: str) -> str:
+    prefix = _LINE_PREFIX.match(line)
+    body = line[prefix.end() :] if prefix else line
+    return " ".join(_NOTE_MARKUP.sub(" ", body).split())
+
+
+def lift_translation_markers(text: str) -> "tuple[str, List[tuple]]":
+    """(``text`` with every translation marker removed, [(line number, language)] of the marked
+    lines of the returned text, in order) - the parser reads the marker-free text with every
+    detector as before, then gives the paragraphs holding those lines their provenance
+    (``parser._mark_translated_paragraphs``). Unchanged, and no lines, when ``text`` has none.
+    """
+    if not _MARKER.search(text or ""):
+        return text, []
+    marked = []
+    lines = []
+    pending: List[str] = (
+        []
+    )  # a marker alone on its line (the older per-page form) -> next line
+    for number, line in enumerate(text.split("\n")):
+        cleaned, langs = strip_translation_markers(line)
+        lines.append(cleaned.rstrip() if langs else cleaned)
+        langs = pending + langs
+        pending = langs if langs and not cleaned.strip() else []
+        if not pending:
+            marked += [(number, lang) for lang in langs]
+    marked += [
+        (len(lines) - 1, lang) for lang in pending
+    ]  # nothing follows: reported lost
+    return "\n".join(lines), marked
+
+
+def mark_translated(text: str, language: str, translator: str) -> str:
+    """``text`` (a translation) with the marker on EVERY paragraph, at the end of the paragraph's
+    first line: each parsed paragraph carries its own provenance, whatever the page layout, and
+    every line-start structure the parser reads (headings, note definitions, quote and list
+    markers, tables, ``* * *`` separators) stays as it was. A block without letters (a
+    separator, a rule) is not marked."""
+    marker = translation_marker(language, translator)
+    out = []
+    for block in re.split(r"(\n\s*\n)", text):
+        if _WORD.search(block) and not block.isspace():
+            first, sep, rest = block.partition("\n")
+            block = f"{first.rstrip()} {marker}{sep}{rest}"
+        out.append(block)
+    return "".join(out)
+
+
 def translation_marker(language: str, translator: str) -> str:
     """Return the inert per-page translation-provenance marker.
 
@@ -282,12 +616,16 @@ def normalize_pages_to_english(  # pylint: disable=too-many-locals
     for physical_page, page_md in pages:
         language = detect_language(page_md, grok, use_cache=use_cache)
         if is_english(language):
-            out_pages.append(page_md)
-            outcomes.append(PageTranslation(physical_page, "English", False))
+            page_en, found = translate_embedded(
+                page_md, grok, tag=tag, use_cache=use_cache
+            )
+            out_pages.append(page_en)
+            label = "English" + (f" (with {', '.join(found)})" if found else "")
+            outcomes.append(PageTranslation(physical_page, label, bool(found)))
+            any_translated = any_translated or bool(found)
             continue
         english = translate_markdown(page_md, language, grok, use_cache=use_cache)
-        marked = translation_marker(language, tag) + "\n\n" + english
-        out_pages.append(marked)
+        out_pages.append(mark_translated(english, language, tag))
         outcomes.append(PageTranslation(physical_page, language, True))
         any_translated = True
     return PageNormalizationResult(
@@ -334,21 +672,23 @@ def _observe_translation(lang: str, action: str, *, reason: str = "") -> None:
 
 
 def translation_enabled(config: Optional[dict] = None) -> bool:
-    """True if Phase-0 translation is on (``ingestion.translate`` or
-    ``PHASE0_TRANSLATE=1``). Matches the OOB track's gate so all tracks share one
-    switch."""
+    """True unless Phase-0 translation is switched OFF (``ingestion.translate: false`` or
+    ``PHASE0_TRANSLATE=0``): a non-English document is translated to English by default (the
+    Phase 1-3 stack is English-centric), an English one costs nothing (:func:`clearly_english`).
+    The ONE switch for every track (convert, OCR, video, OOB)."""
     import os
 
-    if os.environ.get("PHASE0_TRANSLATE") == "1":
-        return True
+    env = os.environ.get("PHASE0_TRANSLATE")
+    if env in ("0", "1"):
+        return env == "1"
     if config is None:
         try:
             from src.utils.config import load_config
 
             config = load_config()
-        except Exception:  # noqa: BLE001
-            return False
-    return bool((config or {}).get("ingestion", {}).get("translate", False))
+        except Exception:  # noqa: BLE001 - no config: the default
+            return True
+    return bool((config or {}).get("ingestion", {}).get("translate", True))
 
 
 def normalize_markdown_to_english(

@@ -1,6 +1,6 @@
 # Data Quality — Safeguards & Guarantees
 
-**Last Updated:** 2026-10-09
+**Last Updated:** 2026-11-16
 
 This document is the authoritative overview of **how data quality is enforced** in the WWII
 data pipeline: what is validated, where, when, and what is deliberately *not* yet guaranteed.
@@ -147,30 +147,32 @@ into the primary.
 
 ---
 
-## 5. Planned detective & corrective layers (not yet implemented)
+## 5. Detective & corrective layers (status 2026-11-16)
 
-The in-process guard is *preventive* but, by nature, can be bypassed by any future raw writer. The
-following close that gap at the **storage perimeter** (tracked in `TODO.md`):
+The in-process guard is *preventive* but, by nature, can be bypassed by any future raw writer. These
+layers close that gap at the **storage perimeter**:
 
-1. **S3-event Lambda backstop** — on `ObjectCreated` under `output/`, run the **same**
-   `_validate_entity` primitive (no reimplementation, to avoid guard drift); on invalid, **alert**
-   (via the `{env}-wwii-phase2-complete` SNS → Slack/email) + **quarantine** to
-   `output/_quarantine/`. Mechanical (needs no external context: key→entity, bytes→record,
-   schema→bundled code). Detective, not preventive (fires after the write), so it alerts +
-   quarantines rather than blocking. **Fail-loud.**
-2. **CI grep-gate** — fail the build if new code writes raw `json.dump`/`write_text` to an
-   `output/` entity dir, so the next bypass can't merge.
-3. **Corpus-level audit job** — periodic scan running the guard across all of `output/` plus
-   invariants per-write validation is blind to:
-   - **referential integrity** (every cross-ref ID resolves to an existing record);
-   - **ID uniqueness** (no two records share a primary key);
-   - **no dangling/orphaned mentions**;
-   - **dedup consistency** (no un-merged name-variant fragments);
-   - a **validation-block-rate metric** (the in-process guard is fail-open, so silent allows on
-     validator error need an observable counter).
-4. **Corrective reprocessor** — for a Tier-3 (content) block with recoverable provenance, re-extract
-   from the **source** to repopulate the missing content ("work up the chain" terminates at the
-   source — the authority for content). Non-negotiable constraints:
+1. **S3-event Lambda backstop — BUILT and in `cloudformation/compute.yaml`**
+   (`lambda_handlers/s3_validation_backstop.py`, see `S3_VALIDATION_BACKSTOP_DESIGN.md`). On an
+   EventBridge `Object Created` under `output/` it runs the **same** `_validate_entity` primitive on a
+   deep copy; an invalid record is **tagged `quarantine=true` in place** (not moved to
+   `output/_quarantine/`, which would orphan the cross-reference mentions it holds) and alerted via
+   `{env}-wwii-phase2-complete`. Detective, not preventive. **Fail-loud.**
+2. **CI grep-gate — BUILT**: `scripts/check_raw_writes.sh` (run by `scripts/gate.sh` and
+   `.github/workflows/lint.yml`) fails when raw `json.dump` / `.write_text` call sites exceed the
+   committed baseline. It is a tripwire, not a proof (see its header for blind spots).
+3. **Corpus-level audit — BUILT** (read-only): `src/utils/corpus_audit.py` (schema validity on disk, PK
+   uniqueness), `src/utils/referential_integrity.py` (dangling cross-references) and
+   `src/utils/provenance_integrity.py` (records with no provenance edge, `TODO` placeholders).
+   The validation-block-rate metric is `src/utils/validation_stats.py` (catcher, phase-end alert).
+   Phase 2 additionally runs `scripts/validate_provenance.py` (checks P2-L1 sub-event link, P2-L2
+   paragraph locator, P2-Q1 quote, P2-Q2 note quote; report
+   `output/reports/provenance/<book>-phase2.json`).
+4. **Corrective reprocessor — NOT built as an automatic loop.** Re-extraction is done by re-running a
+   phase for a book or title (operator-initiated, e.g. `scripts/purge_chapter_event.py`,
+   `e2e_reset.sh`). Deterministic EventIDs (`DETERMINISTIC_EVENT_IDS_DESIGN.md`) make a re-run
+   idempotent for events. The constraints below remain the requirements for any future automatic
+   reprocessor:
    - **Re-extract the whole SOURCE UNIT, not one schema** — a passage yields interlinked
      people/places/units/dates/events; fixing one entity in isolation leaves cross-refs inconsistent.
    - **Resolve-before-write — NEVER duplicate an existing entity.** A source passage references
@@ -182,6 +184,10 @@ following close that gap at the **storage perimeter** (tracked in `TODO.md`):
      for an already-known entity is a bug — it fragments the corpus (the exact pathology being fixed).
    - Deterministic resolution (idempotent) + loop-guard (repeated failure → `unrecoverable` + the
      statistical bug report, never an infinite reprocess).
+
+Also built on top of the guard: semantic `quality_flags` (`SEMANTIC_FLAGS_DESIGN.md`), the catcher's
+`allow_empty` / `allow_flagged` outcomes (`CATCHER_LOW_INFO_FLAGGED_DESIGN.md`), Phase-1 parse guard
+(`PHASE1_PARSE_GUARD_DESIGN.md`) and centralized result de-duplication (`RESULT_DEDUP_DESIGN.md`).
 
 ---
 
@@ -213,6 +219,7 @@ now **prevents new** such records.
 | Version/additive-vs-breaking policy | `docs/current/SCHEMA_VERSIONING.md` |
 | Corpus status + known issues | `docs/current/DATA_QUALITY_STATUS.md` |
 | Guard tests | `tests/test_central_write_guard.py`, `tests/test_write_guard_*` |
+| Provenance validation (Phase 2) | `scripts/validate_provenance.py`, `src/utils/provenance_integrity.py` |
 
 ---
 
@@ -237,5 +244,5 @@ the layer is built or proposed:
 | Referential-integrity enforcement + semantic flags | [SEMANTIC_FLAGS_DESIGN.md](SEMANTIC_FLAGS_DESIGN.md) | built |
 | Catcher sees low-info / flagged allows | [CATCHER_LOW_INFO_FLAGGED_DESIGN.md](CATCHER_LOW_INFO_FLAGGED_DESIGN.md) | built |
 | Phase-1 parse-output guard | [PHASE1_PARSE_GUARD_DESIGN.md](PHASE1_PARSE_GUARD_DESIGN.md) | built |
-| S3-perimeter validation backstop | [S3_VALIDATION_BACKSTOP_DESIGN.md](S3_VALIDATION_BACKSTOP_DESIGN.md) | built, not yet deployed |
+| S3-perimeter validation backstop | [S3_VALIDATION_BACKSTOP_DESIGN.md](S3_VALIDATION_BACKSTOP_DESIGN.md) | built (in `compute.yaml`) |
 | OpenSERP SQS scaling | [OPENSERP_SQS_SCALING_DESIGN.md](OPENSERP_SQS_SCALING_DESIGN.md) | built |

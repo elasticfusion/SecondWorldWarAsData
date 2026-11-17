@@ -1,9 +1,11 @@
 # Development Guide
 
+**Last Updated:** 2026-11-16
+
 ## Setup
 
 ### Prerequisites
-- Python 3.13+
+- Python 3.12+ (`pyproject.toml` `requires-python`; CI runs 3.12)
 - Grok API key
 - ~2GB disk space for cache
 - Chrome or Chromium (for PDF conversion and web scraping)
@@ -14,7 +16,7 @@
 ```bash
 # Clone repository
 git clone <repo-url>
-cd SecondWorkldWarasData
+cd SecondWorldWarAsData
 
 # Create virtual environment
 python3 -m venv .venv
@@ -29,24 +31,13 @@ pip install -e .
 
 ### Configuration
 
-Create `config.yaml`:
+Copy the shipped defaults, then edit the copy (`config.yaml` is gitignored local state; see [CONFIGURATION.md](CONFIGURATION.md)):
 
-```yaml
-paths:
-  content_root: contentrepository
-  output_root: output
-  cache_root: cache
-
-api:
-  grok:
-    api_key: ${GROK_API_KEY}  # Or explicit key
-    model: grok-beta
-
-logging:
-  level: INFO
-  console: true
-  file: "logs/pipeline.log"
+```bash
+cp config.yaml.example config.yaml
 ```
+
+The Grok model is `GROK_MODEL` env, else `api.grok.model` (`grok-4.3`). The API key is never read from `config.yaml`; it comes from the `GROK_API_KEY` env var (or the `.env` file below, or Secrets Manager in AWS).
 
 Set environment variable:
 ```bash
@@ -65,7 +56,7 @@ cp .env.example .env
 
 ### 1. Add New Content
 
-Place markdown files in `contentrepository/`:
+Normally: upload the source (PDF, EPUB, DOCX, HTML, video) to `contentrepository/` and let Phase 0 produce the chapters (see [PIPELINE.md](PIPELINE.md)). A book's slug is its filename stem and never changes (`src/ingestion/book_slug.py`). To work locally with hand-made chapters, place markdown files in `contentrepository/`:
 
 ```
 contentrepository/
@@ -91,8 +82,9 @@ python3 phase2_extract.py
 # Check for duplicates
 python3 scripts/find_duplicate_people.py
 
-# Merge duplicates
-python3 scripts/merge_duplicate_people.py
+# Merge duplicates: exact duplicates are auto-merged at the end of Phase 2; the rest go
+# through the Dedup Review UI (lambda_handlers/dedup_ui_handler.py, src/dedup/merge.py).
+# scripts/merge_duplicate_people.py no longer exists.
 
 # Find related groups
 python3 scripts/find_related_groups.py
@@ -110,24 +102,14 @@ python3 scripts/consolidate_people_groups.py
 
 ### Quality Assurance Tools
 
-All code must pass:
+Run the full gate before every commit; it mirrors CI (`.github/workflows/lint.yml` + `tests.yml`) and exits non-zero on any failure:
 
 ```bash
-# Linting (target: 10/10)
-python3 -m pylint script.py --disable=C0301,C0103,R0913,R0914,R0915
-
-# Type checking
-python3 -m mypy script.py --ignore-missing-imports
-
-# Security scanning
-python3 -m bandit -r script.py
-
-# Complexity analysis
-python3 -m radon cc script.py -a
-
-# Code formatting
-python3 -m black script.py
+bash scripts/gate.sh             # linters + tests
+bash scripts/gate.sh --no-tests  # linters only
 ```
+
+It runs black (check), pylint (`--fail-under=5.0` over `src/ lambda_handlers/`), mypy, basedpyright (baseline in `.basedpyright/baseline.json`; only new errors fail), bandit, ruff (B rules), radon (no new C-or-worse blocks; grandfathered ones in `scripts/.radon_inherent`), vulture, the unreachable-modules check, cfn-lint, a JSON lint, pip-audit, then `pytest tests/ -m "not slow and not requires_api"`. Single tools, e.g. `python3 -m black file.py` or `python3 -m pylint file.py`, are fine while iterating. See [TESTING.md](TESTING.md).
 
 ### Security Scanning (Deploy)
 
@@ -151,124 +133,47 @@ These are run automatically by `scripts/deploy_all.sh` before pushing images.
 
 ### Standards
 
-- **Pylint**: 9.9-10/10 (disable only specific warnings)
-- **Mypy**: No errors
-- **Bandit**: No HIGH/CRITICAL issues
-- **Radon**: Average complexity A-B
-- **Black**: Formatted
-
-### Common Pylint Disables
-
-```python
-# Line too long (handled by black)
-# --disable=C0301
-
-# Variable name doesn't conform (for IDs, APIs)
-# --disable=C0103
-
-# Too many arguments
-# --disable=R0913
-
-# Too many local variables
-# --disable=R0914
-
-# Too many statements
-# --disable=R0915
-```
+- **Pylint**: `--fail-under=5.0` in the gate; keep new code clean (disable only specific warnings)
+- **Mypy / basedpyright**: no new errors
+- **Bandit**: no MEDIUM or higher (`-ll`)
+- **Radon**: no new C-or-worse blocks
+- **Black**: formatted
+- Tests for all new code, observability (log lines / metrics) built in, and provenance (source citation) on all generated data
 
 ---
 
 ## Adding New Extraction Types
 
-### 1. Create Schema
+Follow an existing small extractor (for example `src/extraction/casualties.py` or `logistics.py`) rather than writing from scratch; the conventions below come from them.
 
-In `src/schemas.py`:
+### 1. Create the schema and register its version
 
-```python
-class NewEntityOutput(BaseModel):
-    """Output schema for new entity extraction."""
-    entities: List[NewEntity]
-    
-    class Config:
-        extra = "forbid"
+Add `src/schemas/<entity>_output.py` with the entity's JSON Schema (copy a neighbour such as `casualties_output.py`; build fields with the helpers in `src/schemas/__init__.py` such as `ulid_field`) and register the entity's version in `ENTITY_SCHEMA_VERSIONS`. Each entity is versioned independently. Do not add models to `src/schemas.py`: the `src/schemas/` package shadows it. The Pydantic model that validates Grok's answer sits in the extractor module.
 
-class NewEntity(BaseModel):
-    """Individual entity."""
-    EntityID: str
-    name: str
-    # ... other fields
-    
-    class Config:
-        extra = "forbid"
-```
+### 2. Create the prompt
 
-### 2. Create Extraction Module
+Add `prompts/<entity>.yaml` (`system_prompt`, `prompt_template`, `schema`, `rules`) and render it with `render_prompt("<entity>", text=...)` from `src/utils/prompt_loader.py`. Do not inline prompt text in Python. See [PROMPT_MANAGEMENT.md](PROMPT_MANAGEMENT.md).
 
-In `src/extraction/new_entity.py`:
+### 3. Create the extraction module
+
+In `src/extraction/<entity>.py`. Entity discovery runs over fixed 3-paragraph windows of the raw parsed text (`src/extraction/windows.py`: `chapter_windows`, `window_event_for`), never over the events' summaries. Each answer item must carry a quote that is checked against the source (`windows.settle`) so every record has provenance; an item whose quote the source does not support is dropped with `quote_unsupported`. Requests are queued on the `GrokClient` and answered by xAI batch rounds, so the extractor must be safe to call again after the batch answers (idempotent, cache-first).
 
 ```python
-"""New entity extraction."""
-
-import json
-from pathlib import Path
-from typing import Dict, Any
-from src.grok_client import GrokClient
-from src.schemas import NewEntityOutput
-
-def extract_new_entity(
-    event_file: Path,
-    grok_client: GrokClient,
-    output_dir: Path
-) -> Path:
-    """Extract new entities from events."""
-    
-    # Load event data
-    with open(event_file, "r", encoding="utf-8") as f:
-        event_data = json.load(f)
-    
-    # Create prompt
-    prompt = create_prompt(event_data)
-    
-    # Extract with Grok
-    result = grok_client.extract_structured(
-        NewEntityOutput,
-        prompt,
-        temperature=0.1
-    )
-    
-    # Save output
-    output_file = output_dir / f"{event_file.stem.replace('-event', '')}-newentity.json"
-    with open(output_file, "w", encoding="utf-8") as f:
-        json.dump(result.model_dump(), f, indent=2)
-    
-    return output_file
-
-def create_prompt(event_data: Dict[str, Any]) -> str:
-    """Create extraction prompt."""
-    return f"""Extract new entities from:
-    
-{json.dumps(event_data, indent=2)}
-
-Instructions:
-- ...
-"""
+def extract_new_entity(event_file: Path, grok_client: GrokClient, output_dir: Path,
+                       parsed_file: Optional[Path] = None, max_retries: int = 3) -> Optional[Path]:
+    ...
+    answer = grok_client.extract_json(prompt, system_prompt=system, cache_type="new_entity", book=book)
 ```
 
-### 3. Add to Pipeline
+Write entity files with the shared helpers (`src/utils/entity_records.py`, `src/utils/file_lock.py` `locked_json`) so mentions are de-duplicated by `mention_identity` and index files are updated under a lock.
 
-In `phase2_extract.py`:
+### 4. Wire it into Phase 2
 
-```python
-from src.extraction.new_entity import extract_new_entity
+Call it from the extraction orchestration (`src/extraction/batch_parallel.py` for the core group, or the optional-entity step in `phase2_extract.py`), behind a `config.yaml` flag if it is optional (add the flag to `config.yaml.example`, [CONFIGURATION.md](CONFIGURATION.md) and the CloudFormation/profile overlays if they manage it).
 
-# In main():
-logger.info("Extracting new entities...")
-extract_new_entity(event_file, grok_client, output_dir)
-```
+### 5. Add Tests
 
-### 4. Add Tests
-
-Create `test_new_entity.py`:
+Create `tests/unit/test_new_entity.py` (pytest discovers `tests/`; use `tmp_path` and a stubbed `GrokClient`, never the real API; see [TESTING.md](TESTING.md)):
 
 ```python
 """Tests for new entity extraction."""
@@ -276,14 +181,13 @@ Create `test_new_entity.py`:
 import json
 from pathlib import Path
 from src.extraction.new_entity import extract_new_entity
-from src.grok_client import GrokClient
 
 def test_extract_new_entity():
     """Test new entity extraction."""
     # Setup
     event_file = Path("test_data/chapter1-event.json")
     output_dir = Path("test_output")
-    client = GrokClient(Path("test_cache"))
+    client = StubGrok()  # a fake with extract_json(...) returning canned JSON
     
     # Execute
     result = extract_new_entity(event_file, client, output_dir)
@@ -302,13 +206,13 @@ def test_extract_new_entity():
 ### Enable Trace Logging
 
 ```bash
-python3 phase2_extract.py --log-level TRACE
+python3 phase2_extract.py --log-level TRACE   # TRACE is level 5, below DEBUG
 ```
 
 ### Inspect Cache
 
 ```bash
-python3 scripts/review_cache.py
+python3 scripts/utils/review_cache.py
 ```
 
 ### Clear Cache
@@ -318,8 +222,8 @@ from src.grok_client import GrokClient
 from pathlib import Path
 
 client = GrokClient(Path("cache/api"))
-client.clear_cache("events")  # Clear specific type
-client.clear_cache()          # Clear all
+client.clear_cache_entry(prompt, cache_type="events")  # remove one entry (prompt, system_prompt, book and temperature must match the original request)
+# To clear a whole kind locally: delete cache/api/<kind>/ ; in AWS the cache is the DynamoDB table
 ```
 
 ### Manual Extraction
@@ -331,9 +235,9 @@ from src.extraction.events import extract_events
 
 client = GrokClient(Path("cache/api"))
 event_file = extract_events(
-    Path("output/Book/chapter1-parsed.json"),
+    Path("output/content/Book/chapter1-parsed.json"),
     client,
-    Path("output/Book")
+    Path("output/content/Book")
 )
 print(f"Extracted: {event_file}")
 ```
@@ -349,17 +253,17 @@ print(f"Extracted: {event_file}")
 python3 -m pytest
 
 # Run specific test
-python3 -m pytest test_new_entity.py
+python3 -m pytest tests/unit/test_new_entity.py
 
-# With coverage
-python3 -m pytest --cov=src
+# Same selection the gate and CI use
+python3 -m pytest tests/ -m "not slow and not requires_api" -q
 ```
 
 ### Integration Tests
 
 ```bash
-# Test full pipeline
-python3 test_phase2_setup.py
+# multi-component tests are marked and skipped by default
+python3 -m pytest -m integration
 ```
 
 ### Manual Testing
@@ -373,9 +277,9 @@ from src.extraction.events import extract_events
 
 client = GrokClient(Path('cache/api'))
 extract_events(
-    Path('output/BreakoutAndPursuit/chapter1a-parsed.json'),
+    Path('output/content/BreakoutAndPursuit/chapter1a-parsed.json'),
     client,
-    Path('output/BreakoutAndPursuit')
+    Path('output/content/BreakoutAndPursuit')
 )
 "
 ```
@@ -390,27 +294,15 @@ All API calls are cached automatically:
 
 ```python
 # First call - hits API
-result1 = client.extract_structured(schema, prompt)
+result1 = client.extract_structured(prompt, schema)
 
 # Second call - uses cache
-result2 = client.extract_structured(schema, prompt)
+result2 = client.extract_structured(prompt, schema)
 ```
 
 ### Skip Logic
 
-Phase 2 skips already-processed files:
-
-```python
-# Events/dates/places: Skip if output exists
-if output_file.exists():
-    logger.info(f"Skipping {output_file}")
-    return output_file
-
-# People/groups: Skip if newer than event file
-if people_dir.exists() and people_dir.stat().st_mtime > event_file.stat().st_mtime:
-    logger.info("Skipping people extraction")
-    return people_dir
-```
+Phase 2 does not redo finished work. Answers are cached per request (cache-first in `GrokClient`), and people extraction records each event it has handled in `<people_dir>/.processed_events.json` (`src/extraction/people.py`) and logs `Event already processed for people extraction: <file>`. Re-extracting a chapter mints new Sub-eventIDs, so purge it first (`scripts/purge_chapter_event.py`). `processing.force_reprocess: true` bypasses the skips (expensive).
 
 ### Batch Processing
 
@@ -423,7 +315,7 @@ from src.extraction.events import extract_events
 
 client = GrokClient(Path("cache/api"))
 
-for parsed_file in Path("output/Book").glob("*-parsed.json"):
+for parsed_file in Path("output/content/Book").glob("*-parsed.json"):
     extract_events(parsed_file, client, parsed_file.parent)
 ```
 
@@ -433,42 +325,27 @@ for parsed_file in Path("output/Book").glob("*-parsed.json"):
 
 ### Issue: API Rate Limiting
 
-**Solution:** Use caching and implement backoff:
+**Solution:** The client already rate-limits (`api.calls_per_minute`) and retries with backoff; in AWS Phase 2 uses the batch API, which has no per-minute limit. Lower `calls_per_minute` or add your own backoff for ad-hoc scripts:
 
 ```python
 import time
 from src.grok_client import GrokAPIError
 
 try:
-    result = client.extract_structured(schema, prompt)
+    result = client.extract_structured(prompt, schema)
 except GrokAPIError as e:
     if "rate limit" in str(e).lower():
         time.sleep(60)
-        result = client.extract_structured(schema, prompt)
+        result = client.extract_structured(prompt, schema)
 ```
 
 ### Issue: Invalid ULID
 
-**Solution:** Use helper function:
-
-```python
-from src.schemas import generate_ulid
-
-# Don't generate manually
-ulid = generate_ulid()
-```
+**Solution:** Never hand-write or let the model invent ids. EventID / Sub-eventID / BookID come from `src/utils/deterministic_ids.py` (`event_id`, `sub_event_id`, `book_id`); other ids are `str(ulid.new())`. `generate_ulid` (old `src/schemas.py`) no longer imports. See [ULID_IMPLEMENTATION.md](ULID_IMPLEMENTATION.md).
 
 ### Issue: Duplicate Detection False Positives
 
-**Solution:** Add to exclusion list:
-
-```python
-# In merge_duplicate_people.py, choose "exclude" option
-# Or manually edit output/people/not_duplicates.json
-[
-  ["PersonID1", "PersonID2"]
-]
-```
+**Solution:** Mark the pair "not duplicates" in the Dedup Review UI. Decisions are stored by `src/dedup/exclusions.py` (`exclusion#<type>#<file1>#<file2>` rows in DynamoDB in AWS mode, `not_duplicates.json` locally; name-based `name_exclusion#...` rows survive file recreation), so they persist across runs.
 
 ### Issue: Memory Usage
 
@@ -479,7 +356,7 @@ for batch in batches(files, size=10):
     for file in batch:
         extract_events(file, client, output_dir)
     # Optionally clear cache
-    client.clear_cache("events")
+    client.clear_cache_entry(prompt, cache_type="events")
 ```
 
 ---
@@ -488,10 +365,8 @@ for batch in batches(files, size=10):
 
 ### Code Review Checklist
 
-- [ ] Passes pylint (9.9-10/10)
-- [ ] Passes mypy
-- [ ] Passes bandit
-- [ ] Formatted with black
+- [ ] `bash scripts/gate.sh` passes
+- [ ] Tests added
 - [ ] Includes docstrings
 - [ ] Includes type hints
 - [ ] Handles errors gracefully

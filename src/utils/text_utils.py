@@ -87,8 +87,7 @@ _EUROPEAN_TRANSLITERATIONS = {
     "đ": "d",
     "Đ": "D",
     # Baltic: Lithuanian, Latvian
-    "ą": "a",
-    "ę": "e",
+    # ("ą"/"ę" already mapped in the Slavic block above — do not re-add (duplicate dict keys).)
     "ė": "e",
     "Ė": "E",
     "į": "i",

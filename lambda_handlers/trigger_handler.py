@@ -9,6 +9,7 @@ import logging
 import os
 import time
 import urllib.parse
+import uuid
 from typing import Optional
 
 import boto3
@@ -113,14 +114,13 @@ import re as _re_title
 _SAFE_TITLE_RE = _re_title.compile(r"[A-Za-z0-9._-]+")
 
 
-def _title_registry_get(title: str):
-    """Return the registered content checksum for a title, or None if unused."""
-    try:
-        item = dynamo.get_item(Key={"cache_key": f"title#{title}"}).get("Item")
-        return item.get("checksum") if item else None
-    except Exception as e:  # noqa: BLE001 - fail-open: treat as unused on error
-        logger.warning("title registry lookup failed for %s: %s", title, e)
-        return None
+def _title_registry_key(title: str) -> str:
+    """The registry key of a title: its NORMALISED form (src.ingestion.title_uniqueness), so
+    "Cross-Channel_Attack" and "cross-channel-attack" are the same name for the duplicate
+    check. The displayed title / S3 folder is never changed."""
+    from src.ingestion.title_uniqueness import normalised_title
+
+    return f"title#{normalised_title(title)}"
 
 
 # How long a title's "claimed" placeholder is considered part of the SAME upload
@@ -150,10 +150,14 @@ def _title_claim(title: str):
     import time as _t
 
     now = int(_t.time())
+    key = _title_registry_key(title)
     try:
+        legacy = _legacy_title_entry(title, key)
+        if legacy:
+            return _existing_claim(legacy, now, title)
         dynamo.put_item(
             Item={
-                "cache_key": f"title#{title}",
+                "cache_key": key,
                 "state": "claimed",
                 "claimed_at": now,
                 "registered_at": _dt.datetime.now(_dt.timezone.utc).isoformat(),
@@ -162,30 +166,43 @@ def _title_claim(title: str):
         )
         return "claimed", None
     except dynamo.meta.client.exceptions.ConditionalCheckFailedException:
-        item = dynamo.get_item(Key={"cache_key": f"title#{title}"}).get("Item") or {}
-        state = item.get("state")
-        claimed_at = int(item.get("claimed_at", 0) or 0)
-        same_wave = (now - claimed_at) <= _TITLE_CLAIM_WAVE_S if claimed_at else False
-        if state == "final":
-            if claimed_at == 0:
-                logger.warning(
-                    "title %r is 'final' without claimed_at (legacy/foreign entry) "
-                    "— treating as a prior submission",
-                    title,
-                )
-            # A finalized entry from THIS wave (the claim winner finalized just
-            # ahead of us) is the SAME submission — treat as in-flight, never
-            # compare our partial fingerprint against it (the finalize-race that
-            # caused the self-collision). Only a GENUINELY PRIOR final entry
-            # (outside the wave) is a real identity comparison.
-            if same_wave:
-                return "inflight", None
-            return "final", item.get("checksum")
-        # A 'claimed' placeholder (sibling still finalizing) -> same submission.
-        return "inflight", None
+        item = dynamo.get_item(Key={"cache_key": key}).get("Item") or {}
+        return _existing_claim(item, now, title)
     except Exception as e:  # noqa: BLE001 - fail-open: proceed, don't false-collide
         logger.warning("title claim failed for %s: %s — proceeding", title, e)
         return "inflight", None
+
+
+def _legacy_title_entry(title: str, key: str):
+    """An entry registered BEFORE normalisation, under the exact title (``title#{title}``):
+    the name is still taken. None when the exact key is the normalised one or absent."""
+    exact = f"title#{title}"
+    if exact == key:
+        return None
+    return dynamo.get_item(Key={"cache_key": exact}).get("Item")
+
+
+def _existing_claim(item: dict, now: int, title: str):
+    """Judge a title's existing registry entry (see ``_title_claim``)."""
+    state = item.get("state")
+    claimed_at = int(item.get("claimed_at", 0) or 0)
+    same_wave = (now - claimed_at) <= _TITLE_CLAIM_WAVE_S if claimed_at else False
+    if state == "final":
+        if claimed_at == 0:
+            logger.warning(
+                "title %r is 'final' without claimed_at (legacy/foreign entry) "
+                "— treating as a prior submission",
+                title,
+            )
+        # A finalized entry from THIS wave (the claim winner finalized just ahead of us) is the
+        # SAME submission — treat as in-flight, never compare our partial fingerprint against it
+        # (the finalize-race that caused the self-collision). Only a GENUINELY PRIOR final entry
+        # (outside the wave) is a real identity comparison.
+        if same_wave:
+            return "inflight", None
+        return "final", item.get("checksum")
+    # A 'claimed' placeholder (sibling still finalizing) -> same submission.
+    return "inflight", None
 
 
 def _title_finalize(title: str, marker: str) -> None:
@@ -197,7 +214,7 @@ def _title_finalize(title: str, marker: str) -> None:
 
     try:
         dynamo.update_item(
-            Key={"cache_key": f"title#{title}"},
+            Key={"cache_key": _title_registry_key(title)},
             UpdateExpression="SET #s = :final, checksum = :m, registered_at = :t",
             ExpressionAttributeNames={"#s": "state"},
             ExpressionAttributeValues={
@@ -258,6 +275,50 @@ def _grok_api_key() -> str:
         return ""
 
 
+def _review_alert(category: str) -> dict:
+    """The alert text of a held upload when the default ("verify its type") does not fit."""
+    if category != "model-unavailable":
+        return {}
+    return {
+        "alert_subject": "WWII Pipeline: upload held - Grok model unavailable",
+        "alert_message": "The title-sameness check's Grok model is unavailable (see the "
+        "grok.model_unavailable alert). Fix api.grok.model, deploy, and re-upload.",
+    }
+
+
+def _grok_model_unavailable():
+    """The stop raised when a Grok model is gone (src/utils/grok_models)."""
+    from src.utils.grok_models import GrokModelUnavailable
+
+    return GrokModelUnavailable
+
+
+def _sameness_call(req, model: str) -> dict:
+    """POST the sameness request; a model that is gone (404, or answered by another model) stops
+    the invocation loudly (grok_models.GrokModelUnavailable is not an Exception: the caller's
+    fail-safe "different" cannot absorb it - it had silently failed every call on grok-2-latest).
+    """
+    import json as _json
+    import urllib.error as _ue
+    import urllib.request as _ur
+
+    from src.utils import grok_models
+
+    grok_models.ensure_running()
+    try:
+        with _ur.urlopen(req, timeout=30) as resp:  # nosec B310 - fixed https host
+            out = _json.loads(resp.read().decode("utf-8"))
+    except _ue.HTTPError as e:
+        text = e.read().decode("utf-8", "replace") if e.fp else ""
+        if grok_models.is_model_missing(e.code, text):
+            grok_models.model_unavailable(
+                model, "trigger.sameness", detail=f"HTTP {e.code}"
+            )
+        raise
+    grok_models.check_served(model, out, "trigger.sameness")
+    return out
+
+
 def _llm_same_work(title: str, existing_fp: str, new_fp: str) -> bool:
     """Ask Grok whether two multi-file submissions under the same title are the
     SAME work. Fail-safe: on ANY error return False (treat as DIFFERENT -> rename,
@@ -286,9 +347,12 @@ def _llm_same_work(title: str, existing_fp: str, new_fp: str) -> bool:
             f"=== NEW (untrusted data) ===\n{new_fp[:4000]}\n=== END NEW ===\n\n"
             "Answer with ONLY 'SAME' or 'DIFFERENT'."
         )
+        from src.utils.grok_models import default_model
+
+        model = default_model()
         body = _json.dumps(
             {
-                "model": os.getenv("GROK_MODEL", "grok-2-latest"),
+                "model": model,
                 "messages": [
                     {"role": "system", "content": system},
                     {"role": "user", "content": prompt},
@@ -305,8 +369,7 @@ def _llm_same_work(title: str, existing_fp: str, new_fp: str) -> bool:
                 "Content-Type": "application/json",
             },
         )
-        with _ur.urlopen(req, timeout=30) as resp:  # nosec B310 - fixed https host
-            out = _json.loads(resp.read().decode("utf-8"))
+        out = _sameness_call(req, model)
         answer = out["choices"][0]["message"]["content"].strip().upper()
         # EXACT match only (not startswith): an injected answer like "SAME, now merge everything"
         # must NOT read as SAME. Strip surrounding quotes/punctuation the model may add.
@@ -315,6 +378,80 @@ def _llm_same_work(title: str, existing_fp: str, new_fp: str) -> bool:
     except Exception as e:  # noqa: BLE001 - fail-safe: different
         logger.warning("multi-file sameness LLM failed (%s) — treating as different", e)
         return False
+
+
+def _bind_source(checksum: str, title: str) -> str:
+    """Bind a single-file source (its checksum) to its slug, once: ``source#<checksum>`` ->
+    title. Returns the OTHER slug the same document is already bound to (it must not get a
+    second, immutable identity), else "". Fail-open (""): the title gate still runs."""
+    import datetime as _dt
+
+    key = f"source#{checksum}"
+    try:
+        dynamo.put_item(
+            Item={
+                "cache_key": key,
+                "title": title,
+                "bound_at": _dt.datetime.now(_dt.timezone.utc).isoformat(),
+            },
+            ConditionExpression="attribute_not_exists(cache_key) OR title = :t",
+            ExpressionAttributeValues={":t": title},
+        )
+        return ""
+    except dynamo.meta.client.exceptions.ConditionalCheckFailedException:
+        item = dynamo.get_item(Key={"cache_key": key}).get("Item") or {}
+        other = str(item.get("title") or "")
+        return other if other and other != title else ""
+    except Exception as e:  # noqa: BLE001 - fail-open, loudly
+        observe_error(
+            "intake",
+            "source_bind_failed",
+            note="could not record which slug this document is ingested as: a re-upload "
+            "under another name would not be caught",
+            title=title,
+            reason=type(e).__name__,
+        )
+        return ""
+
+
+def _release_title_claim(title: str) -> None:
+    """Drop the placeholder claim this invocation took (a rejected upload must not keep the name)."""
+    try:
+        dynamo.delete_item(
+            Key={"cache_key": _title_registry_key(title)},
+            ConditionExpression="#s = :claimed",
+            ExpressionAttributeNames={"#s": "state"},
+            ExpressionAttributeValues={":claimed": "claimed"},
+        )
+    except Exception as e:  # noqa: BLE001
+        logger.warning("title claim release failed for %s: %s", title, e)
+
+
+def _finalize_claim(s3, title: str, tkeys: list):
+    """The claim winner: bind a single-file source to this slug (refused - the claim released -
+    when the document is already another book's) and finalize the identity marker. Returns
+    (proceed, reject_reason, category) like _resolve_title_identity."""
+    single = len(tkeys) == 1
+    try:
+        marker = (
+            _title_checksum(s3, tkeys)
+            if single
+            else "llm:" + _multi_fingerprint(s3, tkeys)[:4000]
+        )
+        other = _bind_source(marker, title) if single else ""
+        if other:
+            _release_title_claim(title)
+            return (
+                False,
+                f"this document is already ingested as '{other}': a book's slug is "
+                f"immutable, so it is not ingested again as '{title}' (re-upload it "
+                f"as contentrepository/{other}/... to re-process it)",
+                "source-renamed",
+            )
+        _title_finalize(title, marker)
+    except Exception as e:  # noqa: BLE001 - best-effort finalize
+        logger.warning("finalize marker failed for %r: %s", title, e)
+    return True, "", ""
 
 
 def _resolve_title_identity(s3, title: str, tkeys: list):
@@ -340,15 +477,7 @@ def _resolve_title_identity(s3, title: str, tkeys: list):
         # which is fine because identity is only ever COMPARED against a 'final'
         # entry from a DIFFERENT prior submission, never against our own wave.
         if state == "claimed":
-            try:
-                marker = (
-                    _title_checksum(s3, tkeys)
-                    if single
-                    else "llm:" + _multi_fingerprint(s3, tkeys)[:4000]
-                )
-                _title_finalize(title, marker)
-            except Exception as e:  # noqa: BLE001 - best-effort finalize
-                logger.warning("finalize marker failed for %r: %s", title, e)
+            return _finalize_claim(s3, title, tkeys)
         return True, "", ""
 
     # state == "final": a prior submission owns this title. Compare identity.
@@ -358,6 +487,14 @@ def _resolve_title_identity(s3, title: str, tkeys: list):
         else:
             new_fp = _multi_fingerprint(s3, tkeys)
             same = _llm_same_work(title, (existing_marker or "")[4:], new_fp)
+    except _grok_model_unavailable() as e:
+        logger.error("sameness check stopped for %r: %s", title, e)
+        return (
+            False,
+            "held: the Grok model of the sameness check is unavailable (alerted) - re-upload "
+            "once api.grok.model is fixed",
+            "model-unavailable",
+        )
     except Exception as e:  # noqa: BLE001 - fail-open: proceed rather than block
         logger.warning("identity compare failed for %r (%s) — proceeding", title, e)
         return True, "", ""
@@ -415,7 +552,15 @@ def _enforce_title_uniqueness_at_launch(keys: list) -> list:
             continue
         for k in tkeys:
             try:
-                reject_to_review(s3, BUCKET, k, title, reason, category=category)
+                reject_to_review(
+                    s3,
+                    BUCKET,
+                    k,
+                    title,
+                    reason,
+                    category=category,
+                    **_review_alert(category),
+                )
             except Exception as e:  # noqa: BLE001
                 logger.warning("reject_to_review failed for %s: %s", k, e)
     return proceed
@@ -450,44 +595,24 @@ def _source_from_key(key: str) -> str:
 
 
 def _title_from_key(key: str) -> str:
-    """Derive a content item's TITLE from an S3 key, with a filename fallback.
+    """A content item's slug (its TITLE) from a CHAPTER CONTENT key - the shared rule
+    (src/ingestion/book_slug.content_slug: the title folder, skipping a leading source segment;
+    the filename stem only for a loose file). "" when it is not a safe token (untitled).
 
-    Not everything is a 'book', but every content item has a title. Prefer the
-    content-repository folder: ``contentrepository/{TITLE}/...`` -> TITLE, OR the
-    source-prefixed form ``contentrepository/{SOURCE_ID}/{TITLE}/...`` -> TITLE (the
-    leading SOURCE segment is skipped). If the item is a loose file with no title folder
-    (``contentrepository/Foo.md`` or any other shape), fall back to the FILENAME STEM so
-    the item still gets a stable, non-empty title and never falls through to a whole-corpus
-    run.
+    SECURITY: a title flows into a filesystem path (per-title cache rmtree), a subprocess --book
+    arg, and a DynamoDB key, so an unsafe candidate is never returned.
     """
-    parts = [p for p in key.split("/") if p]
-    candidate = _derive_title_candidate(parts).replace(" ", "_")
-    # SECURITY: a title flows into a filesystem path (per-title cache rmtree), a
-    # subprocess --book arg, and a DynamoDB key. Reject path-traversal / unsafe
-    # chars — a title must be a plain safe token or we treat it as untitled ("").
-    if candidate in ("", ".", "..") or not _SAFE_TITLE_RE.fullmatch(candidate):
-        return ""
-    return candidate
+    from src.ingestion.book_slug import content_candidate, is_safe_slug
+
+    candidate = content_candidate(key)
+    return candidate if is_safe_slug(candidate) else ""
 
 
 def _derive_title_candidate(parts: list) -> str:
-    """Derive the RAW (unvalidated) title candidate from pre-split key segments.
+    """The raw (unvalidated) slug of pre-split content-key segments (book_slug)."""
+    from src.ingestion.book_slug import content_candidate
 
-    Pure path-shape logic ONLY — no security validation (the caller
-    ``_title_from_key`` owns the _SAFE_TITLE_RE check, unchanged). Prefer the
-    content-repository titled folder (skipping a leading SOURCE segment), else
-    the filename stem.
-    """
-    if parts and parts[0] == "contentrepository":
-        rest = parts[1:]
-        # Skip a leading SOURCE segment so the TITLE is parsed from the right position.
-        if rest and _is_source_segment(rest[0]):
-            rest = rest[1:]
-        if len(rest) >= 2:
-            return rest[0]  # titled folder
-        return rest[-1].rsplit(".", 1)[0] if rest else ""
-    # Loose file (or no title folder) -> filename stem.
-    return parts[-1].rsplit(".", 1)[0] if parts else ""
+    return content_candidate("/".join(parts))
 
 
 def _book_from_key(key: str) -> str:
@@ -506,19 +631,19 @@ def _book_from_key(key: str) -> str:
 
 
 def _safe_stem_from_key(key: str) -> str:
-    """SAFE_TITLE-validated FILENAME STEM for a key (space->underscore). Used by the Phase-0
-    submit_video/submit_convert paths, where the 'book' is the uploaded FILE's name (not the title
-    folder). Blocks traversal/unsafe chars that would otherwise flow into a DynamoDB/S3 key + --book
-    arg; observable 'unknown' fallback (also re-validated downstream by _run_task's _SAFE_TITLE_RE).
-    """
-    stem = key.rsplit("/", 1)[-1].rsplit(".", 1)[0].replace(" ", "_")
-    if stem in ("", ".", "..") or not _SAFE_TITLE_RE.fullmatch(stem):
+    """The slug of a SOURCE document for the Phase-0 submit paths (OCR, convert, video): its
+    filename stem - the shared rule (src/ingestion/book_slug.book_slug). Phase 0 writes the
+    book's chapters under contentrepository/<this slug>/, whose content slug is the same.
+    Observable 'unknown' fallback (rejected by the submit paths and _run_task)."""
+    from src.ingestion.book_slug import book_slug
+
+    slug = book_slug(key)
+    if slug == "unknown":
         logger.warning(
             "OBSERV book.unknown_fallback key=%r (unsafe filename stem → 'unknown')",
             key,
         )
-        return "unknown"
-    return stem
+    return slug
 
 
 def _lock_key(family: str, book_name: str) -> str:
@@ -658,6 +783,49 @@ def _validate_parse_keys(keys: list) -> list:
 _METADATA_SIDECAR_SUFFIX = "-meta.yaml"
 
 
+# A book's derived figures (src/ingestion/pdf_figures: maps, charts, photos extracted from its
+# PDF, + figures.json) live in a reserved folder beside its content. They are the pipeline's
+# own output, not uploads: never OCR'd (an image here would otherwise go to Chandra), parsed or
+# AV-scanned as new content. Leading underscore = reserved, like "_oob" and "_system".
+_FIGURES_DIR = "_figures"
+
+
+def _is_derived_figure(key: str) -> bool:
+    """``contentrepository/{TITLE}/_figures/...`` or ``contentrepository/_system/{TITLE}/
+    _figures/...`` exactly (case-sensitive; no empty or '..' segment but a trailing folder
+    marker): a book's figures, written by the pipeline. SECURITY: SYSTEM namespace only - a
+    contributor path (user-/contrib-/org-) is NEVER exempt, so an upload cannot skip the AV
+    gate by naming a ``_figures`` folder; readers of ``_figures/`` treat it as pipeline output
+    of the system namespace and nothing else."""
+    parts = _clean_content_parts(key)
+    if parts is None:
+        return False
+    depth = _figures_depth(parts[1])
+    return depth is not None and len(parts) > depth and parts[depth] == _FIGURES_DIR
+
+
+def _clean_content_parts(key: str):
+    """``key``'s segments when it is a well-formed ``contentrepository/`` key of 4+ segments
+    (a trailing "/" - a folder marker - allowed; no other empty, '.' or '..' segment).
+    """
+    parts = key.split("/")
+    if parts and parts[-1] == "":
+        parts = parts[:-1]
+    if len(parts) < 3 or parts[0] != "contentrepository":
+        return None
+    if any(p in ("", ".", "..") for p in parts):
+        return None
+    return parts
+
+
+def _figures_depth(first: str):
+    """Where ``_figures`` sits under the title: index 2 (legacy ``{TITLE}/``), 3 under the
+    system source; None for a contributor namespace (never exempt)."""
+    if not _is_source_segment(first):
+        return 2
+    return 3 if first == SYSTEM_SOURCE_ID else None
+
+
 def _is_metadata_sidecar(key: str) -> bool:
     parts = key.split("/")
     if len(parts) != 4 or parts[0] != "contentrepository" or not all(parts):
@@ -672,8 +840,12 @@ def _is_metadata_sidecar(key: str) -> bool:
 def _content_keys(keys: list) -> list:
     """Keep only processable content keys; drop compressed files and non-content."""
     out = []
+    figures = 0
     for k in keys:
         low = k.lower()
+        if _is_derived_figure(k):
+            figures += 1
+            continue
         if low.endswith(_COMPRESSED_SUFFIXES):
             logger.info("Ignoring compressed file (pre-stage expands these): %s", k)
             continue
@@ -702,6 +874,11 @@ def _content_keys(keys: list) -> list:
                 )
             except Exception as e:  # noqa: BLE001 - never let a reject crash intake
                 logger.warning("Could not reject-to-review %s: %s", k, e)
+    if figures:
+        logger.info(
+            "OBSERV trigger.derived_figures status=ok count=%d (book figures, not new content)",
+            figures,
+        )
     return out
 
 
@@ -951,6 +1128,70 @@ def _claim_or_reclaim_ocr(claim_key: str, pdf_name: str) -> bool:
     return True
 
 
+def _validation_url(key: str) -> str:
+    """The upload's optional transcription to cross-check its OCR against: object metadata
+    ``validation-url`` (``aws s3 cp ... --metadata validation-url=<url>``; the future submit UI's
+    optional URL field), cleaned (http(s), public host). "" when absent or unusable - the OCR is
+    then sanitised but never cross-checked against nothing. Never raises."""
+    try:
+        meta = (
+            boto3.client("s3").head_object(Bucket=BUCKET, Key=key).get("Metadata") or {}
+        )
+    except Exception as e:  # noqa: BLE001 - absent/transient: no validation
+        logger.warning("validation-url lookup failed for %s: %s", key, e)
+        return ""
+    raw = str(meta.get("validation-url") or meta.get("validation_url") or "").strip()
+    if not raw:
+        return ""
+    from src.utils.url_hygiene import clean_url
+
+    url = clean_url(raw) or ""
+    if not url:
+        observe_error(
+            "ocr",
+            "validation_url_rejected",
+            note="upload's validation-url is not a public http(s) URL: OCR will NOT be "
+            "cross-checked; re-upload with a valid --metadata validation-url=<url>",
+            key=key,
+        )
+    return url
+
+
+def _ocr_jobs(pdf_name: str, s3_input: str, chunks: list) -> list:
+    """(range, Batch job name, Chandra command) of every OCR chunk of ``pdf_name``. Raises
+    ValueError on a range Chandra cannot be given (see ocr_chunk_manifest.chandra_page_range).
+    """
+    from src.ingestion import ocr_chunk_manifest as manifest
+
+    jobs = []
+    for rng in chunks:
+        if rng:
+            a, b = rng.split("-")
+            out = f"s3://{BUCKET}/ocr-output/{pdf_name}/{manifest.chunk_dir(rng)}/"
+            job_name = f"chandra-{pdf_name}-p{a}-{b}"[:128].replace(" ", "_")
+            # Chandra's --page-range is 0-based; ``rng`` (and the chunk dir) is 1-based
+            cmd = [s3_input, out, "--page-range", manifest.chandra_page_range(rng)]
+        else:
+            out = f"s3://{BUCKET}/ocr-output/{pdf_name}/"
+            job_name = f"chandra-{pdf_name}"[:128].replace(" ", "_")
+            cmd = [s3_input, out]
+        jobs.append((rng, job_name, cmd))
+    return jobs
+
+
+def _ocr_intake_refused(pdf_key: str, pdf_name: str) -> bool:
+    """True (the upload sent to review) when an OCR upload must not be processed: no safe slug,
+    a document already ingested under another slug, or a misassigned file (declared extension !=
+    actual bytes: a .pdf/.jpg that is really a zip/html/garbage OCRs to nothing - caught BEFORE a
+    GPU job is spent; only the header is fetched, and a sniff error fails open to OCR).
+    """
+    return (
+        _unnamed_upload(pdf_key, pdf_name)
+        or _source_renamed(pdf_key, pdf_name)
+        or _ocr_media_mismatch(pdf_key, pdf_name)
+    )
+
+
 def _submit_ocr(pdf_key: str) -> bool:
     """Submit Chandra GPU OCR for a raw PDF/image (Option B: -> Phase 0), with
     best-guess page-range chunking so a SPOT reclaim loses one chunk, not the whole
@@ -961,13 +1202,7 @@ def _submit_ocr(pdf_key: str) -> bool:
         # intake paths — _submit_ocr bypasses _run_task's guard, so without this a malformed/space/
         # unicode stem would flow into S3 prefixes, the DynamoDB claim key, and the Batch job name.
         pdf_name = _safe_stem_from_key(pdf_key)
-        # Reject a misassigned file (declared extension != actual bytes) BEFORE
-        # spending a GPU OCR job: a .pdf/.jpg that is really a zip/html/garbage
-        # OCRs to nothing. Off-ramp to needs-review for more extensive evaluation
-        # instead. Only the header is fetched (sniffing needs <=16 bytes), so this
-        # is cheap even for very large PDFs. Fail-open: any sniff error -> proceed
-        # to OCR (don't block a legit doc on a transient S3 read).
-        if _ocr_media_mismatch(pdf_key, pdf_name):
+        if _ocr_intake_refused(pdf_key, pdf_name):
             return False
         # G4 (§8) — deny redundant submissions AT INTAKE (per book, covering all its chunks).
         claim_key = f"ocr#{pdf_name}"
@@ -994,18 +1229,28 @@ def _submit_ocr(pdf_key: str) -> bool:
                     "Could not write .structured marker for %s: %s", pdf_name, e
                 )
         chunks = _ocr_chunks(pdf_key)
+        from src.ingestion import ocr_chunk_manifest as manifest
+
         try:
+            # Every chunk's job is built FIRST: a range that cannot be converted fails the whole
+            # submission before a manifest is written or any GPU job starts (no half-submitted
+            # book), and the claim is released for a retry.
+            jobs = _ocr_jobs(pdf_name, s3_input, chunks)
+            # The merge promotes only once EVERY chunk of this submission is in (one merge,
+            # whole book): record the expected chunks BEFORE any job can finish.
+            manifest.write_manifest(
+                boto3.client("s3"),
+                BUCKET,
+                pdf_name,
+                manifest.build_manifest(
+                    uuid.uuid4().hex,
+                    chunks,
+                    source_key=pdf_key,
+                    validation_url=_validation_url(pdf_key),
+                ),
+            )
             batch = _batch_client()
-            for rng in chunks:
-                if rng:
-                    a, b = rng.split("-")
-                    out = f"s3://{BUCKET}/ocr-output/{pdf_name}/chunk-p{int(a):04d}-{int(b):04d}/"
-                    job_name = f"chandra-{pdf_name}-p{a}-{b}"[:128].replace(" ", "_")
-                    cmd = [s3_input, out, "--page-range", rng]
-                else:
-                    out = f"s3://{BUCKET}/ocr-output/{pdf_name}/"
-                    job_name = f"chandra-{pdf_name}"[:128].replace(" ", "_")
-                    cmd = [s3_input, out]
+            for rng, job_name, cmd in jobs:
                 batch.submit_job(
                     jobName=job_name,
                     jobQueue=OCR_JOB_QUEUE,
@@ -1676,13 +1921,77 @@ def _make_av_scanner():
     return EcsClamavScanner(_run_task, s3, AV_SCAN_TASK_DEF)
 
 
+_SOURCE_BIND_MAX_BYTES = int(os.environ.get("SOURCE_BIND_MAX_BYTES", str(512 << 20)))
+
+
+def _source_renamed(key: str, slug: str) -> bool:
+    """True (and the upload sent to review) when this source document is already ingested under
+    ANOTHER slug: its slug is immutable, so the same document is not ingested twice under two
+    names. Checksums the file (a file over SOURCE_BIND_MAX_BYTES is not checked, logged).
+    Fail-open: on an error the upload proceeds (alerted by _bind_source)."""
+    s3 = boto3.client("s3")
+    try:
+        size = int(s3.head_object(Bucket=BUCKET, Key=key).get("ContentLength", 0))
+        if size > _SOURCE_BIND_MAX_BYTES:
+            logger.info(
+                "OBSERV intake.source_bind_skipped key=%s bytes=%d (over the limit)",
+                key,
+                size,
+            )
+            return False
+        other = _bind_source(_title_checksum(s3, [key]), slug)
+    except Exception as e:  # noqa: BLE001 - fail-open
+        logger.warning("source binding skipped for %s: %s", key, type(e).__name__)
+        return False
+    if not other:
+        return False
+    from src.ingestion.review_reject import reject_to_review
+
+    try:
+        reject_to_review(
+            s3,
+            BUCKET,
+            key,
+            slug,
+            f"this document is already ingested as '{other}': a book's slug is immutable, so it "
+            f"is not ingested again as '{slug}' (re-upload it under its existing name to "
+            f"re-process it)",
+            category="source-renamed",
+        )
+    except Exception as e:  # noqa: BLE001
+        logger.warning("reject_to_review failed for %s: %s", key, e)
+    return True
+
+
+def _unnamed_upload(key: str, slug: str) -> bool:
+    """True (and the upload sent to review) when its name gives no safe slug: as ``unknown`` it
+    would share one book with every other unnamed upload (src/ingestion/book_slug)."""
+    if slug != "unknown":
+        return False
+    from src.ingestion.review_reject import reject_to_review
+
+    try:
+        reject_to_review(
+            boto3.client("s3"),
+            BUCKET,
+            key,
+            "unknown",
+            "the upload's folder/file name is not a safe book name ([A-Za-z0-9._-] only); "
+            "re-upload it as contentrepository/<Book_Name>/<file>",
+            category="unnamed-upload",
+        )
+    except Exception as e:  # noqa: BLE001 - the upload is still not processed
+        logger.warning("reject_to_review failed for %s: %s", key, e)
+    return True
+
+
 def _submit_video(key: str) -> None:
     """Launch a demand-only Phase-0 VIDEO task for one video key (VIDEO_KEY
     override). Transcribes + speaker-ids -> chapter structure -> parse fires.
     Never a standing service — launched per upload, like _submit_ocr/_submit_convert."""
-    book = _safe_stem_from_key(
-        key
-    )  # filename-stem semantic, SAFE_TITLE-validated + observable
+    book = _safe_stem_from_key(key)  # the book's slug (src/ingestion/book_slug)
+    if _unnamed_upload(key, book) or _source_renamed(key, book):
+        return
     _run_task(
         PHASE0_VIDEO_TASK_DEF,
         "content-uploaded-video",
@@ -1694,9 +2003,9 @@ def _submit_video(key: str) -> None:
 def _submit_convert(key: str) -> None:
     """Launch a Phase-0 convert task for one epub/docx key (CONVERT_KEY override).
     The task writes the chapter structure -> parse fires on that upload."""
-    book = _safe_stem_from_key(
-        key
-    )  # filename-stem semantic, SAFE_TITLE-validated + observable
+    book = _safe_stem_from_key(key)  # the book's slug (src/ingestion/book_slug)
+    if _unnamed_upload(key, book) or _source_renamed(key, book):
+        return
     _run_task(
         PHASE0_TASK_DEF,
         "content-uploaded-convert",
@@ -1834,12 +2143,21 @@ def _run_task(task_def, source, book_name="", extra_env=None):
     # a raw "book" field straight through. Reject anything outside the safe charset
     # (blocks "", "..", "/", traversal) BEFORE it reaches any of those sinks.
     if book_name and (
-        book_name in (".", "..") or not _SAFE_TITLE_RE.fullmatch(book_name)
+        book_name in (".", "..", "unknown") or not _SAFE_TITLE_RE.fullmatch(book_name)
     ):
-        logger.error(
-            "Rejecting unsafe book_name %r for %s (not launching)", book_name, source
+        # "unknown" is the slug fallback for an unnameable upload: launching it would process
+        # every unnamed upload as ONE book (src/ingestion/book_slug)
+        observe_error(
+            "trigger",
+            "book_name_rejected",
+            note="no task launched: the book name is unsafe or unknown - check the upload's "
+            "folder/file name (needs-review/unnamed-upload/)",
+            book_name=str(book_name)[:80],
+            source=source,
         )
         return
+    if _task_family(task_def) == _task_family(AV_SCAN_TASK_DEF):
+        return _run_av_scan(task_def, source, extra_env)
     # Cancel any pending delayed teardown
     _cancel_delayed_teardown()
 
@@ -1866,6 +2184,20 @@ def _run_task(task_def, source, book_name="", extra_env=None):
     _launch_ecs_task(task_def, source, book_name, extra_env, lock_key, family)
 
 
+def _run_av_scan(task_def, source, extra_env) -> None:
+    """Launch ONE ClamAV scan task. Scans are independent (each has its own keys and its own result
+    file), so they take no shared task lock: under the family lock a second scan was silently
+    skipped (the scanner then polled 10 minutes for a result that never came and quarantined its
+    uploads), and the lock itself was never cleared (``TASK_FAMILIES`` has no entry for it), which
+    also kept the NAT up for its 2 h TTL. A launch failure raises, so the scanner fails closed.
+    """
+    _cancel_delayed_teardown()
+    _fire_nat_warmup("av-scan")
+    # nothing ever holds this key: only the launch-failure path deletes it
+    lock_key = f"lock#av-scan#{uuid.uuid4().hex}"
+    _launch_ecs_task(task_def, source, "", extra_env, lock_key, "av-scan")
+
+
 def _fire_nat_warmup(family: str) -> None:
     """Fire-and-forget async NAT warm-up invoke. A failed warm-up is non-fatal
     (the phase invokes nat-manager itself before egress); log and proceed."""
@@ -1882,7 +2214,7 @@ def _fire_nat_warmup(family: str) -> None:
         logger.warning("Async NAT warm-up invoke failed (phase will retry): %s", e)
 
 
-def _build_env_overrides(book_name, extra_env):
+def _build_env_overrides(book_name, extra_env, batch_passthrough=True):
     """Assemble the container env overrides for a task launch.
 
     BOOK_NAME + any caller extra_env, PLUS a testing passthrough: a batch-mode override set on
@@ -1896,11 +2228,27 @@ def _build_env_overrides(book_name, extra_env):
         env_over.append({"name": "BOOK_NAME", "value": book_name})
     if extra_env:
         env_over.extend(extra_env)
-    for bk in ("BATCH_PHASE2", "BATCH_PHASE3"):
+    for bk in ("BATCH_PHASE2", "BATCH_PHASE3") if batch_passthrough else ():
         bv = os.environ.get(bk)
         if bv is not None:
             env_over.append({"name": bk, "value": bv})
     return env_over
+
+
+def _task_family(task_def: str) -> str:
+    """``task_def`` (a family, family:revision or ARN) as its bare family name."""
+    return task_def.rsplit("/", 1)[-1].split(":")[0]
+
+
+def _override_container(task_def: str) -> str:
+    """The container of ``task_def`` that environment overrides address. ECS rejects an override
+    naming a container the task definition does not have, so the name must match the template:
+    every pipeline task's container is ``pipeline``; the ClamAV scan task's is ``clamav``
+    (cloudformation/compute.yaml AvScanTaskDef). Naming ``pipeline`` for the scan task made every
+    scan fail to launch, so every binary upload was quarantined as unscannable."""
+    if _task_family(task_def) == _task_family(AV_SCAN_TASK_DEF):
+        return "clamav"
+    return "pipeline"
 
 
 def _launch_ecs_task(task_def, source, book_name, extra_env, lock_key, family):
@@ -1912,9 +2260,13 @@ def _launch_ecs_task(task_def, source, book_name, extra_env, lock_key, family):
     logger.info(
         "Launching ECS task %s from %s (book=%s)", family, source, book_name or "all"
     )
-    env_over = _build_env_overrides(book_name, extra_env)
+    container = _override_container(task_def)
+    # the batch-mode passthrough is for the pipeline phases; the scan container has no use for it
+    env_over = _build_env_overrides(
+        book_name, extra_env, batch_passthrough=container == "pipeline"
+    )
     overrides = (
-        {"containerOverrides": [{"name": "pipeline", "environment": env_over}]}
+        {"containerOverrides": [{"name": container, "environment": env_over}]}
         if env_over
         else {}
     )

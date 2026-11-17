@@ -18,8 +18,10 @@ def _bomb_img():
     m = mock.Mock()
     m.format = "BMP"  # not in the keep-list -> forces the convert() path
     m.verify = lambda: None
-    m.width = 10000
-    m.height = 10000
+    m.width = (
+        1000  # under the explicit pixel cap: the bomb is only seen when rasterized
+    )
+    m.height = 1000
     m.convert.side_effect = Image.DecompressionBombError("bomb during convert")
     m.resize.side_effect = Image.DecompressionBombError("bomb during resize")
     return m
@@ -73,3 +75,20 @@ def test_max_image_pixels_restored_after_decode(monkeypatch):
     monkeypatch.setattr("PIL.Image.open", lambda *a, **k: _bomb_img())
     equipment._verify_media_with_vision(b"\x00" * 16, "T", "tank", "title", mock.Mock())
     assert Image.MAX_IMAGE_PIXELS == before
+
+
+def test_equipment_rejects_pixels_between_the_cap_and_pillows_raise_threshold(
+    monkeypatch,
+):
+    """Pillow only RAISES above 2x MAX_IMAGE_PIXELS (warns from 1x): 56M pixels must still be
+    rejected before convert()/resize() rasterize it."""
+    from src.extraction import equipment
+
+    img = _bomb_img()
+    img.width, img.height = 8000, 7000
+    monkeypatch.setattr("PIL.Image.open", lambda *a, **k: img)
+    ok, msg = equipment._verify_media_with_vision(
+        b"\x00" * 16, "Tiger", "tank", "a title", mock.Mock()
+    )
+    assert ok is False and "8000x7000" in msg
+    img.convert.assert_not_called()

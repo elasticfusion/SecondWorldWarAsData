@@ -25,7 +25,7 @@ from src.schemas import (
 def test_entity_version_distinguishes_entities():
     # sanity: these differ, so a None-fallback (min) is demonstrably wrong for places
     assert entity_version("places") == "2.30"
-    assert entity_version("weather") == "2.24"
+    assert entity_version("weather") == "2.25"
     assert entity_version(None) == "2.24"  # the MIN — the old buggy fallback
 
 
@@ -54,7 +54,7 @@ def test_dir_all_current_is_per_entity(tmp_path):
     (tmp_path / "b.json").write_text(json.dumps({"_schema_version": "2.30"}))
     files = list(tmp_path.glob("*.json"))
     assert E._dir_all_current(files, "places", needs_migration) is True
-    # the SAME files judged against weather (2.24) are NOT current -> would be stamped (shows the
+    # the SAME files judged against weather (2.25) are NOT current -> would be stamped (shows the
     # check is per-entity, not a single global version)
     assert E._dir_all_current(files, "weather", needs_migration) is False
 

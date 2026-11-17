@@ -16,7 +16,6 @@ paths = [
     '''.env''',
     '''unprocesseddocs/''',   # ~5 GB raw source documents (data, not code)
     '''contentrepository/''', # ~4.5 GB ingested source content (data, not code)
-    '''aws/''',               # vendored AWS CLI/tooling
     '''tmp/''',               # scratch
     '''\.mypy_cache/''',
     '''logs/''',
