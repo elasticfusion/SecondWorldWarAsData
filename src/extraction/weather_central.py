@@ -19,7 +19,7 @@ from src.extraction.starvation_signal import (
     note_empty_fulltext_skip,
     warn_all_subevents_empty,
 )
-from src.utils.entity_records import merge_mentions
+from src.utils.entity_records import is_record_file, merge_mentions
 from src.utils.file_lock import write_json_with_lock
 from src.utils.fetch_provenance import STRUCTURED, recorded_fetch
 from src.utils.json_validator import _fix_invalid_ulids
@@ -215,7 +215,7 @@ def _build_date_id_lookup(dates_dir: Path) -> Dict[str, Dict[str, Any]]:
     if not dates_dir.exists():
         return lookup
     for f in dates_dir.glob("*.json"):
-        if f.name == "index.json":
+        if not is_record_file(f):
             continue
         try:
             data = json.loads(f.read_text(encoding="utf-8"))

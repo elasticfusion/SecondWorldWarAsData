@@ -28,6 +28,7 @@ from src.utils.quote_match import QUOTE_RULE
 from src.utils.grok_models import GrokModelUnavailable, raise_if_unavailable
 from src.utils.observe import observe_error, observe_warn
 from src.utils.json_validator import _fix_invalid_ulids, _ULID_PATTERN
+from src.utils.entity_records import is_record_file
 
 _book_manifest = None
 
@@ -245,7 +246,7 @@ def _build_date_id_lookup(dates_dir: Path) -> Dict[str, str]:
         return lookup
     dropped = 0
     for f in dates_dir.glob("*.json"):
-        if f.name == "index.json":
+        if not is_record_file(f):
             continue
         try:
             data = json.loads(f.read_text(encoding="utf-8"))

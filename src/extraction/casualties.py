@@ -24,6 +24,7 @@ from src.grok_client import (
 from src.json_schemas import CASUALTY_ITEM_SCHEMA
 from src.utils.json_validator import _fix_invalid_ulids
 from src.utils.observe import observe, observe_error, observe_warn
+from src.utils.entity_records import is_record_file
 
 logger = logging.getLogger(__name__)
 
@@ -250,7 +251,7 @@ def _existing_statements(casualties_dir: Path) -> set:
     """The statement keys (``_casualty_statement``) of the casualties already saved."""
     keys = set()
     for f in casualties_dir.glob("*.json"):
-        if f.name == "index.json" or f.name.startswith("."):
+        if not is_record_file(f):
             continue  # the index and the run's state files (.processed_events.json) hold no record
         try:
             keys.add(_casualty_statement(json.loads(f.read_text(encoding="utf-8"))))
@@ -971,7 +972,7 @@ def _event_year_lookup(dates_dir: Path) -> Dict[str, Optional[int]]:
     if not dates_dir.exists():
         return {}
     for f in dates_dir.glob("*.json"):
-        if f.name == "index.json":
+        if not is_record_file(f):
             continue
         _collect_event_years(f, years)
     # single-year events -> that year; multi-year -> None (ambiguous, don't guess)

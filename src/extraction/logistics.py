@@ -13,6 +13,7 @@ from pydantic import BaseModel, Field
 from src.grok_client import for_chapter_book
 from src.grok_client import GrokClient, BatchModeCollecting, GrokTruncationError
 from src.utils.yield_observer import count_nonempty_fulltext, observe_yield
+from src.utils.entity_records import is_record_file
 
 logger = logging.getLogger(__name__)
 
@@ -852,7 +853,7 @@ def _load_existing_keys(logistics_dir: Path) -> set:
     """Load dedup keys (``_statement_key``) from existing logistics files."""
     keys = set()
     for f in logistics_dir.glob("*.json"):
-        if f.name == "index.json":
+        if not is_record_file(f):
             continue
         try:
             d = json.loads(f.read_text())
@@ -1082,7 +1083,7 @@ def _rebuild_index(logistics_dir: Path) -> None:
     """Build index.json mapping key → filename."""
     index: Dict[str, str] = {}
     for f in sorted(logistics_dir.glob("*.json")):
-        if f.name == "index.json":
+        if not is_record_file(f):
             continue
         # Key on the FULL stem (includes the unique LogisticsID[-8:] suffix). Stripping the ULID
         # (rsplit('_',1)[0]) collapsed DISTINCT sub-events that share category_type_date into one

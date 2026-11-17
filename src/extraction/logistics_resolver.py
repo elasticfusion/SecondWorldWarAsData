@@ -19,6 +19,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+from src.utils.entity_records import is_record_file
 
 # logistics_type values that plausibly relate to personnel casualties.
 SUPPLY_TYPES = {"supply_shortage", "delivery_delay", "transport_disruption"}
@@ -81,7 +82,7 @@ def build_logistics_index(logistics_dir: Path) -> Dict[str, Any]:
     if not logistics_dir.exists():
         return {"by_group": by_group, "by_id": by_id}
     for f in logistics_dir.glob("*.json"):
-        if f.name in ("index.json",):
+        if not is_record_file(f):
             continue
         _index_logistics_file(f, by_id, by_group)
     return {"by_group": by_group, "by_id": by_id}

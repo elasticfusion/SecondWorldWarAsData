@@ -30,14 +30,18 @@ SKIP_NAMES = frozenset(
 SUBEVENT_FIELDS = ("Sub_eventID", "Sub-eventID")
 
 
+def is_record_file(f: Path) -> bool:
+    """True for an entity record file; False for an index, report, curated list, lock or run state
+    file (any dotfile, e.g. ``.processed_events.json`` - pathlib's glob matches dotfiles).
+    """
+    name = Path(f).name
+    return not (name.endswith(".lock") or name in SKIP_NAMES or name.startswith("."))
+
+
 def entity_files(root: Path, glob: str) -> List[Path]:
     """The record files of an entity's registry ``output_glob`` under ``root`` (the output dir)."""
     return [
-        f
-        for f in Path(root).glob(glob.replace("output/", "", 1))
-        if not f.name.endswith(".lock")
-        and f.name not in SKIP_NAMES
-        and not f.name.startswith(".")
+        f for f in Path(root).glob(glob.replace("output/", "", 1)) if is_record_file(f)
     ]
 
 

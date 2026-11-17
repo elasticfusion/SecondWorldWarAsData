@@ -17,6 +17,7 @@ import requests
 
 from src.grok_client import BatchModeCollecting, GrokClient
 from src.schemas import inject_metadata
+from src.utils.entity_records import is_record_file
 
 logger = logging.getLogger(__name__)
 
@@ -1816,11 +1817,7 @@ def enrich_all_people(
         logger.error("Directory not found: %s", people_dir)
         return 0
 
-    person_files = [
-        f
-        for f in people_dir.glob("*.json")
-        if f.name not in ["index.json", "duplicate_report.json", "not_duplicates.json"]
-    ]
+    person_files = [f for f in people_dir.glob("*.json") if is_record_file(f)]
 
     if max_people:
         person_files = person_files[:max_people]
