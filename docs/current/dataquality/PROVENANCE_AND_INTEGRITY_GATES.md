@@ -168,10 +168,10 @@ alerts after Phase 3, where it is a real failure.
 | Check | Phase 1 | Phase 2 | Phase 3 |
 |---|---|---|---|
 | Referential `run_for_phase` | end of `main()` (`phase1_parse.py:572`), any storage | local runs: `phase2_extract._local_referential_enforce` (`:654`, call at `:1483`). ECS: skipped there, runs post-sync in `ecs_entrypoint` | local runs: `phase3_enrich_data.py:1063`. ECS: post-sync |
-| Completeness `run_for_phase` | no | `phase2_extract.py:1488`, always, on the local tree, before the yield gate | local runs: `phase3_enrich_data.py:1069`. ECS: post-sync (`ecs_entrypoint.py:2295`) |
+| Completeness `run_for_phase` | no | `phase2_extract.py:1488`, always, on the local tree, before the yield gate | local runs: `phase3_enrich_data.py:1069`. ECS: post-sync (`ecs_entrypoint.py:2344`) |
 | `validate_phase2` | no | `phase2_extract.py:1392`, log-only (the phase is not aborted) | no |
-| `validate_phase3` | no | no | local runs: `phase3_enrich_data.py:1075`. ECS: post-sync (`ecs_entrypoint.py:2317`). Log-only |
-| `validate_provenance` | no | ECS only: `_post_process` (`ecs_entrypoint.py:2366`) | ECS only: after the durable fix (`:2457`) |
+| `validate_phase3` | no | no | local runs: `phase3_enrich_data.py:1075`. ECS: post-sync (`ecs_entrypoint.py:2366`). Log-only |
+| `validate_provenance` | no | ECS only: `_post_process` (`ecs_entrypoint.py:2415`) | ECS only: after the durable fix (`:2457`) |
 | `write_validation_stats` | no | end of `_run_post_extraction_steps` (`phase2_extract.py:1162`) | `phase3_enrich_data.py:1050` |
 
 **Why ECS runs differ from local runs.** On ECS the task's output is uploaded to S3 only after the phase
@@ -184,7 +184,7 @@ sync. Without `S3_BUCKET` (a local run), the local tree is authoritative and the
 **ECS sequence.**
 
 1. After any Phase 2 exit, even a failed one, `_audit_failed_phase2` runs the post-sync referential repair
-   and audit (`ecs_entrypoint.py:2105`, called at `:1051`, `:4522`, `:4901`). A halted Phase 2 (for example
+   and audit (`ecs_entrypoint.py:2154`, called at `:1051`, `:4522`, `:4901`). A halted Phase 2 (for example
    the yield gate's `fail_stop`) leaves a partial corpus that an operator needs to inspect.
 2. After a successful Phase 2, `_post_process` (`:2324`) runs `_post_sync_referential_enforce("Phase 2
    (post-sync)")` (`:2365`), then `_provenance_gate("2")` (`:2366`), then dedup detection, then
@@ -231,7 +231,7 @@ To release a held book: fix the records and re-run, or set `PROVENANCE_GATE=warn
 
 | Output | Location | Written by |
 |---|---|---|
-| Provenance report, per book and phase | `output/reports/provenance/<book>-phase<N>.json` locally; `s3://<bucket>/output/reports/provenance/<book>-phase<N>.json` (`report_key`, `validate_provenance.py:633`; upload `ecs_entrypoint.py:2222`) | `validate_and_record` |
+| Provenance report, per book and phase | `output/reports/provenance/<book>-phase<N>.json` locally; `s3://<bucket>/output/reports/provenance/<book>-phase<N>.json` (`report_key`, `validate_provenance.py:633`; upload `ecs_entrypoint.py:2271`) | `validate_and_record` |
 | Validation stats | `output/metrics/validation_stats.json` (`validation_stats.py:295`) | `write_validation_stats` |
 | Phase 2 / 3 validation summary | stdout and the task log only (`OBSERV phase2.validation`, `phase3.validation`) | `validate_phase2.run`, `validate_phase3.run` |
 | Completeness and referential audit result | task log (`OBSERV` lines, below). No report file | `run_for_phase` |
@@ -250,7 +250,7 @@ The provenance report has `book`, `phase`, `result`, `checked`, `failed`, `warne
 | `provenance.alert` | warn | any missing, placeholder or structural-gap count above 0 (`provenance_integrity.py:285`) |
 | `provenance.record_unreadable` | warn | a record was skipped by the completeness audit |
 | `provenance.validation` | ok / error | content-truth result for a book and phase, with `failed`, `warned`, `report=`. `error` on a hard failure |
-| `provenance.gate_timing` | info | seconds taken by the gate (`ecs_entrypoint.py:2208`) |
+| `provenance.gate_timing` | info | seconds taken by the gate (`ecs_entrypoint.py:2257`) |
 | `provenance.validation_skipped` | warn | no `BOOK_NAME`, so no per-book validation ran (`:2181`) |
 | `provenance.validation_failed` | error | the validation could not run, so the gate failed closed (`:2196`) |
 | `provenance.report_upload_failed` | error | the validation ran but the report is only in the task's local tree (`:2230`) |
@@ -293,7 +293,7 @@ False and only the OBSERV log line carries the signal. Two alerts publish with
 | `WWII Pipeline: OBSERV error — provenance.validation_failed` | The validation could not run (missing book files, an exception). It is treated as a failure. | Check the task log for the exception type in the alert. Confirm `output/content/<book>/` has event and parsed files. Re-run the phase |
 | `WWII Pipeline: OBSERV error — provenance.report_upload_failed` | The validation ran, but its report was not uploaded to S3. | Check the task role's S3 write permission. The report is in the task's local tree only and is lost when the task ends, so re-run the validation (`python -m scripts.validate_provenance --book <slug> --phase <N>`) |
 | `WWII Pipeline: OBSERV error — provenance.gate_mode_unavailable` | The gate mode could not be read, so the gate is closed. | Check `config.yaml` and the `PROVENANCE_GATE` value. Set `PROVENANCE_GATE=warn` or `block` explicitly |
-| `WWII Pipeline: provenance review needed` (also `dedup + provenance review needed`) | Gate mode is `block` and the Phase 2 validation failed. Phase 3 is held (`ecs_entrypoint.py:2614-2640`). | Open the report named in the body. Fix the records and re-run Phase 2, or set `PROVENANCE_GATE=warn` to release |
+| `WWII Pipeline: provenance review needed` (also `dedup + provenance review needed`) | Gate mode is `block` and the Phase 2 validation failed. Phase 3 is held (`ecs_entrypoint.py:2663-2689`). | Open the report named in the body. Fix the records and re-run Phase 2, or set `PROVENANCE_GATE=warn` to release |
 | `WWII Pipeline: provenance review needed (Phase 3)` | Gate mode is `block` and the Phase 3 validation failed. The doc is set to `needs-review` (`:2251-2262`). | Same as above. Fix the records and re-run Phase 3, or set `PROVENANCE_GATE=warn` |
 | `WWII Pipeline: dedup review needed` / `dedup auto-proceed` | The dedup gate, not a provenance check. Included here because it shares the notice path. | See the Dedup Review UI link in the body |
 

@@ -13,23 +13,23 @@ Line numbers below are for code at main `0dac86fa`.
 ## 1. Flow
 
 ```
-Phase 2 task ends (_post_process, phase2 branch)        ecs_entrypoint.py:2364-2387
+Phase 2 task ends (_post_process, phase2 branch)        ecs_entrypoint.py:2413-2436
   provenance gate (_provenance_gate("2"))
   _run_dedup_detection(env), up to 2 attempts
-  _phase3_gate_decision(dedup_ok, provenance)           ecs_entrypoint.py:2265
-  _notify_dedup_gate(action, reason, held_by)           ecs_entrypoint.py:2614
-      auto_proceed -> trigger Lambda invoked with {"phase": "3", "book": ...}   ecs_entrypoint.py:2398-2412
+  _phase3_gate_decision(dedup_ok, provenance)           ecs_entrypoint.py:2314
+  _notify_dedup_gate(action, reason, held_by)           ecs_entrypoint.py:2663
+      auto_proceed -> trigger Lambda invoked with {"phase": "3", "book": ...}   ecs_entrypoint.py:2447-2461
       block        -> nothing is started; wait for a human
 Human opens the Dedup Review UI, commits actions, presses "Mark Review Complete"
   POST /dedup/api/complete -> writes dedup/review_status.json, publishes {"dedup_complete": true}
   to {env}-wwii-dedup-complete -> trigger Lambda launches the Phase 3 ECS task
 ```
 
-When `MULTI_DOC_ENABLED` is on, an `auto_proceed` calls `_advance_doc_lifecycle("2")` and a block calls `_offramp_doc_needs_review(reason)` instead of invoking the trigger Lambda (`ecs_entrypoint.py:2390-2396`, `2069-2084`). `_offramp_doc_needs_review` only sets the doc to `needs-review`. Nothing in `dedup_ui_handler.py` resumes the doc; Phase 3 for the corpus starts from the dedup-complete topic (section 5).
+When `MULTI_DOC_ENABLED` is on, an `auto_proceed` calls `_advance_doc_lifecycle("2")` and a block calls `_offramp_doc_needs_review(reason)` instead of invoking the trigger Lambda (`ecs_entrypoint.py:2439-2445`, `2069-2084`). `_offramp_doc_needs_review` only sets the doc to `needs-review`. Nothing in `dedup_ui_handler.py` resumes the doc; Phase 3 for the corpus starts from the dedup-complete topic (section 5).
 
 ## 2. Detection run
 
-`_run_dedup_detection` (`ecs_entrypoint.py:2711`) runs these steps in order. Every step except the detectors catches its own errors, so one failure does not stop the rest.
+`_run_dedup_detection` (`ecs_entrypoint.py:2760`) runs these steps in order. Every step except the detectors catches its own errors, so one failure does not stop the rest.
 
 | Step | Function | What it does |
 |---|---|---|
@@ -44,7 +44,7 @@ When `MULTI_DOC_ENABLED` is on, an `auto_proceed` calls `_advance_doc_lifecycle(
 ### 2.1 `_execute_dedup_scripts`
 
 1. `_generate_places_coords` writes `output/places/coords.json` (distance matching) and `place_coords#<file>` rows in DynamoDB.
-2. Four detectors run as `python -m <module>` from `/app` (`ecs_entrypoint.py:3290-3307`). A non-zero exit calls `observe_error("dedup","detector_failed", detector=..., returncode=...)`, and that entity type has no fresh report this run.
+2. Four detectors run as `python -m <module>` from `/app` (`ecs_entrypoint.py:3339-3356`). A non-zero exit calls `observe_error("dedup","detector_failed", detector=..., returncode=...)`, and that entity type has no fresh report this run.
 
    | Module | Writes |
    |---|---|
@@ -56,7 +56,7 @@ When `MULTI_DOC_ENABLED` is on, an `auto_proceed` calls `_advance_doc_lifecycle(
    The people and groups reports have the shape `{total_people|total_groups, duplicate_groups: <int>, duplicates: [<group>, ...]}` (`find_duplicate_people.py:1503-1507`, `find_duplicate_groups.py:444-449`). Each group holds a `people` list (or `groups`) whose entries carry `name` and `filename`.
 3. `_auto_merge_exact_duplicates` (section 3).
 4. `set_last_dedup_run` records `dedup_run#<entity>` for people, places, groups and equipment (`src/dedup/incremental.py`). It is used by incremental mode (`get_new_files`).
-5. Each report is uploaded to `s3://<bucket>/output/<subdir>/duplicate_report.json` (`ecs_entrypoint.py:3317-3326`).
+5. Each report is uploaded to `s3://<bucket>/output/<subdir>/duplicate_report.json` (`ecs_entrypoint.py:3366-3375`).
 
 The ECS detector run does not pass a Grok client, so `_verify_ambiguous_matches` (`find_duplicate_people.py:1391`) is not used there. It runs only when a caller supplies `grok_client` to `generate_duplicate_report`.
 
@@ -68,16 +68,16 @@ The ECS detector run does not pass a Grok client, so `_verify_ambiguous_matches`
 
 ## 3. Auto-merge
 
-`_auto_merge_exact_duplicates` (`ecs_entrypoint.py:3089`) runs `_auto_merge_entity_type` (3104) for people (`PersonID`), people_groups (`GroupID`), places (`PlaceID`) and equipment (`EquipmentID`). Each group in the report's `duplicates` list is merged without review (primary = first entry, `merge_generic(entity_dir, people, 0, id_field)`) only in these two cases:
+`_auto_merge_exact_duplicates` (`ecs_entrypoint.py:3138`) runs `_auto_merge_entity_type` (3104) for people (`PersonID`), people_groups (`GroupID`), places (`PlaceID`) and equipment (`EquipmentID`). Each group in the report's `duplicates` list is merged without review (primary = first entry, `merge_generic(entity_dir, people, 0, id_field)`) only in these two cases:
 
-1. Every named entry has the same `normalize_name_ascii` form and the group has at least two entries (`ecs_entrypoint.py:3139`).
+1. Every named entry has the same `normalize_name_ascii` form and the group has at least two entries (`ecs_entrypoint.py:3188`).
 2. `_group_cluster_canonically_mergeable` (3166): the directory is `people_groups`, and `_all_keys_match` (3191) finds every record resolves to a canonical unit key with at least one number and `unit_keys_match` against the first record, and `_any_nationality_conflict` (3202, using `find_duplicate_groups._group_nationality_conflict`) finds no conflict. The key rules are in [group-dedup-unit-key.md](../features/people_groups/group-dedup-unit-key.md).
 
 Never auto-merged, so they stay in the report for a human:
 
 - Any non-identical-name group for people, places and equipment.
 - Group clusters with a keyless or underspecified name (no number in the key), any veto between a pair, or a nationality conflict.
-- Any group where the key check raises. The code returns False on any exception (`ecs_entrypoint.py:3183-3184`).
+- Any group where the key check raises. The code returns False on any exception (`ecs_entrypoint.py:3232-3233`).
 
 After merging, the kept groups replace the list, and `duplicate_groups` is reset to `len(remaining)` (3149-3158). The gate reads that integer and the UI reads the list, so they must agree. If they did not, the gate would block Phase 3 while the UI showed nothing to review.
 
@@ -85,7 +85,7 @@ After merging, the kept groups replace the list, and `duplicate_groups` is reset
 
 ### 4.1 Decision
 
-`_dedup_gate_decision(dedup_ok)` (`ecs_entrypoint.py:2584`):
+`_dedup_gate_decision(dedup_ok)` (`ecs_entrypoint.py:2633`):
 
 | Condition | Action |
 |---|---|
@@ -114,7 +114,7 @@ The UI is served by `{env}-wwii-dedup-ui` (Lambda, 30 s timeout, `compute.yaml:1
 
 ## 5. How Phase 3 starts
 
-- Auto-proceed: `ecs_entrypoint.py:2398-2412` invokes `{env}-wwii-trigger` with `{"source":"manual","book":<BOOK_NAME>,"phase":"3"}`. A failure to invoke is logged as a warning only.
+- Auto-proceed: `ecs_entrypoint.py:2447-2461` invokes `{env}-wwii-trigger` with `{"source":"manual","book":<BOOK_NAME>,"phase":"3"}`. A failure to invoke is logged as a warning only.
 - After review: `POST /dedup/api/complete` (`dedup_ui_handler._mark_complete`, 1211) sets `complete: true` in `dedup/review_status.json` and publishes `{"dedup_complete": true}` to the topic named in `DEDUP_COMPLETE_TOPIC_ARN` (`{env}-wwii-dedup-complete`). That topic has one subscriber, the trigger Lambda (`events.yaml:242-261`). `_route_topics` (`trigger_handler.py:1464-1473`) handles it: `_stop_phase2_tasks()` and then `_run_task(PHASE3_TASK_DEF, topic_name)`. The task covers all books that passed dedup, not one book. If the launch fails closed (NAT not routable), nothing retries; press "Mark Review Complete" again, or publish the topic message (section 7.4).
 - `lambda_handlers/dedup_gate_handler.py` is deployed as `{env}-wwii-dedup-gate` (`compute.yaml:1239`) and updated by `scripts/update_lambdas.sh` and `deploy.yml`. No CloudFormation subscription or event source invokes it, and no other code references it, so the live path is the trigger Lambda above. Its logic: it reads `dedup/review_status.json`, returns `blocked` unless `complete` is true, and on a `dedup_complete` SNS record from `DEDUP_COMPLETE_TOPIC_ARN` it invokes Phase 3 once per record under `output/people`, `people_groups`, `places` and `bibliography`. It rejects records from any other topic (`_is_trusted_dedup_topic`, line 31).
 - `dedup/review_status.json` is reset to `{"complete": false, "reviewed": {}}` at the start of every Phase 1 task (`ecs_entrypoint._prepare_phase1`, 1079-1090), so the UI's Complete button (`dedup_ui_handler.py:1345`) is enabled again after new content is parsed. A side effect: a Phase 1 run for a new book also clears the status of a review that was pending or finished for the rest of the corpus. The trigger path does not read the file (see [LOCKS_AND_LEASES.md](LOCKS_AND_LEASES.md)).
@@ -204,7 +204,7 @@ Undo restores the files only. The code does not revert the event-reference rebas
 4. Click Commit All. Wait for the "N merge(s) committed" bar.
 5. When the tabs are empty (or you accept what is left), click Mark Review Complete and confirm. Phase 3 launches from the dedup-complete topic.
 
-If the alert says `provenance` held the book, no review in the UI releases it. Fix the records and re-run, or set `PROVENANCE_GATE=warn` (alert text, `ecs_entrypoint.py:2257-2261`).
+If the alert says `provenance` held the book, no review in the UI releases it. Fix the records and re-run, or set `PROVENANCE_GATE=warn` (alert text, `ecs_entrypoint.py:2306-2310`).
 
 ### 7.2 Network error or timeout
 
@@ -227,9 +227,9 @@ Do not reload and re-click quickly. The first request may still be running for u
 
 | Signal | Where |
 |---|---|
-| `Dedup gate: <action> — <reason>` (info) | `ecs_entrypoint.py:2386` |
-| `OBSERV dedup_gate.notify`, `dedup_gate.notify_undelivered` | `ecs_entrypoint.py:2621-2665` |
-| `observe_error dedup detector_failed / reclassify_failed / index_cleanup_failed` | `ecs_entrypoint.py:3303`, `2747`, `2766` |
+| `Dedup gate: <action> — <reason>` (info) | `ecs_entrypoint.py:2435` |
+| `OBSERV dedup_gate.notify`, `dedup_gate.notify_undelivered` | `ecs_entrypoint.py:2670-2714` |
+| `observe_error dedup detector_failed / reclassify_failed / index_cleanup_failed` | `ecs_entrypoint.py:3352`, `2747`, `2766` |
 | `OBSERV dedup.action_group_gone`, `dedup.report_unreadable`, `dedup.rebase.*` | `dedup_ui_handler.py:356`, `390`, `195-240` |
 | `OBSERV dedup_gate.untrusted_topic` | `dedup_gate_handler.py:56` |
 | Log groups `/aws/lambda/{env}-wwii-dedup-ui`, `-dedup-gate`, `-dedup-auth` | `compute.yaml:196-208` |

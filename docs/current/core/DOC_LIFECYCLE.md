@@ -13,13 +13,13 @@ This follows one uploaded source document from the S3 upload to the end of Phase
 
 ## 1. Two drivers, one default
 
-`MULTI_DOC_ENABLED` selects who moves a document from phase to phase. It is a CloudFormation parameter that defaults to `false` (`cloudformation/compute.yaml:8-12`, `cloudformation/main.yaml:40-44`). The trigger Lambda reads it at import (`trigger_handler.py:96`) and also needs `DISPATCHER_STATE_MACHINE_ARN` (`trigger_handler.py:105-107`). The phase tasks read the same variable (`ecs_entrypoint.py:4025-4045`, `_multi_doc_enabled`).
+`MULTI_DOC_ENABLED` selects who moves a document from phase to phase. It is a CloudFormation parameter that defaults to `false` (`cloudformation/compute.yaml:8-12`, `cloudformation/main.yaml:40-44`). The trigger Lambda reads it at import (`trigger_handler.py:96`) and also needs `DISPATCHER_STATE_MACHINE_ARN` (`trigger_handler.py:105-107`). The phase tasks read the same variable (`ecs_entrypoint.py:4076-4096`, `_multi_doc_enabled`).
 
 | | Serial (default) | Multi-doc |
 |---|---|---|
 | State lives in | `pending#content`, `pending#parsed#<book>`, `pending#enrich#<book>` rows and the phase lock rows | one `doc#<doc_id>` row per book, plus the `pending#*` rows the trigger still writes |
-| Who starts the next phase | The finishing phase task invokes the trigger Lambda (`ecs_entrypoint.py:2343-2361, 2398-2442, 2461-2478`); the 15-minute reconcile is the backstop (`trigger_handler.py:1566-1605`) | The Step Functions dispatcher (`cloudformation/dispatcher.yaml:205-330`) enumerates READY `doc#` rows, runs one ECS task per doc and loops until none are READY |
-| Phase end writes | nothing per document | `_advance_doc_lifecycle` or `_offramp_doc_needs_review` (`ecs_entrypoint.py:2030-2084`) |
+| Who starts the next phase | The finishing phase task invokes the trigger Lambda (`ecs_entrypoint.py:2392-2410, 2398-2442, 2461-2478`); the 15-minute reconcile is the backstop (`trigger_handler.py:1566-1605`) | The Step Functions dispatcher (`cloudformation/dispatcher.yaml:205-330`) enumerates READY `doc#` rows, runs one ECS task per doc and loops until none are READY |
+| Phase end writes | nothing per document | `_advance_doc_lifecycle` or `_offramp_doc_needs_review` (`ecs_entrypoint.py:2079-2133`) |
 
 ## 2. The path in serial mode
 
@@ -33,7 +33,7 @@ This follows one uploaded source document from the S3 upload to the end of Phase
    - Parse keys (`.md`, `.txt`): `_validate_parse_keys` (730), `_queue_pending` (2329), then `_launch_phase1_if_idle` (2343), or in multi-doc mode `_seed_docs` plus `_start_dispatcher` (1505-1508).
 4. **Phase 0 products re-enter at step 1.** OCR output is merged by `ocr_merge_handler.merge_ocr_output` (`ocr_merge_handler.py:319`) and promoted to `contentrepository/<slug>/chapterN/...` by `ocr_promote`. `phase0_convert` and the video task write the same layout. Those uploads fire the content topic again and take the parse path.
 5. **Launch.** `_launch_phase1_if_idle` returns without launching if any task of any family is RUNNING or PENDING (2347-2361). `_resolve_pending_launch_book` (2384-2439) runs the title gate `_enforce_title_uniqueness_at_launch` (522) over the whole accumulated `pending#content` list, then chooses one book, or `""` for all books when the queue holds several. `_run_task` (2135) takes the phase lock, warms NAT and calls `ecs.run_task` (2254).
-6. **Phase 1 ends.** `_post_process` (`ecs_entrypoint.py:2324`) prunes the book's keys from `pending#content` (1988-2009), invokes the trigger with `{"source":"manual","phase":"2"}` (2346-2360), then sends the `phase-complete` event (2361).
+6. **Phase 1 ends.** `_post_process` (`ecs_entrypoint.py:2373`) prunes the book's keys from `pending#content` (1988-2009), invokes the trigger with `{"source":"manual","phase":"2"}` (2346-2360), then sends the `phase-complete` event (2361).
 7. **Parsed chapters.** Each `-parsed.json` fires the chapter-parsed topic. `_route_topics` (1455-1461) calls `_queue_parsed` (2442, writes `pending#parsed#<book>`) and `_launch_phase2_if_idle` (2501; it will not launch unscoped, 2519-2530).
 8. **Phase 2 ends.** `_post_process` (2350-2442) runs the provenance check, dedup detection (two attempts), `_phase3_gate_decision` (2265) and `_notify_dedup_gate` (2614). `auto_proceed` invokes the trigger for Phase 3 (2398-2413, serial branch). A block waits for the dedup review UI. If other books have parsed queues, the task also triggers Phase 2 for the next one (2420-2438).
 9. **Phase 3.** Started by the trigger, either from that invoke or from the `dedup-complete` topic that the review UI publishes (`dedup_ui_handler.py:1221-1227`; `trigger_handler.py:1464-1473` stops Phase 2 tasks and runs Phase 3 with no book). When it ends, `_post_process` (2444-2486) runs referential repair, the URL-review notification and the provenance gate, then starts the next queued book.
@@ -48,10 +48,10 @@ The module declares nine states plus `failed` and `needs-review` (`doc_lifecycle
 |---|---|---|
 | `held_unprocessed` | `trigger_handler._seed_docs` (`trigger_handler.py:1287-1311`) with `next_phase` `phase1`; `prestage_file` (`prestage.py:299-317`, not called in production) | READY. Dispatcher launches `next_phase` |
 | `running` | `dispatcher_handlers._claim_doc` (`dispatcher_handlers.py:51-72`): conditional update, sets `claimed_at` | A task has the doc. Not READY, not terminal |
-| `parsed` | `_advance_doc_lifecycle("1")` (`ecs_entrypoint.py:2030-2057`), `next_phase` `phase2` | READY for Phase 2 |
+| `parsed` | `_advance_doc_lifecycle("1")` (`ecs_entrypoint.py:2079-2106`), `next_phase` `phase2` | READY for Phase 2 |
 | `extracted` | `_advance_doc_lifecycle("2")`, `next_phase` `phase3` | READY for Phase 3 |
 | `done` | `_advance_doc_lifecycle("3")`, `next_phase` None | Terminal |
-| `needs-review` | `_offramp_doc_needs_review` (`ecs_entrypoint.py:2069-2084`); `prestage_file` for the `skip` track (`prestage.py:308`) | Terminal for the dispatcher. Nothing resumes it |
+| `needs-review` | `_offramp_doc_needs_review` (`ecs_entrypoint.py:2118-2133`); `prestage_file` for the `skip` track (`prestage.py:308`) | Terminal for the dispatcher. Nothing resumes it |
 | `expanding`, `routed`, `ocr`, `deduped`, `enriched`, `failed` | no code sets them | Declared only. `_READY` in the dispatcher contains `deduped` and `enriched` (`dispatcher_handlers.py:37`), while the module's `IN_FLIGHT` contains them too (`doc_lifecycle.py:37`) |
 
 `doc_lifecycle.is_dispatchable` and `list_dispatchable` (98-118) have no callers; the dispatcher uses its own `_READY` set and scan (`dispatcher_handlers.py:148-165`). `is_dispatchable` would treat `running` as dispatchable, because `running` is in neither `TERMINAL` nor `IN_FLIGHT`.
@@ -78,17 +78,17 @@ The dispatcher state machine is `EnumeratePending`, then `ClampPool` and `Create
 
 Checked with `trace_path` (inbound) and grep:
 
-- `_advance_doc_lifecycle`: only `_post_process`, at `ecs_entrypoint.py:2342` (phase 1), `2394` (phase 2) and `2460` (phase 3). The function returns without writing when `MULTI_DOC_ENABLED` is not `true` or `BOOK_NAME` is empty (2041-2046).
+- `_advance_doc_lifecycle`: only `_post_process`, at `ecs_entrypoint.py:2391` (phase 1), `2394` (phase 2) and `2460` (phase 3). The function returns without writing when `MULTI_DOC_ENABLED` is not `true` or `BOOK_NAME` is empty (2041-2046).
 - `_offramp_doc_needs_review`: only `_post_process`, at `2396` (Phase 2 gate blocked) and `2458` (Phase 3 provenance failed in `block` mode, `_phase_end_held`, 2251-2262).
 - `doc_lifecycle.upsert`: `trigger_handler._seed_docs` (1303) and `prestage_file`. `prestage_dir` and `prestage_file` have no production callers (only `scripts/load_test.py` imports `route_file`).
-- `doc_lifecycle.set_status`: `ecs_entrypoint.py:2057, 2081` only.
+- `doc_lifecycle.set_status`: `ecs_entrypoint.py:2106, 2081` only.
 
 ## 4. Which phase advances which state
 
 | Step | Serial mode | Multi-doc mode |
 |---|---|---|
 | Upload accepted | `pending#content` append | `pending#content` append, then `doc#` row `held_unprocessed` / `phase1` |
-| Phase 1 ends | trigger invoked for Phase 2; `pending#content` pruned | `doc#` `parsed` / `phase2`; the dispatcher loop picks it up. The serial invokes are skipped (`ecs_entrypoint.py:2337-2342`) |
+| Phase 1 ends | trigger invoked for Phase 2; `pending#content` pruned | `doc#` `parsed` / `phase2`; the dispatcher loop picks it up. The serial invokes are skipped (`ecs_entrypoint.py:2386-2391`) |
 | `-parsed.json` written | `pending#parsed#<book>` append, Phase 2 launched if idle | `pending#parsed#<book>` append, dispatcher started if none is running. `_seed_docs(s3_keys, "phase2")` (`trigger_handler.py:1458`) seeds nothing: it accepts only keys that start with `contentrepository/` (1296-1299) and chapter-parsed keys start with `output/content/` |
 | Phase 2 ends, gate passes | trigger invoked for Phase 3 | `doc#` `extracted` / `phase3` |
 | Phase 2 ends, gate blocks | wait for review UI, then `dedup-complete` topic | `doc#` `needs-review`; the `dedup-complete` topic still starts Phase 3 for the corpus (`trigger_handler.py:1464-1473`) |
@@ -124,7 +124,7 @@ Checked with `trace_path` (inbound) and grep:
 | OCR submit failure (`_submit_ocr`, 1271-1284) | The raw file is dropped from this intake and nothing re-drives it | `observe_error("ocr","submit_error")`. The claim `ocr#<book>` is released (1262) so a re-upload retries |
 | OCR claim with no job (`_claim_or_reclaim_ocr`, 1117-1128) | The claim is overwritten and the submit proceeds | anomaly alert `ocr-claim-without-job` |
 | Manifest write failure (`_manifest_retry`, 1807-1825) | Keys are not queued, chapters do not parse | `OBSERV manifest.keys_dropped` (error) |
-| Dedup or provenance gate (`ecs_entrypoint.py:2265-2277`) | Phase 3 is held | alert `WWII Pipeline: <dedup / provenance> review needed` with the review UI link (`_notify_dedup_gate`, 2614-2668) |
+| Dedup or provenance gate (`ecs_entrypoint.py:2314-2326`) | Phase 3 is held | alert `WWII Pipeline: <dedup / provenance> review needed` with the review UI link (`_notify_dedup_gate`, 2614-2668) |
 | Provenance gate after Phase 3 (`_phase_end_held`, 2251-2262) | In `block` mode the book is held and `doc#` goes to `needs-review` | alert `WWII Pipeline: provenance review needed (Phase 3)`; set `PROVENANCE_GATE=warn` to release |
 | Failed multi-doc task | `doc#` stays `running` | `dev-wwii-dispatcher-failed` alarm only if the whole execution fails (`events.yaml:540-545`); the `DocFailed` state swallows a per-doc failure (`dispatcher.yaml:316-322`) |
 
@@ -137,7 +137,7 @@ Checked with `trace_path` (inbound) and grep:
 
 ### Resolving a `doc#` off-ramp
 
-No code path moves a `needs-review` doc forward. `_offramp_doc_needs_review` says it "resumes via human_gate", but the `HumanGateFunction` Lambda is not referenced by the state machine and nothing sends its `resume` action (see LOCKS_AND_LEASES.md, `gate#`). After a Phase 2 gate block the review UI's `dedup-complete` message starts Phase 3 for the whole corpus with no book. That task has an empty `BOOK_NAME`, so `_advance_doc_lifecycle` returns early (`ecs_entrypoint.py:2043-2046`) and the `doc#` row stays `needs-review` after Phase 3. To close it by hand once the book is finished:
+No code path moves a `needs-review` doc forward. `_offramp_doc_needs_review` says it "resumes via human_gate", but the `HumanGateFunction` Lambda is not referenced by the state machine and nothing sends its `resume` action (see LOCKS_AND_LEASES.md, `gate#`). After a Phase 2 gate block the review UI's `dedup-complete` message starts Phase 3 for the whole corpus with no book. That task has an empty `BOOK_NAME`, so `_advance_doc_lifecycle` returns early (`ecs_entrypoint.py:2092-2095`) and the `doc#` row stays `needs-review` after Phase 3. To close it by hand once the book is finished:
 
 ```bash
 aws dynamodb update-item --table-name <env>-wwii-api-cache \

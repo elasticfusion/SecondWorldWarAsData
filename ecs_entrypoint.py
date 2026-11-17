@@ -11,7 +11,7 @@ import threading
 import time
 import uuid
 from pathlib import Path
-from typing import Optional, Union
+from typing import Dict, Optional, Union
 
 import boto3
 
@@ -68,6 +68,19 @@ _PHASE23_ENTITY_DIRS = (
     "bibliography",
     "narrative_notes",
 )
+# Shared across books, so a book-scoped Phase 3 downloads them in FULL (the per-book manifest cannot
+# list them): bibliography + supplemental (keyed bib_<hash>.json by the deterministic pass), maps
+# (URL-keyed; one foldout is referenced from many chapters and books: map_common) and narrative_notes
+# (relocated out of the shared bibliography). Every other Phase 3 dir is in the book manifest
+# (book_manifest.MANIFESTED_ENTITY_TYPES); tests pin that each dir is one or the other.
+_PHASE3_CROSS_BOOK_DIRS = frozenset(
+    {"bibliography", "supplemental", "maps", "narrative_notes"}
+)
+# Not downloaded in bulk for Phase 3: promoted map image binaries. Phase 3 reads an existing one only
+# to retry a map's undecided vision check (map_common.needs_vision_image); those few are fetched by
+# _download_pending_map_images. Downloading them all made every task GET the whole corpus's binaries
+# and re-stage them all for AV scan at the final sync.
+_PHASE3_DOWNLOAD_EXCLUDE = ("output/maps/files/",)
 # Paths used by _clear_title_cache_if_reprocess (module constants so tests can
 # redirect them to a temp dir without patching Path globally).
 _CONFIG_PATH = Path("/app/config.yaml")
@@ -1249,19 +1262,11 @@ def _get_book_entity_files(s3, book_name: str) -> list:
     logger.info(
         "No book manifest for %s, falling back to full index download", book_name
     )
+    from src.utils.book_manifest import MANIFESTED_ENTITY_TYPES
+
     referenced = set()
     paginator = s3.get_paginator("list_objects_v2")
-    for subdir in [
-        "people",
-        "people_groups",
-        "places",
-        "equipment",
-        "dates",
-        "weather",
-        "logistics",
-        "casualties",
-        "bibliography",
-    ]:
+    for subdir in MANIFESTED_ENTITY_TYPES:
         index_key = f"output/{subdir}/index.json"
         _download_s3_file(s3, index_key, optional=True)
         index_path = WORKDIR / index_key
@@ -1555,32 +1560,70 @@ def _download_phase3_from_s3() -> None:
     if book_name:
         logger.info("Scoped download for book: %s", book_name)
         referenced = _get_book_entity_files(s3, book_name)
-        # Cross-book, NOT per-book-manifested: bibliography + supplemental records are shared
-        # across books (written by the deterministic pass, keyed bib_<hash>.json), so the
-        # book-scoped manifest filter would drop ALL of them — leaving the Phase-3 resolver
-        # with zero input. Always pull these two prefixes in full.
-        cross_book = {"bibliography", "supplemental"}
+        # Shared dirs are not in the per-book manifest: the scoped filter would drop all of them
+        # (a single-book run once got no bibliography, then no maps/images: PHASE3_MAP gap 27).
+        per_dir: Dict[str, int] = {}
         for subdir in entity_dirs:
             (WORKDIR / "output" / subdir).mkdir(parents=True, exist_ok=True)
             _download_s3_file(s3, f"output/{subdir}/index.json", optional=True)
-            if subdir in cross_book:
-                d, _ = _download_s3_prefix_skip_existing(s3, f"output/{subdir}/")
-                total += d
+            if subdir in _PHASE3_CROSS_BOOK_DIRS:
+                per_dir[subdir], _ = _download_s3_prefix_skip_existing(
+                    s3, f"output/{subdir}/", _PHASE3_DOWNLOAD_EXCLUDE
+                )
                 continue
             subdir_files = [f for f in referenced if f.startswith(f"output/{subdir}/")]
             for key in subdir_files:
                 _download_s3_file(s3, key)
-            total += len(subdir_files)
+            per_dir[subdir] = len(subdir_files)
+        total = sum(per_dir.values())
         logger.info("Downloaded %d entity files (scoped to %s)", total, book_name)
+        logger.info(
+            "OBSERV phase3.scoped_download book=%s %s",
+            book_name,
+            " ".join(f"{d}={n}" for d, n in per_dir.items()),
+        )
+        _download_pending_map_images(s3)
         _download_phase3_provenance_inputs(s3, book_name)
         _observe_bibliography_download_coverage(s3, barrier_status)
     else:
         for subdir in entity_dirs:
-            d, s = _download_s3_prefix_skip_existing(s3, f"output/{subdir}/")
+            d, s = _download_s3_prefix_skip_existing(
+                s3, f"output/{subdir}/", _PHASE3_DOWNLOAD_EXCLUDE
+            )
             total += d
         logger.info("Downloaded %d entity files for Phase 3 (full)", total)
+        _download_pending_map_images(s3)
         _download_phase3_provenance_inputs(s3, "")
         _observe_bibliography_download_coverage(s3, barrier_status)
+
+
+def _download_pending_map_images(s3) -> int:
+    """Download the image binary of each local Map record that still needs its tier-3 vision check
+    (``map_common.needs_vision_image``): the only existing map binaries Phase 3 reads. Returns the
+    number downloaded. A binary missing from S3 is logged (optional) and the vision check then logs
+    ``maps.vision_skipped``, as before."""
+    from src.extraction.map_common import needs_vision_image
+
+    pending = downloaded = 0
+    for f in sorted((WORKDIR / "output" / "maps").glob("*.json")):
+        try:
+            rec = json.loads(f.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue  # the index or an unreadable record: nothing to fetch
+        lip = rec.get("local_image_path") if isinstance(rec, dict) else None
+        if not lip or not needs_vision_image(rec):
+            continue
+        pending += 1
+        key = f"output/maps/files/{Path(str(lip)).name}"
+        if not (WORKDIR / key).exists():
+            _download_s3_file(s3, key, optional=True)
+            downloaded += int((WORKDIR / key).exists())
+    logger.info(
+        "OBSERV phase3.map_images_for_vision pending=%d downloaded=%d status=ok",
+        pending,
+        downloaded,
+    )
+    return downloaded
 
 
 def _observe_bibliography_download_coverage(
@@ -1915,8 +1958,11 @@ def _download_s3_prefix(s3, prefix: str) -> int:
     return count
 
 
-def _download_s3_prefix_skip_existing(s3, prefix: str) -> tuple:
-    """Download files under an S3 prefix, skipping those already local.
+def _download_s3_prefix_skip_existing(
+    s3, prefix: str, exclude_prefixes: "tuple[str, ...]" = ()
+) -> tuple:
+    """Download files under an S3 prefix, skipping those already local and keys under any of
+    ``exclude_prefixes`` (counted as skipped).
 
     Returns (downloaded, skipped) counts.
     """
@@ -1926,6 +1972,9 @@ def _download_s3_prefix_skip_existing(s3, prefix: str) -> tuple:
         Bucket=BUCKET, Prefix=prefix
     ):
         for obj in page.get("Contents", []):
+            if obj["Key"].startswith(exclude_prefixes):
+                skipped += 1
+                continue
             local = WORKDIR / obj["Key"]
             if local.exists():
                 skipped += 1
@@ -3434,9 +3483,11 @@ def _final_sync(phase_script: str = ""):
         entity_dirs = [*_PHASE23_ENTITY_DIRS, "metrics"]
         total = 0
         all_uploaded = []
-        # Phase 3 modifies existing files — don't skip any; Phase 2 skips only the downloaded files
-        # it did NOT change (a rehydrated weather/index.json it updated must be uploaded)
-        skip = _unchanged_downloads() if "phase2" in phase_script else set()
+        # Skip only the downloaded files the task did NOT change (same mtime as at download): a file
+        # it modified, or created, is always uploaded. Phase 3 too: re-uploading every unchanged
+        # downloaded record (shared bibliography/maps for every book) cost a PUT each and widened
+        # the window in which a concurrent task's update to a shared record is overwritten.
+        skip = _unchanged_downloads()
         for subdir in entity_dirs:
             d = WORKDIR / "output" / subdir
             if not d.exists():

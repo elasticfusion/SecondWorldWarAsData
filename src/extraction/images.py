@@ -744,6 +744,28 @@ def extract_images(
     return extracted
 
 
+def register_image(book: str, filename: str) -> None:
+    """Record an image file in the book manifest: a book-scoped Phase 3 downloads ONLY manifested
+    images, and it must see pending_vision images to run the deferred map-vision check. The ONE
+    image registrar (every image writer calls it). Never raises: the record is already saved.
+    """
+    from src.extraction.batch_parallel import _register_entity
+
+    try:
+        if not book:
+            raise ValueError("no book")
+        _register_entity(book, "images", filename)
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - manifest is an index; the record is already saved
+        logger.warning(
+            "OBSERV images.manifest_register_failed image=%s err=%s status=warn — a "
+            "book-scoped Phase 3 will not see this image; re-run Phase 2 for the book",
+            filename,
+            type(e).__name__,
+        )
+
+
 def _extract_one_image(
     img,
     event_data,
@@ -784,21 +806,7 @@ def _extract_one_image(
 
     write_json_with_lock(out_file, record, entity="images")
     index[record["ImageID"]] = out_file.name
-    # Book manifest: a book-scoped Phase 3 downloads ONLY manifested files, and Phase 3 must see
-    # pending_vision images to run the deferred map-vision check. Shared registrar (DRY).
-    from src.extraction.batch_parallel import _register_entity
-
-    try:
-        _register_entity(book, "images", out_file.name)
-    except (
-        Exception
-    ) as e:  # noqa: BLE001 - manifest is an index; the record is already saved
-        logger.warning(
-            "OBSERV images.manifest_register_failed image=%s err=%s status=warn — a "
-            "book-scoped Phase 3 will not see this image; re-run Phase 2 for the book",
-            out_file.name,
-            type(e).__name__,
-        )
+    register_image(book, out_file.name)
     if url:
         existing_urls.add(url)
     logger.info(

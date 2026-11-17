@@ -385,6 +385,28 @@ def classify_image_tier(name: str, url: str) -> str:
     return {"map": "map", "image": "not_map"}.get(kind, "ambiguous")
 
 
+def _record_tier(record: Dict[str, Any]) -> str:
+    """The deterministic tier of a Map record (``classify_image_tier`` on its name and URL)."""
+    return classify_image_tier(
+        str(
+            record.get("common_name")
+            or record.get("map_title")
+            or record.get("figure_number")
+            or ""
+        ),
+        str(record.get("source_url") or ""),
+    )
+
+
+def needs_vision_image(record: Dict[str, Any]) -> bool:
+    """True when ``maybe_vision_classify_map`` still owes this map its tier-3 vision check (no
+    verdict yet, and its name and URL are ambiguous): the ONLY case in which an existing map's
+    image file is read. Phase 3 downloads just these binaries (ecs_entrypoint)."""
+    return (
+        not record.get("map_vision_checked_at") and _record_tier(record) == "ambiguous"
+    )
+
+
 def maybe_vision_classify_map(
     record: Dict[str, Any], image_bytes_loader, grok_client
 ) -> None:
@@ -396,15 +418,7 @@ def maybe_vision_classify_map(
 
     if record.get("map_vision_checked_at"):
         return  # already classified -> never re-submit (don't-resubmit guarantee)
-    tier = classify_image_tier(
-        str(
-            record.get("common_name")
-            or record.get("map_title")
-            or record.get("figure_number")
-            or ""
-        ),
-        str(record.get("source_url") or ""),
-    )
+    tier = _record_tier(record)
     if tier == "map":
         record["is_map"] = True
         logger.info(

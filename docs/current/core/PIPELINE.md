@@ -239,7 +239,7 @@ In AWS mode, each phase downloads only what it needs:
 
 **Phase 2:** S3 scan scoped by `BOOK_NAME` — compares `-parsed.json` files against `-event.json` files in S3. Only downloads parsed files that don't have a corresponding event file. Also downloads entity directories for cross-referencing.
 
-**Phase 3:** Downloads the entity files of the book (`BOOK_NAME`) listed in the book manifest (`book_manifest#{book}#{entity_type}`, `ecs_entrypoint._get_book_entity_files`), plus the shared `bibliography` and `supplemental` directories in full; with no `BOOK_NAME` it downloads every entity directory (`_download_phase3_from_s3`). It first waits for Phase 2's bibliography reconcile barrier.
+**Phase 3:** Downloads the entity files of the book (`BOOK_NAME`) listed in the book manifest (`book_manifest#{book}#{entity_type}`, `ecs_entrypoint._get_book_entity_files`), plus the shared `bibliography`, `supplemental`, `maps` and `narrative_notes` directories in full (not the map image binaries); with no `BOOK_NAME` it downloads every entity directory (`_download_phase3_from_s3`). Details: [PHASE3_MAP.md](PHASE3_MAP.md#what-ep-_download_inputs-does). It first waits for Phase 2's bibliography reconcile barrier.
 
 **Background sync mtime tracking:** S3 uploads track file modification times locally. Only files with changed mtime are uploaded, avoiding redundant S3 PutObject calls during final sync.
 
@@ -356,7 +356,7 @@ All entities also record `last_enrichment_search` (YYYY-MM-DD) for periodic re-s
 
 **Book Entity Manifest (AWS):**
 
-Phase 3 uses a book entity manifest (`book_manifest#{book}#{entity_type}` in DynamoDB) to scope S3 downloads. Instead of downloading all entities across all books, it downloads only entities relevant to the current book. The manifest is populated during Phase 2 extraction.
+Phase 3 uses a book entity manifest (`book_manifest#{book}#{entity_type}` in DynamoDB) to scope S3 downloads. Instead of downloading all entities across all books, it downloads only entities relevant to the current book; directories shared across books are downloaded in full ([PHASE3_MAP.md](PHASE3_MAP.md#what-ep-_download_inputs-does)). The manifest is populated during Phase 2 extraction.
 
 **source_url propagation:** When enrichment discovers a source URL for a bibliography entry, it is propagated into the corresponding `notes-event` files that reference that bibliography entry.
 

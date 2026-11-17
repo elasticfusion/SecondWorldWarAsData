@@ -3,9 +3,9 @@
 **Status (checked 2026-11-17):** decisions D1 to D4 made 2026-11-06 (see §5). **PR 1 is DONE:** the 7 dedup modules live in `src/dedup/`
 (`find_duplicate_{people,places_v2,groups,equipment}`, `find_related_groups`, `cleanup_indexes`, `reclassify_military_units`),
 `scripts/find_duplicate_*.py` etc. are CLI wrappers, and `ecs_entrypoint.py` imports `src.dedup.*` and runs the detectors as
-`src.dedup.<module>` (list near `ecs_entrypoint.py:3242`). **PR 2, 3 and 4 are NOT done:** `validate_phase2.py`, `validate_phase3.py`,
+`src.dedup.<module>` (list near `ecs_entrypoint.py:3291`). **PR 2, 3 and 4 are NOT done:** `validate_phase2.py`, `validate_phase3.py`,
 `complete_metadata_with_grok.py` and `view_metrics.py` are still in `scripts/`; `phase2_extract.py:270,1392`, `phase3_enrich_data.py:1075` and
-`ecs_entrypoint.py:2315` still import them from `scripts` (`ecs_entrypoint.py:2192,2243,2311` import `scripts.validate_provenance`); there is no `src/validation/`, and no AST check forbids `scripts` imports.
+`ecs_entrypoint.py:2364` still import them from `scripts` (`ecs_entrypoint.py:2241,2243,2311` import `scripts.validate_provenance`); there is no `src/validation/`, and no AST check forbids `scripts` imports.
 `scripts.validate_provenance` (not listed in §1.1) is the fifth pipeline import from `scripts/`. `scripts/update_lambdas.sh` no longer copies any `scripts/` file into the Lambda zip (it copies `src/`, `lambda_handlers/`, `prompts/`, `config.yaml`), but `cloudformation/compute.yaml:984` still sets `Handler: scripts.view_metrics.handler`, so that Lambda's handler module is not in the zip (not checked live). Section 1 below describes the state on 2026-11-06 (before PR 1); line numbers are from then.
 **Rule this plan establishes:** `scripts/` may import `src/`; `src/`, `lambda_handlers/`, the phase
 scripts and `ecs_entrypoint.py` must never import `scripts/`. Anything the pipeline runs lives in `src/`
@@ -24,11 +24,11 @@ the graph does not record imports made inside a function.
 
 | Consumer | Imports from `scripts/` |
 |---|---|
-| `ecs_entrypoint.py:1963` | `validate_phase3.run` |
-| `ecs_entrypoint.py:2373` | `reclassify_military_units.reclassify` |
-| `ecs_entrypoint.py:2383` | `cleanup_indexes.cleanup_index` |
-| `ecs_entrypoint.py:2694` | `find_duplicate_groups._group_nationality_conflict` |
-| `ecs_entrypoint.py:2773-2786` | runs `find_duplicate_{people,places_v2,groups,equipment}.py` as subprocesses |
+| `ecs_entrypoint.py:2012` | `validate_phase3.run` |
+| `ecs_entrypoint.py:2422` | `reclassify_military_units.reclassify` |
+| `ecs_entrypoint.py:2432` | `cleanup_indexes.cleanup_index` |
+| `ecs_entrypoint.py:2743` | `find_duplicate_groups._group_nationality_conflict` |
+| `ecs_entrypoint.py:2822-2835` | runs `find_duplicate_{people,places_v2,groups,equipment}.py` as subprocesses |
 | `phase2_extract.py:21-22` | `find_duplicate_people.generate_duplicate_report`, `find_related_groups.generate_related_groups_report` |
 | `phase2_extract.py:199` | `complete_metadata_with_grok.{is_metadata_incomplete, extract_metadata_with_grok}` |
 | `phase2_extract.py:1207` | `validate_phase2.run` |
@@ -99,7 +99,7 @@ no new AWS or Grok cost (this is a refactor).
 1. `git mv` the 7 dedup modules (§2). Leave CLI wrappers in `scripts/`.
 2. Update imports:
    - `phase2_extract.py:21-22`
-   - `ecs_entrypoint.py:2373, 2383, 2694`
+   - `ecs_entrypoint.py:2422, 2383, 2694`
    - `src/dedup/resolved_set.py:37, 116`
    - `src/dedup/surname_report.py:54`
    - `find_duplicate_groups.py:61, 425`, which import `find_duplicate_people` within the family
@@ -127,7 +127,7 @@ no new AWS or Grok cost (this is a refactor).
 ### PR 2: Validators, metadata completion, metrics Lambda
 
 1. `validate_phase2.py` and `validate_phase3.py` move to `src/validation/`. Update:
-   - `phase2_extract.py:1207`, `ecs_entrypoint.py:1963`, `phase3_enrich_data.py:971`
+   - `phase2_extract.py:1207`, `ecs_entrypoint.py:2012`, `phase3_enrich_data.py:971`
    - `validate_phase3.py:41`, removing its `# type: ignore[import-not-found]`
    - tests: `test_validate_phase3`, `test_phase3_med_fixes`, `test_casualties_drop_and_orphan`, `test_validate_phase2`
    - Remove the unused `entity_version` import (vulture). Handle the 2 complexity-C functions in

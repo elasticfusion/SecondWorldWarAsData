@@ -15,7 +15,7 @@ HIGH
   the slug rule (an unnamed upload must go to `needs-review/unnamed-upload/`). Fix: route `.md`/`.txt`
   keys with no slug through `_unnamed_upload`, and never launch on an all-unsafe set.
 - **Phase 1 resets the dedup review status for the whole corpus.** `_prepare_phase1`
-  (`ecs_entrypoint.py:1079-1090`) writes `{"complete": false}` to `dedup/review_status.json` on every
+  (`ecs_entrypoint.py:1092-1103`) writes `{"complete": false}` to `dedup/review_status.json` on every
   Phase 1 task, so parsing one new book discards a pending or finished review of the others.
 - **Monitoring that can never fire.** The `{env}-wwii-pipeline` dashboard, the `phase2-duration`
   alarm and the `dlq-messages` alarm (`cloudformation/events.yaml`) watch Lambdas and queues no
