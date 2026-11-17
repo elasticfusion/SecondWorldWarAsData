@@ -11,6 +11,42 @@ flaws found are recorded here (no code is changed during the review); a major Ph
 expected afterwards. Each entry: what is wrong, where (file:line at `main` cbd94d83), effect, how it
 was verified. *refactor* = only a redesign fixes it. `EP` = `ecs_entrypoint.py`.
 
+### Step: EP run_phase preflight (PHASE3_MAP §1 "ECS wrapper")
+
+Order (`EP:962-1003`, `main` 6dafabcc): NAT lease -> `_ensure_nat_if_needed` (nat-manager, up to 6
+tries, abort if never ready) -> `_clear_title_cache_if_reprocess` -> `_load_secrets` (Grok key, NARA key)
+-> `_preflight_credit_check` (1-token request; 402/403-credit or 401 aborts) and
+`grok_models.preflight` (every configured model listed and served as itself; a missing one aborts) ->
+`_preflight_notification_subscriptions` -> `_preflight_runtime_tables` -> `_patch_config` ->
+`_start_openserp_if_needed`.
+
+- **MED - three of the four preflight aborts send no alert.** Credits depleted, invalid API key
+  (`EP:820-829`) and NAT never ready (`EP:715-729`) are a `logger.error` and `sys.exit(1)`. No
+  `observe`/`publish_alert`, no CloudWatch metric filter matches them (the filters in
+  `cloudformation/events.yaml` are "HOLDING work", "SPEND ALERT", "mentions NOT merged",
+  "BatchSubmissionError", "Failed to acquire NAT lease"), and `_notify_failure` is only called when the
+  phase subprocess fails (`EP:1062`). The ECS task-failure rule (`cloudformation/compute.yaml:735`) only
+  sends the trigger Lambda a `check_locks`, which clears the lock. A model that is gone is the only
+  preflight failure that alerts (`grok_models.model_unavailable` -> `publish_alert`). Fix (DRY): route
+  the other three through the same alert path (`phase2-complete`, both channels).
+- **LOW - "preflight unverified" proceeds even when Grok is unreachable.** Any exception other than the
+  ones above is `OBSERV preflight.unverified status=warn` and the phase goes on (`EP:844-852`). Live: Phase 2
+  logged it with a connection error to `api.x.ai` on 2026-11-12 and 2026-11-14, right after NAT reported
+  ready, so the phase started with no egress. Owner decision: retry the probe after a short wait and
+  abort with an alert if it still fails.
+- **LOW - OpenSERP start can hold the task up to 12 minutes before any work.** `_start_openserp_if_needed`
+  polls 72 x 10 s for the task IP (`EP:774`) before `_download_inputs`; NAT and the Fargate task are
+  billed meanwhile, and OpenSERP is not needed until step 6. Scale it up here and discover the IP just
+  before the OpenSERP group.
+- **LOW - two copies of the 1-token probe.** `_preflight_credit_check` posts its own request
+  (`EP:808`) and `grok_models.preflight` posts the same probe per model (`src/utils/grok_models.py:199`).
+  Fold the credit/key checks into `grok_models.preflight` (DRY).
+- **LOW - Phase 3 clears a cache it never uses.** `_clear_title_cache_if_reprocess` runs for Phase 3 but
+  only clears the Phase 2 per-title event cache (`cache/api/books/<title>/events/`). Harmless; skip it
+  for Phase 3 or say why.
+- Not checked at preflight: the NARA key (warning only when missing), OpenSERP (see "was gap 1"),
+  Nominatim. Owner decision whether any should block.
+
 ### Step: EP _download_inputs (PHASE3_MAP §1 "What EP _download_inputs does")
 
 - **LOW - remove the dead DynamoDB shortcut (owner request).** `_materialize_from_dynamo()`
