@@ -44,6 +44,19 @@ was verified. *refactor* = only a redesign fixes it. `EP` = `ecs_entrypoint.py`.
   reconcile published (`_publish_reconcile_barrier`, "so it is comparable with Phase 3's download
   coverage"), but `_observe_bibliography_download_coverage` (`EP:1629`) compares the S3 listing with
   the local count and never reads it; it is only logged (`EP:1460-1466`).
+- **MED - records the merge folds into another stay in S3 as duplicates.** The reconcile's near-title
+  pass merges whole canonical records (`bib_<a>.json` into `bib_<b>.json`) and deletes the merged-away
+  file locally (`_persist_merged_bib`, `src/extraction/bibliography.py:1039`, unlinks every file of the
+  group except the one kept, line 1057). The S3 cleanup `_delete_orphaned_bibliography_shards` (`EP:3119`) only deletes names
+  containing `__` (shards, `EP:3131`), so a merged-away canonical record is never removed from S3. Found
+  2026-11-17: S3 holds 2,035 records; the 2026-11-16 reconcile kept 2,029 (barrier `canonical_count`
+  2,030 includes `review_queue.json`); re-running `reconcile_bibliography_dir` offline on a copy of the
+  S3 set folds 8 more, e.g. "V Corps G-3 Journal", "Seventh Army, KTB Anlagen 1.I.-30.VI.44", "AEAf
+  Overall Air Plan, 15 Apr 44" (list: `tmp/phase3-review/bib-reconcile-dryrun` vs
+  `tmp/phase3-review/bibliography`, not committed). Effect: Phase 3 resolves each duplicate separately
+  (paid NARA/OpenSERP/Grok lookups) and the site would show a citation twice, one copy without the
+  merged mentions. Fix: delete every S3 key in `output/bibliography/` whose basename the reconciled
+  local set no longer has (shards and merged-away records), and repair the 8 now.
 - ***refactor* - the barrier exists only because bibliography is written as per-task shards that a
   later corpus-wide pass must merge.** Merging at write time (conditional writes on the canonical
   `bib_<hash>.json`) would remove the reconcile pass, the barrier, the run marker and the wait.
