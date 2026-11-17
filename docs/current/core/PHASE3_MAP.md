@@ -88,11 +88,66 @@ none, `_load_parsed_docs` logs `OBSERV phase3.no_parsed_docs` once and each step
    `_patch_config`.
 2. `_ensure_nat_if_needed` (`EP:610`): NAT for Phase 2 and 3, waits for the nat-manager to report ready.
 3. `_start_openserp_if_needed` (`EP:719`, Phase 3 only).
-4. `_download_inputs`: `_download_phase3_from_s3` (`EP:1543`) waits on the Phase 2 reconcile barrier,
-   then downloads. With `BOOK_NAME` set it downloads only that book's referenced entity files plus the
-   whole `bibliography/` and `supplemental/` prefixes. Without it, everything.
+4. `_download_inputs` (`EP:1293`, called at `EP:992`): copies the entity records Phase 3 enriches from
+   S3 to the task's local disk. See [What `EP _download_inputs` does](#what-ep-_download_inputs-does).
 5. `_stamp_schema_versions()` then `_reset_openserp_searched()` (`EP:996`).
 6. Background S3 sync every `SYNC_INTERVAL` (120 s) while `phase3_enrich_data.py` runs as a subprocess.
+
+#### What `EP _download_inputs` does
+
+Phase 3 runs `phase3_enrich_data.py` against a local `output/` tree, not against S3 directly. Before
+it starts, `_download_inputs` fills that tree from the S3 bucket, and the background sync and final
+sync copy the enriched files back afterwards. One function serves every phase: it picks the download
+by the phase script name (`EP:1293-1310`). For Phase 3 the steps are:
+
+1. **DynamoDB shortcut (does nothing).** It calls `_materialize_from_dynamo()` unless
+   `processing.force_reprocess` is true. That function is a deprecated stub that always returns
+   False (`EP:1285-1290`): S3 is the only entity store, so the S3 download below always runs.
+2. **Wait for the bibliography reconcile barrier.** `_download_phase3_from_s3` (`EP:1543`) first
+   calls `_wait_for_reconcile_barrier` (`EP:1402`). The dedup step's full-corpus bibliography
+   reconcile (`_reconcile_bibliography_full_corpus`, `EP:2834`) collapses the per-task bibliography
+   shards and, when done, publishes `manifests/reconcile_complete/_all.json`. Phase 3 polls every 5 s
+   for that file (or `<book>.json`) for up to `RECONCILE_BARRIER_WAIT_SECS` (default 300 s; 0 turns
+   the wait off). A barrier counts as fresh when its `run_id` matches the latest reconcile run marker
+   (`manifests/reconcile_complete/_run.json`) and it completed after that run started, so a reconcile
+   finished by an earlier task is accepted at once. When the barrier has no valid run id, or the
+   marker is missing or unreadable, it must have completed no earlier than 30 s before this task
+   started (`_judge_barrier`, `EP:2967`).
+   On timeout Phase 3 continues anyway (fail-open) and logs `OBSERV reconcile.barrier_timeout...`;
+   the `_incomplete` variant means batches for the book are still queued, so late bibliography
+   records will be missing from this run.
+3. **Download the entity records.** The directories are `_PHASE23_ENTITY_DIRS` (`EP:56-70`): people,
+   people_groups, places, dates, equipment, weather, logistics, casualties, maps, images,
+   supplemental, bibliography and narrative_notes.
+   - **`BOOK_NAME` set (one book):** it gets the book's file list from `_get_book_entity_files`
+     (`EP:1228`), which reads the per-book `book_manifest#<book>#<entity>` rows in DynamoDB
+     (`BookManifest.get_all_files`, `src/utils/book_manifest.py:39-58`). It downloads each
+     directory's `index.json` and only the listed files. `bibliography/` and `supplemental/` are
+     downloaded in full, because their records are shared across books. The manifest covers 9 types
+     (people, people_groups, places, dates, equipment, weather, logistics, casualties, bibliography),
+     so the maps, images and narrative_notes record files are NOT downloaded, only their `index.json`
+     (gap 27). If the book has no manifest rows, or the DynamoDB lookup fails, the fallback
+     (`EP:1248-1280`) reads the `index.json` of those same 9 directories and takes every file they name,
+     for all books, plus every file under `bibliography/`.
+   - **`BOOK_NAME` empty (all books):** it downloads every directory in full. Files already on local
+     disk are skipped (`_download_s3_prefix_skip_existing`, `EP:1918`). This is the case when the
+     dedup review starts Phase 3, because that launch carries no book (see
+     [DEDUP_REVIEW_GATE.md](DEDUP_REVIEW_GATE.md) §5).
+4. **Download the content tree for provenance.** `_download_phase3_provenance_inputs` (`EP:1505`)
+   syncs `output/content/<book>/` (or all of `output/content/` when no book is set). That tree holds
+   the event files, the parsed documents and the source-section records. Without it the
+   `event_provenance_stamp` step finds no source sections, and the in-document map, image-to-person
+   and link-review steps have no parsed documents to read. A failure here is logged as a warning and
+   Phase 3 continues.
+5. **Check the bibliography arrived.** `_observe_bibliography_download_coverage` (`EP:1586`) counts
+   bibliography records in S3 and on local disk and logs
+   `OBSERV phase3.bib_download s3=<n> local=<n> status=ok|SHORTFALL barrier=<status>`, where
+   `<status>` is the barrier outcome: `seen`, `timeout`, `timeout_incomplete`, `disabled` or `unknown`.
+   A `SHORTFALL` means the bibliography resolver will run on a partial set; the `barrier` value says
+   whether the reconcile wait timed out.
+
+It does not read `manifest#phase2` (only Phase 2 does) and it does not download `external_maps/`, so
+the external-maps step works from what is on local disk.
 
 On a non-zero exit (`EP:1040-1056`): failure notification, final sync, NAT lease released. The Phase 3
 lock is not removed (`if "phase3" not in phase_script`), and OpenSERP is not scaled down. The lock
@@ -615,3 +670,14 @@ a field wrong, **Low** is cosmetic or dead code. None is fixed here.
 
 - `search_queries/*.yaml` format and the query-sharpening rules (`_person_query_terms`, `_equipment_query_terms`)
   are described only here and in code.
+27. **(Medium, added 2026-11-17) A single-book Phase 3 downloads no map, image or narrative-note
+    records.** With `BOOK_NAME` set, `_download_phase3_from_s3` takes each directory's file list from the
+    book manifest (or its index fallback), and both cover only 9 types (`src/utils/book_manifest.py:39-58`,
+    `EP:1253-1263`); maps, images and narrative_notes get only their `index.json`. The image and map steps
+    (`image_map_vision`, `image_person_link`, `image_place_link`, `in_doc_map_links`) then run without the
+    local records. `image_map_vision` globs `output/images/*.json` (`image_map_vision.py:320`), so it
+    finds no pending images to decide. A map already in S3 is found through `maps/index.json` (which is
+    downloaded), but reading its record fails, which logs `OBSERV maps.shared_read_failed` and drops this
+    chapter's reference to the map (`map_common._append_shared_map`, `map_common.py:155-180`). An unscoped run (the dedup-review launch, which carries no book) downloads
+    every directory and is not affected. Impact on a real single-book run not measured. Fix: add the three
+    types to the manifest's list, or download those prefixes in full like `bibliography/`.
