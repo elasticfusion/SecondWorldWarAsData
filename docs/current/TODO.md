@@ -296,6 +296,45 @@ Findings:
   that Phase 2 attaches to people, groups and equipment are web URLs; the 2026-11-17 decision says
   every URL find goes to review. Decide whether those count.
 
+### Wikipedia / Grokipedia images on people and units (owner question 2026-11-17)
+
+Owner rule: Wikipedia and Grokipedia images are trusted as a rule (no URL-review queue). Open
+question: what happens when the image is not the person, or shows the unit in another war. Verified
+in code and on live S3 data (`output/people/`, 531 records; `output/people_groups/`, 1,116 records,
+synced to `tmp/phase3-review/imgcheck/`, not committed):
+- Only the article's lead image is taken (`prop=pageimages`), never images from the article body.
+  Grokipedia supplies no images (`src/enrichment/grokipedia.py`).
+- Nothing checks the image. Units: `_add_wikipedia_image` (`src/enrichment/groups_wikipedia.py:242`)
+  inserts the lead image as `images[0]`. The only gate is that the article text mentions WWII
+  (`_in_wwii`, `:56`); the image itself is never judged. Equipment is the exception: Phase 3
+  `equipment_images` confirms each image with Grok vision (pending/verified/rejected, attempt cap,
+  needs_review).
+
+Findings:
+- **HIGH - unit images from the wrong era or the wrong subject are on live records.** Of 52 unit
+  images, examples: "IX Bomber Command" -> `KC-135A_refuels_B-52D_during_Vietnam_War.jpg` (the lookup
+  landed on the 19th Air Division article); "Tank Destroyer" -> an Italian Centauro at exercise
+  "Scorpion Legacy 2025"; "Ninth Air Force" -> `Emblem (Cold War).png`; "Germans" -> a Reichstag panorama;
+  "Rundstedt" (a person extracted as a unit) -> his portrait. Fix (DRY): generalize
+  `src/enrichment/equipment_images.py` into one entity-image verifier (same states, attempt cap,
+  needs_review and alert) used for equipment, units and people, with the prompt per entity type
+  (unit: insignia or the unit in 1939-1945; person: a photo of this person). Cost control first: a
+  deterministic pre-check on the Commons file metadata already fetched for the license
+  (`_wikipedia_common.fetch_commons_license`, `extmetadata`: `DateTimeOriginal`, file title words such
+  as "Vietnam", "Korea", "Cold War", a year after 1945), and vision only for what it cannot decide.
+  Owner decision: vision on every unit/person image, or only on the ones the pre-check flags.
+- **HIGH - a person's Wikipedia portrait never reaches the person JSON.** `_store_wikipedia_image`
+  (`src/extraction/enrich_biographies.py:450`) saves the photo under `person_photos/` (69 files in S3)
+  and an in-memory cache; the only reader, `search_wikipedia` (`:686`), assigns it to an unused
+  variable (`grok_info`). No live person record has `images` or a portrait link. When this is fixed, the
+  same verifier applies: a lead image can be a signature, a grave, a ship or a map, and a non-person
+  image must not be shown as the portrait.
+- **MED - the article match itself can be wrong.** "IX Bomber Command" matched the 19th Air Division
+  article and still passed `_in_wwii` because that article mentions WWII. A redirect to a different unit
+  should be detected (requested title vs resolved title) and the match sent to review.
+- **LOW - a person extracted as a unit.** "Rundstedt" is a `people_groups` record; belongs with the
+  Phase 2 entity-type checks.
+
 ### Cross-cutting: every URL a Phase 3 step finds goes to human review (owner 2026-11-17)
 
 - **HIGH *refactor* - DECISION: the URL-review queue applies to every find that has a URL, not only
