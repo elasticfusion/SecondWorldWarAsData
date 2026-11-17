@@ -2,13 +2,13 @@
 
 How to customize the AI extraction prompts used by the pipeline.
 
-**Last Updated:** 2026-06-15
+**Last Updated:** 2026-11-17 (checked against main 0dac86fa)
 
 ---
 
 ## Overview
 
-All LLM prompts are externalized to YAML files. There are NO inline prompts in Python code — if a YAML file is missing or malformed, the pipeline fails at build time (deploy_all.sh validates) or at runtime (hard error, no silent fallback).
+LLM prompts are externalized to YAML files. A few Phase 3 helpers still keep short inline prompt text (see [Prompt Management](core/PROMPT_MANAGEMENT.md#known-issues)); new prompts belong in `prompts/`. If a YAML file is missing, `load_prompt` raises `FileNotFoundError` (no silent fallback). `scripts/deploy_all.sh` checks at build time that every required prompt file exists, has a `prompt_template`, and has a `schema` that parses as JSON.
 
 **Prompt files:** `prompts/*.yaml` (34 files; full catalog with invoking code in [PROMPT_REFERENCE.md](PROMPT_REFERENCE.md))  
 **Search query files:** `search_queries/*.yaml` (8 files: bibliography, equipment, events, maps, nara, people, people_groups, places)
@@ -29,6 +29,9 @@ All LLM prompts are externalized to YAML files. There are NO inline prompts in P
 | `book_metadata.yaml` | Phase 0: book metadata with evidence quotes |
 | `language_detect.yaml`, `translation.yaml` | Phase 0: language detection and translation to English |
 | `weather_batch.yaml` | Weather extraction (batched; the live weather prompt) |
+| `source_section.yaml` | Operation/section anchor per event |
+| `date_summary.yaml` | Summary of what a date is about, from its mentions |
+| `chart_vision.yaml` | Read the commands/units a chart image depicts |
 | `casualties.yaml` | Personnel casualty data |
 | `logistics.yaml` | Supply chain issues |
 | `supplemental.yaml` | Bibliography/citation extraction |
@@ -56,7 +59,7 @@ All LLM prompts are externalized to YAML files. There are NO inline prompts in P
 
 | File | Used by |
 |------|---------|
-| `search_queries/people.yaml` | OpenSERP portrait/academic searches |
+| `search_queries/people.yaml` | OpenSERP portrait and web-result searches (its `academic_sources` queries are unused: `search_academic_sources` has no caller) |
 | `search_queries/equipment.yaml` | Equipment image/wiki searches |
 | `search_queries/events.yaml` | Primary source searches |
 | `search_queries/bibliography.yaml` | Gutenberg/Archive.org searches |
@@ -89,7 +92,7 @@ aws s3 cp prompts/people.yaml s3://dev-wwii-data-pipeline/prompts/people.yaml --
 # The next ECS task will use the S3 version automatically
 ```
 
-The prompt loader checks S3 first, then falls back to the local file in the container.
+The prompt loader checks S3 first, then falls back to the local file in the container. The S3 read happens only when `S3_BUCKET` is set and `aws.enabled` is true.
 
 ---
 
@@ -131,7 +134,7 @@ schema: |
 
 # 4. Rules — appended to the prompt as bullet points
 rules:
-  - Generate 26-character ULIDs
+  - Copy any id you are given exactly; never invent ids
   - If no people found, return empty array
   - Do NOT extract military units as people
 ```
@@ -174,8 +177,8 @@ Variables are injected by the Python code. Use `{variable_name}` in your templat
 
 | Variable | Description |
 |----------|-------------|
-| `{places_section}` | Available places for cross-referencing |
-| `{dates_section}` | Available dates for cross-referencing |
+| `{sub_event_blocks}` | One text block per sub-event; each block already carries that sub-event's places and dates for cross-referencing (built by `_build_places_section` / `_build_dates_section` in `src/extraction/weather_central.py`) |
+| `{quote_rule}` | Shared quote rule, filled by default (`render_prompt`) |
 
 ### Casualties only
 
@@ -281,9 +284,9 @@ cat output/content/BookName/chapter1-event.json | python3 -m json.tool
 # Upload modified prompt
 aws s3 cp prompts/people.yaml s3://dev-wwii-data-pipeline/prompts/people.yaml --region us-east-1
 
-# Clear cache for the entity type to force re-extraction
-# (otherwise cached results are returned)
-python3 scripts/cleanup_book_cache.py --book BookName
+# The cache key includes the prompt text, so an edited prompt is not served from old cache entries.
+# To drop a finished book's other cache entries, keeping only its expensive 'events' cache:
+python3 scripts/cleanup_book_cache.py BookName --dry-run
 
 # Trigger a pipeline run
 aws lambda invoke --function-name dev-wwii-trigger \
@@ -312,10 +315,10 @@ prompt_loader checks S3: s3://bucket/prompts/people.yaml
 prompt_loader reads local: prompts/people.yaml
     ↓ found? use it
     ↓ not found?
-Falls back to hardcoded f-string in Python (legacy)
+FileNotFoundError (no fallback)
 ```
 
-The loader caches templates in memory for the duration of the ECS task. To force a reload after S3 changes mid-run, the cache would need to be cleared programmatically (not typically needed since each ECS task is short-lived).
+The S3 step is skipped unless `aws.enabled` and `S3_BUCKET` are set; any S3 error also falls through to the local file. The loader caches templates in memory (`lru_cache`) for the duration of the ECS task. To force a reload after S3 changes mid-run, the cache would need to be cleared programmatically (not typically needed since each ECS task is short-lived).
 
 ---
 

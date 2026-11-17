@@ -74,11 +74,11 @@ One vehicle can **correctly** be called **all** of these simultaneously:
 
 ### Alias table (`config/equipment_aliases.yaml`)
 - Nicknames already map (`tiger → pzkpfw vi tiger`, correct — German, not a Sherman).
-- **GAP:** no `Sd.Kfz.` numbers are aliased. A source citing `Sd.Kfz. 181` will NOT match
-  the `Tiger` record. Add Sd.Kfz.→canonical aliases (181→Tiger I, 171→Panther,
-  161/161-1/161-2→Panzer IV, 251→half-track, …).
-- **GAP:** no normalization of `Pz.Kpfw.` ⇄ `Panzer` ⇄ `PzKpfw` punctuation/spacing
-  variants, nor Roman-numeral handling on the equipment side.
+- `Sd.Kfz.` numbers are aliased for 181 (Tiger), 171 (Panther), 161/161-1/161-2 (Panzer IV),
+  141, 142, 251 and 234. Other Sd.Kfz. numbers are not, and fall through to the Grok resolver.
+- `_normalize_designation` (`src/extraction/equipment.py`) unifies `Pz.Kpfw.` / `PzKpfw` /
+  `Panzerkampfwagen` to `panzer` and strips `Sd.Kfz.` punctuation before alias lookup.
+  Roman-numeral handling on the equipment side is not implemented.
 
 ### Dedup (`src/dedup/find_duplicate_equipment.py`)
 - The leading-number veto (105 vs 155) is US-caliber-oriented; it must not wrongly veto
@@ -92,34 +92,29 @@ One vehicle can **correctly** be called **all** of these simultaneously:
 
 ### British (same hazards, different shape)
 - **US-tank-in-British-service renames are a split hazard:** `M4` (US doc) and `Sherman V`
-  (British doc) are the SAME type. The alias table has only 3 Sherman entries and **no
-  British marks** (Sherman I–V), A-numbers (A22 Churchill), or service names.
-  **GAP:** add Sherman-mark↔M-model aliases (Sherman I→M4, III→M4A2, …), A-number→name,
-  and service names (Churchill/Cromwell/Crusader/Matilda/Comet/Firefly→Sherman IC/VC).
-- **`Firefly` is officially `Sherman IC`/`VC`** (17-pdr Sherman) — nickname→mark→US model.
+  (British doc) are the SAME type. The alias table maps Sherman I-V to the M4 family
+  (`sherman i` → M4, `sherman iii` → M4A2, …), A-numbers (A11, A12, A15, A22, A27L/M, A34),
+  and the service names Churchill/Cromwell/Crusader/Matilda/Comet/Centaur/Valentine.
+- **`Firefly` is officially `Sherman IC`/`VC`** (17-pdr Sherman); the table maps `firefly`,
+  `sherman ic` and `sherman vc` to `sherman firefly`.
 - British **census numbers** (`T`/`F`/`L` + digits) identify an **individual vehicle, not
   the model** — must NEVER be used as a type identity (would fragment records per vehicle).
 - Mark letters: `C`=17-pdr, `A`=76 mm, `Y`=HVSS — these are **variant** discriminators.
 
-### Why a runtime Grok disambiguator is the scalable fix
-Hand-maintaining full cross-walks across THREE multi-layer systems (US M-number; German
-Pz.Kpfw./Ausf./Sd.Kfz.; British A-number/service-name/Sherman-mark/census) — where one tank
-has 3–5 valid names — will always have gaps. **Proposed** (confirm before building):
-
-- A **cached, cost-gated Grok disambiguation** call that resolves a raw designation →
-  `{canonical_name, nationality_of_origin, equivalents[]}`. This is *canonicalization*
-  (naming knowledge), not a claim about the source, so it does not violate source
-  traceability.
-- **Fallback ordering:** exact → curated alias table → fuzzy → **Grok (cached)**. Grok is
-  the long-tail fallback, not the first resort — one call per distinct unresolved
-  designation, hard-cached, never re-run (fits the cost + staleness-gate principles).
-- **Provenance:** stamp `identity_source: grok_disambiguation` + confidence; behind a flag;
-  fail-open to the raw name.
-- **Feeds the curated table:** write resolutions to a suggestions file (surname-report
-  pattern) for human promotion, so the deterministic path improves and Grok cost drops.
+### Runtime Grok disambiguator (implemented)
+Hand-maintaining full cross-walks across three multi-layer systems always leaves gaps, so
+`src/extraction/equipment_disambiguation.py::resolve_designation` resolves a raw designation
+to `{canonical_name, nationality_of_origin, equivalents[]}` (canonicalization, not a claim
+about the source). Order: exact / curated alias → learned alias
+(`config/equipment_aliases_learned.yaml`, first-wins) → fuzzy (`SequenceMatcher ≥ 0.90`) →
+Grok (`prompts/equipment_disambiguation.yaml`, cached, one call per distinct designation).
+The tier is stamped as `identity_source`; Grok results are also appended to
+`output/equipment/disambiguation_suggestions.jsonl` for human promotion into the curated
+YAML. Gated by env `EQUIPMENT_DISAMBIGUATION` (default true); fails open to the raw name.
+See [EQUIPMENT_FLOW.md](EQUIPMENT_FLOW.md) Stage 3.
 
 ## Status
 
-Reference only — the alias/dedup GAPs and the Grok disambiguator are **not yet
-implemented**. Documented so they inform the next equipment-dedup iteration (and survive
-context compaction).
+Reference, plus the implemented disambiguator above. Still open: dedup German-aware
+normalization (`Ausf.` letter as variant discriminator, `Sd.Kfz. 161/2` vs `161`) beyond the
+alias entries, and Japan/Italy/Soviet alias sections.

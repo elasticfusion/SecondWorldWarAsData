@@ -32,6 +32,8 @@
 }
 ```
 
+*Illustrative only: the field names (`military_units`, `Sources`, `CitationID`) are simplified and do not match the extracted event schema (`src/schemas/events_output.py`); the IDs are made up.*
+
 **Talking point:** "Every entity has a unique ID. Every relationship is an explicit link. You can traverse from any entity to any connected entity across the entire dataset."
 
 ---

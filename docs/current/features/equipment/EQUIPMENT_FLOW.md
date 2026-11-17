@@ -59,8 +59,8 @@ the prompt.)*
 - `using_unit` → PeopleGroupID, `using_person` → PersonID (`_link_entity`).
 - `supporting_units` (`_link_supporting_units`): `support_type` is the **supporting unit's
   own arm** (a P-47 wing supporting a tank is `aircraft`, not the tank's `armor`);
-  resolves PeopleGroupID + supporting `EquipmentID` (`_resolve_support_equipment_id`,
-  name-exact — a known gap).
+  resolves PeopleGroupID + supporting `EquipmentID` (`_resolve_support_equipment_id`:
+  exact name → curated alias canonical → fuzzy `_fuzzy_match_equipment`).
 
 ### 2c. Build mention  (`_build_mention` → `_populate_mention_fields`)
 Per-mention fields (distinct from the record's type-level identity):
@@ -88,8 +88,16 @@ BEFORE merge/dedup. Gap-fill only, provenance-stamped, fail-open.
 ### 2f. Record-level narrative collections (source-tracked)
 - `related_equipment` (`_link_related_equipment`): narrative-sourced relationships
   (predecessor/successor/variant) to **distinct** pieces, each with `original_text`;
-  resolves name→EquipmentID or **auto-creates** a minimal distinct record
-  (`_autocreate_minimal_equipment`) that is itself enriched-on-identity if specific.
+  resolves name→EquipmentID (`_resolve_support_equipment_id`) or **auto-creates** a minimal
+  distinct record (`_autocreate_minimal_equipment`: EquipmentID + common_name) that is itself
+  enriched-on-identity if specific. The stub carries one naming mention (`_stub_mention`:
+  `EventID`, `Event_Name`, `paragraph_numbers`, `book` copied from the naming record's mention,
+  the relation's `original_text`, `context` "named as related equipment (<relationship>)"; no
+  `Sub_eventID`, `DateID` or `assertion_source`, because the source names it rather than
+  placing it). Stubs written before this have no mention; `backfill_stub_mentions` (called from
+  `phase2_extract._run_analysis`) copies the naming record's mention onto them, logs
+  `OBSERV equipment.stub_backfill`, and raises `equipment.stub_without_source` for any it
+  cannot place.
 - `crew_accounts` (`_link_crew_accounts`): firsthand accounts; **`original_text` mandatory**
   (untraceable accounts dropped); PersonID resolved (`_resolve_person_id`, exact→fuzzy).
 
@@ -132,18 +140,24 @@ designation, an alias-resolving nickname, or a canonical resolver hit (Grok only
 - **staleness gate** (`enrichment_gate.should_check_enrichment`, 90-day window) → skip if
   checked recently (**limit updates**).
 
-Then `_enrich_and_add_media`:
-- `_enrich_equipment_data`: Grokipedia/Wikipedia via `extract_json` (strips the ```json
-  fence) → `specifications` + `variants` + urls.
+Then `_enrich_from_encyclopedias` (TEXT only; images are Phase 3):
+- Grokipedia and Wikipedia article text (`_apply_grokipedia_text`,
+  `_apply_wikipedia_text_extract`), each kept only if it places the subject in WWII
+  (`wikipedia_wwii_relevant`). With no qualifying text there is no Grok description
+  (`OBSERV equipment.enrich_no_source`); an unreachable source raises `_SourceDeferred`
+  (nothing stamped, retried, `_alert_enrich_deferred`).
+- `_enrich_equipment_data` (Grok `extract_json`, written FROM the source text) →
+  `specifications` + `variants` + urls + `description` (cited by `description_source_url`).
 - `_merge_enriched_data` → `_merge_source_tracked_reference`: `timeline`,
   `technical_evolution`, `logistics` each **stamped with `source` + `source_url`**
   (grokipedia/wikipedia).
-- `_build_external_data`: `external_data` with grokipedia_url/wikipedia_url/
+- `external_data` (`_build_external_data`) with grokipedia_url/wikipedia_url/
   additional_sources provenance.
-- images: fetched (OpenSERP + wiki), vision-**TYPE**-verified, mapped to structured
-  `images[]` (`_to_structured_images`) with `image_scope` default `representative`
-  (books/stock illustrate the TYPE — never claimed as a specific-event photo) and
-  `vision_verified`.
+- No image is fetched in Phase 2. The config keys `equipment.enable_enrichment` and
+  `equipment.verify_media_with_vision` do not gate this: `enable_enrichment` is accepted by
+  `merge_or_create_equipment` but ignored (enrichment follows identity resolution), and
+  `verify_media_with_vision` is read by no code. Images and `image_scope` are handled in
+  Phase 3 ([EQUIPMENT_MEDIA_INTEGRATION.md](EQUIPMENT_MEDIA_INTEGRATION.md)).
 
 Finally: **diff** the revised entry (`diff_enrichment` — no-op results don't rewrite),
 stamp `enrichment_status` + `enrichment_checked_at` (every check, incl. failure, so the
@@ -183,11 +197,11 @@ canonical_name + alternate_names + merged names), all routing to one survivor.
 | crew_accounts | narrative | `original_text` + `book` (mandatory) |
 | specifications / variants | enrichment | `external_data` urls |
 | timeline / technical_evolution / logistics | enrichment | per-block `source` + `source_url` |
-| images | enrichment | `source`, `license`, `vision_verified`, `image_scope` |
+| images | Phase 3 (Wikipedia article / OpenSERP) | `source`, `url`, `vision_check`, `vision_verified`, `vision_reason`, `vision_checked_at` |
 | canonical identity | resolver | `identity_source` (exact/alias/learned_alias/fuzzy/grok) |
 
 ## Known gaps (see README)
 
-Supporting-unit equipment linking is name-exact; curated alias table lacks Sd.Kfz./British
+Curated alias table lacks Sd.Kfz./British
 marks (runtime Grok resolver covers the long tail + feeds suggestions); vision + OpenSERP
 image path untested live; no live end-to-end run yet.

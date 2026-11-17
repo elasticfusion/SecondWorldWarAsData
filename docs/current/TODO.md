@@ -1,8 +1,59 @@
 # Pipeline Backlog
 
-**Last Updated:** 2026-11-16 (docs review: three items marked done/partly done, see 2026-11-16 notes); previously 2026-10-29 (Pattern-8 observability P1 remediation A-E shipped + deployed; Slack Chatbot fixed to us-east-1; P2/P3 sweep + 3 review follow-ups + GIT_SHA gap logged below).
+**Last Updated:** 2026-11-17 (all-docs review: code defects it found, see the first section); 2026-11-16 (docs review: three items marked done/partly done, see 2026-11-16 notes); previously 2026-10-29 (Pattern-8 observability P1 remediation A-E shipped + deployed; Slack Chatbot fixed to us-east-1; P2/P3 sweep + 3 review follow-ups + GIT_SHA gap logged below).
 
 ---
+
+### Code defects found by the 2026-11-17 documentation review (each verified in code)
+Phase 3 defects (OpenSERP service, 90-day marker, breaker, batch mode, external maps, NOAA, ...)
+are ranked ONCE in `docs/current/core/PHASE3_MAP.md` section 6; not repeated here. The rest:
+
+HIGH
+- **A parse-track upload with no safe slug runs Phase 1 over ALL books.** When no pending key
+  yields a slug, `_resolve_pending_launch_book` returns `""` (`trigger_handler.py:2433-2437`), which
+  means "all books"; the `unnamed-upload` off-ramp covers only OCR, convert and video uploads. Breaks
+  the slug rule (an unnamed upload must go to `needs-review/unnamed-upload/`). Fix: route `.md`/`.txt`
+  keys with no slug through `_unnamed_upload`, and never launch on an all-unsafe set.
+- **Phase 1 resets the dedup review status for the whole corpus.** `_prepare_phase1`
+  (`ecs_entrypoint.py:1079-1090`) writes `{"complete": false}` to `dedup/review_status.json` on every
+  Phase 1 task, so parsing one new book discards a pending or finished review of the others.
+- **Monitoring that can never fire.** The `{env}-wwii-pipeline` dashboard, the `phase2-duration`
+  alarm and the `dlq-messages` alarm (`cloudformation/events.yaml`) watch Lambdas and queues no
+  template creates (`phase1-parse`, `phase2-extract`, `phase1-dlq`, `phase2-dlq`). Delete or repoint.
+
+MED
+- **Skipped people groups come back.** The people detector never reads `reviewed#` rows; only
+  Exclude is permanent for people (places, groups, equipment honour Skip). `docs/current/core/DEDUP_REVIEW_GATE.md`.
+- **Dedup Undo restores the snapshot files only**: not the reference rebase, `index.json` or the
+  report group (`dedup_ui_handler` undo path).
+- **The ECS dedup detection passes no Grok client**, so ambiguous people matches get no Grok check.
+- **`doc#` rows can be stuck**: the dispatcher's `DocFailed` state leaves a failed doc at `running`;
+  `needs-review` has no exit (`human_gate` is deployed but never invoked). `docs/current/core/DOC_LIFECYCLE.md`.
+- **`_seed_docs`** uses `parts[1]` as the book (the namespace for `_system`/`user-` uploads) and is a
+  no-op on chapter-parsed events (`output/content/` keys).
+- **Person -> group membership is not wired**: nothing in Phase 2 or 3 fills `members[]`
+  (`_link_person_to_groups` is reachable only from the CLI/test `enrich_all_people`). Owner decision.
+- **Intake suffix mismatch**: `.htm`, `.xhtml`, `.webp`, `.bmp` are in the track suffix sets but not
+  in `_CONTENT_SUFFIXES` (`trigger_handler.py:687`), so they are rejected as `unrecognized-type`.
+- **8-character ULID filename suffixes** (`batch_parallel.py:322`, `people_groups.py:47`): the first
+  10 ULID characters are the timestamp, so 8 characters separate ids only ~1 s apart - two same-named
+  records minted in the same second would collide. Use 12 like `people.py`.
+- **Dead config**: `api.grok.timeout` (60) and `api.grok.max_retries` are not read (the client uses a
+  600 s read timeout and 5 attempts, `grok_client.py:479,1477`); also `maps.*`, several
+  `external_maps.*`, `aws.*`, `weather.*` and `processing.*` keys. List: `docs/current/core/CONFIGURATION.md`.
+- **"VII Corps" and "7th Corps" are never surfaced as duplicates**: `derive_unit_key` unifies them
+  but `_numbers_match` (`find_duplicate_groups.py:262-289`) keeps `r7` and `7` apart.
+- **`validate_phase2` does not trace `source_section` or `images` mentions** (`_MENTION_ENTITIES`,
+  `validate_phase2.py:112-119`).
+
+LOW
+- Unwired code: `src/utils/failure_taxonomy.py`, `src/utils/url_content_verdict.py`,
+  `ecs_entrypoint._acquire_lock` / `_clear_all_locks`, `dedup_gate_handler` (deployed, never invoked),
+  `consolidate_people`, `ingest_affirmed_chart`, `generate_date_summary`; the standalone
+  `python -m src.extraction.external_maps` CLI is broken (`main()` passes `events_dir`).
+- Award sources: only the `hall_of_valor` adapter is built; the other registry rows are skipped.
+- Stale text in templates: `compute.yaml:1553` says "Internal ALB" (none exists); the Phase 3
+  completion email still lists "People" enrichment (moved to Phase 2).
 
 
 ### People: surname-only names are enriched from a Wikipedia disambiguation page (HIGH)

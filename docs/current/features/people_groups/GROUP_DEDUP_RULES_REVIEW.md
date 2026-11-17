@@ -18,11 +18,11 @@ Open questions are flagged **[REVIEW]**; not-yet-built items **[PENDING]**.
    `military_hierarchy`, `nationality`, `members[]`, etc. ⚠️ In practice only
    `military_unit`/(none) are populated — civilian types are schema-ready but unused.
 2. **Persist + index**: `GroupID` ULID; write-time merge is by **normalized name only**
-   (variants reconciled later by dedup). Each new unit also gets a Phase-2 Wikipedia/Grokipedia lookup (WWII pages only, `groups_wikipedia`).
-3. **Enrich** (Phase 3, `enrich_groups.py`): query is **disambiguated** (nickname-resolved
+   (variants reconciled later by dedup). Each new unit also gets a Phase-2 Wikipedia/Grokipedia lookup (WWII pages only, `groups_wikipedia.enrich_group_from_wikipedia`, called from `batch_parallel._enrich_in_place`).
+3. **Enrich** (Phase 3 step 1/6, `enrich_groups.enrich_all_groups`; structured facts only): query is **disambiguated** (nickname-resolved
    canonical name + `(Country)` suffix) with a **wrong-article guard** →
    `enrichment_status='ambiguous'` on nationality/echelon contradiction.
-4. **Link people → groups** (`enrich_biographies._link_person_to_groups`): units match via
+4. **Link people → groups** (`enrich_biographies._link_person_to_groups`; **not wired into the pipeline**: it runs only from `enrich_all_people`, which `phase3_enrich_data.py` no longer calls, so today it is CLI/test only): units match via
    the **canonical unit key** (same matcher as dedup); civilian `group_affiliations`
    (v2.6) link by name and **carry `date_verified`** (unverified title membership →
    provisional member, confidence 0.3).
@@ -32,15 +32,17 @@ Open questions are flagged **[REVIEW]**; not-yet-built items **[PENDING]**.
 
 ## 1. When it runs
 At **Phase-2 task completion** (`ecs_entrypoint._run_dedup_detection` →
-`src/dedup/find_duplicate_groups.py`). It writes candidate clusters to
+`_execute_dedup_scripts`, which runs `python -m src.dedup.find_duplicate_groups`). It writes candidate clusters to
 `output/people_groups/duplicate_report.json`.
 
 ## 2. What auto-merges vs what waits for a human
-- **Auto-merge:** only clusters whose names are **byte-identical after normalization**
-  (`_auto_merge_exact_duplicates`, keyed on `GroupID`). Deliberately conservative.
-- **Everything else → the human review gate.** The weighted/keyed detection below
-  improves *which candidates are surfaced and how they're ranked*; it does **not**
-  auto-merge on its own.
+- **Auto-merge:** clusters whose names are **byte-identical after normalization**, plus
+  (groups only) clusters whose members all share one canonical unit key with no veto and no
+  nationality conflict (`ecs_entrypoint._auto_merge_exact_duplicates`, `_auto_merge_entity_type`,
+  `_group_cluster_canonically_mergeable`; keyed on `GroupID`). Deliberately conservative.
+- **Everything else → the human review gate** (the dedup UI, `lambda_handlers/dedup_ui_handler.py`:
+  merge / skip / exclude, with undo snapshots under `dedup/history/`). The detection below
+  decides *which candidates are surfaced*; only the two auto-merge cases above skip review.
 - The **human gate is never bypassed**, and reviewed/excluded pairs are remembered
   (`not_related.json`, `not_duplicates.json`, `load_reviewed_pairs("groups")`).
 
@@ -49,17 +51,18 @@ At **Phase-2 task completion** (`ecs_entrypoint._run_dedup_detection` →
 ### (a) Number gate — REQUIRED
 Two groups can only be duplicates if their **unit numbers match** (`_numbers_match`).
 Numbers are normalized: Arabic, ordinal words ("Ninth"→9), ordinal suffixes
-("2d"/"2nd"→2), and **roman numerals kept distinct** (so `VII Corps` ≠ `7th Corps`).
-No shared number → not a candidate.
+("2d"/"2nd"→2), and **roman numerals kept distinct** (`_extract_numbers` stores them as `r7`),
+so this gate treats `VII Corps` and `7th Corps` as different and never reaches the key.
+Two names with different numbers → not a candidate.
 
 ### (b) Canonical unit key — PRIMARY matcher
-`derive_unit_key(name)` → `(numbers, branch, echelon)`; `unit_keys_match` decides:
+`derive_unit_key(name)` → `UnitKey(numbers, service, arm, echelon)`; `unit_keys_match` decides:
 
 | Field | Rule |
 |---|---|
 | numbers | must match |
 | **service** | Armed SERVICE (Army / AAF / Navy / Marines / Coast Guard), from the name. **Mismatch ⇒ ABSOLUTE VETO** (1st Marine Division ≠ 1st Infantry Division). Default ARMY. |
-| **arm (combat arm)** | infantry / armored / cavalry / airborne / artillery / … . **Absent ⇒ defaults to INFANTRY.** Branch **mismatch ⇒ VETO**. |
+| **arm (combat arm)** | infantry / armored / cavalry / airborne / artillery / … . **Absent ⇒ INFANTRY only for a US Army division/regiment**, else unknown. Both known and different **⇒ VETO**. |
 | **echelon** | squad…division…army. Absent ⇒ permissive (no veto). Present on **both** AND different ⇒ **VETO**. |
 
 Abbreviations are expanded first (`PIR`→parachute infantry regiment, `Inf Div`→infantry
@@ -110,14 +113,14 @@ All optional; absent → built-in defaults (= behavior above).
   "9th Company" keeps arm=unknown (not infantry). **Combat Commands (CCA/CCB/CCR)** — the
   armored-division brigade-equivalent combined-arms formations — are recognized as
   echelon `combat_command`, arm `armored`, with the command letter captured so CCA≠CCB≠CCR.
-- **[FIXED 2026-10-05] Roman/Arabic corps numbering unified.** `VII Corps` == `7th
-  Corps` ('7th Corps' is a typo for the roman); the number normalizer maps roman→arabic.
+- **[PARTIAL] Roman/Arabic corps numbering.** `unit_key._numbers` maps roman→arabic, so
+  `derive_unit_key("VII Corps")` equals `derive_unit_key("7th Corps")`. The detector's earlier
+  `_numbers_match` gate (§3a) still keeps roman and arabic apart, so such a pair is not surfaced.
 - **[FIXED 2026-10-05] people_groups auto-merge on canonical-key match.** Unlike People
   (fuzzy/weighted → human gate), a people_group's canonical unit key is DETERMINISTIC, so
   a clean key match with no veto IS the completed disambiguation → it **auto-merges** (no
-  human gate; `ecs_entrypoint` `ecs_entrypoint._all_keys_match`).
-  NOTE: §2 above still says only byte-identical names auto-merge; the key-match auto-merge is the later rule. Byte-identical names also auto-merge. Underspecified names (no number, bare
-  CC) are not auto-merged.
+  human gate; `ecs_entrypoint._all_keys_match` + `_any_nationality_conflict`). Byte-identical
+  names also auto-merge. Underspecified names (no number, bare CC) are not auto-merged.
 - **Not this model:** Equipment dedup is an alias/synonym problem ("Sherman"/"M4"/
   "M4A3") — a different model, not yet built.
 - **[GAP] Civilian group_type unused** — political_party / government_organization are
@@ -132,3 +135,5 @@ All optional; absent → built-in defaults (= behavior above).
 - [../people/dedup-weighting.md](../people/dedup-weighting.md) — the parallel people model
 - Archived (superseded): `docs/archive/2026-10-05-people-groups/` (old GROUP_DEDUPLICATION_SYSTEM + the two point-in-time review snapshots, consolidated here)
 - [deduplication.md](../people/deduplication.md) — end-to-end dedup workflow
+
+See also: [Dedup review gate (Phase 2 to Phase 3)](../../core/DEDUP_REVIEW_GATE.md) for detection, auto-merge, the gate, the review UI and the operator runbook.

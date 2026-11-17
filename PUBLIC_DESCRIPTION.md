@@ -17,11 +17,12 @@ Decades of WWII scholarship exist in narrative form — books, reports, after-ac
 
 ## How It Works
 
-A three-phase pipeline processes historical documents:
+A four-phase pipeline processes historical documents:
 
+0. **Ingest** — Converts PDFs (with OCR), EPUB, HTML, and video into markdown, translating non-English text to English
 1. **Parse** — Converts markdown source material into structured JSON
-2. **Extract** — Identifies 11 entity types using AI (via the Grok API), with automatic deduplication and human review
-3. **Enrich** — Augments entities with data from Wikipedia, NARA (National Archives), weather records, and web sources
+2. **Extract** — Identifies 11 entity types using AI (via the Grok API), enriches them from Wikipedia, then runs automatic deduplication and a human review gate
+3. **Enrich** — Augments entities with geocoding, NARA (National Archives) and other source resolution, weather records, and web sources
 
 Every entity receives a unique identifier (ULID), allowing full cross-referencing across the dataset.
 
@@ -31,12 +32,12 @@ Every entity receives a unique identifier (ULID), allowing full cross-referencin
 - Batch API processing for cost efficiency (50% savings)
 - Runs locally or on AWS (ECS + Lambda + S3)
 - Automatic deduplication with human review gate
-- 332 passing tests
+- 4,700+ automated test functions
 - Public domain output (US Government works)
 
 ## Current Status
 
-The project is in active development. Events, Dates, Places, People, Groups, Maps, and Supplemental entities are production-ready. Weather, Equipment, Logistics, and Casualties extraction is experimental.
+The project is in active development. Events, Dates, Places, People, Groups, Maps, and Bibliography entities are production-ready. Equipment, Weather, Logistics, and Casualties extraction is experimental.
 
 ## Get Involved
 

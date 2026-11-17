@@ -280,7 +280,7 @@ Defined in `cloudformation/ocr.yaml` (the YAML in the first design was removed; 
   uses `SPOT_CAPACITY_OPTIMIZED`): instance types `g5.xlarge/2xlarge`, `g6.xlarge/2xlarge` only.
   `g4dn` (16 GB) is excluded because Chandra needs ~9-10 GB of GPU memory per page and OOMs there.
   `MinvCpus 0`, `MaxvCpus` 280 (parameter), AMI type `ECS_AL2023_NVIDIA`, private subnets.
-- **Queue** `{env}-wwii-chandra-gpu`; **fallback** CE/queue `{env}-wwii-chandra-gpu-ondemand`
+- **Queue** `{env}-wwii-chandra-gpu`; **fallback** CE `{env}-wwii-chandra-gpu-ondemand-v4`, queue `{env}-wwii-chandra-gpu-ondemand`
   (`OnDemandMaxvCpus` 96) used by `ocr_spot_controller`.
 - **Job definition** `{env}-wwii-chandra`: 4 vCPU, 15000 MiB, 1 GPU, 2 attempts,
   `OCR_NO_PROGRESS_SECS=900` (the progress watchdog is the real stall detector),

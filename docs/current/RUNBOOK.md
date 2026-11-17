@@ -1,6 +1,7 @@
 # Operations Runbook
 
 Common operational tasks for the WWII Data Extraction Pipeline.
+Key catalogue for locks, leases and queues: [core/LOCKS_AND_LEASES.md](core/LOCKS_AND_LEASES.md). Document states and off-ramps: [core/DOC_LIFECYCLE.md](core/DOC_LIFECYCLE.md).
 
 ---
 
@@ -84,8 +85,11 @@ Open the URL in a browser. Review groups, merge/skip/exclude, then click "Mark R
 ### Force-skip dedup review
 
 ```bash
-# The gate reads dedup/review_status.json from the data bucket (lambda_handlers/dedup_gate_handler.py STATUS_KEY)
-echo '{"complete": true}' | aws s3 cp - s3://dev-wwii-data-pipeline/dedup/review_status.json --region us-east-1
+# Phase 3 is launched by the trigger Lambda when the dedup-complete topic fires (what the UI's
+# "Mark Review Complete" publishes after writing dedup/review_status.json). Publish it directly:
+aws sns publish --region us-east-1 \
+  --topic-arn arn:aws:sns:us-east-1:<account-id>:dev-wwii-dedup-complete \
+  --message '{"dedup_complete": true}'
 ```
 
 ### Re-run dedup detection (local)
@@ -128,7 +132,8 @@ aws dynamodb update-item --table-name dev-wwii-api-cache \
 ### Batch job state machine
 
 ```
-pending  → poller checks xAI API (Phase 2 also waits up to 5 min in-task per round first)
+in_task  → a running Phase 2 task is waiting for the batch (batch.in_task_wait_minutes, 5); the poller adopts it as pending after 2 h
+pending  → poller checks xAI API (5-min schedule)
 ready    → poller confirmed complete, launches ECS --retrieve-only task
 retrieved → ECS task downloaded results, processed entities (a later round may submit again; cap 8 rounds)
 failed   → xAI batch failed (check API dashboard)
@@ -159,11 +164,11 @@ python scripts/view_metrics.py
 ```bash
 # Force delete via Lambda
 aws lambda invoke --function-name dev-wwii-nat-manager \
-  --payload '{"action": "delete"}' \
+  --payload '{"action": "delete", "force": true}' \
   --cli-binary-format raw-in-base64-out --region us-east-1 /tmp/out.json
 
 # Verify NAT is gone
-aws ec2 describe-nat-gateways --filter "Name=tag:Name,Values=dev-wwii-nat" \
+aws ec2 describe-nat-gateways --filter "Name=tag:Name,Values=dev-nat" \
   --region us-east-1 --query 'NatGateways[?State!=`deleted`]'
 
 # Check for leaked EIPs
@@ -172,6 +177,8 @@ aws ec2 describe-addresses --filter "Name=domain,Values=vpc" \
 ```
 
 ### OpenSERP won't start
+
+The `dev-wwii-openserp` ECS service sits at desired 0 and is scaled to 1 by `ecs_entrypoint._start_openserp_if_needed` at the start of Phase 3 only (waits up to 12 min for the task IP). `openserp-manager` scales it back to 0 when idle.
 
 ```bash
 # Check ECS service status
@@ -194,9 +201,9 @@ REGION=us-east-1
 aws dynamodb delete-item --table-name $TABLE \
   --key '{"cache_key":{"S":"pending#content"}}' --region $REGION
 
-# Clear pending parsed (Phase 2 queue)
+# Clear pending parsed (Phase 2 queue; one row per book: pending#parsed#<book>)
 aws dynamodb delete-item --table-name $TABLE \
-  --key '{"cache_key":{"S":"pending#parsed"}}' --region $REGION
+  --key '{"cache_key":{"S":"pending#parsed#BOOK_NAME"}}' --region $REGION
 ```
 
 ---
@@ -222,9 +229,9 @@ bash scripts/utils/pipeline_status.sh
 # Stop all ECS tasks immediately
 bash scripts/stop_all_tasks.sh
 
-# Tear down networking (stop $$ bleeding)
+# Tear down networking (stop $$ bleeding; force skips the demand check)
 aws lambda invoke --function-name dev-wwii-nat-manager \
-  --payload '{"action": "delete"}' \
+  --payload '{"action": "delete", "force": true}' \
   --cli-binary-format raw-in-base64-out --region us-east-1 /tmp/out.json
 ```
 
@@ -309,7 +316,7 @@ Fargate Spot tasks (4:1 weight over regular) can be interrupted with 30s warning
 1. SIGTERM → emergency S3 sync (all entity + event files uploaded)
 2. Lock cleared in SIGTERM handler
 3. Task exits cleanly
-4. EventBridge ECS Task State Change rule detects `stoppedReason: "Your Spot Task was interrupted"`
+4. EventBridge rule `dev-wwii-spot-recovery` detects an ECS Task State Change with a `stoppedReason` starting `Your Spot Task`
 5. Trigger Lambda clears any residual lock and re-launches the task
 6. New task downloads from S3, hits DynamoDB cache → resumes without API cost
 
@@ -359,9 +366,9 @@ aws lambda invoke --function-name dev-wwii-trigger \
 # 1. Stop all pipeline tasks
 bash scripts/stop_all_tasks.sh
 
-# 2. Tear down NAT (stops $0.045/hr bleeding)
+# 2. Tear down NAT (stops $0.045/hr bleeding; force skips the demand check)
 aws lambda invoke --function-name dev-wwii-nat-manager \
-  --payload '{"action": "delete"}' \
+  --payload '{"action": "delete", "force": true}' \
   --cli-binary-format raw-in-base64-out --region us-east-1 /tmp/out.json
 
 # 3. Scale OpenSERP to 0
@@ -455,7 +462,7 @@ aws dynamodb delete-item --table-name dev-wwii-api-cache \
 ```
 pending  → poller checks xAI API status every 5 min
 ready    → poller confirmed complete, launches ECS retrieve task
-complete → retrieve task processed results successfully
+retrieved → retrieve task processed results successfully
 failed   → xAI batch failed
 ```
 
@@ -474,3 +481,5 @@ processing:
 ```
 
 Then re-run Phase 2. Remove the config entry after.
+
+See also: [Dedup review gate (Phase 2 to Phase 3)](core/DEDUP_REVIEW_GATE.md) for detection, auto-merge, the gate, the review UI and the operator runbook.

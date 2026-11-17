@@ -194,12 +194,7 @@ LLM can reference these in sub-event context.
 
 Events extraction has no specific config options. It runs automatically in Phase 2 for all parsed files: one request per chapter (`cache_type="events"`), through the xAI batch API when `batch.phase2` is true ([batch processing](../batch_processing/README.md)).
 
-**Related Config:**
-```yaml
-# In config.yaml
-processing:
-  validate_ulids: true  # Enable ULID validation
-```
+`processing.validate_ulids` exists in `config.yaml` but no code reads it; ULID repair is always on.
 
 ---
 
@@ -358,7 +353,7 @@ rm -rf cache/api/events/*
 
 1. **Use retry wrapper:** `python3 phase2_retry.py` handles transient errors
 2. **Clear cache selectively:** Only clear cache for specific chapters if needed
-3. **Monitor logs:** Check `logs/extraction_summary.json` for paragraph groupings
+3. **Monitor logs:** Check the event file's `Sub-events[].Sub-event_fulltext` for paragraph groupings (`logs/processing_summary.json` has per-chapter ranges)
 
 ---
 

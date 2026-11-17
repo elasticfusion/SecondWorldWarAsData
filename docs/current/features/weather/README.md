@@ -2,7 +2,7 @@
 
 **Module:** `src/extraction/weather_central.py`  
 **Status:** Optional, enabled in `config.yaml` (`weather.enabled: true`)  
-**Last Updated:** 2026-11-16
+**Last Updated:** 2026-11-17
 
 ---
 
@@ -19,6 +19,10 @@ is stored in a central repository with links to dates and places.
 - `DateID` resolved from the dates directory (not LLM-provided)
 - `location` with `PlaceID` + coordinates, resolved via the places **alias-aware** index
   with bounded matching; `null` coordinates when ungeocoded (no `0.0` placeholder)
+- `observation_type` (`observed` default, `forecast`, `planning_requirement`): a forecast or a
+  requirement ("a low tide at dawn was needed") is never stored as observed weather
+- Condition fields (schema 2.25): `wind_text`, `wind_speed_low/high/unit`, `wind_direction`,
+  `sea_state_text`, `visibility_text`, `cloud_text`, `tide_text`, `light_text`
 - `source_type`: `extracted`, `api_only`, or `hybrid`
 - `temperature_unit` normalized to the schema enum `C`/`F`
 - Operational impact tracking
@@ -67,15 +71,14 @@ assign the real Sub-eventID (unsupported quote → dropped)
     ↓
 For each mention:
     ↓
-Filter (exact dates only)
+Normalize (_normalize_weather_mentions: drop a mention with no descriptive text at all)
     ↓
-Resolve DateID from dates directory lookup
-    ↓
-Lookup Place Coordinates
-    ↓
-Fetch Historical Weather (Open-Meteo API)
-    ↓
-Find or Create Weather File
+Find or Create Weather File (_find_or_create_weather):
+   exact date (_exact_date; approximate/missing date -> "" = undated, KEPT)
+   dedup key: {date}_pid_{PlaceID} (else normalized name), + _ev_{EventID} when undated,
+   + _{observation_type} when not "observed"
+   new file: resolve DateID (+ time_source), place coordinates, then Open-Meteo fetch if
+   fetch_api and the place has real coordinates and the date is exact
     ↓
 Add Event Mention
     ↓
@@ -96,7 +99,10 @@ output/weather/
 └── ...
 ```
 
-**Filename Format:** `{YYYYMMDD}_{PlaceName}_{ULID_prefix}.json`
+**Filename Format:** `{YYYYMMDD or undated}_{PlaceName}_{last 8 chars of WeatherID}.json`
+(sanitized; a pure-`{WeatherID}.json` name if containment blocks it). Records are located only
+through `index.json`, never by recomputing the name. `.processed_events.json` in the same directory
+marks event files already extracted.
 
 ---
 
@@ -250,24 +256,24 @@ GET https://archive-api.open-meteo.com/v1/archive
   &daily=temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max,cloud_cover_mean
 ```
 
-### 3. Exact Dates Only
+### 3. Exact Dates Only for the API
 
-**Filters out approximate dates:**
-- ✅ Accepted: `1944-06-06` (exact date)
-- ❌ Rejected: `early-1944-06` (approximate)
-- ❌ Rejected: `summer-1944` (seasonal)
-
-**Reason:** API requires exact dates for historical data
+`_exact_date` accepts only `YYYY-MM-DD`. A mention with an approximate, seasonal or missing date
+is **kept as an undated record** (`date: ""`, one record per event, so statements of different events
+never share a file), not dropped. Only exact-date records get an Open-Meteo fetch, a DateID and a
+NOAA lookup, because the archive APIs need a day.
+(`_filter_invalid_weather` / `_is_valid_weather_mention`, which rejected such mentions, remain in
+the module but nothing calls them.)
 
 ### 4. Place Coordinate Lookup
 
-**Automatic coordinate resolution:**
-1. Check if PlaceMentionID provided
-2. Look up place in `output/places/` repository
-3. Extract latitude/longitude
-4. Use coordinates for API call
+**Automatic coordinate resolution** (`_lookup_coordinates`): the place name is matched against the
+places alias-aware index (exact, whole-word containment, `SequenceMatcher >= 0.88`); the LLM-provided
+`PlaceMentionID` is not used as an ID. Coordinates come from the matched place record; a `0.0/0.0`
+placeholder counts as not geocoded.
 
-**Fallback:** If place not found, skip API fetch (still save mention)
+**Fallback:** if the place is not found, `PlaceID` and coordinates are null, the Open-Meteo fetch is
+skipped, and the mention is still saved.
 
 ### 5. Operational Impact Tracking
 
@@ -309,27 +315,21 @@ weather:
 
 ### Configuration Options
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `enabled` | `true` in `config.yaml` | Enable weather extraction |
-| `fetch_api_data` | `true` | Fetch historical data from API |
-| `api_provider` | `"open-meteo"` | API provider (only Open-Meteo supported) |
-| `cache_responses` | `true` | Cache API responses |
-| `only_precise_dates` | `true` | Skip approximate dates |
-| `timeout` | `30` | API request timeout (seconds) |
+Only two keys are read by code (`phase2_extract._extract_weather`):
+
+| Option | `config.yaml` | Description |
+|--------|---------------|-------------|
+| `enabled` | `true` | Enable weather extraction |
+| `fetch_api_data` | `true` | Fetch Open-Meteo historical data (the function default is False) |
+
+`api_provider`, `cache_responses`, `only_precise_dates` and `timeout` appear in `config.yaml` but no
+code reads them: Open-Meteo is the only provider, exact-date handling is fixed (see above), and the
+API timeout is the `_fetch_weather_from_api` default of 30 s. Phase 3 NOAA enrichment is gated by
+`api.noaa_api_token`.
 
 ---
 
 ## Usage
-
-### Enable in Config
-
-```bash
-# Edit config.yaml
-vim config.yaml
-
-# Set weather.enabled: true
-```
 
 ### Run Phase 2
 
@@ -337,7 +337,7 @@ vim config.yaml
 python3 phase2_extract.py
 ```
 
-Weather extraction runs automatically after places extraction.
+Weather runs first among the optional entity extractors (`_extract_optional_entities`: weather, equipment, logistics, casualties, supplemental), once per event file; an event already in `output/weather/.processed_events.json` is skipped unless `should_reprocess("weather")`.
 
 ### Programmatic
 
@@ -352,7 +352,7 @@ extract_weather_central(
     event_file=Path("output/BreakoutAndPursuit/chapter1-event.json"),
     weather_dir=Path("output/weather"),
     grok_client=grok_client,
-    places_dir=Path("output/places"),
+    places_dir=Path("output/places"),   # output/dates is read from places_dir.parent
     parsed_file=Path("output/BreakoutAndPursuit/chapter1-parsed.json"),
     fetch_api=True,
 )
@@ -399,19 +399,13 @@ Maps date+place keys to filenames.
 
 ## Error Handling
 
-### Invalid Weather Filtering
+### Mention filtering
 
-Automatically removes mentions with:
-- Missing date
-- Approximate date (not YYYY-MM-DD)
-- Missing weather_description
-- Missing original_text
-
-```python
-# Before filtering: 5 mentions
-# After filtering: 2 mentions (3 invalid removed)
-logger.info("Filtered 3 invalid weather mention(s)")
-```
+`_normalize_weather_mentions` drops a mention with no descriptive text in any content field
+(`weather_description`, `description`, `condition`, `original_text`, `notable_impact`, precipitation,
+wind, sea-state, visibility, cloud, tide or light text) and copies the first one found into
+`weather_description`. Date problems do not drop a mention (see "Exact Dates Only"). A chapter
+needs book and author provenance (`require_book_provenance`); without it the event raises.
 
 ### API Failures
 
@@ -427,14 +421,11 @@ logger.info("Filtered 3 invalid weather mention(s)")
 - Date out of range (pre-1940)
 - Rate limit exceeded
 
-### Retry Logic
+### Failed windows
 
-**Default:** 3 attempts per sub-event
-
-**Behavior:**
-- First attempt uses cache
-- Retries bypass cache
-- Continues to next sub-event on failure
+Failed window calls are counted; the answered windows are saved and the event is NOT marked processed.
+The function then raises `WeatherCallFailed`, so the failed windows are retried on the next run (a
+re-run de-duplicates the answered ones by statement).
 
 ---
 
@@ -442,36 +433,13 @@ logger.info("Filtered 3 invalid weather mention(s)")
 
 ### Caching
 
-**Two-level caching:**
-1. **Grok API responses:** `cache/api/weather/`
-2. **Open-Meteo API responses:** Cached in weather files
+**Grok responses** are cached by `GrokClient` under cache type `weather`. The Open-Meteo response is
+stored in the weather file's `api_data` and is not fetched again for an existing file that already has it.
 
-**Clear caches:**
-```bash
-rm -rf cache/api/weather/*
-```
+### API use
 
-### API Rate Limits
-
-**Open-Meteo:**
-- Free tier: ~10,000 requests/day
-- Reasonable for batch processing
-- No API key required
-
-**Optimization:**
-- Cache API responses
-- Deduplicate date+place combinations
-- Batch process chapters
-
-### Processing Time
-
-**Typical:** 10-20 seconds per sub-event
-
-**Factors:**
-- Number of weather mentions
-- API response time
-- Network latency
-- Cache hit rate
+Open-Meteo needs no key. One request per new weather file with an exact date and real coordinates;
+date+place deduplication keeps that count down.
 
 ---
 
@@ -543,8 +511,8 @@ Visibility was poor, delaying airborne operations."
 
 ### `extract_weather_central()`
 
-Extract weather from an event file and add to the central repository (batched; one Grok
-call per chapter). **This is the live entry point** (the older per-sub-event
+Extract weather from an event file and add to the central repository (one Grok request per
+3-paragraph window). **This is the live entry point** (the older per-sub-event
 `extract_weather` was removed).
 
 **Signature:**
@@ -553,18 +521,20 @@ def extract_weather_central(
     event_file: Path,
     weather_dir: Path,
     grok_client: GrokClient,
-    places_dir: Optional[Path] = None,
+    places_dir: Path,
     parsed_file: Optional[Path] = None,
     fetch_api: bool = False,
     max_retries: int = 3,
 ) -> Optional[Path]
 ```
 
+Returns `weather_dir` when at least one mention was written, else `None`.
+
 **Parameters:**
 - `event_file` (Path): `*-event.json` file.
 - `weather_dir` (Path): central weather directory (`output/weather/`).
 - `grok_client` (GrokClient): initialized client.
-- `places_dir` (Path, optional): places repo for alias-aware PlaceID + coordinate lookup.
+- `places_dir` (Path): places repo for alias-aware PlaceID + coordinate lookup; `output/dates` is taken as `places_dir.parent / "dates"`.
 - `parsed_file` (Path, optional): parsed file for book metadata.
 - `fetch_api` (bool): fetch Open-Meteo historical data (default False).
 - `max_retries` (int): retries per batch call.
@@ -577,7 +547,10 @@ attaches observed data under `noaa_observed`. The nearest station is resolved to
 name + coordinates, and the distance from the requested place is recorded
 (`station_distance_km`). The full standard GHCND daily element set is promoted to named
 fields and **every** returned element is also kept in `raw_elements` (nothing dropped).
-Skips already-enriched files and null/unresolved coordinates. One NOAA data call per
+Skips already-enriched files, files with a missing or zero latitude or longitude, and files dated
+before 1940-01-01 or undated. The station search is a box of +/-0.5 degree, then +/-1.0, around the place
+(`find_nearest_station`; the first station returned is used, not ranked by distance). Rate limit 5
+requests/second; a 429 pauses 60 s. A NOAA outage is not negative-cached. One NOAA data call per
 `(station, date)` — multiple places sharing a station (and reruns) hit the disk cache, not
 the API. (Open-Meteo `api_data` is reanalysis; `noaa_observed` is station-observed — both
 may be present.)
@@ -603,14 +576,10 @@ may be present.)
 4. API timeout setting (increase if needed)
 5. Check logs for API errors
 
-### Approximate dates filtered
+### Approximate dates
 
-**Expected behavior:**
-```
-WARNING - Filtered weather mention with approximate date: early-1944-06
-```
-
-**Solution:** Only exact dates supported. This is by design.
+An approximate date produces an undated weather record (`date: ""`) with no DateID, Open-Meteo data or
+NOAA data. Only exact `YYYY-MM-DD` dates are enriched.
 
 ---
 
@@ -624,6 +593,8 @@ WARNING - Filtered weather mention with approximate date: early-1944-06
 
 ## Phase 3 Enrichment
 
-**Step 6/6 (gated on `api.noaa_api_token`).** NOAA GHCND station-observed data supplements
+**Step 6/6 (runs only when `api.noaa_api_token` is non-empty and `output/weather/` exists).
+`config.yaml` ships `api.noaa_api_token: ""`, so NOAA enrichment never runs and logs nothing
+until a token is set; there is no alert for the missing token.** NOAA GHCND station-observed data supplements
 the Phase-2 Open-Meteo reanalysis (`enrich_weather_with_noaa`); full element set + raw
 passthrough + station provenance. See [Phase 3 Enrichment](../../core/PHASE3_ENRICHMENT.md).

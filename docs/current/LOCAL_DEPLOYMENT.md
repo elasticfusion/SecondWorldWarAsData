@@ -12,7 +12,7 @@ Run the WWII Data Extraction Pipeline on your local machine with filesystem stor
 - **Grok API key** from [x.ai](https://x.ai)
 - **Chrome/Chromium** (for PDF conversion and OpenSERP web scraping)
 - **Go 1.21+** (optional — for building OpenSERP search tool)
-- **MongoDB** (optional — for database import)
+- **AWS credentials** (optional — only for `import_to_dynamodb.py`; there is no MongoDB import path)
 
 ### Install Chrome
 
@@ -166,7 +166,7 @@ python3 scripts/utils/validate_output.py
 # JSON quality report (extraction quality metrics)
 python3 scripts/utils/json_quality_report.py
 
-# Monitor pipeline logs (polling-based, color-coded)
+# Monitor the AWS CloudWatch log groups (needs AWS credentials; for local runs tail logs/pipeline.log)
 bash scripts/utils/monitor_logs.sh
 
 # Clean up cache for completed books

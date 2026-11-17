@@ -1,8 +1,8 @@
 # Enabling AWS for GitHub Actions CI/CD
 
-> **Status (2026-10-05): CI deploy is currently DISABLED / not provisioned.** The
-> `deploy.yml` push trigger is commented out and no GitHub OIDC provider /
-> `AWS_DEPLOY_ROLE_ARN` is configured. Deploys run **locally** via
+> **Status (checked against main 0dac86fa): CI deploy is DISABLED / not provisioned.** The
+> `deploy.yml` push trigger is commented out (only `workflow_dispatch` remains) and no GitHub OIDC provider /
+> `AWS_DEPLOY_ROLE_ARN` is configured. The IAM template can create both (`GitHubOrg` parameter, empty by default). Deploys run **locally** via
 > `scripts/deploy_all.sh` (see `AWS_DEPLOYMENT.md`). This guide describes how to
 > *enable* the CI path when desired; it is aspirational until OIDC is provisioned.
 
@@ -34,21 +34,20 @@ aws cloudformation deploy \
     LambdaCodeKey=lambda/code.zip \
     GitHubOrg=YOUR_GITHUB_ORG \
     PipelineImageUri=340339225515.dkr.ecr.us-east-1.amazonaws.com/wwii-pipeline:latest \
+    OpenSerpImageUri=340339225515.dkr.ecr.us-east-1.amazonaws.com/wwii-openserp:latest \
   --capabilities CAPABILITY_NAMED_IAM
 ```
 
 This creates:
 - `AWS::IAM::OIDCProvider` for `token.actions.githubusercontent.com`
 - `dev-wwii-github-deploy` IAM role with least-privilege deploy permissions
-- Trust policy locked to `repo:<your-org>/SecondWorldWarAsData:ref:refs/heads/main`
+- Trust policy locked to `repo:<your-org>/<GitHubRepo>:ref:refs/heads/main` (`GitHubRepo` defaults to `SecondWorldWarAsData`)
 
-After deploy, get the role ARN:
+`scripts/deploy_aws.py` has no `GitHubOrg` option, so use `aws cloudformation deploy` as above (the OIDC resources are created only when `GitHubOrg` is non-empty). The role ARN is an output of the nested IAM stack, exported as `dev-wwii-github-deploy-role-arn` (the root stack does not re-export it):
 
 ```bash
-aws cloudformation describe-stacks \
-  --stack-name wwii-pipeline-dev \
-  --query "Stacks[0].Outputs[?OutputKey=='GitHubActionsDeployRoleArn'].OutputValue" \
-  --output text
+aws cloudformation list-exports \
+  --query "Exports[?Name=='dev-wwii-github-deploy-role-arn'].Value" --output text
 ```
 
 Then skip to **Step 5** below to add the secret to GitHub.
@@ -250,7 +249,7 @@ aws ecr create-repository \
 
 ## Step 6: Verify
 
-Push a change to `main` or trigger the workflow manually:
+The push trigger is disabled, so run the workflow manually:
 
 ```bash
 gh workflow run deploy.yml --field deploy_target=all
@@ -269,6 +268,7 @@ gh run watch
 - **No long-lived credentials** — uses OIDC federation, tokens are short-lived (1 hour)
 - **Branch-locked** — only `main` branch can assume the role (enforced by the `sub` condition)
 - **Least privilege** — role can only modify `dev-wwii-*` resources
+- **Lambda update list** — `deploy.yml` updates only `dedup-gate`, `dedup-ui`, `openserp-manager`, `nat-manager`, `metrics` and `batch-poller`; `scripts/update_lambdas.sh` updates the full set (trigger, ocr-merge, slack-formatter, mdreview-ui, urlreview-ui, s3-validation-backstop, idle-backstop-reaper, nat-teardown, ...). Extend the workflow list before enabling CI deploys
 - **Image scanning** — ECR scans on push, Trivy scans in the workflow before push
 - **To add staging/prod**: duplicate the `StringLike` condition for additional branches, or create separate roles per environment
 
@@ -291,7 +291,7 @@ gh run watch
 | File | Purpose |
 |------|---------|
 | `.github/workflows/deploy.yml` | CI/CD pipeline (build, scan, push, deploy) |
-| `.github/workflows/tests.yml` | Unit tests (gate for deploy) |
+| `.github/workflows/tests.yml` | Unit tests (gate for deploy; called from `deploy.yml` via `workflow_call`) |
 | `cloudformation/main.yaml` | Root stack (orchestrates nested stacks) |
 | `scripts/deploy_all.sh` | Manual deploy script (local fallback) |
 | `scripts/update_lambdas.sh` | Manual Lambda update (local fallback) |

@@ -83,10 +83,10 @@ Our findings show...
 
 In conclusion...
 
-# References
+### Footnotes
 
-[^1]: Eisenhower, D. (1948). Crusade in Europe.
-[^2]: Bradley, O. (1951). A Soldier's Story.
+[1](https://doi.org/10.1234/example#cn1). Eisenhower, D. (1948). Crusade in Europe.
+[2](https://doi.org/10.1234/example#cn2). Bradley, O. (1951). A Soldier's Story.
 EOF
 
 # Run pipeline
@@ -146,33 +146,21 @@ contentrepository/
 
 ### Footnotes and Endnotes
 
-**Already supported** - Use standard markdown syntax:
+Footnote and endnote syntax is defined in [MARKDOWN_CONTENT_FORMAT.md](MARKDOWN_CONTENT_FORMAT.md) (section 5). For a paper, use a `<sup>N</sup>` marker in the text and, under a `Footnotes`, `Endnotes` or `Notes` heading, definitions of the form `[N](https://host/page#cnN). text`. Use the paper's DOI or page URL as the URL (it must be http(s) and end in `#cnN`). Pandoc-style `[^1]` is not recognised.
 
-```markdown
-This is a statement with a citation.[^1]
-
-Another statement with a reference.[^2]
-
-[^1]: Smith, J. (2024). Historical Analysis. Journal, 10(2), 45-67.
-[^2]: Jones, M. (2023). Military Strategy. Publisher.
-```
-
-The parser automatically extracts:
-- Footnote numbers
-- Footnote text
-- Links to paragraph numbers
+The parser extracts the footnote numbers, the footnote text and the paragraph that cites each note.
 
 ### Bibliography/References
 
-**Two approaches:**
+**Two approaches** (a section titled `References` is not a notes section; only `Footnotes`, `Endnotes` and `Notes` headings are, so the footnote form needs one of those headings):
 
 #### 1. As Footnotes (Recommended)
 ```markdown
-# References
+### Footnotes
 
-[^1]: Eisenhower, D. (1948). Crusade in Europe. New York: Doubleday.
-[^2]: Bradley, O. (1951). A Soldier's Story. New York: Henry Holt.
-[^3]: Montgomery, B. (1958). Memoirs. London: Collins.
+[1](https://doi.org/10.1234/example#cn1). Eisenhower, D. (1948). Crusade in Europe. New York: Doubleday.
+[2](https://doi.org/10.1234/example#cn2). Bradley, O. (1951). A Soldier's Story. New York: Henry Holt.
+[3](https://doi.org/10.1234/example#cn3). Montgomery, B. (1958). Memoirs. London: Collins.
 ```
 
 **Advantages:**
@@ -219,9 +207,9 @@ Include as final section:
 
 The author thanks...
 
-# References
+### Footnotes
 
-[^1]: ...
+[1](https://doi.org/10.1234/example#cn1). ...
 ```
 
 ## Metadata Considerations
@@ -297,12 +285,12 @@ cat > contentrepository/JonesAnalysis2023/chapter1/chapter1-content.md << 'EOF'
 # Abstract
 
 This paper examines the logistical challenges faced during Operation Overlord, 
-focusing on supply chain management and resource allocation.[^1]
+focusing on supply chain management and resource allocation.<sup>1</sup>
 
 # Introduction
 
-The success of D-Day depended heavily on logistics.[^2] Previous studies have 
-examined tactical aspects,[^3] but logistical challenges remain understudied.
+The success of D-Day depended heavily on logistics.<sup>2</sup> Previous studies have 
+examined tactical aspects,<sup>3</sup> but logistical challenges remain understudied.
 
 # Methodology
 
@@ -316,11 +304,11 @@ We analyzed primary sources from the National Archives, including:
 ## Supply Chain Management
 
 The Allies faced unprecedented challenges in coordinating supplies across the 
-English Channel.[^4]
+English Channel.<sup>4</sup>
 
 ## Resource Allocation
 
-Critical resources included fuel, ammunition, and medical supplies.[^5]
+Critical resources included fuel, ammunition, and medical supplies.<sup>5</sup>
 
 # Conclusion
 
@@ -331,15 +319,15 @@ execution in the success of Operation Overlord.
 
 The author thanks the National Archives staff for their assistance.
 
-# References
+### Footnotes
 
-[^1]: Jones, S. (2023). Logistical Challenges in Operation Overlord. 
+[1](https://doi.org/10.1234/example#cn1). Jones, S. (2023). Logistical Challenges in Operation Overlord. 
       Journal of Military History, 87(2), 234-267.
-[^2]: Eisenhower, D. (1948). Crusade in Europe. New York: Doubleday.
-[^3]: Bradley, O. (1951). A Soldier's Story. New York: Henry Holt.
-[^4]: Ruppenthal, R. (1953). Logistical Support of the Armies. 
+[2](https://doi.org/10.1234/example#cn2). Eisenhower, D. (1948). Crusade in Europe. New York: Doubleday.
+[3](https://doi.org/10.1234/example#cn3). Bradley, O. (1951). A Soldier's Story. New York: Henry Holt.
+[4](https://doi.org/10.1234/example#cn4). Ruppenthal, R. (1953). Logistical Support of the Armies. 
       Washington: US Army.
-[^5]: Coakley, R. & Leighton, R. (1955). Global Logistics and Strategy. 
+[5](https://doi.org/10.1234/example#cn5). Coakley, R. & Leighton, R. (1955). Global Logistics and Strategy. 
       Washington: US Army.
 EOF
 
@@ -356,11 +344,11 @@ After processing:
 output/
 └── content/JonesAnalysis2023/
     ├── chapter1-parsed.json      # Parsed content with footnotes
-    ├── chapter1-event.json       # Extracted events
-    ├── chapter1-dates.json       # Temporal entities
-    ├── chapter1-places.json      # Geographic entities
-    └── ...
+    ├── chapter1-endnotes.json    # Separated notes (when present)
+    └── chapter1-event.json       # Extracted events (Phase 2)
 ```
+
+Dates, places and people are entity files under `output/dates/`, `output/places/`, `output/people/`, not per chapter.
 
 ## Validation
 

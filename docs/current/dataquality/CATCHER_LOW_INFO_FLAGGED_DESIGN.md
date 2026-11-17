@@ -18,6 +18,13 @@ flag codes in `_KNOWN_FLAG_CODES` (from `semantic_flags._OWNED_FLAGS`) become ke
 record-derived text never reaches logs or SNS. Recheck-tracking fields (`checked_at`, `history`, ...)
 are non-content (`_NONCONTENT_FIELDS`).
 
+Also built: SMALL-BATCH escalation in `_qualifies_as_cluster` (count >= 3 AND rate >= 90% also
+qualifies, so a 7-place book with all 7 empty alerts), and a `deferred` argument to
+`systematic_clusters` / `get_stats` (`deferred_flags` on `write_validation_stats`, passed by
+`phase2_extract.py:1162`; Phase 3 passes none) that skips `allow_flagged` clusters whose flag is resolved in a
+later phase (`semantic_flags.RESOLVED_IN_PHASE3` = `{geo_missing_coords}`: not alerted at the end of
+Phase 2, still alerted at Phase 3).
+
 ## Design (additive to `src/utils/validation_stats.py` — one catcher, one vocabulary)
 
 ### New outcomes
@@ -45,7 +52,7 @@ entities with a defined floor are checked (others never emit `allow_empty`). Cou
 unpopulated.
 
 ## Wiring (central write guard)
-In `_validate_entity`, AFTER a successful allow (and respecting the existing `record_stats` flag so
+In `src/utils/file_lock.py` (`_record_record_quality`, called after an allowed write and on the `needs_upgrade` path; it delegates to `validation_stats.record_record_quality`), AFTER a successful allow (and respecting the existing `record_stats` flag so
 pre-checks don't double-count):
 - compute populated-field count → if below the entity floor, `record_validation(entity,
   "allow_empty", "below_floor", version_state)`.

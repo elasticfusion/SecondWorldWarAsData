@@ -1,6 +1,6 @@
 # Source Qualification — design
 
-**Status:** design agreed 2026-10-12 (owner). PARTLY BUILT (checked 2026-11-16, factual status only; Phase 3 pass to re-review): the bibliography schema has `source_type` and `proximity` (`src/schemas/bibliography_output.py`) and `url_content_verdict._derive_qualification` fills a `source_qualification` object (`method: llm_assisted`).
+**Status:** design agreed 2026-10-12 (owner). SCHEMA BUILT, DERIVATION NOT RUNNING (checked 2026-11-17). The bibliography schema (`src/schemas/bibliography_output.py`, bibliography schema version 2.29) has a nullable, `additionalProperties:false` `source_qualification` object whose properties are `source_type`, `proximity`, `evidentiary_support`, `method`, `basis`, `confidence` (the axes are nested in this object, not top-level). `url_content_verdict._derive_qualification` can fill it (`method: llm_assisted`), but nothing in `src/` or the phase scripts imports `url_content_verdict`, so no live path populates `source_qualification`. The deterministic derivation ladder below (archive reference, footnote density) and `footnote_density` are NOT implemented. No Dublin Core crosswalk (`to_dublin_core`) exists.
 **Purpose:** let a reader (and the future RAG ranking + UI) judge *how a source qualifies* for an
 asserted fact — **qualification, not veracity**. "Primary" does not make a claim true; it qualifies
 it as a first-hand account. The reader must be in a position to make a quality judgement.
@@ -41,7 +41,7 @@ flag-not-fabricate".
 
 - Stored ONCE on the **bibliography record** (`src/schemas/bibliography_output.py`) as an additive,
   nullable `source_qualification` object. No new schema file; additive bump
-  `bibliography` 2.25 -> 2.26 + re-pin fingerprint; **no reprocessing** (existing records stay
+  of the bibliography schema version (done; now 2.29) + re-pin fingerprint; **no reprocessing** (existing records stay
   valid). NOT duplicated onto `parsed.json` or `event.json` (would drift — the referential-integrity
   discipline).
 - The one thing that touches the chapter layer is the raw **footnote-density measurement** feeding

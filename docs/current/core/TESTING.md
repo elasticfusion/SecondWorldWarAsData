@@ -1,7 +1,7 @@
 # Testing Documentation
 
 **Version:** 2.0.0  
-**Last Updated:** 2026-11-16  
+**Last Updated:** 2026-11-17 (checked against code at main 0dac86fa)  
 **Status:** Active
 
 ---
@@ -17,7 +17,7 @@ Comprehensive testing framework for the WWII data extraction pipeline using pyte
 ```bash
 source .venv/bin/activate
 
-# Run all tests (excludes slow/API-dependent)
+# Run the gate/CI selection (excludes slow/API-dependent; includes integration)
 pytest tests/ -m "not slow and not requires_api" -q
 
 # Run unit tests only
@@ -34,11 +34,11 @@ pytest tests/ --cov=src --cov-report=term-missing
 
 ## Test Structure
 
-About 535 `test_*.py` files (counted 2026-11-16). Most are **flat in `tests/`** (about 456 files), named for the feature they pin. There are also `tests/unit/` (78 files), `tests/unit/test_extraction/`, `tests/integration/` (3 files) and `tests/fixtures/`. Do not look for a fixed catalogue of files here; `ls tests/` and `grep -l` are accurate, a list in this file is not. Shape of the tree:
+542 `test_*.py` files (counted 2026-11-17). Most are **flat in `tests/`** (463 files), named for the feature they pin. There are also `tests/unit/` (75 files), `tests/unit/test_extraction/` (1 file), `tests/integration/` (3 files) and `tests/fixtures/`. Do not look for a fixed catalogue of files here; `ls tests/` and `grep -l` are accurate, a list in this file is not. Shape of the tree:
 
 ```
 tests/
-├── conftest.py                  # shared fixtures + env isolation (see below)
+├── conftest.py                  # shared fixtures + env isolation (see Key Fixtures)
 ├── fake_s3.py                   # in-memory S3 stand-in used by many tests
 ├── fixtures/                    # dedup_golden/, hyperwar/, notes/, validation/ sample data
 ├── test_<feature>.py  (x ~456)  # e.g. test_book_slug.py, test_batch_rounds.py, test_chandra_markdown.py,
@@ -60,7 +60,7 @@ Naming: `test_<module-or-feature>.py`, classes `Test*`, functions `test_*` (`pyp
 ## Running Tests
 
 ```bash
-# All tests
+# Default selection (pyproject addopts: skips slow, requires_api and integration)
 pytest tests/ -q
 
 # Unit only (fast, <10s)
@@ -127,6 +127,8 @@ pytest -m "not slow and not requires_api"
 ## Key Fixtures
 
 ### `conftest.py`
+
+Before any test runs, `tests/conftest.py` sets environment defaults (with `os.environ.setdefault`, so an explicit value wins) so no test reaches the network or Grok: `BOOK_METADATA=0`, `WIKIMEDIA_MIN_INTERVAL_SECONDS=0`, `PHASE2_REFERENCE_LOOKUPS=0`, `PHASE0_TRANSLATE=0` and `BATCH_MIN_REQUESTS=0` (tests batch everything instead of answering small batches live). A test that exercises one of these features sets the variable itself.
 
 | Fixture | Purpose |
 |---------|---------|
@@ -197,6 +199,8 @@ open htmlcov/index.html
 - python -m pytest tests/ -m "not slow and not requires_api" --cov=src --cov-report=term-missing --cov-report=xml --tb=short -q
 ```
 
+`tests.yml` also runs on `workflow_call`, and uploads `coverage.xml` as an artifact (14 days).
+
 Runs on push/PR to `main`/`master` under Python 3.12 (`config.yaml` comes from `config.yaml.example`, so tests must pass with the shipped defaults). Excludes API-dependent and slow tests. `lint.yml` runs the linters; `scripts/gate.sh` runs both locally.
 
 ### Pre-Deploy Gate (`deploy_all.sh`)
@@ -211,7 +215,7 @@ Aborts deployment if tests fail.
 
 ## Linting (QA Gate)
 
-Run `bash scripts/gate.sh` (full, mirrors CI) or `bash scripts/gate.sh --no-tests`. It runs black, pylint (`--fail-under=5.0`), mypy, basedpyright (baselined), bandit, ruff (B), radon, vulture, the unreachable-module check, cfn-lint, a JSON lint, pip-audit and the test selection above. See `scripts/gate.sh` for the exact commands and the pylint disable list.
+Run `bash scripts/gate.sh` (full, mirrors CI) or `bash scripts/gate.sh --no-tests`. It runs black, pylint (`--fail-under=5.0`), mypy, basedpyright (baselined), bandit, ruff (B), radon (C-or-worse blocks fail unless allowlisted in `scripts/.radon_inherent`), vulture, the unreachable-module check, cfn-lint, a JSON lint, pip-audit, `scripts/check_raw_writes.sh` and the test selection above (run with `config.yaml.example` copied over `config.yaml`; the gate restores your copy afterwards). See `scripts/gate.sh` for the exact commands and the pylint disable list.
 
 ### Accepted Warnings
 - B108 `/tmp` usage (container environment)

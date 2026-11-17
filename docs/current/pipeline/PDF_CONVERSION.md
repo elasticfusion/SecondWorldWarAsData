@@ -56,7 +56,7 @@ After conversion, review the content for:
 - [ ] Metadata fields filled in
 - [ ] Paragraph breaks correct
 - [ ] Headers/footers removed
-- [ ] Footnotes formatted: `[^1]: text`
+- [ ] Footnotes formatted so Phase 1 can read them (see [MARKDOWN_CONTENT_FORMAT.md](MARKDOWN_CONTENT_FORMAT.md), section 5)
 - [ ] Tables readable
 - [ ] Special characters correct (é, ö, etc.)
 - [ ] No extraction artifacts

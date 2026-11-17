@@ -15,7 +15,7 @@ check**, **diff the revised entry**, and the shared **staleness window**.
 
 | Function | Purpose |
 |---|---|
-| `should_re_search(data)` | Date-based staleness gate for `not_found` entities (`last_enrichment_search` + `enrichment.re_search_after_days`, default 90). Used by people/people_groups/places. |
+| `should_re_search(data)` | Date-based staleness gate for `not_found` entities (`last_enrichment_search` + `enrichment.re_search_after_days`; code default 90, `config.yaml.example` ships 180). Used by people/people_groups/places. |
 | `should_check_enrichment(record, recheck_seconds=90d)` | Epoch-based staleness gate (`enrichment_checked_at`). Used by equipment. |
 | `stamp_checked(record)` | Stamp `enrichment_checked_at` + `_last_updated` on EVERY check (success/no-op/failure) so the gate advances. |
 | `diff_enrichment(existing, incoming)` | Return changed/new keys; empty == no-op → skip the rewrite. |
@@ -131,8 +131,8 @@ Two distinct paths turn non-English sources into English-normalized, resolvable 
   reports) are detected and translated to English **before** extraction — this runs as a
   **per-page** pass in **Phase 0**: uploaded PDFs are translated inside `ocr_promote.promote`
   (the `translate=` callback `normalize_markdown_to_english(text, per_page=True)`, called from
-  `lambda_handlers/ocr_merge_handler.py` and `phase0_ocr_crosscheck.py`), and the structured-reference
-  (OOB) track does it in `phase0_ingest.py` (both reach `normalize_pages_to_english`), so
+  `lambda_handlers/ocr_merge_handler.py` and `phase0_ocr_crosscheck.py`), the convert track calls it whole-document (`phase0_convert.py:321`, `per_page=False`), and the structured-reference
+  (OOB) track does it in `phase0_ingest.py` (`normalize_pages_to_english`), so
   every entity extractor (events, people, …) sees English and needs no language guard of its
   own. The verbatim original is kept as a `<name>.orig.md` sidecar; `source_language` is
   stamped; places keep `historical_names` with `language`/`date_range` (e.g. Danzig→Gdańsk).
@@ -140,7 +140,7 @@ Two distinct paths turn non-English sources into English-normalized, resolvable 
   without passing through Phase 0 is not language-checked. Full spec:
   [LANGUAGE_TRANSLATION.md](dataquality/LANGUAGE_TRANSLATION.md).
 - **Map-vision path:** images are not OCR text, so the vision prompt translates in place
-  (`proto_map_vision.py --translate`): verbatim foreign label + English/modern equivalent
+  (`scripts/proto_map_vision.py --translate`): verbatim foreign label + English/modern equivalent
   (`title_en`, legend `meaning_en`, place `name_en`), with place resolution falling back to
   the English/modern name for exonyms (Lüttich→Liège). See
   `docs/current/features/maps/MAP_FEATURES_SCHEMA.md`.

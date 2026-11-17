@@ -1,7 +1,7 @@
 {
   "phase_1_parse_workflow": {
     "heading": "Phase 1: Parse Workflow",
-    "hash": "655a7a7e5845",
+    "hash": "3789997ddd8c",
     "file": "phase_1_parse_workflow.png",
     "source": "WORKFLOW_DIAGRAMS.md"
   },
@@ -13,7 +13,7 @@
   },
   "phase_3_enrich_workflow": {
     "heading": "Phase 3: Enrich Workflow",
-    "hash": "0cc7deb3285c",
+    "hash": "59ed9a25e89d",
     "file": "phase_3_enrich_workflow.png",
     "source": "WORKFLOW_DIAGRAMS.md"
   },
@@ -70,5 +70,17 @@
     "hash": "4afe163ed145",
     "file": "phase_0_ingestion_before_phase_1.png",
     "source": "WORKFLOW_DIAGRAMS.md"
+  },
+  "1_step_order": {
+    "heading": "1. Step order",
+    "hash": "edd7345cd79e",
+    "file": "1_step_order.png",
+    "source": "PHASE3_MAP.md"
+  },
+  "3_the_doc_record_multi_doc_mode": {
+    "heading": "3. The `doc#` record (multi-doc mode)",
+    "hash": "91fa390a2591",
+    "file": "3_the_doc_record_multi_doc_mode.png",
+    "source": "DOC_LIFECYCLE.md"
   }
 }

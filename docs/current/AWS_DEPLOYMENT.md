@@ -30,11 +30,12 @@ Retrieve task        → downloads batch results → populates cache
                                                                     then batch.rounds_over_cap alert)
                                                                   ↓ downloads full S3 entity inventory + event files
                                                                   ↓ runs cross-book dedup analysis
-S3 (dedup reports)  → SNS → SQS (60s batch) → Trigger Lambda → checks dedup/review_status.json
-                                                                  ↓ blocks Phase 3 until review complete
+Phase 2 end (ecs_entrypoint)  → dedup detection → gate decision (_phase3_gate_decision)
+                                                                  ↓ zero duplicate groups: auto-invokes the trigger Lambda for Phase 3
+                                                                  ↓ otherwise blocks and notifies; Phase 3 waits for the review
                      Dedup Review UI (API Gateway + Lambda)
                                                                   ↓ user merges/skips/reclassifies
-                                                                  ↓ clicks "Mark Complete"
+                                                                  ↓ clicks "Mark Complete" (writes dedup/review_status.json)
 SNS (dedup-complete) → Trigger Lambda → ECS Phase 3 (enrich --batch, submit-only)
                                                                   ↓ same submit → poller → retrieve flow
 DynamoDB (import)   ← ECS Import (manual trigger)
@@ -45,18 +46,18 @@ DynamoDB (import)   ← ECS Import (manual trigger)
 - **ECS entrypoint modes:** `run_phase` (default), `--submit-only` (submit batch then wait/exit), `--retrieve-only` (retrieve results and re-run), per `ecs_entrypoint.py` `__main__`
 - **Trigger:** Single lightweight Lambda receives SQS-batched events, queues content in DynamoDB (`pending#content`, `pending#parsed`), and launches ECS tasks only if pipeline is idle
 - **Batch Poller:** Lambda (`dev-wwii-batch-poller`) triggered by EventBridge every 5 min — polls Grok batch API, launches ECS retrieve task on completion
-- **Job Queue:** DynamoDB entries (`batch_job#{batch_id}`) track submitted batch jobs with status (pending/ready/complete/failed)
-- **OpenSERP:** ECS Fargate service with internal ALB (headless Chrome)
+- **Job Queue:** DynamoDB entries (`batch_job#{batch_id}`) track submitted batch jobs with status (in_task/pending/ready/retrieved/failed)
+- **OpenSERP:** ECS Fargate service `{env}-wwii-openserp` (headless Chrome, port 7001, desired count 0 until a Phase 3 task scales it to 1; the task discovers its private IP). A separate SQS-fed worker service (`{env}-wwii-openserp-worker`) is scaled by the `openserp-worker-autoscaler` Lambda
 - **Storage:** S3 for content and output, DynamoDB for API cache, pipeline locks, manifests, job queue, and entity tables
 - **Events:** S3 notifications → SNS → SQS (60s batch window) → Trigger Lambda → ECS RunTask
-- **Dedup UI:** API Gateway with Basic Auth → Lambda serving HTML review interface (merge, skip, reclassify). UI actions append changed file keys to DynamoDB manifest for Phase 3.
-- **Incremental processing:** Phase 2 only downloads new parsed files (no matching event file). Phase 3 reads DynamoDB manifest to download only changed files. S3 downloads scoped by `BOOK_NAME` env var for Phase 3.
-- **Pending content queue:** If pipeline is busy when new content arrives, trigger Lambda queues it in DynamoDB (`pending#content`) and sends email notification. Phase 2 re-triggers after completion.
+- **Review UIs:** API Gateway (`DedupApi`) with Basic Auth → Lambdas `dedup-ui` (merge, skip, reclassify), `mdreview-ui` and `urlreview-ui`. Dedup UI actions append changed file keys to the DynamoDB `manifest#phase2` row, which only Phase 2 reads (as a fallback).
+- **Incremental processing:** Phase 2 only downloads new parsed files (no matching event file). Phase 3 downloads a book's entity files from its `book_manifest#` rows when `BOOK_NAME` is set, else lists the entity prefixes in S3; it does not read `manifest#phase2`.
+- **Pending content queue:** If pipeline is busy when new content arrives, trigger Lambda queues it in DynamoDB (`pending#content`) and sends a notification. Phase 2 re-triggers after completion.
 - **Preflight credit check:** Pipeline verifies Grok API credit balance before starting extraction.
 - **Metrics:** API Gateway → Lambda serving pipeline metrics from DynamoDB
 - **Monitoring:** CloudWatch alarms, dashboard, ECS task logs, per-chapter heartbeat progress
 - **Prompts:** YAML templates in `prompts/`, overridable from S3 without container rebuild
-- **Cost control:** Networking is created on demand and torn down by the `nat-teardown` Lambda (every 4 h, only when no queue work or container is running); the poller re-creates networking before launching a retrieve task. See [NETWORKING_LIFECYCLE.md](NETWORKING_LIFECYCLE.md).
+- **Cost control:** Networking is created on demand and torn down by the `nat-teardown` Lambda (every 4 h, only when no queue work or container is running); the poller re-creates networking before launching a retrieve task, and Phase 2/3 tasks request it themselves. See [NETWORKING_LIFECYCLE.md](NETWORKING_LIFECYCLE.md).
 
 See [AWS Architecture Plan](../archive/AWS_DEPLOYMENT_PLAN.md) for detailed design decisions (archived — implemented).
 
@@ -82,7 +83,7 @@ For subsequent deployments after initial setup, use the all-in-one script:
 bash scripts/deploy_all.sh
 ```
 
-This stops running tasks, clears locks, runs QA, builds and pushes the container, deploys CloudFormation, updates Lambdas, and fixes auth.
+This selects a config profile, stops running tasks, clears locks, runs QA and security checks, builds and pushes the container (plus the optional video and ClamAV images), deploys CloudFormation, updates Lambdas, fixes auth, verifies, and validates structured logging. `bash scripts/deploy_all.sh --ocr-standalone` deploys only the OCR stack (see [OCR_OPERATIONS.md](OCR_OPERATIONS.md)).
 
 ### Monitoring and Log Analysis
 
@@ -152,9 +153,9 @@ docker push <account-id>.dkr.ecr.us-east-1.amazonaws.com/wwii-openserp:latest
 cd ..
 ```
 
-> **Note:** OpenSERP defaults to port 7000. The pipeline expects port 7001 (configured in
-> `config.yaml` under `openserp_url`). Set the `OPENSERP_SERVER_PORT=7001` environment variable
-> in the ECS task definition, or update `config.yaml` to use port 7000.
+> **Note:** The OpenSERP task definitions in `compute.yaml` start it with `serve --host 0.0.0.0 --port 7001`
+> and the security group allows 7001 from the pipeline SG, so no port setting is needed on AWS. Locally the
+> pipeline defaults to `http://localhost:7001` (`external_maps.openserp_url` overrides it).
 
 ### 4. Upload Templates and Lambda Code
 
@@ -179,6 +180,8 @@ python3 scripts/deploy_aws.py deploy \
   --pipeline-image <account-id>.dkr.ecr.us-east-1.amazonaws.com/wwii-pipeline:latest \
   --openserp-image <account-id>.dkr.ecr.us-east-1.amazonaws.com/wwii-openserp:latest
 ```
+
+Optional flags: `--video-image`, `--av-image` (ClamAV scanning is enabled only when an AV image is given), `--multi-doc true|false` (dispatcher kill-switch, default false), `--batch-phase2 true|false` (omitted keeps the live value), `--profile`, `--dry-run`.
 
 The deploy script reads `notification_email` from `config.yaml` automatically. You can also pass `--notification-email you@example.com` to override. You'll receive a confirmation email from SNS that you must click to activate notifications.
 
@@ -224,12 +227,13 @@ aws:
   openserp:
     cluster: "dev-wwii-pipeline"
     service: "dev-wwii-openserp"
-    health_check_url: "/health"
     startup_timeout: 120
   database:
     backend: "dynamodb"
     dynamodb_table_prefix: "dev-wwii-"
 ```
+
+Inside ECS tasks `ecs_entrypoint._patch_config()` sets `aws.enabled`, `aws.s3_bucket`, `aws.region` and `aws.cache_table` from the task environment, so this block matters for running locally against AWS.
 
 ---
 
@@ -242,11 +246,11 @@ aws:
 | `network.yaml` | VPC, subnets, NAT Gateway, security groups, VPC endpoints |
 | `storage.yaml` | S3 bucket (DeletionPolicy: Retain, PublicAccessBlock enabled), DynamoDB tables, AWS Budget |
 | `iam.yaml` | Lambda and ECS IAM roles |
-| `compute.yaml` | ECS cluster, task definitions (phase0-convert/ingest/crosscheck/video, av-scan, phase1-parse, phase2-extract, phase3-enrich, import), trigger, batch-poller, ocr-merge, slack-formatter, nat-manager/nat-teardown, idle-backstop-reaper, s3-validation-backstop Lambdas, OpenSERP service, ALB, dedup/mdreview/urlreview UI, gate and auth Lambdas |
+| `compute.yaml` | ECS cluster, task definitions (phase0-convert/ingest/crosscheck/video, av-scan, phase1-parse, phase2-extract, phase3-enrich, import), trigger, batch-poller, ocr-merge, slack-formatter, nat-manager/nat-teardown, idle-backstop-reaper, s3-validation-backstop Lambdas, OpenSERP service + worker service/queue, dedup/mdreview/urlreview UI, metrics API, gate and auth Lambdas |
 | `ocr.yaml` | Chandra (and Paddle) AWS Batch GPU compute, queues, job definitions, ocr-spot-controller Lambda |
 | `dispatcher.yaml` | Step Functions dispatcher + enumerate-pending / clamp-pool / human-gate Lambdas |
 | `chatbot.yaml` | AWS Chatbot Slack channel configuration |
-| `events.yaml` | SNS topics, S3→SNS notifications, EventBridge schedules (poller, reconciliation, OpenSERP idle monitor, Batch→ocr-merge rule), CloudWatch alarms + dashboard |
+| `events.yaml` | SNS topics, S3→SNS notifications, EventBridge schedules (reconciliation, OpenSERP idle monitor, Batch→ocr-merge rule), CloudWatch alarms + dashboard (the poller schedule is in `compute.yaml`) |
 | `main.yaml` | Root stack (nests all above) |
 
 **Key settings:**
@@ -254,7 +258,7 @@ aws:
 - **S3 DeletionPolicy:** Retain (bucket preserved on stack deletion to prevent data loss)
 - **S3 PublicAccessBlock:** All four block settings enabled
 - **Failure notifications:** SNS messages sent on phase errors (ECS task failures, batch job failures)
-- **Batch job TTL:** 30 days (DynamoDB auto-cleanup of completed job entries)
+- **Batch job TTL:** 30 days from submission (`job_queue.py`, DynamoDB `ttl` attribute)
 
 ### Updating Pipeline Code
 
@@ -278,7 +282,7 @@ bash scripts/update_lambdas.sh dev us-east-1 wwii-pipeline-deploy
 
 **Name:** `dev-wwii-batch-poller`  
 **Source:** `lambda_handlers/batch_poller.py`  
-**Triggered by:** EventBridge schedule (`rate(5 minutes)`, configurable via `BatchPollerIntervalMinutes`) OR direct invoke with `{action: "submit"}`
+**Triggered by:** EventBridge schedule (`rate(5 minutes)`, configurable via `BatchPollerIntervalMinutes`; rule `{env}-wwii-batch-poller-schedule` in `compute.yaml`) OR direct invoke with `{action: "submit"}`
 
 Polls the Grok batch API for pending jobs and launches ECS retrieve tasks on completion.
 
@@ -287,7 +291,7 @@ Polls the Grok batch API for pending jobs and launches ECS retrieve tasks on com
 2. Checks Grok batch API for each job's completion status
 3. On completion: updates job status, creates NAT Gateway networking, launches ECS retrieve-only task
 4. On failure: updates job status to `failed`, sends SNS notification
-5. **24h rule:** a batch more than 24 h old with some successes but not fully done is forced to `complete` so its answered results are retrieved (`batch_poller.py`, 24 h age check)
+5. **24h rule:** a batch more than 24 h old with some successes but not fully done is treated as complete (marked `ready`) so its answered results are retrieved (`batch_poller.py`, 24 h age check)
 
 **Environment Variables:**
 | Variable | Description |
@@ -327,7 +331,8 @@ After Phase 2 completes, Phase 3 is blocked until you review and merge duplicate
 The URL is in the stack outputs:
 ```bash
 python3 scripts/deploy_aws.py status --env dev
-# Look for: DedupReviewUrl
+# Look for: DedupReviewUrl (the root stack output; it is the compute stack's DedupApiUrl,
+# whose UI path is /app/dedup)
 ```
 
 Open the URL in a browser. You'll be prompted for Basic Auth credentials (the `dedup-auth` secret you created in step 1).
@@ -344,11 +349,13 @@ Open the URL in a browser. You'll be prompted for Basic Auth credentials (the `d
 ### How the Gate Works
 
 ```
-Phase 2 writes entity files → S3 event → SNS → Trigger Lambda
-  → Checks dedup/review_status.json
-  → If complete: false → event dropped (Phase 3 blocked)
+Phase 2 task end → ecs_entrypoint._phase3_gate_decision
+  → zero duplicate groups (and fewer than DEDUP_ZERO_SUSPICION_THRESHOLD=500 entities):
+    auto-proceed, Phase 3 is launched through the trigger Lambda
+  → otherwise: blocked, operator notified (Phase 3 is not launched)
 
-User clicks "Mark Complete" in UI → SNS (dedup-complete) → Trigger Lambda
+User clicks "Mark Complete" in UI → writes dedup/review_status.json
+  → SNS (dedup-complete) → Trigger Lambda
   → Launches ECS Phase 3 task for all entities
 ```
 
@@ -381,7 +388,6 @@ VPC, subnets, S3, DynamoDB, and Lambda functions cost $0 when idle. Pipeline ECS
 | S3 (10GB) | ~$1 |
 | DynamoDB (on-demand) | ~$2 |
 | NAT Gateway | ~$35 |
-| ALB | ~$16 |
 | Lambda (trigger + dedup UI) | ~$0.10 |
 | Budget alert at $75 | — |
 
@@ -396,7 +402,7 @@ VPC, subnets, S3, DynamoDB, and Lambda functions cost $0 when idle. Pipeline ECS
 | `source/` | → Glacier IR at 30 days |
 | `contentrepository/NARA/` | → Glacier IR at 1 day |
 | Objects tagged `archive=cold` | → Glacier IR at 1 day |
-| All (noncurrent versions) | Expire after 30 days |
+| Noncurrent versions | Expire after 7 days (`tmp/`, `cache/`, `scratch/`), 30 days (`relocated/`, `manifests/`), 1 day (`av-test/`); kept for every other prefix (`contentrepository/`, `ocr-output/`, `output/`, `dedup/` and the rest) |
 
 ### S3 Directory Structure
 
@@ -460,8 +466,8 @@ aws s3 cp s3://dev-wwii-data-pipeline/dedup/review_status.json - --region us-eas
 # Check for pending content
 aws dynamodb get-item --table-name dev-wwii-api-cache --key '{"cache_key":{"S":"pending#content"}}' --region us-east-1
 
-# Check for pending parsed files
-aws dynamodb get-item --table-name dev-wwii-api-cache --key '{"cache_key":{"S":"pending#parsed"}}' --region us-east-1
+# Check for pending parsed files (one row per book)
+aws dynamodb get-item --table-name dev-wwii-api-cache --key '{"cache_key":{"S":"pending#parsed#BOOK_NAME"}}' --region us-east-1
 
 # Check batch job status (pending jobs waiting for Grok API)
 aws dynamodb scan --table-name dev-wwii-api-cache --filter-expression "begins_with(cache_key, :prefix)" --expression-attribute-values '{":prefix":{"S":"batch_job#"}}' --region us-east-1
@@ -469,18 +475,19 @@ aws dynamodb scan --table-name dev-wwii-api-cache --filter-expression "begins_wi
 # Check Phase 2 manifest
 aws dynamodb get-item --table-name dev-wwii-api-cache --key '{"cache_key":{"S":"manifest#phase2"}}' --region us-east-1 --query "Item.keys.L | length(@)"
 
-# Inspect stale locks (DynamoDB items `lock#{env}-wwii-<phase>[#<book>]`; scripts/stop_all_tasks.sh stops tasks, ecs_entrypoint._clear_all_locks clears them at the start of a run)
+# Inspect stale locks (DynamoDB items `lock#{env}-wwii-<phase>[#<book>]`; scripts/stop_all_tasks.sh stops tasks; locks expire by TTL - `ecs_entrypoint._clear_all_locks` exists but nothing calls it, see core/LOCKS_AND_LEASES.md)
 aws dynamodb scan --table-name dev-wwii-api-cache --filter-expression "begins_with(cache_key, :p)" --expression-attribute-values '{":p":{"S":"lock#"}}' --region us-east-1
 ```
 
 ### CloudWatch Dashboard
 
-`dev-wwii-pipeline` dashboard shows Lambda invocations, errors, and duration.
+Two dashboards: `dev-wwii-pipeline-logs` (Logs Insights widgets) and `dev-wwii-pipeline` (Lambda and DLQ metrics; its widgets reference functions and queues that no template creates). See [MONITORING.md](MONITORING.md).
 
 ### Alarms (→ SNS topic `dev-wwii-alarms`)
 
 - Lambda errors (≥3 in 5 min) for trigger, batch-poller, nat-manager
-- ECS task failures (phase errors trigger SNS notification)
+- Other alarms (throttles, credit hold, spend alert, merge retry, batch submission, NAT lease, dispatcher, OpenSERP work DLQ)
+- ECS task failures (the entrypoint publishes to `dev-wwii-phase2-complete`)
 - Batch job failures (poller sends SNS on Grok API errors)
 
 See [MONITORING.md](MONITORING.md) for full alarm details and management commands.
@@ -582,4 +589,6 @@ aws logs tail /aws/lambda/dev-wwii-trigger --follow --region us-east-1
 ```
 
 ### NAT Gateway not re-created
-The nat-manager Lambda (`action: create`) re-creates it on demand, invoked by trigger, batch-poller and ocr-merge. Check its CloudWatch logs if outbound internet isn't working.
+The nat-manager Lambda (`action: create`) re-creates it on demand, invoked by trigger, batch-poller, openserp-worker-autoscaler and the Phase 2/3 tasks. Check its CloudWatch logs if outbound internet isn't working.
+
+See also: [Dedup review gate (Phase 2 to Phase 3)](core/DEDUP_REVIEW_GATE.md) for detection, auto-merge, the gate, the review UI and the operator runbook.

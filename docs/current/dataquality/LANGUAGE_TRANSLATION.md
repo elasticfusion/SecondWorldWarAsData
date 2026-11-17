@@ -28,7 +28,7 @@ ASCII and cannot meaningfully resolve Cyrillic or CJK.
 Normalize language **at Phase 0**, so Phase 1+ never sees a non-English
 document:
 
-1. **Detect** the document's language (per **document**, not per page/mention).
+1. **Detect** the language per **page** (or, for documents without pages, per section; see "Why per-page" below).
 2. **Convert** the original source → Markdown *in its original language* (the
    existing Phase 0 converters: Chandra OCR, `pdf_pipeline`, `text_converters`).
    This is the faithful capture.

@@ -47,7 +47,7 @@ changes that don't change output shape, or for index/report files.
 ## Comprehensive entity → schema map
 
 Every JSON entity type, its enforced schema module, its output location, and whether code
-reads-then-rewrites it (= has a `SCHEMA_TARGET` contract that must track the version).
+reads-then-rewrites it (= has a `SCHEMA_TARGET` contract that must track the version). Contract modules live in `src/extraction/` (see `src/schemas/entity_registry.py`).
 
 | Entity | Output location | Enforced schema module | Read-rewrite contract (SCHEMA_TARGET) |
 |---|---|---|---|
@@ -64,7 +64,8 @@ reads-then-rewrites it (= has a `SCHEMA_TARGET` contract that must track the ver
 | Map features | `output/map_features/*.json` | `map_features_output.py` | — (prototype) |
 | Bibliography | `output/bibliography/*.json` | `bibliography_output.py` | — |
 | Images | `output/images/*.json` | `images_output.py` | — |
-| Batch mentions | (per-entity dirs) | per-entity | ✅ `batch_parallel.py` |
+| Source sections | `output/content/{Book}/source_section/*.json` | `source_section_output.py` | ✅ `source_section.py` |
+| Batch mentions | (per-entity dirs) | per-entity | ✅ `batch_parallel.py` (its `SCHEMA_TARGET` is the events version) |
 
 **Images** (`output/images/*.json`) — enforced by `images_output.py` (added; all 567 real
 records validate). No unenforced entity types remain.

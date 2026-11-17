@@ -54,10 +54,12 @@
 
 ## Usage
 
+There is no CLI. The history is used only inside `openserp_maps.import_openserp_maps` (Phase 3 step `openserp_external_maps`,
+`external_maps.enabled: true`), which always passes `skip_searched=True` from `phase3_enrich_data`. The commands in this section show the
+equivalent behaviour; set `external_maps.max_places` in `config.yaml` for the `--max-places` limit.
+
 ### Default Behavior (Skip Searched)
-```bash
-python3 -m src.extraction.combined_map_search --max-places 220
-```
+`external_maps.max_places: 220`
 
 Output:
 ```
@@ -72,9 +74,7 @@ Found 120 previously downloaded URLs (will skip)
 ```
 
 ### Force Re-search
-```bash
-python3 -m src.extraction.combined_map_search --no-skip-searched
-```
+Delete the history file (below), or call `import_openserp_maps(..., skip_searched=False)` from Python. Phase 3 has no setting for it.
 
 This will:
 - Re-search all places (even previously searched)
@@ -89,20 +89,22 @@ rm cache/openserp_search_history.json
 
 ## When Places Are Marked as Searched
 
-A place is marked as searched when:
-1. OpenSERP search completes (even if no results)
-2. Immediately after search, before verification
-3. Regardless of import success/failure
+A place is marked as searched (`openserp_maps._process_place_file`) immediately after `search_with_openserp` returns, before verification.
+That includes a search that returned nothing because it failed (an OpenSERP outage, or the `./tools/search_maps` binary missing; the
+`subprocess` error is caught and returns `[]`). Such a place is skipped on later runs until the history file is deleted.
 
-This ensures we don't repeatedly search places with no results.
+Places whose only provenance is a map source (`_is_map_derived_only`) are skipped without being marked, to stop map -> place -> map recursion
+(`OBSERV map_source.search_skipped`).
+
+The history file lives under `cache/`. Only `output/` and `artifacts/` are synced to S3, so on ECS the history starts empty in each task
+(UNVERIFIED for the `cache/` directory in the Phase 3 task; the downloaded-URL check below reads `output/external_maps/` and does persist).
 
 ---
 
 ## URL Deduplication
 
 URLs are checked against:
-1. **Phase 1 (Grok)** - Existing maps in `output/external_maps/`
-2. **Phase 2 (OpenSERP)** - Same check, plus Phase 1 results
+Every record in `output/external_maps/` (`SearchHistory.get_downloaded_urls`), whichever method wrote it (Grok search, OpenSERP, YAML import).
 
 **Checked fields:**
 - `external_source_url` - Page URL
@@ -115,9 +117,7 @@ If either matches, the URL is skipped.
 ## Example Workflow
 
 ### First Run
-```bash
-python3 -m src.extraction.combined_map_search --max-places 50
-```
+`external_maps.max_places: 50`
 
 Result:
 - Searches 50 places
@@ -126,9 +126,7 @@ Result:
 - Saves 30 URLs as downloaded
 
 ### Second Run (More Places)
-```bash
-python3 -m src.extraction.combined_map_search --max-places 100
-```
+`external_maps.max_places: 100`
 
 Result:
 - Skips first 50 places (already searched)
@@ -137,9 +135,7 @@ Result:
 - Marks places 51-100 as searched
 
 ### Re-run Same Places (Force)
-```bash
-python3 -m src.extraction.combined_map_search --max-places 50 --no-skip-searched
-```
+`external_maps.max_places: 50` with `skip_searched=False`
 
 Result:
 - Re-searches all 50 places
@@ -186,9 +182,8 @@ At the end of OpenSERP phase:
 
 ## Integration with Combined Search
 
-The combined search strategy automatically:
-1. **Grok whitelist stage** (`grok_search_maps`, manual) - No history tracking (always searches)
-2. **Phase 2 (OpenSERP)** - Uses search history (skips searched places)
+1. **Grok whitelist stage** (`grok_search_maps`, manual) - No place history; it skips a URL already in `output/external_maps/` (`check_duplicate_by_url`)
+2. **OpenSERP (Phase 3)** - Uses search history (skips searched places)
 
 This ensures:
 - Grok whitelist always runs (high-quality sources)
@@ -203,8 +198,7 @@ This ensures:
 # Option 1: Clear history
 rm cache/openserp_search_history.json
 
-# Option 2: Force re-search
-python3 -m src.extraction.combined_map_search --no-skip-searched
+# Option 2: call import_openserp_maps(..., skip_searched=False) from Python
 ```
 
 ### "Already downloaded" but file is missing
@@ -215,8 +209,8 @@ To re-download:
 # Remove the JSON file
 rm output/external_maps/{MapID}.json
 
-# Re-run search
-python3 -m src.extraction.combined_map_search --no-skip-searched
+# Re-run Phase 3 with external_maps.enabled: true (the place stays "searched" in the history, so
+# also delete cache/openserp_search_history.json or use skip_searched=False)
 ```
 
 ### History file corrupted

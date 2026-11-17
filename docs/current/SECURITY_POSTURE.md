@@ -4,8 +4,8 @@ Tracked record of the pipeline's security posture: what is solid, what gaps were
 found + fixed, and what is deliberately deferred to the API/UI phase. Last
 reviewed 2026-10-01 (after the AV-scanning + S3/pandoc hardening pass).
 
-Companion: `AV_SCANNING_DESIGN.md` (malicious-document scanning),
-`INGESTION_PATHS.md` (per-type routing incl. the AV gate).
+Companion: `dataquality/AV_SCANNING_DESIGN.md` (malicious-document scanning),
+`dataquality/INGESTION_PATHS.md` (per-type routing incl. the AV gate).
 
 ---
 
@@ -21,8 +21,14 @@ Companion: `AV_SCANNING_DESIGN.md` (malicious-document scanning),
   `Resource: "*"` entries are actions AWS *requires* to be `*` (`ecs:ListTasks`,
   `batch:ListJobs`, CloudWatch `PutMetricData`) and are annotated as such.
 - **Network** — SGs are egress-only to `0.0.0.0/0` with SG-to-SG ingress on
-  443/7001 (OpenSERP). No open inbound from the internet; tasks run in private
+  443 (self and VPC endpoints), 8077 (container status API, LambdaSG to itself) and 7001 (OpenSERP, from LambdaSG). No open inbound from the internet; tasks run in private
   subnets with `AssignPublicIp: DISABLED`; NAT is torn down when idle.
+- **Operator web UIs** — the dedup, OCR-markdown-review and URL-review UIs and the metrics
+  API sit behind API Gateway with a Lambda Basic-auth authorizer (`dedup-auth`; one shared
+  credential in Secrets Manager `{env}-wwii-pipeline/dedup-auth`, resolved into the authorizer's
+  `AUTH_TOKEN` env var at deploy). Unauthenticated requests get 401. These are operator tools,
+  not a third-party submission path. `dedup_gate_handler` only trusts `dedup_complete` messages
+  from the pipeline's own `dedup-complete` topic ARN.
 - **Secrets** — Grok API key in Secrets Manager (`SECRETS_ID`), read at runtime;
   not baked into images. `config.yaml` (secrets) is git-ignored.
 - **Compute storage encryption at rest**
@@ -67,11 +73,11 @@ These are **not** current vulnerabilities — the pipeline today ingests via S3
 events from a trusted operator, with no public submission endpoint. They become
 required the moment an API/UI accepts third-party uploads:
 
-- **AuthN/AuthZ** — the submission endpoint needs real auth. Per
+- **AuthN/AuthZ** — the submission endpoint needs real auth (the existing operator UIs use one shared Basic-auth credential, which does not meet this). Per
   `architecture-decisions.md`, API Gateway usage plans (free quota + throttling)
   are the planned mechanism; metering is cost-protection first.
 - **Freeze-submitter enforcement** — the hook exists (`av_scan.freeze_submitter`)
-  but is a no-op today because S3-event uploads carry no principal. Requires the
+  but is a no-op today because S3-event uploads carry no principal (with an identity it writes `quarantine/frozen/{identity}.json`, `enforced: false`; `src/ingestion/av_scan.py`). Requires the
   submission path to stamp submitter identity (`x-amz-meta-submitter` /
   `x-amz-meta-api-key-id`), then flip the hook to disable the API-key / set
   `account.frozen`. Identity-provenance requirement documented in `AV_SCANNING_DESIGN.md`.

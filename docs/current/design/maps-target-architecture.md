@@ -1,10 +1,17 @@
 # Maps Target Architecture (owner-specified, 2026-11-02)
 
-**Status:** BUILT through step 6 (checked 2026-11-16); the SQS Phase-3 -> Phase-2 feedback route was replaced by a
+**Status:** BUILT through step 6 (checked 2026-11-17); the SQS Phase-3 -> Phase-2 feedback route was replaced by a
 conflict-safe find-or-create without SQS (commit 0f140773, step 7). Supersedes the "Recommendation" section of the
 archived `docs/archive/2026-11-16/design/maps-architecture-review.md` (its "three finders find 0" findings were fixed by
 step 1) · grounded in the real SNS→SQS→`trigger_handler` orchestration
 (`cloudformation/events.yaml`, `lambda_handlers/trigger_handler.py`).
+**Not built / deviations (code-checked 2026-11-17):** (a) `map_registration` was NOT extended with an organization dimension and has no caller outside tests
+(`register_dir`, `load_map_extents`); (b) the Map schema does carry `PeopleGroupID` / `PeopleGroupMentionID` / `PeopleGroup_Name` (`src/schemas/maps_output.py`),
+linked by `map_common.link_map_entities`; (c) the shared-map accumulation is built: `map_common.find_or_create_map_by_url` appends to `references[]`
+(`OBSERV maps.shared_appended`), so the "Current state (gap)" paragraph at the end is historical; (d) Phase-3 vision idempotency uses
+`map_vision_checked_at` (schema field) and `OBSERV maps.tier` / `maps.persist_summary`; the `maps.analyze` / `maps.vision calls=` lines named in
+`maps-implementation-plan.md` do not exist; (e) `src/extraction/maps.py` is still present but has no pipeline caller. Current behaviour is described in
+`docs/current/features/maps/README.md` and `docs/current/core/PHASE3_MAP.md`.
 
 Owner decision: consolidate the accreted 8-module maps subsystem onto a clean per-phase split, with
 cross-phase feedback via SQS. Phase 2 map processing is **eliminated**; map ANALYSIS lives in
@@ -121,7 +128,7 @@ Target feedback loops:
   appended-to) → converges to zero. "Feed back to Phase 2" therefore means: a newly-created entity
   receives the same create+enrich treatment the normal pipeline gives it — there is no ping-pong to
   bound. Reuses the existing cross-entity back-fill pattern (`places.find_or_create_place_stub` +
-  `docs/current/design/cross-entity-reference-backfill.md`): find-or-create stub → append reference
+  `cross-entity-reference-backfill.md` (that file no longer exists under `docs/current/design/`)): find-or-create stub → append reference
   → enrich-if-new. Generalize that pattern to organizations (people_groups) as well as places.
 
 - **OI3 — PROVENANCE IS PARAMOUNT.** Every map reference footprint (Phase 1) AND every reference

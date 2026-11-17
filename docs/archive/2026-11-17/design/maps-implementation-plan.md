@@ -1,6 +1,6 @@
 # Maps Refactor — Sequenced Implementation Plan
 
-**Status:** Steps 1-6 SHIPPED (#673-#687); step 7 shipped as conflict-safe find-or-create without SQS (#688), so the SQS feedback interface below was NOT built. Checked 2026-11-16. Original plan 2026-11-02 · implements `maps-target-architecture.md` (owner-approved) ·
+**Status:** Steps 1-6 SHIPPED (#673-#687); step 7 shipped as conflict-safe find-or-create without SQS (#688), so the SQS feedback interface below was NOT built. Checked 2026-11-17 (code: `map_common.find_or_create_map_by_url`, `map_link_source.persist_map_entities`, `phase3_enrich_data._run_document_media_steps`; `maps.py` has no pipeline caller; the OBSERV names `maps.analyze`, `maps.vision calls=` and `entity.backfill` do not exist, the implemented ones are `maps.parse`, `maps.tier`, `maps.persist_summary`, `maps.created`, `maps.shared_appended`, `maps.linked`, `map_link.summary`; `map_registration` org extension was not built). Original plan 2026-11-02 · implements `maps-target-architecture.md` (owner-approved) ·
 grounded in a code inventory of the existing map/enrich/fetch/dedup libraries.
 **Governing constraint (owner):** REUSE existing libraries; do NOT create parallel code doing the
 same thing. Every step below says explicitly what to reuse / consolidate / retire.

@@ -1,6 +1,6 @@
 # Cache Corruption Auto-Recovery
 
-**Date:** 2026-03-13 (updated 2026-11-16 to match `src/grok_client.py`)  
+**Date:** 2026-03-13 (updated 2026-11-17 to match `src/grok_client.py` at main 0dac86fa)  
 **Issue:** API responses being truncated/corrupted in cache  
 **Solution:** Automatic cache clearing for corrupted entries
 
@@ -133,14 +133,14 @@ ERROR - API returned short/invalid response (401 chars) - cache cleared, will re
 ### Short Response (< 500 chars)
 
 - Likely incomplete JSON
-- Auto-cleared immediately
-- Fresh API call on next run
+- Evicted and re-fetched once in the same call (`_should_evict_and_retry`, `src/grok_client.py:2495`); if the second answer is also short, `_handle_short_response_error` (`:2067`) evicts again and raises, and the next run makes a fresh call
 
 ### Truncated Response (JSON parse error)
 
 - "Unterminated string" error
 - "Expecting" error (incomplete JSON)
-- Always evicted (a kept truncated answer would cache-hit and truncate again)
+- Always evicted (a kept truncated answer would cache-hit and truncate again); `_handle_truncation_error` (`:2095`) then raises `GrokTruncationError`
+- Only a body that starts as JSON and fails at its end counts as truncated (`_starts_as_json`, `_cut_short`); other parse errors go to JSON repair (see [JSON_REPAIR.md](JSON_REPAIR.md))
 - If > 100,000 chars: likely the max_tokens limit; the log says a manual split is needed
 
 ### Valid Response
@@ -247,6 +247,6 @@ grok_client.extract_json(prompt, use_cache=False)
 
 ---
 
-**Status:** ✅ Implemented and tested (re-checked 2026-11-16)  
+**Status:** ✅ Implemented and tested (re-checked 2026-11-17)  
 **Impact:** Improved reliability and user experience  
 **Breaking Changes:** None

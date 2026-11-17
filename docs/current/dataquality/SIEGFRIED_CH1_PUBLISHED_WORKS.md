@@ -8,7 +8,7 @@ Source: https://www.ibiblio.org/hyperwar/USA/USA-E-Siegfried/USA-E-Siegfried-1.h
 the archival-only RoerDams chapters 2a/3a/14a yield `biblio_category: archival` only).
 
 Published works cited in ch.1 body/footnotes (all 6 are in
-`_VOLUME_PUBLISHED_WORKS["USA-E-Siegfried"]`):
+`_VOLUME_PUBLISHED_WORKS["USA-E-Siegfried"]`, which also lists other works, e.g. The Brereton Diaries, The Victory Campaign):
 
 | # | Author | Title | fn/context |
 |---|--------|-------|-----------|

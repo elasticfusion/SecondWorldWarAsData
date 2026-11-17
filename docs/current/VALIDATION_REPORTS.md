@@ -10,6 +10,8 @@ Generate HTML and JSON reports for validation results with historical tracking.
 - **Trend Analysis** - Analyze validation trends and success rates
 - **CI/CD Integration** - Exit codes and automation-friendly
 
+Schemas come from `src/utils/schema_registry.py`, which serves the same `*_OUTPUT_SCHEMA` dicts the write guard enforces (`--schema` accepts entity names such as `people`, `places`, `people_groups`, `source_section`, plus singular aliases like `place`). For corpus-level checks (traceability, referential integrity, quotes) use `scripts/validate_phase2.py`, `scripts/validate_phase3.py` and `scripts/validate_provenance.py` instead.
+
 ## Quick Start
 
 ### Generate Validation Report
@@ -150,7 +152,9 @@ python scripts/validation_report.py trends --history-file custom_history.json
 from pathlib import Path
 from src.utils.json_validator import validate_directory
 from src.utils.validation_reports import generate_validation_report
-from src.json_schemas import PEOPLE_SCHEMA
+from src.utils.schema_registry import get_registry
+
+PEOPLE_SCHEMA = get_registry().get_schema("people")  # same schema the write guard enforces
 
 # Validate
 results = validate_directory(Path("output/people"), PEOPLE_SCHEMA)
@@ -191,6 +195,8 @@ Path("trends.html").write_text(html)
 ## CI/CD Integration
 
 ### GitHub Actions Example
+
+The repository's own workflow is `.github/workflows/validation.yml`: it validates the committed fixtures under `tests/fixtures/validation/<schema>/sample.json` (the real `output/` tree is git-ignored) and uploads the HTML reports. The snippet below is a generic example.
 
 ```yaml
 name: Validate Data

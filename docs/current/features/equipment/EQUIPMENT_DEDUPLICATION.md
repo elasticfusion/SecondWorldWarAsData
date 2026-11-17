@@ -118,7 +118,9 @@ def merge_or_create_equipment(
     equipment_data: dict,
     new_mention: dict,
     equipment_dir: Path,
-    equipment_index: Dict[str, Path]
+    equipment_index: Dict[str, Path],
+    grok_client: Optional[GrokClient] = None,
+    enable_enrichment: bool = False,
 ) -> Path:
 ```
 
@@ -195,7 +197,7 @@ def generate_equipment_index(equipment_dir: Path) -> None:
 ### Other Fields
 
 - `description`, `subcategory`, `specifications` → Latest value wins
-- `mentions` → Always appended (never replaced)
+- `event_mentions` → Always appended (never replaced)
 
 ---
 
@@ -286,7 +288,7 @@ python3 -m src.extraction.equipment output/BreakoutAndPursuit/chapter1a-event.js
 python3 -m src.extraction.equipment output/BreakoutAndPursuit/chapter1a-event.json
 
 # Check mentions count
-jq '.mentions | length' output/equipment/Sherman_*.json
+jq '.event_mentions | length' output/equipment/Sherman_*.json
 # Should show 2 (or more if Sherman mentioned multiple times)
 ```
 

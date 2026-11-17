@@ -6,6 +6,7 @@ retrieve claims, credit gating and OCR idempotency have landed (see the §-citat
 `nat_manager`/`dispatcher`/`ecs_entrypoint`/`batch_poller`); full multi-doc parallelism remains gated
 off by default (`MultiDocEnabled` / `MULTI_DOC_ENABLED` = `'false'` in `cloudformation/compute.yaml` and
 `main.yaml`) pending the controlled isolation test.
+Current key catalogue: [../core/LOCKS_AND_LEASES.md](../core/LOCKS_AND_LEASES.md). Current `doc#` states: [../core/DOC_LIFECYCLE.md](../core/DOC_LIFECYCLE.md).
 
 **Implementation status, checked against the code on 2026-11-16** (sections below that describe
 these as "current" or "required" are the original design text):
@@ -18,7 +19,12 @@ these as "current" or "required" are the original design text):
 | Credit-aware gating (§9.0/9.1) | Built | `src/utils/credit_gate.py`, called from `grok_client.py` |
 | Step Functions dispatcher (§17) | Deployed, not invoked while the kill-switch is off | `cloudformation/dispatcher.yaml`, `lambda_handlers/dispatcher_handlers.py` (`enumerate_pending`, `clamp_pool`, `human_gate`) |
 | Input pre-stage (§7) | Built | `src/ingestion/prestage.py` |
-| Failure taxonomy (§6.1) | Built | `src/utils/failure_taxonomy.py` |
+| Failure taxonomy (§6.1) | Module built and unit-tested, but NOT wired: nothing outside `tests/test_failure_taxonomy.py` imports it (re-checked 2026-11-17). The causes in the §6.1 table are still handled ad hoc | `src/utils/failure_taxonomy.py` |
+| Cluster-wide Grok rate (§5.2) | Built as the static-share option: `src/grok_client.py::_effective_calls_per_minute` divides `api.calls_per_minute` by `GROK_RATE_POOL_SIZE` (injected by the dispatcher) or `concurrency.multi_doc.pool_max`, only when `concurrency.multi_doc.enabled` is true. `_RateLimiter` itself is still per-process; there is no DynamoDB token bucket |
+| NAT teardown ownership (§4) | Built differently from §4 text: phases never delete NAT. `lambda_handlers/nat_teardown.py` (cron `rate(4 hours)`, `compute.yaml:955`, self-reschedules a 10-minute recheck while work is running) is the sole decider and calls `nat_manager` `action=delete` when `nat_manager._nat_demand_present()` is false. Demand = live `nat#lease#` rows, running non-openserp ECS tasks, in-flight OCR Batch jobs, pending Grok `batch_job#` rows; any error means keep NAT. Backstops: `idle_backstop_reaper.py` (hourly, two strikes of no `output/` growth) and `openserp_manager.py` (2h `_nat_too_old` guardrail) |
+| Batch size limits (§6.2) | Partly built: `src/utils/batch_api.py::BatchRequestCollection.write_jsonl` refuses (raises `BatchSubmissionError`) above `BATCH_MAX_REQUESTS` (default 20000) or `BATCH_MAX_BYTES` (default 512 MiB). There is no chunking or split-and-resubmit, and the xAI 50,000 / 200 MB limits quoted in §6.2 are not what the code enforces |
+| Model retirement (§6.3) | Different from the proposal: `src/utils/grok_models.py` runs a preflight and checks every served model; a retired or substituted model raises `GrokModelUnavailable` (BaseException) and stops the run with `OBSERV grok.model_unavailable`. There is no fallback-model chain |
+| Configuration schema (§14) | NOT in `config.yaml`. Only the existing `concurrency.*`, `batch.max_rounds/in_task_wait_minutes/min_requests` keys exist there. `concurrency.multi_doc.*` and `cost.*` are read with defaults by `grok_client` and `credit_gate` (`cost.credit_gating` default false, `GROK_SPEND_ALERT_USD` env or `cost.spend_alert_usd`, no default). Pool bounds come from the trigger's `POOL_MIN` / `POOL_MAX` env (defaults 2 / 8) passed as the SFN input. `nat.*`, `compute_profiles`, `resource_caps`, `grok_rate` and the extra `batch.*` keys do not exist (lease TTL is env `NAT_LEASE_TTL_SECONDS`, default 900) |
 | Batch rounds | Built (not in this spec): a phase run repeats collect/submit rounds until none queue anything; cap 8, then `batch.rounds_over_cap` | `src/utils/batch_rounds.py` |
 | Entity writes through `DynamoEntityStore` (§1, §3.3) | NOT adopted and the class was REMOVED: `DynamoEntityStore` is now a tombstone that raises, and `get_entity_store()` returns None. S3 (`output/<entity>/*.json`) is the sole entity store, written through `file_lock.write_json_with_lock`; DynamoDB holds only caches, locks, queues, leases and batch/run state. §3.3 must be redesigned around S3 (cross-task safety of concurrent entity writes is still open) | `src/utils/entity_store.py`, `src/utils/file_lock.py` |
 
@@ -52,8 +58,11 @@ Related: `docs/current/TODO.md` "True multi-job concurrency" (High/Future) and
   across all books; places use a global coords cache). This is the hardest part
   to coordinate — but it runs CONTINUOUSLY/incrementally (per-book against the running resolved set), not as a batch barrier (§3.2).
 - **NAT:** single shared NAT gateway, created on demand (`nat_manager` action
-  create), delayed-teardown via EventBridge schedule, 2h no-tasks guardrail
-  (`openserp_manager`). The per-phase teardown races (tracked bug).
+  create) and deleted only by `nat_teardown` (4-hour cron plus 10-minute rechecks)
+  when no lease/task/OCR job/pending batch needs it; backstops are the hourly
+  `idle_backstop_reaper` and the 2h guardrail in `openserp_manager`. *(Updated
+  2026-11-17: the per-phase teardown race was removed by the lease-based demand
+  check; see the status table.)*
 
 ---
 
@@ -80,7 +89,7 @@ Related: `docs/current/TODO.md` "True multi-job concurrency" (High/Future) and
 - Replace the single per-phase lock with a **bounded worker pool**: allow up to
   `MAX_CONCURRENT_BOOKS` (config, default TBD after limit analysis) simultaneous
   book pipelines through Phase 0→1→2.
-- **Per-book locks** (`lock#book#{book}#{phase}`) instead of one global per-phase
+- **Per-book locks** (as built: `lock#{family}#{book}` in `trigger_handler._lock_key`, `lock#{env}-wwii-{suffix}#{book}` in `ecs_entrypoint`; singleton `lock#{family}` while multi-doc is off) instead of one global per-phase
   lock, so different books run the same phase concurrently while a single book
   can't double-run a phase.
 - A **Step Functions Map** (Standard workflow) fans out over pending docs with
@@ -281,7 +290,7 @@ and per-task Grok rate a **config** so it can be tuned to the current quotas.
 
 ### 5.2 Current rate limiter is per-process — must become cluster-wide
 
-Today `src/grok_client.py:_RateLimiter` is a **per-process** token bucket
+*(Partly addressed 2026-11-17: the static per-task share option is built, see the status table.)* `src/grok_client.py:_RateLimiter` is a **per-process** token bucket
 (`calls_per_minute`, default 30) + 429 backoff. It is correct for serial
 (one-task) operation but **breaks under concurrency**: N parallel task processes
 each get their OWN 30/min bucket → **N×30/min** hitting Grok's *account-wide* hard
@@ -606,7 +615,7 @@ What the pipeline already captures (verified) vs. what's needed:
   default_model)`. So **different job kinds can use different models** (the
   intended cost lever: cheap model for simple extractors, best model for hard
   ones — tracked TODO "model routing expansion").
-- **Today** `model_map: {}` → everything uses `grok-4.6` (one price). But the
+- **Today** `model_map: {}` → everything uses `api.grok.model` (`grok-4.3` in `config.yaml`, one price). But the
   cost model MUST resolve **per request** via the same `model_map`/`cache_type`
   routing, so spend stays correct automatically when cheaper models are enabled.
 
@@ -632,9 +641,9 @@ Key facts to bake in:
 - **Long-context billing is a cliff:** once a request's prompt crosses the model's
   long-context threshold (200k for 4.x), **ALL tokens** bill at the ~2× long rate.
   The estimator must apply the long rate when prompt ≥ threshold.
-- **Config drift:** config default is `grok-4.6`, but the pipeline's actual model
-  is `grok-4.20-0309-reasoning` (cheaper + batch-discounted). Reconcile config;
-  use **model aliases** (`grok-4.20` → latest stable) to ride model migrations.
+- **Config drift (resolved 2026-11-17):** `config.yaml` now sets `api.grok.model: grok-4.3`
+  (xAI retired `grok-4.20-0309-reasoning`). The price table in `src/utils/credit_gate.py`
+  (`DEFAULT_PRICING`, overridable via `api.grok.pricing`) carries the 4.3 and 4.20 rows.
 - Batch: "most complete within 24 hours"; batch requests **don't count toward
   rate limits** (separate from the §5.2 real-time budget).
 - xAI publishes a **Model Retirement migration guide** — confirms the §6.3
@@ -958,6 +967,19 @@ EnumeratePending           (Lambda: list docs not done/in-flight — §8 lifecyc
    └─> CheckDrained          (Choice: pending still non-empty? → loop EnumeratePending)
    └─> Done
 ```
+
+**As built (`cloudformation/dispatcher.yaml`, checked 2026-11-17):** the deployed state machine
+`{env}-wwii-dispatcher` is smaller than the sketch above: `EnumeratePending` -> `AnyPending`
+(Choice; `DispatchAborted` Fail on a scope-guard abort, `Done` when nothing is pending) ->
+`ClampPool` -> `CreateNat` (invokes `{env}-wwii-nat-manager` `action=create`, retried) ->
+`WaitForNat` (150 s) -> `FanOut` Map (`MaxConcurrencyPath: $.pool.effective`) -> back to
+`EnumeratePending`. Each branch is a single `RunDocTask` (`ecs:runTask.sync`, 4:1 SPOT:FARGATE, two
+subnets, `BOOK_NAME` and `GROK_RATE_POOL_SIZE` overrides, 2 retries) with a `DocFailed` Pass catch.
+There are no `AcquirePerDocLock`, `AcquireNatLease`, `RouteByMedia`, `HumanGate` or `Release*`
+states: locks and leases are taken inside the ECS task (open question 3, resolved as "in the task"),
+`enumerate_pending` claims docs atomically (`doc#{id}` -> running) and carries the routed `task_def`,
+and the `human_gate` Lambda exists but no state invokes it. `enumerate_pending` also has a scope
+guard that aborts an undeclared large backlog unless `DISPATCH_EXPECTED_COUNT` is set.
 
 **Key properties:**
 - **`MaxConcurrency` = clamped pool** — Step Functions enforces the fan-out cap for

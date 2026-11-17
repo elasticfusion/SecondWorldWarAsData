@@ -2,7 +2,9 @@
 
 **Status (2026-11-16):** partly implemented. `scripts/validate_phase2.py` runs at the end of `phase2_extract.py` (log-only: the phase is not aborted; the standalone CLI exits 1 on an A failure) and implements A1/A2 (schema + `_schema_version`), A3 (orphan entities, mention `EventID`, empty `original_text`/`book`), A3/B1 (`referential_integrity.audit`, 0 dangling), A4 (people enrichment anomaly; WARN unless `--strict-enrichment`) and B3 (index.json sanity). **Not implemented:** the SNS data-quality alert on FAIL, B2, B4, B5, B6, B7, B8 and the per-person A4 sample, which remain spec below.
 
-**Quote and locator truth is a separate gate:** `scripts/validate_provenance.py` (config `provenance_validation.gate`: `warn` or `block`, env `PROVENANCE_GATE`) runs per book at the end of Phase 2 and checks `P2-L1` (Sub-eventID belongs to the Event), `P2-L2` (cited paragraph exists and lies in the cited sub-event), `P2-Q1` (`original_text` is in the cited paragraphs) and `P2-Q2` (a bibliography `verbatim_reference` is the cited note's text). Its report is `output/reports/provenance/<book>-phase2.json`. With `gate: block`, a hard failure holds Phase 3. **Owner-driven.**
+**Quote and locator truth is a separate gate:** `scripts/validate_provenance.py` (config `provenance_validation.gate`: `warn` or `block`, env `PROVENANCE_GATE`) runs per book at the end of Phase 2 and checks `P2-L1` (Sub-eventID belongs to the Event), `P2-L2` (cited paragraph exists and lies in the cited sub-event), `P2-Q1` (`original_text` is in the cited paragraphs) and `P2-Q2` (a bibliography `verbatim_reference` is the cited note's text). Its report is `output/reports/provenance/<book>-phase2.json`. With `gate: block`, a hard failure holds Phase 3. **Owner-driven.** The same script also runs at the end of Phase 3 (`--phase 3`), adding `P3-B1` (real bibliography source), `P3-R1` (license/rights), `P3-A1` (enriched record names its source) and `P3-C1` (cited notes have a bibliography mention); see `scripts/validate_provenance.py` docstring and `PHASE3_DATA_VALIDATION.md`.
+See [dataquality/PROVENANCE_AND_INTEGRITY_GATES.md](dataquality/PROVENANCE_AND_INTEGRITY_GATES.md) for how the validation, completeness and referential gates fit together, where they run, and the alerts.
+
 **Principle:** after a Phase-2 run completes, a single validation pass asserts the generated data is
 **schema-correct, spec-compliant, fully traceable to source, and enriched as intended.** Every
 failure is surfaced **LOUDLY** (a non-zero exit + an explicit `VALIDATION FAIL` summary + an SNS
@@ -100,9 +102,10 @@ Phase-2 already logs these; the validator asserts thresholds:
   a soft data-quality risk.
 - **Validation block rate:** `block_rate == 0%` (any blocked write = a record the guard rejected).
 - **Systematic `allow_flagged` clusters:** `validation_stats` flags e.g.
-  `places/geo_missing_coords ≥ threshold` as "likely a CODE defect — reprocess cannot fix." Surface
-  these as **warnings** (not hard fails — some are expected pre-Phase-3, e.g. null coords awaiting
-  geocoding), but list them explicitly so a NEW systematic cluster is visible.
+  a flag cluster ("likely a CODE defect — reprocess cannot fix"). Flags that Phase 3 resolves
+  (`semantic_flags.RESOLVED_IN_PHASE3` = `geo_missing_coords`, null coords awaiting geocoding) are
+  passed as `deferred_flags` at Phase 2, so they are counted in `output/metrics/validation_stats.json`
+  but raise no alert. Other systematic clusters alert (`validation_stats._alert_systematic`, SNS).
 
 ### B5. Completeness / non-empty expectations
 - A book that parsed N chapters in Phase 1 must yield ≥1 event file and a non-trivial entity count
@@ -132,7 +135,7 @@ Phase-2 already logs these; the validator asserts thresholds:
 2. **Explicit summary line:** `OBSERV phase2.validation result=FAIL checks=N failed=M` with a
    per-check breakdown; `result=PASS` only when all A-checks pass.
 3. **SNS data-quality alert:** reuse the existing `validation_stats` systematic-failure alert channel
-   so a FAIL pages the operator (same path that already alerts on `geo_missing_coords`).
+   (`validation_stats._alert_systematic`) so a FAIL pages the operator. Not implemented for validate_phase2 FAIL.
 4. **Per-failure detail:** entity type + file + the specific violation (schema path, missing field,
    dangling ID value, un-attributed enrichment) — enough to act without re-deriving.
 5. **Warnings (non-fatal) are listed but do not fail:** B4 systematic clusters that are expected

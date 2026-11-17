@@ -36,7 +36,7 @@ Called when `json.loads()` fails after sanitization. Strategy 0 handles `Extra d
 | 3 | **Bracket fix** | `\[` → `[`, `\]` → `]` — removes escaped brackets |
 | 4 | **Nuclear** | Strips all backslashes not followed by valid JSON escape characters |
 
-If every strategy fails, the method returns `None`; the caller (`_handle_json_decode_error`) evicts the cache entry, emits an `OBSERV grok.json_failed` line and raises `GrokParseError` (a `GrokAPIError`).
+If every strategy fails, the method returns `None`; the caller (`_handle_json_decode_error`) evicts the cache entry, emits an `OBSERV grok.json_failed` line (`observe_error`, `src/grok_client.py:2573`) and raises `GrokParseError` (a `GrokAPIError`), or its subclass `GrokNoJsonError` when the answer does not start as JSON (`_parse_error`, `:290`).
 
 ## Other Error Handling
 

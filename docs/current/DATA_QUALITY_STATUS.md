@@ -124,6 +124,8 @@ contains none that resolve — tracked.)
 - `scripts/utils/validate_all_output.py` — Schema validation across all entities
 - `scripts/utils/json_quality_report.py` — Field completeness report
 - `scripts/validate_phase2.py` / `scripts/validate_provenance.py` — post-Phase-2 schema, traceability and quote checks
+- `scripts/validate_phase3.py` — post-Phase-3 schema, enrichment-source-link and coverage checks
+- `src/utils/provenance_integrity.py` (every record has a source edge), `src/utils/referential_integrity.py` (every id resolves), `src/utils/semantic_flags.py` (record-level flags) and `src/utils/validation_stats.py` (block rate and systematic-cluster alert, `output/metrics/validation_stats.json`) run inside the phases
 - `src/dedup/find_duplicate_people.py` — People dedup detection
 - `src/dedup/find_duplicate_equipment.py` — Equipment dedup detection
 - `src/dedup/find_duplicate_groups.py` — Groups dedup detection

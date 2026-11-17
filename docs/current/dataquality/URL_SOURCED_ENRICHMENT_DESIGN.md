@@ -1,14 +1,23 @@
 # URL-Sourced Enrichment + URL Registry (design)
 
-**Date:** 2026-10-13 · **Status:** PARTLY BUILT (checked 2026-11-16, factual status only; Phase 3 pass to re-review): `src/utils/url_registry.py` (registry + per-domain gate) is used by `enrich_places.py`, `fetch_review.py` and `openserp_enrichment.py`; `src/utils/url_content_verdict.py` evaluates fetched content with Grok; DESIGN for the rest · **Priority:** HIGH
+**Date:** 2026-10-13 · **Status:** PARTLY BUILT (checked against the code 2026-11-17) · **Priority:** HIGH
+
+**Built:**
+- `src/utils/url_hygiene.py` (`clean_url`, SSRF/scheme/host checks, `resolved_host_is_safe`).
+- `src/utils/url_registry.py`: `decide()` returns `go | skip_known | defer_domain | defer_inprogress`; `claim()` is a conditional `in_progress` put (stale after `CLAIM_STALE_SECONDS` = 600); `finalize_searched()`; `record_dns_failure()` (`dead` after `DEAD_DNS_FAILURES` = 4); per-domain `fetchgate#{domain}` politeness (`POLITENESS_SECONDS` = 1); persistent `excludedomain#` denylist (`exclude_domain`, `is_domain_excluded`); `RETENTION_DAYS` = 90.
+- `src/utils/url_fetch.py::fetch`: the central fetch (in-process, not a Lambda). Manual redirect following with a `clean_url` + DNS-rebinding check on every hop (max 5), 5 MB body cap, honest User-Agent, Retry-After/429/503 handling, live-then-Wayback fallback (`wayback.is_block_page`, `find_snapshot`), results `live | wayback | dead | deferred | skip | blocked_no_archive | rate_limited`.
+- `src/utils/fetch_provenance.py` (`fetchevent#` rows) and `src/enrichment/fetch_review.py` + `lambda_handlers/urlreview_ui_handler.py`: human review of textual finds, affirm promotes the find to ingestion, exclude adds a domain to the denylist.
+- Callers: `openserp_enrichment._summarize_url_page` (all OpenSERP page fetches), `grokipedia.py`, `equipment_wikipedia.py`, `groups_wikipedia.py`, `enrich_places.py` (Wikipedia fetch skip/finalize).
+- Result de-duplication is built (`RESULT_DEDUP_DESIGN.md`).
+
+**Not built:** the central Lambda (the fetch runs in each task); the "Grok must cite a source URL" prompt rework for `enrich_groups.py` and `enrich_places._enrich_place_data` (they still accept Grok-generated facts without URLs, the gap in the Problem section); the per-(URL, entity) relevance verdict (`rel#` keys); the Grok content verdict and false-lead handling (`url_content_verdict.py` has no production caller); `source_qualification` population (see `SOURCE_QUALIFICATION_DESIGN.md`); extra CAPTCHA markers in `wayback._BLOCK_MARKERS` (no `recaptcha`/`hcaptcha`/`/sorry/`). Open risk #8 differs in one detail: the registry gate uses a 1 s interval for every domain and no per-run fetch budget exists.
 
 ---
 
 ## Problem
 
-Phase 3 structured enrichment for **people_groups** (step 1/6,
-`src/extraction/enrich_groups.py`) — and the same pattern for **places** (step 2/6,
-`enrich_places.py::_enrich_place_data` via `_try_grok`) — currently accepts **Grok's
+Phase 3 structured enrichment for **people_groups** (`enrich_groups_data` in `phase3_enrich_data.py`,
+`src/extraction/enrich_groups.py`) — and the same pattern for **places** (`enrich_places.py::_enrich_place_data` via `_try_grok`) — currently accepts **Grok's
 GENERATED facts directly**:
 
 - The prompt asks Grok to "look up this WWII unit" and return facts (full_name,

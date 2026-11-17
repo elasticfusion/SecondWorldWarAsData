@@ -8,35 +8,33 @@ CloudWatch alarms, dashboard, notifications, and cost controls.
 
 ## CloudWatch Dashboard
 
-**Name:** `dev-wwii-pipeline`
+Two dashboards exist:
 
-Displays:
-- Lambda invocations, errors, and duration (trigger, batch-poller, nat-manager)
-- ECS task count (running/stopped)
-- Pipeline run history
-- Batch job status timeline
-- Container Insights metrics (CPU, memory, network I/O)
+- `dev-wwii-pipeline-logs` (`compute.yaml` `PipelineDashboard`): Logs Insights widgets over the pipeline log group: Pipeline Run Summary, Batch Submissions, Failed Batch Results, Token Usage (hourly), Rate Limiting Events, Errors (last 24h).
+- `dev-wwii-pipeline` (`events.yaml` `PipelineDashboard`): metric widgets for Lambda Invocations, Errors and Duration plus DLQ Messages. Its metrics point at Lambdas `dev-wwii-phase1-parse` / `dev-wwii-phase2-extract` and queues `dev-wwii-phase1-dlq` / `dev-wwii-phase2-dlq`. No template creates them (those names are now ECS lock suffixes), so the widgets show no data.
+
+Container Insights metrics (CPU, memory, network I/O) are enabled on the ECS cluster (see below).
 
 **Access:**
 ```bash
 # Open in browser
-echo "https://us-east-1.console.aws.amazon.com/cloudwatch/home?region=us-east-1#dashboards:name=dev-wwii-pipeline"
+echo "https://us-east-1.console.aws.amazon.com/cloudwatch/home?region=us-east-1#dashboards:name=dev-wwii-pipeline-logs"
 ```
 
 ---
 
 ## CloudWatch Alarms
 
-All alarms publish to the SNS topic `dev-wwii-alarms` → email notification.
+All alarms publish to the SNS topic `dev-wwii-alarms`. Email subscribes directly and the Slack Chatbot configuration (`chatbot.yaml`) watches the topic, so alarms reach both.
 
 | Alarm | Metric | Threshold | Period | Description |
 |-------|--------|-----------|--------|-------------|
 | Trigger Lambda Errors | Errors | ≥ 3 | 5 min | Pipeline orchestrator failing |
 | Batch Poller Errors | Errors | ≥ 3 | 5 min | Batch job polling failing |
 | NAT Manager Errors | Errors | ≥ 3 | 5 min | Networking lifecycle failing |
-| Phase 2 Duration | Duration | ≥ 840000 ms | 5 min | Phase 2 Lambda running too long (`phase2-duration`) |
+| Phase 2 Duration | Duration | ≥ 840000 ms | 5 min | Watches Lambda `{env}-wwii-phase2-extract`, which no template creates (Phase 2 runs on ECS), so it cannot fire (`phase2-duration`) |
 | Lambda Throttles | Throttles | ≥ 1 | 5 min | A Lambda was throttled |
-| DLQ Messages | ApproximateNumberOfMessagesVisible | ≥ 1 | 5 min | Message in a dead-letter queue |
+| DLQ Messages | ApproximateNumberOfMessagesVisible | ≥ 1 | 5 min | Watches queue `{env}-wwii-phase2-dlq`, which no template creates, so it cannot fire. The OpenSERP work DLQ has its own alarm below |
 | Credit Hold | CreditHolds | ≥ 1 | 5 min | Credit gate is holding work: top up credit / raise budget |
 | Spend Alert | SpendAlerts | ≥ 1 | 5 min | Accrued Grok spend crossed a $10 multiple (heads-up) |
 | Merge Retry Exhausted | MergeRetryExhausted | ≥ 1 | 5 min | An entity mention merge exhausted retries; a cross-book write was lost |
@@ -44,9 +42,9 @@ All alarms publish to the SNS topic `dev-wwii-alarms` → email notification.
 | NAT Lease Failures | NatLeaseFailures | ≥ 5 | 5 min | NAT lease accounting may drift |
 | Dispatcher / enumerate-pending / clamp-pool / human-gate | ExecutionsFailed, TimedOut, Lambda Errors | see `cloudformation/events.yaml` | 5 min | Step Functions dispatcher failures |
 | OpenSERP work DLQ | queue depth | ≥ 1 | — | OpenSERP worker message dead-lettered |
-| ECS Task Failures | — | SNS publish on task stop | — | Pipeline task crashed (SNS notification from ECS entrypoint) |
+| ECS task failure rule | EventBridge `{env}-wwii-task-failure` | non-zero container exit | — | Invokes the trigger Lambda with `check_locks` (lock reconciliation); the operator alert comes from `ecs_entrypoint._notify_failure` via `phase2-complete` |
 
-Pipeline alerts that are not CloudWatch alarms (for example `batch.rounds_over_cap`, `ocr_merge.crosscheck_died`, `ocr_merge.claim_stale`) publish to `dev-wwii-phase2-complete`, which fans out to email and, via the slack-formatter Lambda, to Slack.
+Alarm names are listed in `cloudformation/events.yaml`. Pipeline alerts that are not CloudWatch alarms (for example `batch.rounds_over_cap`, `ocr_merge.crosscheck_died`, `ocr_merge.claim_stale`) publish to `dev-wwii-phase2-complete`, which fans out to email and, via the slack-formatter Lambda, to Slack.
 
 ### Check Alarm State
 
@@ -77,7 +75,7 @@ aws cloudwatch enable-alarm-actions \
 
 | Topic | Subscribers | Triggers |
 |-------|-------------|----------|
-| `dev-wwii-alarms` | Email | CloudWatch alarms (Lambda errors, threshold breaches) |
+| `dev-wwii-alarms` | Email, Slack (Chatbot) | CloudWatch alarms and the AWS Budget notification |
 | `dev-wwii-phase2-complete` | Email, slack-formatter Lambda (→ `dev-wwii-slack` → Chatbot), nat-manager Lambda (no-op) | Every operator alert (phase completion, errors, pipeline alerts) |
 | `dev-wwii-dedup-complete` | Trigger Lambda | Dedup review marked complete in UI |
 
@@ -85,7 +83,7 @@ aws cloudwatch enable-alarm-actions \
 
 | Event | Content | Source |
 |-------|---------|--------|
-| Pipeline phase completion | Phase name, duration, entity counts | ECS entrypoint `_send_notification()` |
+| Pipeline phase completion | Phase name, duration, entity counts | ECS entrypoint `_notify_complete()` |
 | Content queued | File list, "pipeline busy" message | Trigger Lambda |
 | Dedup review ready | Duplicate count, review URL | Phase 2 post-process |
 | Phase error | Error message, task ID, log stream | ECS entrypoint error handler |
@@ -128,9 +126,9 @@ echo "https://us-east-1.console.aws.amazon.com/ecs/v2/clusters/dev-wwii-pipeline
 
 ### AWS Budget
 
-- **Monthly budget:** $75
-- **Alert threshold:** 80% ($60)
-- **Notification:** SNS → email
+- **Monthly budget:** $75 (`PipelineBudget` in `cloudformation/storage.yaml`)
+- **Alert threshold:** 80% actual spend ($60)
+- **Notification:** SNS topic `dev-wwii-alarms` (email + Slack)
 
 ### Key Cost Drivers
 
@@ -166,7 +164,7 @@ Signs of cost runaway:
 bash scripts/stop_all_tasks.sh
 
 aws lambda invoke --function-name dev-wwii-nat-manager \
-  --payload '{"action": "delete"}' \
+  --payload '{"action": "delete", "force": true}' \
   --cli-binary-format raw-in-base64-out --region us-east-1 /tmp/out.json
 ```
 
@@ -187,6 +185,11 @@ aws lambda invoke --function-name dev-wwii-nat-manager \
 | `/aws/lambda/dev-wwii-nat-manager` | NAT manager Lambda |
 | `/aws/lambda/dev-wwii-openserp-manager` | OpenSERP idle monitor |
 | `/aws/lambda/dev-wwii-dedup-ui` | Dedup UI Lambda |
+| `/aws/lambda/dev-wwii-mdreview-ui`, `/aws/lambda/dev-wwii-urlreview-ui` | OCR markdown-review and URL-review UI Lambdas |
+| `/aws/lambda/dev-wwii-dedup-gate`, `/aws/lambda/dev-wwii-dedup-auth`, `/aws/lambda/dev-wwii-metrics` | Dedup gate, API authorizer, metrics Lambdas |
+| `/ecs/dev-wwii-openserp-worker` | OpenSERP SQS worker service |
+| `/ecs/dev-wwii-av-scan` | ClamAV scan task |
+| `/aws/batch/dev-wwii-paddle` | Paddle OCR jobs |
 
 ### Common Log Queries
 
@@ -259,7 +262,7 @@ aws cloudformation describe-stacks --stack-name wwii-pipeline-dev --region us-ea
 aws ecs list-tasks --cluster dev-wwii-pipeline --desired-status RUNNING --region us-east-1
 
 # 2. NAT Gateway active?
-aws ec2 describe-nat-gateways --filter "Name=tag:Name,Values=dev-wwii-nat" \
+aws ec2 describe-nat-gateways --filter "Name=tag:Name,Values=dev-nat" \
   --query 'NatGateways[?State!=`deleted`].[State,CreateTime]' --region us-east-1
 
 # 3. Any stale locks?

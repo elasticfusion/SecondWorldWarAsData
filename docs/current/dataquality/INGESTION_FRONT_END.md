@@ -414,9 +414,13 @@ rows, below). Findings that shaped the implementation:
       absent from the markdown), against the markdown-first direction; Signal 3 is
       net-new (build a unit-number→division reverse lookup from the organic-unit
       data) and independent, so it doubles as a cross-check on Signal 1.
-- [ ] Piece 2 (increment 4) — Remaining sections: attachments, detachments,
-      higher-unit assignments (the messiest).
-- [ ] **Region-coverage record (required, testable)** — the markdown parser must
+- [x] Piece 2 (increment 4) — ATTACHMENTS/DETACHMENTS and HIGHER-UNIT assignment parsers
+      (`attachments.py`, `higher_units.py`), registered in `run._SECTION_PARSERS` with the other
+      five sections. `reconcile.py` adds a cross-file check (duplicate content across files,
+      divisions with no rows, divisions split across files); it reports and never rewrites rows.
+- [ ] **Region-coverage record (required, testable)** (partly built: `_common.coverage_gaps` feeds
+      a `coverage_gaps` list in the `oob_markdown.run` summary; the per-region parsed /
+      recognized-but-not-parsed record below is not) — the markdown parser must
       walk a heterogeneous document and emit a record of every region it
       recognized, marking each as *parsed* or *recognized-but-not-yet-parsed*,
       so intra-document coverage is measurable per document rather than implicit.

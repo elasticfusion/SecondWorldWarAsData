@@ -9,8 +9,7 @@ For the verified per-entity map, how OpenSERP is engaged, and the known gaps, se
 
 Phase 3 takes the extracted + deduplicated entities (`output/<entity>/*.json`) and augments
 them with data from external sources. It runs after the dedup review gate; in AWS mode it is
-auto-triggered when Phase 2 finds no duplicates, and reads the DynamoDB `manifest#phase2` to
-enrich only changed files.
+auto-triggered when Phase 2 finds no duplicates. Phase 3 scopes its download by the per-book `book_manifest#` rows (`ecs_entrypoint._get_book_entity_files`, `src/utils/book_manifest.py`), else lists the entity prefixes in S3 (`_download_phase3_from_s3`); it does not read `manifest#phase2`.
 
 **Enrichment is split by SOURCE (not by entity):**
 - **Phase 2** owns **all Grokipedia + Wikipedia** enrichment (descriptive text + images),
@@ -18,82 +17,60 @@ enrich only changed files.
   award citations), people_groups (Wikipedia text + images), places (Grokipedia/Wikipedia
   descriptive text + image), equipment (Wikipedia extract + images). See each feature doc.
 - **Phase 3** owns **every other external source**: geocoding (Nominatim/Grok coordinates),
-  NOAA weather, OpenSERP (images / academic search), NARA / Archive.org bibliography
+  NOAA weather, OpenSERP (images, web pages, primary sources), NARA / Archive.org bibliography
   resolution, plus the **structured** hierarchy/org-history Grok passes that promote facts into
   spec fields (place hierarchy/names; group unit-history) — these are structured-field
   enrichment, not descriptive Grokipedia/Wikipedia text, so they stay in Phase 3.
 
 ---
 
-## Step order + per-entity process
+## Step order
 
-Steps run in this fixed order. Several are **conditional** (config/token gated) — a default
-local run performs only the unconditional ones (groups, places, bibliography).
+The code runs these in a fixed order inside `phase3_enrich_data.py::main`. Gates, per-entity skip rules,
+fields written, the geocoding cascade, the OpenSERP group and the batch re-run are described once, in
+[PHASE3_MAP.md](PHASE3_MAP.md) (sections 1 to 5).
 
-| Step | Entity | Process | Module | Gate |
-|---|---|---|---|---|
-| 1/6 | **People Groups** | Structured unit/org history (promoted into spec fields) | `enrich_groups.enrich_all_groups` | always |
-| 2/6 | **Places** | (a) hierarchy/name enrichment (structured), (b) `link_parent_place_ids` | `enrich_places` | always |
-| 3/6 | **Places** | **Geocoding cascade** → coordinates + provenance | `places_grok_geocode.cascade_geocoder` | always |
-| 4/6 | **Bibliography** | ISBN / copyright / archive URLs, then source resolution — NARA **and non-NARA** (Archive.org, HathiTrust, university libraries, Google Books, LOC, Gutenberg) | `supplemental_advanced.enrich_bibliography` + `bibliography_resolver` | always |
-| 5/6 | **People, Equipment, People Groups, Places, Source Section** | OpenSERP images / web / academic / primary sources. Queries are **entity-fact-sharpened** (unit/rank/nationality, category/origin), **multi-language for places** (native names), **operation-keyed for source_section**. Results **Grok-verified (fail-closed)**; verified textual pages are **fetched + summarized** with a 90-day positive/negative URL cache | `openserp_enrichment` | `supplemental_material.use_openserp` |
-| 6/6 | **Weather** | NOAA GHCND station-observed data (supplements Open-Meteo) | `noaa_weather.enrich_weather_with_noaa` | `api.noaa_api_token` set |
+| Order | Step | Entity |
+|---|---|---|
+| 1 | `people_groups` | People Groups: structured unit and organisation facts |
+| 2 | `places`, `link_parent_places`, `geocode` | Places: hierarchy and names, then coordinates |
+| 3 | `bibliography` | Bibliography: alt titles (ISBN, copyright and archive checks are off by default) |
+| 4 | `bibliography_resolve` | Bibliography: find online copies (NARA, OpenSERP, Archive.org, Gutenberg, Grok) |
+| 5 | `in_doc_map_links`, `image_map_vision` | Maps and Images from the source documents |
+| 6 | `openserp_*` (and five non-search steps in the same function) | People, Equipment, People Groups, Places, Source Section; gated by `supplemental_material.use_openserp` |
+| 7 | `equipment_images` | Equipment: vision-confirmed images |
+| 8 | `noaa_weather` | Weather; needs `api.noaa_api_token` |
+
+`--people-only` skips every step (people enrichment moved to Phase 2), so it is effectively a no-op.
 
 > **Moved to Phase 2 (no longer a Phase-3 step):** people Grokipedia/Wikipedia biography +
-> portrait + award citations; equipment Wikipedia extract + images (`equipment_wikipedia` —
-> old step 4b); people_groups Wikipedia text + images (`groups_wikipedia` — old step 4c);
-> places Grokipedia/Wikipedia descriptive text + image. These now run in the Phase-2
-> extractors with native commit. The `enrich_all_people` / `enrich_all_groups_wikipedia` /
-> `enrich_all_equipment_wikipedia` functions remain defined for CLI/tests but are **not** wired
-> into the Phase-3 pipeline.
-
-### Places geocoding cascade (step 3)
-`enrich_all_places` sets hierarchy/names but **not** coordinates. The geocoding cascade wires
-them in: **Nominatim (OSM)** first (free, cached, policy-compliant) → **hill/terrain**
-geocoder for height features → **Grok** fallback for the rest. Writes WGS84 coordinates +
-geocode provenance (`source`, `confidence`); low-confidence hits are flagged, never
-fabricated. (This is also the coordinate source the maps overlay inherits via resolved
-PlaceID.)
+> portrait + award citations; equipment Wikipedia extract + images; people_groups Wikipedia text +
+> images; places Grokipedia/Wikipedia descriptive text + image. These run in the Phase-2 extractors
+> with native commit. `enrich_all_people`, `enrich_all_groups_wikipedia` and
+> `enrich_all_equipment_wikipedia` remain defined for CLI/tests but are not wired into Phase 3.
 
 ### Entities with NO Phase-3 enrichment (by design)
-**Dates, Logistics, Casualties, Maps, Supplemental narrative, Events, and map_features** are
-extracted + cross-referenced in Phase 2 but have **no external enrichment step**. Their
-feature docs state this explicitly. (map_features has no Phase-3 wiring yet — see Known Gaps.)
+**Dates, Logistics, Casualties, Supplemental narrative, and map_features** are extracted and
+cross-referenced in Phase 2 but have no external enrichment step. Events and sub-events only receive a
+deterministic `SourceSectionID` stamp. (map_features has no Phase-3 wiring yet; see Known Gaps.)
 
 ---
 
 ## Reliability model
 
-- **Per-source isolation:** every step runs via `_run_step`, which captures a source's
-  outcome into `source_stats` (`enriched` count + `ok`/`error` + error text). A source that
-  throws is **logged and recorded, never swallowed, and never aborts the rest of Phase 3** —
-  one failing enrichment source does not block the others.
-- **Surfacing:** failures are written to `output/.phase_results.json` (`source_stats` +
-  `errored_sources`) which the completion notification relays to **email + Slack**, so
-  partial success and previously-silent failures reach the operator.
-- **Geocoding breakdown** is recorded in full (attempted / geocoded / not_found /
-  low_confidence / errors) so partial geocoding is visible.
-
-## Batch mode (`--batch`)
-
-With `--batch`, Phase 3 first runs in collect-only mode (queuing Grok requests), submits them
-to the **xAI Batch API** (≈50% cost), waits, then **re-runs the enrichment steps** with the
-batched results served from cache. The re-run covers people/groups/places/bibliography.
-
-## Idempotency / incremental
-
-- Enrichment uses the shared `enrichment_gate` (staleness check + last-checked stamp) so
-  entities are not re-enriched on every run.
-- AWS mode: `manifest#phase2` scopes Phase 3 to only files changed by Phase 2 + dedup review
-  (full-directory fallback if absent).
+Every step runs through `_run_step`: a source that throws is logged, recorded in `source_stats` and listed in
+`output/.phase_results.json` (`errored_sources`), which the completion notification relays to email and
+Slack. One failing source does not stop the others. Geocoding is recorded directly in `source_stats`
+with its attempted, geocoded, not_found, low_confidence and error counts. Details:
+[PHASE3_MAP.md](PHASE3_MAP.md) section 1.
 
 ## CLI
 
 ```bash
 python phase3_enrich_data.py --output-dir output        # all entities
-python phase3_enrich_data.py --people-only              # people only
-python phase3_enrich_data.py --no-references            # skip reference following (faster)
-python phase3_enrich_data.py --batch                    # xAI Batch API (50% off)
+python phase3_enrich_data.py --people-only              # skips all steps (people enrichment is Phase 2)
+python phase3_enrich_data.py --no-references            # parsed and logged only; no effect
+python phase3_enrich_data.py --batch                    # xAI Batch API (50% off); see PHASE3_MAP.md section 5
 python phase3_enrich_data.py --max-items N              # cap per entity type
 ```
 

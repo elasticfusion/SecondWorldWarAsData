@@ -37,10 +37,10 @@ https://i.etsystatic.com/28845484/r/il/c25a56/3411596423/il_fullxfull.3411596423
 
 - An AI-powered pipeline that reads historical documents and extracts structured entities
 - Four phases:
-  - **Pre-parse**: Conversion of PDF, HTML, EPUB, and other formats into markdown
+  - **Pre-parse (Phase 0)**: OCR and conversion of PDF, HTML, EPUB, video and other formats into markdown, with non-English text translated to English
   - **Parse**: Source documents converted using AI from  (markdown) → structured JSON
   - **Extract**: AI identifies 11 entity types — events, groups (military units, government departments, companies, political parties), places, dates, equipment, weather, logistics, casualties, maps, citations
-  - **Enrich**: Cross-references with Wikipedia, national archives (NARA, The National Archives UK, Bundesarchiv, Central Archives of Ukraine, Russian State Military Archive), weather records
+  - **Enrich**: Cross-references with Wikipedia (during extraction), the US National Archives (NARA), Archive.org, geocoding and weather records. Other national archives are future work
 - Collecting references from national archives and online sources allows us to pull primary source data back into the overall system, expanding the dataset organically as enrichment discovers new material
 - Every entity gets a unique ID (ULID) — full cross-referencing
 - Example output: An event like "Operation Overlord" links to its sub-events, which link to specific people, places, dates, units, and weather conditions
@@ -59,7 +59,7 @@ cross_reference_diagram.png
 - Not hallucinating data — extracting from source documents with citations
 - Strict source tracking — every extracted entity traces back to its original document, page, and passage, ensuring provenance and verifiability
 - Batch processing at 50% cost savings
-- 332 automated tests ensure output quality and consistency
+- 4,700+ automated test functions ensure output quality and consistency
 - All code was created with AI
 
 ---
@@ -82,12 +82,12 @@ cross_reference_diagram.png
 **[VISUAL: AWS S3 output bucket — live data pipeline results]**
 [S3: dev-wwii-data-pipeline/output](https://us-east-1.console.aws.amazon.com/s3/buckets/dev-wwii-data-pipeline?region=us-east-1&prefix=output/&showversions=false)
 
-- Production-ready: Events, Dates, Places, People, Groups, Maps, Citations
+- Production-ready: Events, Dates, Places, People, Groups, Maps, Bibliography (citations)
 - Experimental: Weather, Equipment, Logistics, Casualties
 - Runs locally (any developer can contribute) or on AWS at scale
 - AWS allows us to process massive document collections in parallel, scale on demand, and share the resulting datasets globally through cloud-native services
 - Next steps: More source material, more entity types, a public API, visualization layer
-- Future: Leverage AI/Grok to translate non-English documents, unlocking Axis records and Allied nations' archives in their original languages
+- Already built: non-English documents are translated to English at ingestion (the original is kept alongside), which opens Axis records and Allied nations' archives in their original languages
 - Open source and openly licensed — contributions welcome
 
 ---

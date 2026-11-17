@@ -9,11 +9,11 @@
   `life_event` and a verbatim `original_text`.
 - Each item is settled against the source (`windows.settle`): a quote that is not in the window is dropped (`quote_unsupported`); the item is attributed to the
   real sub-event whose paragraphs hold the quote.
-- Not-a-person filter: staff sections and units (`VIII Corps G-3`) are dropped (`_is_not_a_person`); ranks are stripped from the name (`_strip_rank`).
+- Not-a-person filter: staff sections and units (`VIII Corps G-3`) are dropped (`batch_parallel._is_not_a_person`); ranks are stripped from the name (`batch_parallel._strip_rank`).
 - `PersonID` and every `MentionID` are minted by code (`people._mint_person_ids`); a model-supplied value is replaced.
 - Find-or-create is by normalized name (`people._normalize_name`); a repeat mention is merged by `entity_records.mention_identity` (same sub-event + same normalized quote = one mention).
 - Phase 2 also looks each new person up in Grokipedia/Wikipedia (`enrich_biographies.enrich_person_from_sources`, called from `people._enrich_person_phase2` /
-  `_enrich_person_batch_apply`), so `biographical_profile` can already be present at the end of Phase 2. Phase 3 enriches further (end of this page).
+  `_enrich_person_batch_apply`), so `biographical_profile` can already be present at the end of Phase 2. Phase 3 adds only OpenSERP results (end of this page).
 
 ## Structure
 
@@ -66,7 +66,7 @@ Each file contains a single person:
 ```
 
 **Notes:**
-- `biographical_profile` is populated by the Phase-2 Grokipedia/Wikipedia lookup and by Phase 3 enrichment (absent when neither found a source)
+- `biographical_profile` is populated by the Phase-2 Grokipedia/Wikipedia lookup (absent when it found no source); Phase 3 OpenSERP adds portrait images (`images[]`) and verified web pages (stored in `military_awards[]`)
 - The filename is `{name, special characters removed, max 50 chars}_{first 12 chars of PersonID}.json` (`people._name_to_filename`)
 - Mentions carry `original_text` (the verbatim quote), `position_at_event` and `life_event` as well; `MentionID` is minted by code
 - `DateMentionID` → top-level `DateID` in `output/dates/*.json` (resolved via lookup, not LLM-provided)
@@ -187,11 +187,12 @@ grep -l "EventID.*01ABC123" output/people/*.json
 > [../people_groups/README.md](../people_groups/README.md). A person *belongs to* groups;
 > the group is its own record.
 
-## Phase 3 Enrichment
+## Enrichment
 
-**Step 1/6 (always runs).** Biographical enrichment from **Grokipedia + Wikipedia**
-(`enrich_biographies.enrich_all_people`): follows references, captures portrait photos, and
-sources authoritative award citations (original + translated, provenance preserved). If
-`use_openserp` is enabled, **step 5/6** adds OpenSERP image/academic results. Gated by the
-shared `enrichment_gate` (no re-enrichment of fresh records). See
-[Phase 3 Enrichment](../../core/PHASE3_ENRICHMENT.md).
+Grokipedia + Wikipedia biographical enrichment (references, portrait photos, award citations,
+title-implied memberships) runs in **Phase 2**, inside the people extractor
+(`enrich_biographies.enrich_person_from_sources`, see the top of this page). `enrich_all_people`
+still exists for the module CLI and tests but `phase3_enrich_data.py` does not call it.
+Phase 3 contributes only OpenSERP image and web results (step 5/6, when `supplemental_material.use_openserp`
+is enabled), gated by the shared `enrichment_gate`. See
+[Phase 3 Enrichment](../../core/PHASE3_ENRICHMENT.md) and [biographical-enrichment.md](biographical-enrichment.md).

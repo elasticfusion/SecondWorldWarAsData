@@ -1,6 +1,6 @@
 # Person Disambiguation — Design (DRAFT, design-first)
 
-Status: DRAFT — checked 2026-11-16: no person-disambiguation module exists (`src/dedup/find_duplicate_people.py` and the dedup UI are the only person resolution; entity disambiguation code in `src/extraction/` is for equipment and groups). Phase 3 pass to review.
+Status: DRAFT — checked 2026-11-16: no person-disambiguation module exists (`src/dedup/find_duplicate_people.py` and the dedup UI are the only person resolution; entity disambiguation code in `src/extraction/` is for equipment and groups). Re-checked 2026-11-17: still a draft, nothing built (no `person_cluster` or `service_number` in `src/`).
 Last updated: 2026-11-16
 
 Companion: `.kiro/steering/project-overview.md` (names entity-resolution as a known

@@ -1,8 +1,8 @@
 # Image Processing Improvements
 
 **Date:** 2026-03-02  
-**Status:** Complete  
-**Impact:** Reliability, compatibility, User-Agent compliance
+**Status:** Implemented for conversion and resizing (`_prepare_map_image`); User-Agent handling superseded (section 2). Used by the manual Grok map search only.  
+**Impact:** Reliability, compatibility
 
 ---
 
@@ -68,43 +68,16 @@ if size_mb > 5:
 
 ---
 
-### 2. User-Agent Compliance
+### 2. Image download and User-Agent
 
-**File:** `src/extraction/grok_search_maps.py`  
-**Function:** `download_image()`
+**Status (2026-11-17):** the domain-specific User-Agent logic described in earlier versions of this doc no longer exists.
 
-#### Domain-Specific User-Agents
-
-**Wikimedia/Wikipedia Sites:**
-```python
-"User-Agent": "WWII-Data-Extraction-Bot/1.0 (Historical research project; contact via GitHub)"
-```
-
-**Other Sites:**
-```python
-"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-```
-
-**Implementation:**
-```python
-if any(domain in image_url for domain in ["wikimedia.org", "wikipedia.org", "grokipedia.com"]):
-    # Bot identification for sites requiring it
-    headers = {"User-Agent": "WWII-Data-Extraction-Bot/1.0 ..."}
-else:
-    # Standard browser User-Agent
-    headers = {"User-Agent": "Mozilla/5.0 ..."}
-```
-
-**Sites with bot identification:**
-- wikimedia.org
-- wikipedia.org
-- grokipedia.com
-
-**Benefits:**
-- Complies with Wikimedia's bot policy
-- Prevents 403 Forbidden errors
-- Proper identification for research purposes
-- Standard browser UA for other sites
+**File:** `src/extraction/grok_search_maps.py`, function `download_image()` calls `images.fetch_image_bytes` (`src/extraction/images.py:32`).
+That function sends one User-Agent for every host (`images._USER_AGENT`, Chrome 131 string), resolves and vets the host
+(`url_hygiene.resolved_host_is_safe`, DNS-rebinding safe, no redirects), caps the body at 25 MB (`_MAX_IMAGE_BYTES`), and accepts only an
+image content type. The `timeout` argument of `download_image` is ignored. There is no Wikimedia bot User-Agent in this path.
+`openserp_maps` fetches page and licence text with its own `USER_AGENT` (Chrome 120 string) and downloads images through the same
+`fetch_image_bytes`; `search_external_maps` uses its own `USER_AGENT` for page and Range requests.
 
 ---
 
@@ -116,17 +89,9 @@ else:
 **Solution:** Automatic format conversion and resizing  
 **Status:** ✅ Resolved
 
-### Issue 2: Wikimedia 403 Forbidden
-**Problem:** Wikimedia blocking automated requests  
-**Cause:** Generic browser User-Agent for bot traffic  
-**Solution:** Proper bot identification User-Agent  
-**Status:** ✅ Resolved
-
-### Issue 3: "Outdated Browser" Messages
-**Problem:** Websites showing browser upgrade warnings  
-**Cause:** Incomplete User-Agent string  
-**Solution:** Complete Chrome 120 User-Agent  
-**Status:** ✅ Resolved
+### Issue 2: Wikimedia 403 Forbidden and "outdated browser" pages
+**Status:** the Wikimedia bot User-Agent fix was removed when downloads moved to the shared SSRF-safe fetcher (section 2).
+Whether Wikimedia hosts still return 403 to the single Chrome User-Agent is UNVERIFIED.
 
 ---
 
@@ -134,10 +99,10 @@ else:
 
 ### Image Processing Pipeline
 
-1. **Download** - Fetch image with appropriate User-Agent
+1. **Download** - `images.fetch_image_bytes` (SSRF-safe, 25 MB cap, image content types only)
 2. **Validate** - Verify it's a valid image file
 3. **Convert** - Transform unsupported formats to PNG
-4. **Resize** - Reduce size if > 5MB
+4. **Resize** - Reduce size if > 5MB (the Pillow decode runs under a 50,000,000-pixel decompression-bomb cap; a bomb is rejected with `OBSERV maps.image_bomb_rejected`)
 5. **Verify** - Send to Grok vision API
 6. **Save** - Store if relevant
 
@@ -153,27 +118,19 @@ return False, f"Invalid image: {e}"
 return False, f"Image still too large after resize ({size_mb:.1f}MB)"
 ```
 
-**Download Failures:**
-```python
-logger.debug(f"Failed to download {image_url}: {e}")
-return None
-```
+**Download Failures:** `download_image` returns `None` (logged at debug as blocked/non-image) and the caller skips the image.
 
 ### Caching Behavior
 
-**403 errors are NOT cached:**
-- `download_image()` returns `None` on 403
-- Vision API never called
-- No cache entry created
-- Can retry after fixing User-Agent
+A failed download returns `None` before any Grok call, so no vision request is made and no cache entry exists. Vision calls use
+`cache_type="vision_verification"` and are cached by prompt and image hash.
 
 ---
 
 ## Dependencies
 
 **Required:**
-- `Pillow` (PIL) - Image processing
-- `httpx` - HTTP requests
+- `Pillow` (PIL) - Image processing (pinned in `requirements.txt`)
 
 **Already installed** - No new dependencies added
 
@@ -181,31 +138,11 @@ return None
 
 ## Configuration
 
-### Adding New Bot-Identified Domains
-
-Edit the domain list in `download_image()`:
-```python
-if any(domain in image_url for domain in [
-    "wikimedia.org",
-    "wikipedia.org",
-    "grokipedia.com",
-    "your-new-domain.com"  # Add here
-]):
-```
-
 ### Adjusting Size Limits
 
-Change the 5MB threshold:
-```python
-if size_mb > 5:  # Change this value
-```
+Change the 5MB threshold in `_prepare_map_image` (`grok_search_maps.py`, two comparisons of `size_mb > 5`) and the 25 MB download cap `_MAX_IMAGE_BYTES` in `images.py`.
 
-### Customizing User-Agent
-
-Update the bot identification string:
-```python
-"User-Agent": "YourBot/1.0 (Purpose; contact@example.com)"
-```
+The User-Agent is the `_USER_AGENT` constant in `src/extraction/images.py`.
 
 ---
 
@@ -223,12 +160,6 @@ grep "Converting" logs/grok_search.log
 grep "Resizing image" logs/grok_search.log
 ```
 
-### Verify User-Agent
-```bash
-# Check for 403 errors (should be gone)
-grep "403" logs/grok_search.log
-```
-
 ---
 
 ## Performance Impact
@@ -242,23 +173,11 @@ grep "403" logs/grok_search.log
 - Typically < 500ms for large images
 - Only runs when needed
 
-**User-Agent:**
-- No performance impact
-- Just header modification
-
 ---
 
 ## Quality Assurance
 
-**Code Quality:**
-- Pylint: 8.89/10 ✅
-- Mypy: 0 errors ✅
-- Black: Formatted ✅
-
-**Testing:**
-- Format conversion: Tested with BMP, TIFF
-- Resizing: Tested with 10MB+ images
-- User-Agent: Verified with Wikimedia
+Quality figures from 2026-03 were removed (stale). The checks that run today are `scripts/gate.sh` and the CI pipelines.
 
 ---
 
@@ -287,5 +206,5 @@ grep "403" logs/grok_search.log
 - **2026-03-02**: Initial implementation
   - Format conversion (BMP, TIFF, WebP → PNG)
   - Automatic resizing (> 5MB)
-  - Domain-specific User-Agents
-  - Wikimedia bot compliance
+  - Domain-specific User-Agents (removed later; downloads go through `images.fetch_image_bytes`)
+  - Wikimedia bot compliance (removed with the above)

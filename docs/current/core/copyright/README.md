@@ -11,7 +11,8 @@ bibliography and supplemental records. Moved from `contextmanagement/Specs/` on 
 **Where the code applies these rules**
 
 - `src/extraction/copyright_calculator.py`: `COPYRIGHT_DURATION` (life + 70 for the same five countries,
-  as ISO-3 codes) and `calculate_copyright_expiration`.
+  as ISO-3 codes; any other country falls back to 70) and `calculate_copyright_expiration`. `determine_license`
+  is the entry point used by `src/extraction/supplemental.py` and `src/enrichment/bibliography_resolver.py`.
 - `src/extraction/supplemental_advanced.py`: `determine_copyright_status` / `_determine_usa_copyright`
   (US: published before 1928, 95 years from publication for 1928–1977, life + 70 after 1977).
 

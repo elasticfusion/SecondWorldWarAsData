@@ -139,6 +139,8 @@ aws s3 sync contentrepository/<BookName>/ s3://dev-wwii-data-pipeline/contentrep
 
 See [Adding Data Sources](ADDING_DATA_SOURCES.md) for details on both modes.
 
+An ibiblio HTML page uploaded directly to `contentrepository/` (not through this script) takes the Phase 0 convert track instead: `phase0_convert.py` runs `text_converters.html_to_markdown`, which normalises HyperWar pages through `src/ingestion/hyperwar_html.py` (one paragraph per source paragraph, page footers turned into page breaks). Its output layout differs from this script's blockquoted sub-chapter files.
+
 ## Supported Sources
 
 The script is designed for HyperWar index pages that follow the standard table-of-contents format with chapter links. Tested with:
@@ -164,7 +166,7 @@ Section headings must be `<h3>` tags in the source HTML. If a chapter has no `<h
 
 ### Character encoding issues
 
-The script uses the encoding reported by the server. If you see garbled characters, the source page may use a non-UTF-8 encoding. Open an issue with the URL.
+The script passes the raw response bytes to BeautifulSoup (`html.parser`), which detects the encoding from the bytes and the page's `<meta>` tag, not from the HTTP header. If you see garbled characters, the source page may use a non-UTF-8 encoding. Open an issue with the URL.
 
 ## See Also
 

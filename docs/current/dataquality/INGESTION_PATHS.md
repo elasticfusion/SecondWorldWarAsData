@@ -6,7 +6,8 @@ code as of 2026-11-16 (originally written 2026-10-01; corrected against `lambda_
 
 Companion docs: `INGESTION_FRONT_END.md` (per-page disposition design),
 `MAP_IMAGE_AV_INGESTION.md` (the vision branch design), `AV_SCANNING_DESIGN.md`,
-`CHANDRA_OCR_DESIGN.md`.
+`CHANDRA_OCR_DESIGN.md`. What happens to a document after routing, and how to resolve each
+`needs-review/` category: [../core/DOC_LIFECYCLE.md](../core/DOC_LIFECYCLE.md).
 
 ---
 
@@ -29,22 +30,24 @@ Two gates run before routing:
 ### `_content_keys` (the door)
 | Input | Decision |
 |---|---|
-| archive: `.zip .rar .7z .tar .tar.gz .tgz .gz` | **Ignored** — expected (pre-stage expands archives); not a failure, no alert. |
+| archive (`_COMPRESSED_SUFFIXES`: `.zip .rar .7z .tar .tar.gz .tgz .gz .bz2 .tar.bz2 .xz .tar.xz .z .lz .lzma .cab .arj`) | **Ignored** — expected (pre-stage expands archives); not a failure, no alert. |
 | recognized content (see tracks) | **Accepted** → `_split_by_media`. |
 | anything else (`.xyz`, `.exe`, no ext, …) | **Reject-to-review** → `needs-review/unrecognized-type/{book}.json` + alert. (Previously a silent `Skipping non-content` drop — now surfaced.) |
 
 Recognized content extensions (`_CONTENT_SUFFIXES`): `.md .pdf .jpg .jpeg .png
-.tif .tiff .docx .epub .html .txt .mp4 .mkv .mov .webm .avi .m4v`.
+.tif .tiff .docx .epub .html .txt .mp4 .mkv .mov .webm .avi .m4v`. `.webp`, `.bmp`, `.htm` and `.xhtml`
+are listed in the track suffix sets but are NOT in `_CONTENT_SUFFIXES`, so `_content_keys` rejects them
+as `unrecognized-type` before `_split_by_media` sees them.
 
 ---
 
 ## The four tracks (`_split_by_media`)
 
 ```
-                     ┌─ .pdf + images(.jpg/.jpeg/.png/.tif/.tiff/.webp/.bmp) ─→ OCR track
-contentrepository/ ──┤─ .epub .docx (.txt)                                   ─→ CONVERT track
-upload              ├─ .mp4 .mkv .mov .webm .avi .m4v                        ─→ VIDEO track (own path)
-                     └─ .md .txt .html                                        ─→ PARSE (text) track
+                     ┌─ .pdf + images(.jpg/.jpeg/.png/.tif/.tiff)  ─→ OCR track
+contentrepository/ ──┤─ .epub .docx .html                          ─→ CONVERT track
+upload              ├─ .mp4 .mkv .mov .webm .avi .m4v             ─→ VIDEO track (own path)
+                     └─ .md .txt                                   ─→ PARSE (text) track
 ```
 
 All tracks converge on the same contract: write
@@ -81,7 +84,7 @@ if it is false outside dev/local/test.
 | Input | AV? | Underlying assumption (why skipping is safe) |
 |---|---|---|
 | `.txt`, `.md`, `.markdown` | **No** | Inert data. We **parse** it / send it to Grok **as text** — we never render it in a browser or execute it. The only ways text "carries a virus" (browser-rendered `<script>`; a byte-polyglot fed to another interpreter) **do not occur in this pipeline**. A giant text "bomb" is a DoS/resource concern, already bounded by the empty/near-empty + size checks — not malware. |
-| `.html`, `.htm` | **No** (parser-hardening, not AV) | `<script>`/handlers/data-URIs are dangerous only when **rendered in a browser or fetched by a tool**; we send HTML to pandoc/parser, not a browser, so active content is inert. Residual risk is pandoc/parser-side (crafted HTML → SSRF/file-read), addressed by parser hardening, not virus signatures. |
+| `.html` | **No** (parser-hardening, not AV) | `<script>`/handlers/data-URIs are dangerous only when **rendered in a browser or fetched by a tool**; we send HTML to the boilerplate stripper + pandoc (CONVERT track), not a browser, so active content is inert. Residual risk is pandoc/parser-side (crafted HTML → SSRF/file-read), addressed by parser hardening, not virus signatures. |
 | text-only batch (no binary present) | **No launch** | The scan container is never started → **zero AV cost** for the common text-only upload. Gate: launch iff `ocr_keys ∪ convert_keys ∪ video_keys` is non-empty. |
 | any type when `AV_SCAN_ENABLED=false` | **No** | Allowed only in dev/local/test (the handler refuses to start otherwise). The media-mismatch byte-sniff check still runs. |
 
@@ -91,12 +94,12 @@ identity-provenance requirement: **`AV_SCANNING_DESIGN.md`**.
 
 ---
 
-### 1. TEXT / PARSE track — `.md .txt .html`
+### 1. TEXT / PARSE track — `.md .txt`
 - **Success:** queued to parse (Phase 1) directly → extract → dedup → enrich.
 - **Failure:** malformed markdown surfaces as a Phase-1 parse error (logged).
   *(No dedicated reject-to-review for bad standalone markdown yet — minor gap.)*
 
-### 2. CONVERT track — `.epub .docx` (`.txt` also accepted)
+### 2. CONVERT track — `.epub .docx .html`
 `_submit_convert` → Phase-0 convert ECS task (`phase0_convert.py`, pandoc via
 `text_converters.convert_to_markdown`).
 - **Success:** → chapter markdown → parse → …
@@ -112,7 +115,7 @@ identity-provenance requirement: **`AV_SCANNING_DESIGN.md`**.
 
 > Note: pandoc has **no PDF reader** — PDFs never use this track.
 
-### 3. OCR track — `.pdf` + images (`.jpg .jpeg .png .tif .tiff .webp .bmp`)
+### 3. OCR track — `.pdf` + images (`.jpg .jpeg .png .tif .tiff`)
 `_submit_ocr` → per-book claim (`ocr#<slug>`) → `.chunks.json` manifest written → one Chandra GPU
 Batch job per 50-page chunk (`OCR_CHUNK_PAGES`) → `ocr_merge_handler` waits for every chunk, then
 `ocr_promote.promote` (sanitise, translate if enabled, split into chapters, cross-check against the
@@ -164,7 +167,7 @@ Categories in use:
 | `ocr-near-empty` | OCR produced < 40 usable chars |
 | `convert-failed` | pandoc failed AND Grok MD-correction could not recover |
 | `convert-error` | the convert task raised (`phase0_convert`, fail-safe off-ramp) |
-| `bad-markdown` | a direct `.md/.txt/.html` upload with no usable content (`_validate_parse_keys`) |
+| `bad-markdown` | a direct `.md/.txt` upload with fewer than `PARSE_MIN_USABLE_CHARS` (20) usable characters (`_validate_parse_keys`) |
 | `av-infected` | ClamAV found a signature (or the file was unscannable) |
 | `unnamed-upload` / `source-renamed` | no safe slug / already ingested under another slug |
 | `duplicate` / `title-collision` / `model-unavailable` | title-sameness check at launch (`_resolve_title_identity`): same work already ingested, same title but a different work, or the Grok model unavailable |
@@ -191,7 +194,7 @@ than silently dropping or feeding garbage downstream. No silent failures.
   `description` + classification + confidence; low-confidence/empty → `needs_review`;
   never fabricates. Config-gated `images.vision_caption`. Distinct
   from the video track's speaker-id vision.
-- **Standalone bad markdown → reject-to-review (BUILT).** A direct `.md/.txt/.html`
+- **Standalone bad markdown → reject-to-review (BUILT).** A direct `.md/.txt`
   upload with no usable content off-ramps to `needs-review/bad-markdown/` instead
   of a doomed parse (trigger `_validate_parse_keys`).
 - **Structured-reference (OOB) routing (BUILT).** A doc under the reserved `_oob/`

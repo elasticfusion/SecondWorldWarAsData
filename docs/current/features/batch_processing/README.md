@@ -2,7 +2,7 @@
 
 **Module:** `src/extraction/batch_parallel.py`  
 **Status:** Production  
-**Last Updated:** 2026-11-16
+**Last Updated:** 2026-11-17
 
 ---
 
@@ -166,7 +166,8 @@ batch:
   phase2: true                   # xAI batch API for Phase 2 (env BATCH_PHASE2 overrides)
   phase3: false                  # Phase 3 makes live calls
   max_rounds: 8                  # rounds before the batch.rounds_over_cap alert + stop
-  in_task_wait_minutes: 5        # wait per round before handing off to the poller (env BATCH_IN_TASK_WAIT_MINUTES)
+  in_task_wait_minutes: 5        # wait per round before handing off to the poller (env BATCH_IN_TASK_WAIT_MINUTES; 1-100)
+  min_requests: 50               # fewer queued requests are answered live, not batched (env BATCH_MIN_REQUESTS; 0 = always batch)
 ```
 
 `concurrency.max_parallel_chapters` (default 3, read in `phase2_extract.py`) is the chapter concurrency.
@@ -254,7 +255,8 @@ async def process_chapters_parallel(
     grok_client: GrokClient,
     output_root: Path,
     config: Dict[str, Any],
-    max_parallel: int = 3
+    max_parallel: int = 3,
+    heartbeat=None,
 ) -> Dict[str, Any]
 ```
 
@@ -300,7 +302,7 @@ async def extract_all_async(
 
 ### `extract_dates_batch_async()`
 
-Extract dates from all sub-events in single API call.
+Extract dates from the chapter's windows (or sub-events when there is no parsed text).
 
 **Signature:**
 ```python
@@ -308,11 +310,14 @@ async def extract_dates_batch_async(
     event_data: Dict[str, Any],
     parsed_data: Dict[str, Any],
     grok_client: GrokClient,
-    output_root: Path
-) -> int
+    output_root: Path,
+    book_meta: Optional[Dict[str, str]] = None,
+    windows_event: Optional[Dict[str, Any]] = None,
+    ask_only: bool = False,
+) -> Dict[str, Any]
 ```
 
-**Returns:** Number of dates extracted
+**Returns:** a result dict (the date counts); `ask_only` only queues the requests.
 
 ---
 
@@ -457,6 +462,10 @@ python3 phase2_extract.py --batch
 1. A pass runs normally. Cached answers return instantly; uncached requests are collected (`BatchModeCollecting`), not sent.
 2. `_run_batch_rounds` submits the collected requests as one batch named `phase2-<book>-<n>files-r<round>-<k>reqs`
    (`grok_client.submit_batch(..., max_wait_minutes=wait)`).
+   Fewer than `batch.min_requests` (50) queued requests are **not** batched: `GrokClient._answer_without_batch`
+   answers them live (`_answer_small_batch_live`, `OBSERV batch.answered_live`; a failed one raises
+   `batch.live_answer_failed` and is queued again by the re-run) and returns a `live-<n>reqs-<ts>` id, so the
+   round continues as after a batch. A batch can take up to 24 h, and the discount on a few requests is cents.
 3. The task **waits in-task** up to `batch.in_task_wait_minutes` (5). If the batch is answered, the results go into the cache and the
    whole pass re-runs; what the answers unlock (an event's entities, an equipment item's refine, identity, source re-check) is queued as the next round.
 4. Rounds repeat until a pass queues nothing; that pass has written everything from the cache. Then `_finish_after_rounds` leaves batch mode
@@ -510,7 +519,7 @@ Entries stored in the cache table with key `batch_job#{batch_id}`:
 - Every book-bound request carries the BookID and its own RequestID; an answer that does not echo both is not trusted (`src/utils/request_identity.py`)
 - **Preflight credit check** (`credit_gate`) reserves budget before submission and releases it on failure
 - A completed batch whose error fraction is at least `BATCH_PARTIAL_FAILURE_ALERT_PCT` (10%) raises an operator alert
-- **Per-chapter heartbeat** logs progress to detect stalls
+- **Heartbeat** (`src/utils/heartbeat.py`, 300 s timeout per round) logs progress to detect stalls
 - Timing statistics per batch: `src/utils/batch_stats.py`
 
 ---
@@ -520,7 +529,6 @@ Entries stored in the cache table with key `batch_job#{batch_id}`:
 **Planned:**
 - Progress bars
 - Better error recovery
-- Configurable batch sizes
 - Memory optimization
 
 ---

@@ -1,6 +1,6 @@
 # Bibliography Resolution: End-to-End Process
 
-**Date:** 2026-06-05 · **Updated:** 2026-11-16 (prerequisite gap closed; the rest is Phase 3 and was not re-reviewed)
+**Date:** 2026-06-05 · **Updated:** 2026-11-17 (re-checked against `src/enrichment/bibliography_resolver.py`, `phase3_enrich_data.py`)
 
 ---
 
@@ -20,8 +20,15 @@ parser dropped the citation text of every note. This is fixed upstream of this r
 
 ## Planned extension (2026-10-13) — resolve-then-DOWNLOAD (TODO HIGH #3)
 
-The current resolver STOPS at recording a source URL (`resource_urls`). Intended
-additions:
+Status (2026-11-17): partly done. Item 1 is done (`_apply_local_holding` runs first and an entry with
+`resource_urls` is never re-searched). Item 2 is partly done (an archival entry with an
+`archive_reference_number` but no URL gets `search_status = "reference_identified"`, `_apply_result`).
+Item 5's distinct status exists only as `reference_identified` and `held_unprocessed`; there is no
+`available_on_visit` / `queued_for_future_inclusion`. Item 7: the NARA key is wired
+(`ecs_entrypoint.py` loads `<env>-wwii-pipeline/nara-api-key` into `NARA_API_KEY`, mapped to
+`api.nara_api_key` in `src/utils/config.py`); there is still no NOAA mapping there (`config.yaml`
+`api.noaa_api_token` is empty). Items 3, 4 and 6 (download of EPUB/PDF, copyright gating) are NOT built:
+the resolver still STOPS at recording a source URL (`resource_urls`). Original intent:
 
 1. **Check existing holdings FIRST** (strengthen the current skip-if-resolved):
    if `archive_reference_number` / a NARA record / local holdings already present →
@@ -63,13 +70,17 @@ additions:
 
 ### Phase 3 ECS Task (`phase3_enrich_data.py`) — Resolves Sources
 
-9. ECS task starts, runs 6 steps sequentially:
-   - Step 1: Enrich people (Grokipedia/Wikipedia)
-   - Step 2: Enrich people groups
-   - Step 3: Enrich places
-   - **Step 4: Enrich bibliography** ← resolution happens here (detail below)
-   - Step 5: OpenSERP enrichment (if enabled)
-   - Step 6: NOAA weather
+9. ECS task starts and runs these steps sequentially (each wrapped by `_run_step`, which records enriched/status/error and never aborts Phase 3):
+   - People (Grokipedia/Wikipedia) enrichment no longer runs here; it moved to Phase 2
+   - Enrich people groups (structured facts)
+   - Enrich places (and geocode)
+   - **Enrich bibliography** (`enrich_bibliography`, then `resolve_bibliography_dir`; detail below)
+   - Document media steps, then OpenSERP enrichment (if `supplemental_material.use_openserp`)
+   - Equipment images
+   - NOAA weather (only if `api.noaa_api_token` is set)
+
+   The `[phase3 step N/6]` log labels in `phase3_enrich_data.py` are stale; the step names in
+   `OBSERV phase3.step name=...` are authoritative.
 
 ---
 
@@ -82,17 +93,18 @@ Step 4 runs two sub-processes sequentially:
 Called via `src/extraction/supplemental_advanced.py`. Iterates every file in `output/bibliography/` and applies three enrichments:
 
 1. **ISBN Extraction** (`_enrich_isbn`)
-   - Only runs if `citation.document_type == "book"` AND no ISBN already present
-   - Asks Grok to identify the ISBN from the citation metadata (title, author, publisher, year)
+   - Only runs if `citation.type == "book"`, `supplemental_material.extract_isbn` is true (default false in `config.yaml`) AND no ISBN already present
+   - Asks Grok (cache_type `supplemental_advanced`) to identify the ISBN from the citation metadata (title, author, publisher, year)
    - Writes `citation.isbn` if found
 
 2. **Copyright Determination** (`_enrich_copyright`)
-   - Looks up author death date via Grok
+   - Only runs if `supplemental_material.determine_copyright` is true (default false in `config.yaml`)
+   - Looks up author death date via Grok (`author_death_date` prompt)
    - Applies jurisdiction-based copyright rules (typically USA — life + 70 years, or government work = public domain)
    - Writes `copyright_status` field
 
 3. **Archive URL Verification** (`_enrich_archive_url`)
-   - Only runs if `config.verify_archive_urls == True`
+   - Only runs if `supplemental_material.verify_archive_urls` is true (default false in `config.yaml`)
    - Verifies any existing `archive_url` is still accessible
    - Marks as `verified: true/false`
 
@@ -103,20 +115,26 @@ Called via `src/enrichment/bibliography_resolver.py`. This is where external sea
 **Entry point logic:**
 ```
 For each *.json in output/bibliography/:
-    Skip if search_status == "resolved" or resource_urls is non-empty
-    Route to resolver based on document_type
-    Apply result (URL + status) or mark not_found
-    Write file back
+    Skip if search_status == "resolved" AND resource_urls is non-empty
+        (resolved by record-group identification alone is retried)
+    Reuse the resolution of an earlier identical citation (_citation_key), else:
+        locally-held source -> resolved / held_unprocessed
+        not a citation (narrative prose) -> not_citation
+        otherwise route to a resolver (below)
+    Apply result: resolved | reference_identified | not_found
+    not_citation records are moved to output/narrative_notes/ (verified before delete)
+    Write file back (schema-guarded; a blocked write raises and counts as an error)
 ```
 
 **Router (`_pick_resolver`):**
 
 | `citation.document_type` | Resolver | Search Order |
 |---|---|---|
-| primary source, after action report, field order, military message, letter, memo, cable, report, journal, war diary | `_resolve_archive` | Grok RG identification → NARA API → OpenSERP → Archive.org |
-| book, monograph, unit history | `_resolve_book` | Archive.org → Gutenberg → OpenSERP |
-| journal article, periodical, newspaper article | `_resolve_article` | Archive.org |
-| anything else | `_resolve_generic` | Archive.org |
+| primary source (also "primary source document"), after action report, field order, military message, letter, memo, cable, report, journal, war diary; or `availability == "archive"` | `_resolve_archive` | deterministic RG lookup → NARA API → OpenSERP → Archive.org → Gutenberg → Grok LLM search (last, only if nothing else hit) |
+| book, monograph, unit history; or `availability == "offline"` | `_resolve_book` | Archive.org / Gutenberg / OpenSERP (title, then `alt_title`), then the Grok LLM search once |
+| journal article, periodical, newspaper article | `_resolve_article` | Archive.org (title, then `alt_title`) |
+| no `document_type` but NARA-searchable verbatim | `_resolve_archive` | as above |
+| anything else (untyped, the common green-book case) | `_resolve_generic_entry` | the same verified multi-source search as the archive path (`_search_online_sources`) |
 
 ---
 
@@ -125,76 +143,77 @@ For each *.json in output/bibliography/:
 This is the most complex path. It handles primary source documents (AARs, field orders, journals, etc.):
 
 **Step 1: Extract search text**
-- Uses `verbatim_reference` from the entry's `mentions[0]` (the original endnote text)
+- Uses the entry's `verbatim_reference`, else `mentions[0].verbatim_reference` (the original endnote text)
 - Falls back to `citation.title` if no verbatim
 
-**Step 2: Identify NARA Record Group** (`_identify_record_group`)
-- If entry doesn't already have a Record Group (RG) reference:
-  - Sends verbatim text to Grok with a prompt listing common WWII Record Groups (RG 331 SHAEF, RG 407 unit records, RG 338 commands, etc.)
-  - Grok returns something like `"RG 407, Entry 427"` or `"UNKNOWN"`
-  - If valid, writes to `archive_reference_number` and sets `archive_physical_address` to NARA College Park
+**Step 2: Identify NARA Record Group** (`_identify_record_group` -> `_identify_nara_record` -> `_lookup_record_group`)
+- If the entry has no Record Group (RG) in `archive_reference_number`: a deterministic alias lookup (`_RG_LOOKUP`, from NARA's Record Group Explorer) returns a bare label such as `RG 407`. No Grok call is made (the `grok_client` argument is unused).
+- On a hit it writes `archive_reference_number` and sets `archive_physical_address` to NARA College Park; a miss returns None.
 
 **Step 3: Search for online copy** (`_search_online_sources`)
 
-Searches in order, stops at first verified hit:
+Searches in order and AGGREGATES every verified hit into `resource_urls` and `source_metadata.findings` (the first is the primary `search_source`). The Grok LLM search runs only when no other source found a copy:
 
 1. **NARA Catalog API** (if API key available AND entry has NARA indicators):
    - Checks `_is_nara_searchable()` — scans verbatim/title for keywords like "RG", "after action", "SHAEF", "journal", unit abbreviations, etc.
-   - Searches `GET /api/v2/records/search?q={query}&limit=5`
-   - For each result: **verifies via `_verify_nara_match()`** — asks Grok if unit AND document type match
-   - Accepts first verified hit, caches URL
-   - If all 5 rejected → caches NOT_FOUND for this query
+   - Requires `api.nara_api_key`; scoped by the deterministic record group (`_lookup_record_group`); retries with the Grok-expanded `alt_title`
+   - Searches the NARA catalog API (`_search_nara`, `_execute_nara_query`; paced to ~10/min)
+   - Candidates are verified (`_verify_nara_hits` / `_verify_nara_match`) — asks Grok if unit AND document type match
+   - Accepts the first verified hit and caches the URL; no verified hit → caches NOT_FOUND for this query
 
 2. **OpenSERP** (if enabled):
-   - Searches Google/Bing/DuckDuckGo for `"{archive_reference} digitized document"`
+   - Only when `use_openserp` is set in the resolve config; uses repository-targeted query templates (`_search_openserp_archive`), with the archive reference number or the search title
    - **Verifies via `_verify_openserp_match()`** — asks Grok if result is relevant to specific event/unit
+   - An unreachable OpenSERP marks the entry `_backend_down`; a resulting `not_found` is counted as `backend_down` in the run stats and is not queued for human review
    - Equipment exception: photographs allowed but must be accurate model/variant
 
 3. **Archive.org**:
-   - Searches Archive.org metadata API by title
-   - Verifies via `_verify_match()` — asks Grok if title matches
+   - Gated on `search_archive_org` (default true); `search_archive_org_candidates` in `src/extraction/supplemental_search.py`
+   - Verifies each candidate via `_collect_verified_candidates` — asks Grok if it matches
+
+4. **Gutenberg** (gated on `search_gutenberg`, default true; Gutendex API) and, last, the **Grok LLM search** (`llm_search`, default true; the URL is fetched and content-verified by `_verify_url_content` before it is stored; skipped in batch-collect mode)
 
 **Step 4: Apply result**
-- If URL found: `resource_urls.append(url)`, `search_status = "resolved"`, `search_source = "{source}"`
-- If only RG identified (no online copy): `search_status = "resolved"` (physical location known)
+- If URL found: `resource_urls.append(url)`, `search_status = "resolved"`, `search_source = "{source}"`, `availability = "online"`, license re-derived
+- If only RG identified (no online copy): `search_status = "reference_identified"` (physical location known; a later run retries the online sources)
 - If nothing: `search_status = "not_found"`
 
 ---
 
 #### Book Resolution Path — `_resolve_book`
 
-Simpler flow:
+Simpler flow (`_resolve_book_search`, title then `alt_title`):
 1. Search Archive.org by title + author → verify with Grok
 2. Search Gutenberg via OpenSERP (if enabled) → verify with Grok
 3. Search OpenSERP general (if enabled) → verify with Grok
-4. Return first verified hit or None
+4. If nothing: the content-verified Grok LLM search, once
+5. Return first verified hit or None
 
 ---
 
 #### Article Resolution Path — `_resolve_article`
 
-1. Search Archive.org by title + author → verify with Grok
+1. Search Archive.org by title + author (then `alt_title`) → verify with Grok
 2. Return first verified hit or None
 
 ---
 
-#### Generic Resolution Path — `_resolve_generic`
+#### Generic Resolution Path — `_resolve_generic_entry`
 
-1. Search Archive.org by title + author
-2. Return first hit or None
+Takes the same verified multi-source search as the archive path (`_search_online_sources`: NARA, OpenSERP, Archive.org, Gutenberg, then the Grok LLM search). It no longer takes Archive.org's first hit unverified.
 
 ---
 
 ### After Both Sub-processes Complete
 
-12. All modified bibliography files are written to disk (ECS local filesystem)
-13. ECS task syncs results back to S3 at task completion
+10. All modified bibliography files are written to disk (ECS local filesystem) via `write_json_with_lock`
+11. Unresolved real citations are queued for human disposition (`_queue_entry`); the run emits `OBSERV bib.resolve in=... resolved=... ref_identified=... not_found=... not_citation=... deduped=... queued=...`
 
 ### After Phase 3 Completes
 
-13. ECS task syncs enriched files back to S3
-14. Task exits, lock released in DynamoDB
-15. NAT gateway teardown scheduled (delayed to save costs)
+12. ECS task syncs enriched files back to S3
+13. Task exits, lock released in DynamoDB
+14. NAT gateway teardown scheduled (delayed to save costs; not re-verified)
 
 ---
 
@@ -208,7 +227,7 @@ Previously, NARA and OpenSERP results were accepted without verification. Now:
 | OpenSERP | `_verify_openserp_match` — checks event relevance; equipment must be accurate photo | Rejects; tries next result |
 | Archive.org | `_verify_match` — title + content check via Grok | Rejects |
 
-All verifications fail closed (reject on error rather than accept).
+The Grok LLM search is verified the same way (`_verify_url_content` fetches the page and asks Grok). All verifications fail closed (reject on error rather than accept).
 
 ---
 
@@ -216,8 +235,9 @@ All verifications fail closed (reject on error rather than accept).
 
 - **DynamoDB table:** `dev-wwii-api-cache`
 - **Key format:** `search#{source}#{hash}` (e.g., `search#nara#87bb5aece6dd63f0`)
-- **Positive cache:** URL stored, returned on subsequent calls without re-searching
-- **Negative cache:** `NOT_FOUND` stored, prevents re-searching the same query
+- Implemented in `src/utils/search_cache.py` (local file backend when AWS is off)
+- **Positive cache:** URL stored (TTL 30 days, `POSITIVE_TTL_DAYS`), returned on subsequent calls without re-searching
+- **Negative cache:** `NOT_FOUND` stored (TTL 7 days, `NEGATIVE_TTL_DAYS`), prevents re-searching the same query
 - **Cache must be flushed** when verification logic changes, otherwise old unverified results persist
 
 ---
@@ -226,9 +246,9 @@ All verifications fail closed (reject on error rather than accept).
 
 | Resource | Limit | Notes |
 |---|---|---|
-| NARA API (search + record detail) | 10,000/month per key | Email `Catalog_API@nara.gov` for higher limit |
+| NARA API (search + record detail) | 10,000/month per key | Email `Catalog_API@nara.gov` for higher limit. Code throttles to one search per 6 s (`_nara_rate_limit`) |
 | NARA file downloads (TIF/JPG) | No documented limit | Plain HTTPS, no API key needed |
-| Grok API | 30 calls/minute | Used for verification prompts |
+| Grok API | 30 calls/minute (not re-verified) | Used for verification prompts |
 | Archive.org | No documented limit | Be courteous |
 
 ---
@@ -242,7 +262,7 @@ To re-run bibliography resolution (e.g., after resetting entries or changing ver
 aws s3 sync output/bibliography/ s3://dev-wwii-data-pipeline/output/bibliography/ --region us-east-1
 
 # 2. Flush DynamoDB search cache
-python3 /tmp/flush_search_cache.py
+python3 scripts/flush_search_cache.py
 
 # 3. Build and push updated Docker image
 docker build -t dev-wwii-pipeline .

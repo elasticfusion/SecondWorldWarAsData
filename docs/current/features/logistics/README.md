@@ -2,7 +2,7 @@
 
 **Module:** `src/extraction/logistics.py`  
 **Status:** Enabled (`logistics.enabled: true` in `config.yaml`)  
-**Last Updated:** 2026-11-16
+**Last Updated:** 2026-11-17
 
 ---
 
@@ -37,15 +37,15 @@ Response: {window id: {logistics: [items]}, ...}
 windows.attribute_found: settle each quote, assign the real Sub-eventID
 (unsupported quote → dropped)
     ↓
-For each item:
+For each item (_save_extraction):
     ↓
-Validate via LogisticsExtraction.model_validate()
+Statement dedup (_statement_key vs files already on disk)
     ↓
-Resolve cross-refs via SHARED libraries (see below)
+_build_logistics_data: clamp enums, resolve cross-refs via SHARED libraries (see below)
     ↓
-Create Logistics File
+Logistics.model_validate()
     ↓
-Save to output/logistics/
+Save to output/logistics/ (write_json_with_lock) and rebuild index.json
 ```
 
 ## Cross-references (shared libraries)
@@ -68,9 +68,9 @@ Unresolved references keep the name with a `null` ID (never fabricated).
 
 **Reverse link:** casualties cross-reference back to logistics — a casualty from a supply
 failure links to a LogisticsID (explicit, or an inferred `co_occurring` candidate on shared
-GroupID + overlapping date). See [Casualties](../casualties/README.md). Note logistics
-records carry **no PlaceID** (place is not modeled here), so the casualty↔logistics join is
-GroupID + time, not place.
+GroupID + overlapping date). See [Casualties](../casualties/README.md). The casualty↔logistics
+join keys are GroupID + time (`logistics_resolver`), not place, although a logistics record does
+carry `impacted_places[].PlaceID`.
 
 **Windows:** discovery runs over the chapter's windows of the parsed text, one window per request, never the events' summaries (`_ask_logistics` → `windows.window_event_for`, `windows.attribute_found`). Without a parsed file the sub-events are asked as before. Entity linking and file creation remain per-item.
 
@@ -78,13 +78,22 @@ GroupID + time, not place.
 
 ```
 output/logistics/
-├── supply_shortage_ammunition_01KHYP2M.json
-├── delivery_delay_fuel_01KHYP3N.json
-├── transport_disruption_01KHYP4P.json
+├── ammunition_supply_shortage_19440715_W0X1Y2Z3.json
+├── fuel_delivery_delay_19440620_9Y1Z3A5B.json
+├── general_transport_disruption_UNKNOWN_4P6R8T0V.json
+├── index.json
 └── ...
 ```
 
-**Filename Format:** `{type}_{category}_{ULID_prefix}.json`
+**Filename Format:** `{category}_{logistics_type}_{date_start without dashes, or UNKNOWN}_{last 8 chars of LogisticsID}.json`
+(sanitized and contained by `_safe_entity_filename` / `_contained_entity_path`; on failure the
+file is `{LogisticsID}.json`). `index.json` maps each file stem to its file name; a stem collision logs
+`OBSERV logistics.index_key_collision`.
+
+**Re-runs do not duplicate.** `_save_extraction` skips a statement already on disk. The key
+(`_statement_key`) is the shared statement identity (`entity_records.mention_identity`: sub-event,
+`original_text`, category, type, `date_start`, description) plus category, type and date, so a quote
+that holds several shortages ("lacking vehicles, supplies, ammunition") yields one record each.
 
 ---
 
@@ -140,6 +149,7 @@ output/logistics/
       "impact_description": "Offensive delayed due to ammunition shortage"
     }
   ],
+  "original_text": "verbatim source passage",
   "weather_impact": {
     "WeatherID": "01KHYP2V1W3X5Y7Z9B1D3F5H7J",
     "impact_description": "Heavy rain delayed supply convoys",
@@ -161,28 +171,34 @@ output/logistics/
 
 ### 1. Logistics Types
 
-**Six main types:**
+**Twelve types** (`_VALID_TYPES`; any other value is clamped to `supply_shortage`):
 
-| Type | Description | Example |
-|------|-------------|---------|
-| `supply_shortage` | Insufficient supplies | Ammunition shortage |
-| `supply_excess` | Surplus supplies | Excess fuel stockpile |
-| `delivery_delay` | Delayed shipments | Convoy delayed 3 days |
-| `transport_disruption` | Transport issues | Bridge destroyed |
-| `planning_requirement` | Future needs | Require 5000 tons fuel |
-| `capacity_constraint` | Capacity limits | Port at max capacity |
+| Type | Description |
+|------|-------------|
+| `supply_shortage` | Insufficient supplies |
+| `supply_excess` | Surplus supplies |
+| `delivery_delay` | Delayed shipments |
+| `transport_disruption` | Transport issues (bridge destroyed) |
+| `capacity_constraint` | Capacity limits (port at max capacity) |
+| `production_delay` | Delayed production |
+| `supply_issue` | Routine issue of supplies (positive) |
+| `embarkation` | Loading / embarkation (positive) |
+| `marshaling` | Marshaling of units or materiel (positive) |
+| `movement` | Routine movement (positive) |
+| `reinforcement` | Reinforcement arriving (positive) |
+| `resupply` | Resupply delivered (positive) |
+
+The six positive types (`_POSITIVE_TYPES`) default to severity `low` when none is given; the
+others default to `medium`. `planning_requirement`, listed in earlier versions of this doc, is not
+accepted.
 
 ### 2. Supply Categories
 
-**Seven categories:**
+**Fifteen categories** (`_VALID_CATEGORIES`; anything else is clamped to `general`):
 
-- `ammunition` - Shells, bullets, explosives
-- `fuel` - Gasoline, diesel, aviation fuel
-- `food` - Rations, provisions
-- `medical` - Medical supplies, equipment
-- `equipment` - Vehicles, weapons, tools
-- `personnel` - Troops, replacements
-- `general` - Miscellaneous supplies
+- `ammunition`, `fuel`, `food`, `medical`, `equipment`, `personnel`, `general`
+- `vehicles`, `supplies`, `artillery`, `armored_support`, `heavy_weapons`, `reinforcements`,
+  `maps`, `transport`
 
 ### 3. Severity Levels
 
@@ -207,13 +223,12 @@ output/logistics/
 }
 ```
 
-**Automatic calculation:**
-- `shortage = required - available` (if available < required)
-- `excess = available - required` (if available > required)
+All five fields come from the model's answer (`QuantityInfo`); the code does not compute
+`shortage` or `excess` itself.
 
 ### 5. Delivery Methods
 
-**Six transport types:**
+**Six transport types** (prompt vocabulary; `delivery_method` is stored as the model gave it, not clamped):
 
 - `sea_transport` - Ships, landing craft
 - `air_delivery` - Aircraft, airdrops
@@ -233,13 +248,10 @@ output/logistics/
 
 ### 7. Impact Tracking
 
-**Links to affected entities:**
-
-- **Organizations:** Military units affected
-- **People:** Individuals impacted
-- **Places:** Locations affected
-- **Equipment:** Equipment impacted
-- **Weather:** Weather-related impacts
+**Links to affected entities** (see Cross-references): organizations, people, places,
+equipment and weather. The weather link (`_build_weather_impact`) needs the model's `weather`
+text to equal an indexed weather description after normalization, or contain it as a whole phrase
+(indexed description of at least 4 characters); otherwise `OBSERV logistics.weather_unmatched`.
 
 ### 8. Resolution Tracking
 
@@ -266,20 +278,12 @@ logistics:
   enabled: true  # Enable logistics extraction
 ```
 
-**Note:** Currently only one configuration option. Feature is experimental.
+**Note:** `logistics.enabled` is the only option. Window size comes from `extraction.window_paragraphs`
+(env `WINDOW_PARAGRAPHS`).
 
 ---
 
 ## Usage
-
-### Enable in Config
-
-```bash
-# Edit config.yaml
-vim config.yaml
-
-# Set logistics.enabled: true
-```
 
 ### Run Phase 2
 
@@ -287,36 +291,22 @@ vim config.yaml
 python3 phase2_extract.py
 ```
 
-Logistics extraction runs automatically after equipment extraction.
+`_extract_optional_entities` runs logistics after weather and equipment and before casualties
+and supplemental. An event file already marked processed for `logistics` is skipped unless
+`should_reprocess("logistics")`.
 
 ### Programmatic
 
 ```python
 from pathlib import Path
 from src.grok_client import GrokClient
-from src.extraction.logistics import extract_logistics
+from src.extraction.logistics import extract_logistics_from_event
 
-grok_client = GrokClient(cache_dir=Path("cache/api"))
-
-event_file = Path("output/BreakoutAndPursuit/chapter1-event.json")
-parsed_file = Path("output/BreakoutAndPursuit/chapter1-parsed.json")
-output_dir = Path("output/logistics")
-
-# Need entity directories for linking
-people_dir = Path("output/people")
-places_dir = Path("output/places")
-equipment_dir = Path("output/equipment")
-weather_dir = Path("output/weather")
-
-extract_logistics(
-    event_file=event_file,
+grok_client = GrokClient(Path("cache/api"))
+result = extract_logistics_from_event(
+    event_file=Path("output/content/<book>/chapter1-event.json"),
+    output_root=Path("output"),   # entity indexes are read from output_root/{people,people_groups,places,equipment,weather,dates}
     grok_client=grok_client,
-    output_dir=output_dir,
-    parsed_file=parsed_file,
-    people_dir=people_dir,
-    places_dir=places_dir,
-    equipment_dir=equipment_dir,
-    weather_dir=weather_dir
 )
 ```
 
@@ -326,12 +316,11 @@ extract_logistics(
 
 ### Logistics Files
 
-**Location:** `output/logistics/{type}_{category}_{ID}.json`
+**Location:** `output/logistics/{category}_{logistics_type}_{date}_{ID8}.json`
 
 **Examples:**
-- `supply_shortage_ammunition_01KHYP2M.json`
-- `delivery_delay_fuel_01KHYP3N.json`
-- `transport_disruption_general_01KHYP4P.json`
+- `ammunition_supply_shortage_19440715_W0X1Y2Z3.json`
+- `fuel_delivery_delay_19440620_9Y1Z3A5B.json`
 
 **No central repository** - Each logistics issue is a separate file.
 
@@ -368,56 +357,21 @@ extract_logistics(
 
 ## Error Handling
 
-### Missing Entity Links
-
-**Graceful degradation:**
-- If entity not found in repository, skip link
-- Log warning
-- Continue extraction
-
-**Example:**
-```
-WARNING - Organization 'VII Corps' not found in people_groups repository
-```
-
-### Invalid Quantities
-
-**Validation:**
-- Quantities must be positive numbers
-- Units must be specified
-- Shortage/excess calculated automatically
-
-### Retry Logic
-
-**Default:** 3 attempts per sub-event
-
-**Behavior:**
-- First attempt uses cache
-- Retries bypass cache
-- Continues to next sub-event on failure
+- Unresolved entity references keep the name with a null ID (`_link_*`).
+- A save failure (validation or write) logs `OBSERV logistics.save_failed` and does not mark the key
+  as seen, so a later identical extraction is still saved.
+- A prompt-render failure returns `{}` with `OBSERV logistics.prompt_build_failed` and makes no API call.
+- Chunks that truncate are halved and re-asked (`extract_with_chunk_halving`); window runs use
+  `chunk_size=1`.
+- `observe_yield("logistics", ...)` records the per-event expected-yield baseline.
 
 ---
 
 ## Performance
 
-### Caching
-
-All API responses cached in `cache/api/logistics/`
-
-**Clear cache:**
-```bash
-rm -rf cache/api/logistics/*
-```
-
-### Processing Time
-
-**Typical:** 10-20 seconds per sub-event
-
-**Factors:**
-- Text complexity
-- Number of logistics mentions
-- Entity linking overhead
-- API response time
+Responses are cached by `GrokClient` under cache type `logistics`. Phase 2 collects window requests
+for the xAI batch rounds like the other extractors (see
+[Batch Processing](../batch_processing/README.md)).
 
 ---
 
@@ -504,39 +458,20 @@ Division was forced to halt operations due to fuel shortages."
 
 ## API Reference
 
-### `extract_logistics()`
-
-Extract logistics information from event file.
+### `extract_logistics_from_event()`
 
 **Signature:**
 ```python
-def extract_logistics(
+@for_chapter_book
+def extract_logistics_from_event(
     event_file: Path,
-    grok_client: GrokClient,
-    output_dir: Path,
-    parsed_file: Optional[Path] = None,
-    people_dir: Optional[Path] = None,
-    places_dir: Optional[Path] = None,
-    equipment_dir: Optional[Path] = None,
-    weather_dir: Optional[Path] = None,
-    max_retries: int = 3
+    output_root: Path,
+    grok_client: Optional[GrokClient] = None,
 ) -> Optional[Path]
 ```
 
-**Parameters:**
-- `event_file` (Path): Path to `*-event.json` file
-- `grok_client` (GrokClient): Initialized Grok API client
-- `output_dir` (Path): Output directory (`output/logistics/`)
-- `parsed_file` (Path, optional): Path to parsed file for book metadata
-- `people_dir` (Path, optional): People groups directory for linking
-- `places_dir` (Path, optional): Places directory for linking
-- `equipment_dir` (Path, optional): Equipment directory for linking
-- `weather_dir` (Path, optional): Weather directory for linking
-- `max_retries` (int): Maximum retry attempts per sub-event (default: 3)
-
-**Returns:**
-- `Path`: Path to output directory if logistics were extracted
-- `None`: If no logistics were extracted
+**Returns:** `output_root/logistics` when at least one record was written, else `None` (also `None`
+when no Grok client is passed).
 
 ---
 
@@ -555,16 +490,12 @@ def extract_logistics(
 **Check:**
 1. Entity repositories exist (people, places, equipment, weather)
 2. Entities extracted before logistics
-3. Entity names match between extractions
-4. Check logs for "not found in repository" warnings
+3. Entity names match between extractions (an unmatched name keeps a null ID, no warning is logged)
 
 ### Quantities not calculating
 
 **Check:**
-1. Both `required` and `available` specified
-2. Values are positive numbers
-3. Unit is specified
-4. Check logs for validation errors
+Nothing calculates `shortage` or `excess`; check the model's answer in the cache or `quantity` in the record.
 
 ---
 

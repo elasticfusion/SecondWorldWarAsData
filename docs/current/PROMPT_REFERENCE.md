@@ -15,7 +15,7 @@ interpolated into the template, and what the call produces).
 - **Cache lane** = the `cache_type` the request is stored/batched under (groups a prompt's
   calls in the Grok Batch API and the on-disk cache).
 
-> Generated 2026-10-22, updated 2026-11-16. Prompt count: **34** (`prompts/*.yaml`). Links are repo-relative.
+> Generated 2026-10-22, updated 2026-11-17 (invocation lines re-checked against main 0dac86fa). Prompt count: **34** (`prompts/*.yaml`). Links are repo-relative.
 
 ---
 
@@ -23,7 +23,7 @@ interpolated into the template, and what the call produces).
 
 These run inside `phase2_extract.py` → `src/extraction/*`. Events are extracted first
 (one request per chapter). All other entity discovery (dates, places, people, people_groups,
-equipment, weather, logistics, casualties) runs over fixed 3-paragraph **windows** of the raw
+equipment, weather, logistics, casualties) runs over fixed **windows** of `extraction.window_paragraphs` paragraphs (default 3) of the raw
 parsed text (`src/extraction/windows.py`), presented to the extractors as one-"sub-event" views
 with no names or summaries, so for those prompts `event_name` / `sub_event_summary` are empty and
 `text` is the window text. A window's answer is attributed to the real sub-event that holds the
@@ -40,11 +40,11 @@ The notes (`supplemental`) prompt runs within each sub-event.
 | [`equipment_extract_broad`](../../prompts/equipment_extract_broad.yaml) | [`src/extraction/equipment.py`](../../src/extraction/equipment.py) `_extract_equipment_broad_one` — broad equipment discovery (cache_type `equipment_broad`) | `event_data` (JSON view of the window/sub-event) | JSON equipment (schema) |
 | [`equipment_refine`](../../prompts/equipment_refine.yaml) | [`src/extraction/equipment.py`](../../src/extraction/equipment.py) (cache_type `equipment_refine`) — refine each discovered item (lineage fields `variant_of` / `distinguishing_features`) | `item_name`, `item_original_text`, `context`, `theater_hint` | JSON equipment item (schema) |
 | [`equipment_vessel_choice`](../../prompts/equipment_vessel_choice.yaml) | [`src/extraction/equipment_identity.py`](../../src/extraction/equipment_identity.py) `_choice_prompt` — choose which named vessel is meant, by date | `vessel_name`, `date`, `paragraph`, `candidates` | choice |
-| [`weather_batch`](../../prompts/weather_batch.yaml) | [`src/extraction/weather_central.py`](../../src/extraction/weather_central.py:820) (`get_system_prompt("weather_batch")`) — weather extraction over the text windows of each sub-event | `event_id`, `event_name`, `quote_rule`, `sub_event_blocks` | JSON weather (schema) |
+| [`weather_batch`](../../prompts/weather_batch.yaml) | [`src/extraction/weather_central.py:942`](../../src/extraction/weather_central.py) (`get_system_prompt("weather_batch")`) — weather extraction over the text windows of each sub-event | `event_id`, `event_name`, `quote_rule`, `sub_event_blocks` | JSON weather (schema) |
 | [`casualties`](../../prompts/casualties.yaml) | [`src/extraction/casualties.py`](../../src/extraction/casualties.py) — casualty discovery over the chapter's paragraph windows | `entity_context`, `sub_event_block` | JSON casualties (schema) |
 | [`logistics`](../../prompts/logistics.yaml) | [`src/extraction/logistics.py`](../../src/extraction/logistics.py) (`_rp("logistics", ...)`) — logistics extraction | `sub_event_block` | JSON logistics (schema) |
-| [`supplemental`](../../prompts/supplemental.yaml) | [`src/extraction/supplemental.py`](../../src/extraction/supplemental.py:493) (`get_system_prompt("supplemental")`) — endnote/footnote citation classification + extraction | `event_id`, `event_title`, `sub_event_id`, `sub_event_summary`, `text`, `endnote_block`, `endnote_refs`, `footnote_refs`, `ref_type_hint` | JSON citations (schema) |
-| [`source_section`](../../prompts/source_section.yaml) | [`src/extraction/source_section.py`](../../src/extraction/source_section.py:219) (`get_system_prompt("source_section")`) — operation/section anchor derivation per event | `book`, `series`, `section_title`, `event_name`, `sub_event_summaries`, `dates`, `places` | JSON section (schema) |
+| [`supplemental`](../../prompts/supplemental.yaml) | [`src/extraction/supplemental.py:1034`](../../src/extraction/supplemental.py) (`get_system_prompt("supplemental")`) — endnote/footnote citation classification + extraction | `event_id`, `event_title`, `sub_event_id`, `sub_event_summary`, `text`, `endnote_block`, `endnote_refs`, `footnote_refs`, `ref_type_hint` | JSON citations (schema) |
+| [`source_section`](../../prompts/source_section.yaml) | [`src/extraction/source_section.py:227`](../../src/extraction/source_section.py) (`get_system_prompt("source_section")`) — operation/section anchor derivation per event | `book`, `series`, `section_title`, `event_name`, `sub_event_summaries`, `dates`, `places` | JSON section (schema) |
 
 ---
 
@@ -52,14 +52,14 @@ The notes (`supplemental`) prompt runs within each sub-event.
 
 | Prompt | Invoked in (context) | Context vars | Output |
 |--------|----------------------|--------------|--------|
-| [`map_search`](../../prompts/map_search.yaml) | [`src/extraction/grok_search_maps.py`](../../src/extraction/grok_search_maps.py) — Grok-assisted historical map search | `place_name`, `date`, `event_context` | JSON map hits (schema) |
+| [`map_search`](../../prompts/map_search.yaml) | [`src/extraction/grok_search_maps.py`](../../src/extraction/grok_search_maps.py) — Grok-assisted historical map search | `place_name`, `date`, `event_context`, `sites` | JSON map hits (schema) |
 | [`map_vision`](../../prompts/map_vision.yaml) | [`src/extraction/grok_search_maps.py`](../../src/extraction/grok_search_maps.py) — vision verify a candidate is a relevant WWII map | `title`, `place_name`, `date`, `event_context` | JSON verdict (schema) |
 | [`chart_vision`](../../prompts/chart_vision.yaml) | [`src/extraction/chart_source_adapter.py`](../../src/extraction/chart_source_adapter.py) `_chart_vision_read` — read the commands/units a chart image depicts | `event_context`, `title` | JSON depicted (schema) |
-| [`license_check`](../../prompts/license_check.yaml) | [`src/extraction/openserp_maps.py`](../../src/extraction/openserp_maps.py:119) `render_prompt("license_check")` — analyze a page's terms for image-use permission | `url`, `page_content` | JSON license (schema) |
+| [`license_check`](../../prompts/license_check.yaml) | [`src/extraction/openserp_maps.py:122`](../../src/extraction/openserp_maps.py) `render_prompt("license_check")` — analyze a page's terms for image-use permission | `url`, `page_content` | JSON license (schema) |
 | [`equipment_vision`](../../prompts/equipment_vision.yaml) | [`src/extraction/equipment.py`](../../src/extraction/equipment.py) — vision verify an image is the equipment | `equipment_name`, `equipment_category`, `image_title` | JSON verdict (schema) |
 | [`equipment_urls`](../../prompts/equipment_urls.yaml) | [`src/extraction/equipment.py`](../../src/extraction/equipment.py) — pull image URLs from a Wikipedia/Commons page | `equipment_name`, `page_content` | JSON URLs (schema) |
-| [`equipment_enrichment`](../../prompts/equipment_enrichment.yaml) | [`src/extraction/equipment.py`](../../src/extraction/equipment.py) — technical-spec enrichment | `common_name`, `category`, `country`, `identifier` | JSON specs (schema) |
-| [`equipment_disambiguation`](../../prompts/equipment_disambiguation.yaml) | [`src/extraction/equipment_disambiguation.py`](../../src/extraction/equipment_disambiguation.py:191) `render_prompt("equipment_disambiguation")` — resolve a raw designation to a canonical item | `designation` | JSON canonical (schema) |
+| [`equipment_enrichment`](../../prompts/equipment_enrichment.yaml) | [`src/extraction/equipment.py`](../../src/extraction/equipment.py) — technical-spec enrichment | `common_name`, `category`, `country`, `identifier`, `source_text` (page text the specs must be written from) | JSON specs (schema) |
+| [`equipment_disambiguation`](../../prompts/equipment_disambiguation.yaml) | [`src/extraction/equipment_disambiguation.py:295`](../../src/extraction/equipment_disambiguation.py) `render_prompt("equipment_disambiguation")` — resolve a raw designation to a canonical item | `designation` | JSON canonical (schema) |
 
 ---
 
@@ -71,8 +71,8 @@ These run inside `phase3_enrich_data.py` → `src/enrichment/*` and the suppleme
 |--------|----------------------|--------------|--------|
 | [`biography`](../../prompts/biography.yaml) | [`src/extraction/enrich_biographies.py`](../../src/extraction/enrich_biographies.py) — biographical-detail extraction from a source page | `person_name`, `source_name`, `text` | JSON bio (schema) |
 | [`people_consolidation`](../../prompts/people_consolidation.yaml) | [`src/extraction/people_consolidation.py`](../../src/extraction/people_consolidation.py) — dedup candidate person entries | `entries` | JSON merge decision (schema) |
-| [`bibliography_verify`](../../prompts/bibliography_verify.yaml) | [`src/enrichment/bibliography_resolver.py`](../../src/enrichment/bibliography_resolver.py:959) `render_prompt("bibliography_verify")` — verify a search result matches a citation (wraps `verify_prompt`) | `verify_prompt` | `YES`/`NO` |
-| [`bibliography_alt_title`](../../prompts/bibliography_alt_title.yaml) | [`src/extraction/supplemental_advanced.py`](../../src/extraction/supplemental_advanced.py:449) `render_prompt("bibliography_alt_title")` — expand Green-Book citation shorthand | `verbatim` | expanded title |
+| [`bibliography_verify`](../../prompts/bibliography_verify.yaml) | [`src/enrichment/bibliography_resolver.py:1111`](../../src/enrichment/bibliography_resolver.py) `render_prompt("bibliography_verify")` — verify a search result matches a citation (wraps `verify_prompt`) | `verify_prompt` | `YES`/`NO` |
+| [`bibliography_alt_title`](../../prompts/bibliography_alt_title.yaml) | [`src/extraction/supplemental_advanced.py:487`](../../src/extraction/supplemental_advanced.py) `render_prompt("bibliography_alt_title")` — expand Green-Book citation shorthand | `verbatim` | expanded title |
 | [`nara_identify`](../../prompts/nara_identify.yaml) | **Not used by the pipeline** — in [`src/enrichment/bibliography_resolver.py`](../../src/enrichment/bibliography_resolver.py) NARA record-group ID is DETERMINISTIC (`_identify_nara_record` → `_lookup_record_group`, an RG alias table; `grok_client` accepted but unused). The prompt IS invoked by the dev tool [`scripts/utils/debug_nara_search.py`](../../scripts/utils/debug_nara_search.py) (`render_prompt("nara_identify")`) to A/B the Grok RG approach against the deterministic one — so it is a live debug dependency, kept. | `verbatim` | RG label (debug only) |
 | [`nara_verify`](../../prompts/nara_verify.yaml) | [`src/enrichment/bibliography_resolver.py`](../../src/enrichment/bibliography_resolver.py) — strict verify a NARA catalog record IS the cited document | `citation`, `nara_title`, `nara_description` | `YES`/`NO` |
 | [`publication_search`](../../prompts/publication_search.yaml) | [`src/extraction/supplemental_search.py`](../../src/extraction/supplemental_search.py) — LLM search for an online copy of a publication | `title`, `author`, `doc_type` | URL or `NOT_FOUND` |
@@ -86,9 +86,9 @@ These run inside `phase3_enrich_data.py` → `src/enrichment/*` and the suppleme
 
 | Prompt | Invoked in (context) | Context vars | Output |
 |--------|----------------------|--------------|--------|
-| [`language_detect`](../../prompts/language_detect.yaml) | [`src/ingestion/translation.py`](../../src/ingestion/translation.py:82) `render_prompt("language_detect")` — detect a document's primary language | `sample` | ISO language code |
-| [`book_metadata`](../../prompts/book_metadata.yaml) | [`src/ingestion/book_metadata.py`](../../src/ingestion/book_metadata.py:299) (`get_system_prompt("book_metadata")`) — book title/author/etc. found by Grok, with evidence quotes, for the chapter meta | `sample`, `hint` | JSON book metadata |
-| [`translation`](../../prompts/translation.yaml) | [`src/ingestion/translation.py`](../../src/ingestion/translation.py:131) (`get_system_prompt("translation")`) — translate non-English markdown to English | `source_language`, `markdown` | translated markdown |
+| [`language_detect`](../../prompts/language_detect.yaml) | [`src/ingestion/translation.py:174`](../../src/ingestion/translation.py) `render_prompt("language_detect")` — detect a document's primary language | `sample` | ISO language code |
+| [`book_metadata`](../../prompts/book_metadata.yaml) | [`src/ingestion/book_metadata.py:299`](../../src/ingestion/book_metadata.py) (`get_system_prompt("book_metadata")`) — book title/author/etc. found by Grok, with evidence quotes, for the chapter meta | `sample`, `hint` | JSON book metadata |
+| [`translation`](../../prompts/translation.yaml) | [`src/ingestion/translation.py:223`](../../src/ingestion/translation.py) (`get_system_prompt("translation")`) — translate non-English markdown to English | `source_language`, `markdown` | translated markdown |
 
 ---
 

@@ -2,9 +2,14 @@
 
 How the pipeline obtains **verbatim award citations** for people named in an award
 context, from **authoritative sources** (not search engines), with a full source
-record. US awards first (Distinguished Service Cross); extensible to other
-countries. Status: foundation built (schema + pluggable interface + offline source
-+ gating); first alternate direct source pending source URLs.
+record. Status (checked 2026-11-17): schema, pluggable interface, gating, polite-fetch
+base, page preservation and ONE adapter (`hall_of_valor`) are built. Every other
+registry row (`london_gazette`, `victoria_cross_online`, `ordre_liberation`, `dhh_canada`,
+`quirinale`, `podvig_naroda`, `tracesofwar`) is declared in `config/award_sources.yaml`
+but has no adapter in `award_registry._ADAPTER_BUILDERS`, so `build_source` skips it
+(debug log). Wherever this doc says "BUILT" or "direct source" for a non-US source,
+read "registered, adapter not yet coded". The whole path is opt-in
+(`AWARD_CITATIONS_ENABLED=true`, default off).
 
 ---
 
@@ -48,7 +53,9 @@ environment's requests:
   indicates that country (`award_source_nationality`, `awarding_power`). It is no longer USA-only. Gap-fill only
   (never overwrites an existing citation). Verification-not-fabrication: a citation
   is attached only when `verified` and the award matches.
-- `src/enrichment/award_offline_source.py` — `OfflineAwardDataset`: a local JSON
+- `src/enrichment/award_offline_source.py` — `OfflineAwardDataset` (not yet reachable from the
+  pipeline: the registry's `offline` adapter has no builder, and nothing else instantiates
+  the class): a local JSON
   dataset `[{name, award, citation, source_name, source_url}]`, conservative name
   matching (normalized exact → last-name+first-initial), marks results `verified`.
 - Provenance on `MilitaryAward` (`src/extraction/people.py`): `citation_text`,
@@ -57,8 +64,8 @@ environment's requests:
   MilitaryAward; the live one is in `src/extraction/people.py`.)*
 
 ## Pending
-- Replace/retire the OpenSERP `search_valor` path now that Hall of Valor covers
-  US awards (keep OpenSERP only as a last-ditch fallback if desired).
+- Code the remaining adapters named in the registry and a builder for the `offline`
+  adapter. (The OpenSERP `search_valor` path no longer exists in `src/`; done.)
 
 ## Access reality — CORRECTED by rigorous testing (2026-10-02)
 
@@ -116,9 +123,12 @@ Silver Stars route to NARA/Fold3 general orders → the offline dataset path.
   <AWARD> to ... for <gallantry> in action ..."); name+award matched →
   `verified=True`. Live-verified: Audie Murphy → 4 citations (Silver Star, DSC,
   Bronze Star, Medal of Honor) correctly attributed; award-hint filter works.
-- Wired into `enrich_person_biography` via `_source_award_citations` — opt-in
-  (`AWARD_CITATIONS_ENABLED=true`), gated US + award context, fail-safe, records
-  full provenance. Preferred over the OpenSERP `search_valor` path.
+- Wired into the biography enrichment in `src/extraction/enrich_biographies.py`
+  via `_source_award_citations` (called at lines ~1178 and ~1276) — opt-in
+  (`AWARD_CITATIONS_ENABLED=true`), gated by `should_source_awards` and routed by awarding
+  power (see Architecture), fail-safe, records full provenance. Errored attempts are
+  persisted via `award_source_pages.persist_sourcing_errors`; fetched pages are preserved
+  under `award_sources/<source_id>/<sha256-16>.<ext>`.
 
 
 
@@ -146,18 +156,13 @@ are online, with some compiled registers. Source map (accessibility verified
 **Practical lookup order (per owner):** Gazette first → WO 373 on Discovery →
 Fold3 (transcribed DCM) if needed.
 
-**Build plan (GB `AwardCitationSource`):** The London Gazette is behind an AWS WAF
-JS-challenge (deferred — same residential-egress problem we skipped), so it is NOT
-the first direct source. **Victoria Cross Online** (victoriacrossonline.co.uk;
-nginx, served cleanly) is the one accessible UK direct source → build it for
-VC/GC, gated `nationality == GBR` + award context, provenance recorded. DCM/MM
-full text (WO 373 / Fold3 register), TracesOfWar (Cloudflare), and the Gazette
-wording → `OfflineAwardDataset`. Same pluggable interface as the US sources.
-source (polite: **10s crawl-delay**, cached, descriptive UA, HTML notice page not
-the disallowed data.xml/pdf), Victoria Cross Online for VC/GC, gated on
-`nationality == GBR` + award context, provenance recorded, preferring the official
-Gazette wording. DCM/MM citation text + anything behind Cloudflare/subscription →
-`OfflineAwardDataset`. (Same pluggable interface as the US sources.)
+**Build plan (GB `AwardCitationSource`):** The registry (`config/award_sources.yaml`) lists
+`uk_london_gazette` (enabled, `accessible: true`, 10s crawl-delay, HTML notice page only,
+not the disallowed data.xml/pdf) and `uk_victoria_cross_online` (VC/GC), both gated on the
+person indicating GBR plus award context. The WAF-challenge finding above and the later
+"200 with full headers" finding conflict; the registry follows the later one. Neither
+adapter is coded yet. DCM/MM full text (WO 373 / Fold3 register), TracesOfWar
+(Cloudflare) and anything subscription-only → `OfflineAwardDataset`.
 
 
 ---
@@ -230,7 +235,7 @@ English** on attach (original + language preserved). Accessibility verified
 
 | Source | Access from AWS | Role |
 |---|---|---|
-| **Ordre de la Libération** (ordredelaliberation.fr/fr/recherche-compagnons) | **200 ✅** | **Direct source.** 1,038 Compagnons, each a biographical notice (decree date, unit/network, services justifying the cross) ≈ citation. Also 18 units + 5 towns. French → translated. BUILT into registry (adapter `ordre_liberation`). |
+| **Ordre de la Libération** (ordredelaliberation.fr/fr/recherche-compagnons) | **200 ✅** | **Direct source.** 1,038 Compagnons, each a biographical notice (decree date, unit/network, services justifying the cross) ≈ citation. Also 18 units + 5 towns. French → translated. registered as `fr_ordre_liberation` (adapter `ordre_liberation`, not yet coded). |
 | Médaille de la Résistance (ordredelaliberation.fr) + Mémoire des Hommes | 200 | Rolls (~65k awards), NOT citation text → confirm date/unit only. |
 | france-phaleristique.com (Ordre Libération list) | 200 | Name + date list (no citation). |
 | **Base Léonore** (leonore.archives-nationales…) | 200 but **SPA shell (~1.5KB)** | Légion d'honneur dossiers of members deceased <1977; digitized files *may* include the proposal/citation, but it's a JS app + per-dossier open, and not valor-only → offline/dossier. |
@@ -377,7 +382,7 @@ new per-country citation adapter:
 
 ### Soviet Union (SUN) — ENABLED citation source
 Podvig Naroda (podvignaroda.ru, 200) carries names/awards/units and for many the
-**scanned award sheet (нагradной лист = the citation)**. Russian → translated. Pamyat
+**scanned award sheet (наградной лист = the citation)**. Russian → translated. Pamyat
 Naroda (401 from AWS → offline); OBD Memorial = dead/missing cross-links, not valor.
 
 ### Registered name-roll sources (enabled:false; citations offline)

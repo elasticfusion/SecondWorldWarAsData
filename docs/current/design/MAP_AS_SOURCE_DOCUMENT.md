@@ -1,6 +1,17 @@
 # Map as a source document — spec
 
-**Status:** ADAPTER BUILT (checked 2026-11-16): `src/extraction/map_source_adapter.py` (`build_map_parsed_source`, `build_map_source_metadata`, `render_map_markdown`) exists and is used by Phase 3 (`map_link_source`, `image_map_vision`). Originally DRAFT / proposed; the text below is the original spec (Phase-3 content, not re-verified line by line).
+**Status:** IMPLEMENTED (checked 2026-11-17), with deviations from the spec text below. Files: `src/extraction/map_source_adapter.py`
+(`recycle_map_as_source` is the single writer; `render_map_markdown`, `render_map_meta_yaml`, `build_map_parsed_source`, `build_map_source_metadata`),
+callers `openserp_maps._recycle_map_as_source` (OpenSERP path, only when `external_maps.enabled`) and `map_link_source._recycle_as_source`
+(in-document maps, `external_maps.recycle_in_doc_maps`, cap `max_recycled_per_doc`). Prompt: `prompts/map_vision.yaml` (returns `depicted`).
+Deviations: (1) the recycle writes a RAW source pair, not a parsed.json: `contentrepository/map-<id>/map-<id>-meta.yaml` and
+`map-<id>a-content.md`, so Phase 1 parses it like a chapter (`build_map_parsed_source` / `build_map_source_metadata` exist but the pipeline does not call them);
+(2) the write goes to the task's local relative `contentrepository/` and I found no code that uploads that directory to S3 from a Phase 3 task
+(UNVERIFIED whether the `content-uploaded` front door ever sees it); (3) the vision key is `is_government_map`, not `is_government`;
+(4) the confidence gate exists: `legibility_confidence` below 0.35 renders to empty (`OBSERV map_source.skipped reason=low_legibility`);
+(5) `source_type: map` is written to the meta.yaml and `acquisition_method "map_vision"` exists in `source_metadata.py`; the `map_source.derived` rollup
+OBSERV is not implemented; (6) loop guard (b) is implemented as `openserp_maps._is_map_derived_only` (a place whose every `event_mentions[].book` starts with `map-` is not searched,
+`OBSERV map_source.search_skipped`); loop guard (a) is the content-hash dedup. Description length cap: 8000 characters (`_MAX_DESC_CHARS`).
 **Owner intent (verbatim):** "a map is the source document, from it an event is derived, and everything
 flows out of the normal data pipelines." A vision-verified map should enter the pipeline like any other
 source (a book chapter), produce an **event**, and let people_groups / places / dates / weather /
@@ -75,7 +86,7 @@ Today `map_vision` is a relevance verifier (is this a real WWII map of place X? 
 APPROVED map, the vision model also returns a STRUCTURED description:
 
 ```
-{ "is_relevant": bool, "is_government": bool,          # existing verify contract (unchanged)
+{ "is_relevant": bool, "is_government_map": bool,          # existing verify contract (unchanged)
   "depicted": {
     "units":        [ "116th Panzer Division", ... ],   # -> people_groups via normal extraction
     "places":       [ "Schmidt", "Kall trail", ... ],    # -> places
