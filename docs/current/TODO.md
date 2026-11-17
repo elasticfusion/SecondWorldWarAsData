@@ -77,6 +77,87 @@ was verified. *refactor* = only a redesign fixes it. `EP` = `ecs_entrypoint.py`.
   later corpus-wide pass must merge.** Merging at write time (conditional writes on the canonical
   `bib_<hash>.json`) would remove the reconcile pass, the barrier, the run marker and the wait.
 
+### Step: bibliography_resolve (PHASE3_MAP §4.3)
+
+`BR` = `src/enrichment/bibliography_resolver.py`.
+
+- **MED - a NARA catalog match is recorded as "online" even when nothing is digitized.**
+  `_verify_nara_hits` (`BR:1772`) returns the catalog record page `catalog.archives.gov/id/<naId>`
+  for the first Grok-verified hit (`BR:1826`) whether or not NARA holds scans; the scan count
+  (`_nara_digital_object_count`) is only logged (`OBSERV nara.match online=0|1`). `_apply_resolved_url`
+  (`BR:325`) then sets `availability: "online"` and `search_status: "resolved"`. A record that NARA
+  only describes (paper at College Park) thus reads as available online. Fix: store the scan count /
+  an `online` flag on the finding, and set `availability: online` only when scans exist (else
+  `archive` + `reference_identified` with the catalog link as a finding aid).
+- **LOW - FIX (owner) - one physical address for every record group, and it overwrites a better one.** `_identify_record_group` (`BR:586`) writes
+  "National Archives and Records Administration (NARA), College Park, MD 20740, USA" for any record
+  group found. Some groups are held at other NARA buildings (believed, e.g., RG 45 at the National
+  Archives Building in Washington; per-group holdings not verified). Worse, when no online copy is
+  found it OVERWRITES a better address: `_enrich_from_biblio_note` first sets
+  `archive_physical_address` from the source volume's own Bibliographical Note (the authoritative
+  holding, `BR:261`), then `_apply_result` applies the record-group result with `entry.update(extra)`
+  (`BR:311`), replacing it with the generic College Park text. Fix: a holding location per record
+  group in the lookup table, never overwrite a holding taken from the note, and leave the address
+  empty when unknown.
+- ***refactor* - FIX IN PHASE 2 (owner) - a quarter of Phase 2's "bibliography" is not citations,
+  found only in Phase 3.**
+  Of the 2,035 records, 534 fail `_looks_like_citation` (narrative footnotes, e.g. "An American heavy
+  tank did not reach the theater until 1945") and are only moved to `output/narrative_notes/` by the
+  Phase 3 resolver (`_relocate_narrative_note`). The test is deterministic, so Phase 2 could route them
+  at write time; until then they pass through the dedup review and bibliography reconcile as citations.
+  Counted 2026-11-17 by running the resolver's routing functions offline on the downloaded set.
+- **LOW - owner - search order.** Archive path and generic path (`_search_online_sources`, `BR:606`) run
+  NARA, OpenSERP (`BR:630`), Archive.org, Gutenberg, then the Grok LLM search only if nothing was found.
+  Wanted (owner, 2026-11-17): record group, NARA, Archive.org, Gutenberg, OpenSERP, Grok. OpenSERP keeps
+  running even when an earlier source found a copy: a second location is wanted (no short-circuit).
+  All four keep every verified finding; the order decides which one is the primary URL.
+- **LOW - findings: several locations fit, but their kind is not recorded or checked.** Checked
+  2026-11-17: `resource_urls` is a list of URL strings and `source_metadata.findings` a list of
+  `{url, source}` (`_aggregate_findings`, `BR:676`), so any number of locations, several of one source
+  type included, fit the schema (`src/schemas/bibliography_output.py`). But `source_metadata` is
+  free-form (`additionalProperties: true`), so a finding's shape is not validated, and nothing says what
+  a URL is: a digitized copy, a catalog/finding-aid record (NARA without scans), or a bookseller listing.
+  The resolver also keeps only the first verified hit of NARA and of OpenSERP (Archive.org, Gutenberg:
+  up to 3). Fix: a schema-defined `findings[]` item `{url, source, kind, digital_objects, verified_by}`.
+- **MED - verification strength differs by source.** NARA hits are Grok-checked on the catalog title
+  and series context (`_verify_nara_match`); Archive.org, Gutenberg and OpenSERP hits on the archive
+  and generic paths are Grok-checked on the result title and URL only (`_verify_openserp_match`,
+  `BR:1077`, via `_collect_verified_candidates`, `BR:864`), and accepted UNVERIFIED when there is no
+  Grok client. Only the Grok LLM search and the book and article paths fetch the page and check its content
+  (`_verify_url_content`). A title-only check can accept a page that merely names the document (a
+  catalogue entry, a bookseller listing). Fix: content-verify every positive finding, as the LLM path
+  does.
+- **MED - owner - verify each citation's candidates in one Grok request.** Each candidate costs its own
+  Grok call today (NARA, Archive.org, Gutenberg, OpenSERP, each up to 3-5). Batch all candidates of one
+  citation into one verify prompt (one answer per candidate). `_verify_results_batch`
+  (`src/enrichment/openserp_enrichment.py`) already does this for OpenSERP enrichment but has no caller.
+- **MED - book path: Gutenberg and OpenSERP never return anything.** `_resolve_book_search`
+  (`BR:1833`) calls `search_gutenberg_openserp` and `search_openserp`, which POST to `/search`, a route
+  the OpenSERP server does not have (also `PHASE3_MAP.md` gap 9). Books are in practice searched on
+  Archive.org, then the Grok LLM search. (Where they do return, each hit is content-verified by
+  `_verify_match` -> `_verify_url_content`.) Fix with the batch-verify entry above: route books
+  through the same multi-source search as the archive path.
+- **LOW - owner - article path: add OpenSERP.** `_resolve_article_search` (`BR:1872`) searches
+  Archive.org only; many papers are on `.mil` and `.gov` / education sites that OpenSERP would find.
+- **LOW - a bookseller listing can be stored as an "online copy", and no book data is taken from it.**
+  Nothing in the resolver reads Amazon (or any bookseller) pages for ISBN, publisher or edition, and an
+  Amazon listing that passes the title-level Grok check is stored like a digitized copy. Owner
+  (2026-11-17): Amazon is wanted (affiliate links, below), so `amazon.com` was REMOVED from
+  `config/domain_blacklist.yaml` (that list drops links in link review, `src/extraction/link_relevancy.py`,
+  and blocks downloads in `src/enrichment/source_retrieval.py`; the bibliography resolver never read
+  it). Fix: record a bookseller listing as a `kind: bookseller` finding, never as an online copy, and
+  take ISBN/edition from an open source (Open Library's API is free; Amazon's terms forbid scraping
+  its pages). `_enrich_isbn` (`src/extraction/supplemental_advanced.py:282`) exists but `extract_isbn` is off by default (on in the
+  `review-all-data` and `performance-optimized` profiles).
+- **FEATURE - owner - an Amazon Associates (affiliate) link for books.** Construct the affiliate link
+  (ISBN/ASIN + the associate tag, kept in config, not code) for a book citation, for the site.
+- **FEATURE - owner - a BookFinder link for books.** Store a constructed
+  `https://www.bookfinder.com/` search link (title/author or ISBN) on book citations, so a reader can find
+  a copy to buy or borrow.
+- **LOW - docstring contradicts the code.** `_identify_record_group` says "Ask Grok to identify NARA
+  Record Group"; it calls `_identify_nara_record`, a deterministic table lookup (`BR:1398-1432`) that
+  never uses Grok.
+
 ### Code defects found by the 2026-11-17 documentation review (each verified in code)
 Phase 3 defects (OpenSERP service, 90-day marker, breaker, batch mode, external maps, NOAA, ...)
 are ranked ONCE in `docs/current/core/PHASE3_MAP.md` section 6; not repeated here. The rest:
