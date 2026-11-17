@@ -1,8 +1,52 @@
 # Pipeline Backlog
 
-**Last Updated:** 2026-11-17 (all-docs review: code defects it found, see the first section); 2026-11-16 (docs review: three items marked done/partly done, see 2026-11-16 notes); previously 2026-10-29 (Pattern-8 observability P1 remediation A-E shipped + deployed; Slack Chatbot fixed to us-east-1; P2/P3 sweep + 3 review follow-ups + GIT_SHA gap logged below).
+**Last Updated:** 2026-11-17 (Phase 3 review started: first section; all-docs review: code defects it found, see the first section); 2026-11-16 (docs review: three items marked done/partly done, see 2026-11-16 notes); previously 2026-10-29 (Pattern-8 observability P1 remediation A-E shipped + deployed; Slack Chatbot fixed to us-east-1; P2/P3 sweep + 3 review follow-ups + GIT_SHA gap logged below).
 
 ---
+
+## Phase 3 review (started 2026-11-17)
+
+Owner-led review of Phase 3, working down the flow chart in `docs/current/core/PHASE3_MAP.md` §1. Code
+flaws found are recorded here (no code is changed during the review); a major Phase 3 refactor is
+expected afterwards. Each entry: what is wrong, where (file:line at `main` cbd94d83), effect, how it
+was verified. *refactor* = only a redesign fixes it. `EP` = `ecs_entrypoint.py`.
+
+### Step: EP _download_inputs (PHASE3_MAP §1 "What EP _download_inputs does")
+
+- **LOW - remove the dead DynamoDB shortcut (owner request).** `_materialize_from_dynamo()`
+  (`EP:1290-1295`) is a deprecated stub that always returns False (the DynamoDB entity store was
+  removed; S3 is the only entity store). Callers: `_download_inputs` (`EP:1313`) and
+  `_download_dedup_data` (`EP:2849`) (trace_path). In `_download_inputs` the `config.yaml` read for
+  `processing.force_reprocess` (`EP:1311-1313`) exists only to skip the stub, so it goes too. Remove
+  the function, both calls and that read; the S3 download is then unconditional. Verified: function
+  body is `return False`.
+- **MED - a failed bibliography reconcile is silent, and Phase 3 then runs on unmerged shards.**
+  `_reconcile_bibliography_full_corpus` (dedup step at the end of Phase 2, `EP:2883`) catches every
+  exception and only `logger.warning`s it (`EP:2935`): no OBSERV event, no SNS alert. It has already
+  deleted the barrier and run marker (`EP:2900-2901`), so Phase 3 waits the full
+  `RECONCILE_BARRIER_WAIT_SECS` (300 s of idle task) and then proceeds anyway (`EP:1489`, a log line,
+  also no alert), reading the per-task `bib_<hash>__<writer>.json` shards un-merged: citations
+  mentioned by different tasks are not unioned. Fix: an actionable alert on the reconcile failure
+  (publish to `phase2-complete`), and decide whether Phase 3 should hold instead of proceeding.
+  Verified in code; no failure observed in live logs.
+- **LOW - the wait timeout equals the reconcile's own run time.** The last reconcile ran 300.1 s
+  (`_run.json` started 22:43:58 UTC, barrier `completed_at` 22:48:58 on 2026-11-16) for one book; the
+  default wait is 300 s. A Phase 3 that starts while a reconcile is running (concurrent books) will
+  time out and read a half-merged bibliography. The reconcile downloads the whole `output/bibliography/`
+  prefix, so its time grows with the corpus while the timeout does not.
+- **LOW - the per-book barrier is dead code.** Only the full-corpus `_all` barrier is ever published
+  (one caller, `EP:2926`). The wait still polls `manifests/reconcile_complete/<BOOK_NAME>.json`, its
+  docstring says "a per-book reconcile publishes the book key", and `_clear_reconcile_barrier`'s
+  default key is that book key: nothing writes it.
+- **LOW - the barrier body names a book.** The `_all` barrier records `"book": "USA-E-XChannel"`
+  (`EP:3093` writes `BOOK_NAME` of the dedup task) although it is the cross-book barrier.
+- **LOW - `canonical_count` is never compared.** The barrier records how many canonical files the
+  reconcile published (`_publish_reconcile_barrier`, "so it is comparable with Phase 3's download
+  coverage"), but `_observe_bibliography_download_coverage` (`EP:1629`) compares the S3 listing with
+  the local count and never reads it; it is only logged (`EP:1460-1466`).
+- ***refactor* - the barrier exists only because bibliography is written as per-task shards that a
+  later corpus-wide pass must merge.** Merging at write time (conditional writes on the canonical
+  `bib_<hash>.json`) would remove the reconcile pass, the barrier, the run marker and the wait.
 
 ### Code defects found by the 2026-11-17 documentation review (each verified in code)
 Phase 3 defects (OpenSERP service, 90-day marker, breaker, batch mode, external maps, NOAA, ...)
