@@ -76,10 +76,7 @@ python phase3_enrich_data.py --max-items N              # cap per entity type
 
 ## Known gaps
 
-- **map_features has no Phase-3 step** — the map-interior extraction + reverse-registration
-  (`src/extraction/map_registration.py`) are prototype-level and not wired into
-  `phase3_enrich_data.py`. When maps productionize, a gated map step (NOAA-style) would run
-  extraction → entity resolution → registration here.
+Listed in [TODO.md, Phase 3 review](../TODO.md#phase-3-review-started-2026-11-17).
 
 ---
 
