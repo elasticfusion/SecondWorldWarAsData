@@ -31,31 +31,32 @@ skips all of them and only writes the results file.
 
 ```mermaid
 flowchart TD
-  EPS["EP run_phase: secrets, credit + model preflight, patch config, ensure NAT"] --> UP["EP _start_openserp_if_needed: scale OpenSERP to 1, find IP, patch URL + use_openserp=true"]
-  UP --> DL["EP _download_inputs: download steps 1-5 (see the text below the chart), then _stamp_schema_versions"]
-  DL --> RESET["EP _reset_openserp_searched: clear marker on people/equipment with no images or military_awards"]
-  RESET --> G1["1 people_groups: Grok unit facts"]
-  G1 --> PL["2 places: Grok hierarchy, then link_parent_places"]
-  PL --> GEO["geocode: Nominatim -> hill -> Grok; not a _run_step"]
-  GEO --> BIB["3 bibliography: alt titles, ISBN/copyright if on"]
-  BIB --> BRES["4 bibliography_resolve: NARA, OpenSERP, Archive.org, Gutenberg, Grok LLM"]
-  BRES --> MEDIA["5 in_doc_map_links, image_map_vision: always run, not gated by OpenSERP"]
-  MEDIA --> OS{"supplemental_material.use_openserp?"}
-  OS -- yes --> OSG["6 OpenSERP group: people, equipment, groups, places, source_sections, external_maps if enabled"]
-  OSG --> NS["same function, not searches: image_person_link, link_asset_review, image_place_link, intra_corpus_links, event_provenance_stamp"]
+  EPS["EP run_phase: secrets, credit + model preflight, patch config, ensure NAT<br/>(see §1 ECS wrapper)"] --> UP["EP _start_openserp_if_needed: scale OpenSERP to 1, find IP, patch URL + use_openserp=true<br/>(see §3.1)"]
+  UP --> DL["EP _download_inputs: download steps 1-5, then _stamp_schema_versions<br/>(see §1 What EP _download_inputs does)"]
+  DL --> RESET["EP _reset_openserp_searched: clear marker on people/equipment with no images or military_awards<br/>(see §3.9)"]
+  RESET --> G1["1 people_groups: Grok unit facts<br/>(see §4.1)"]
+  G1 --> PL["2 places: Grok hierarchy, then link_parent_places<br/>(see §4.2)"]
+  PL --> GEO["geocode: Nominatim -> hill -> Grok; not a _run_step<br/>(see §4.2)"]
+  GEO --> BIB["3 bibliography: alt titles, ISBN/copyright if on<br/>(see §4.3)"]
+  BIB --> BRES["4 bibliography_resolve: NARA, OpenSERP, Archive.org, Gutenberg, Grok LLM<br/>(see §4.3)"]
+  BRES --> MEDIA["5 in_doc_map_links, image_map_vision: always run, not gated by OpenSERP<br/>(see §4.4)"]
+  MEDIA --> OS{"supplemental_material.use_openserp?<br/>(see §3)"}
+  OS -- yes --> OSG["6 OpenSERP group: people, equipment, groups, places, source_sections, external_maps if enabled<br/>(see §3.2-§3.11)"]
+  OSG --> NS["same function, not searches: image_person_link, link_asset_review, image_place_link, intra_corpus_links, event_provenance_stamp<br/>(see §1 step table, §6 gap 3)"]
   OS -- no --> EQ
-  NS --> EQ["7 equipment_images: Grok vision, not gated by OpenSERP"]
-  EQ --> NOAA{"api.noaa_api_token set and output/weather exists?"}
-  NOAA -- yes --> W["8 noaa_weather"]
+  NS --> EQ["7 equipment_images: Grok vision, not gated by OpenSERP<br/>(see §4.5)"]
+  EQ --> NOAA{"api.noaa_api_token set and output/weather exists?<br/>(see §4.6)"}
+  NOAA -- yes --> W["8 noaa_weather<br/>(see §4.6)"]
   NOAA -- no --> RES
-  W --> RES["batch re-run if --batch; .phase_results.json"]
-  RES --> POST["EP after S3 sync: _phase3_durable_referential_fix, provenance gate, stop OpenSERP if no demand"]
-  click DL href "https://github.com/elasticfusion/SecondWorldWarAsData/blob/main/docs/current/core/PHASE3_MAP.md#what-ep-_download_inputs-does" "What EP _download_inputs does: steps 1-5" _blank
+  W --> RES["batch re-run if --batch; .phase_results.json<br/>(see §5)"]
+  RES --> POST["EP after S3 sync: _phase3_durable_referential_fix, provenance gate, stop OpenSERP if no demand<br/>(see §1 ECS wrapper, on success)"]
 ```
 
-**From the chart:** the `EP _download_inputs` box is described step by step (1-5) in
-[What `EP _download_inputs` does](#what-ep-_download_inputs-does). The box links there too: on GitHub a
-plain click on it does nothing, but Ctrl-click (Cmd-click on a Mac) opens the section in a new tab.
+**From the chart:** each box names the section that describes it (GitHub does not make Mermaid boxes
+clickable). The main ones: [ECS wrapper](#ecs-wrapper-eprun_phase-lines-975-1000),
+[What `EP _download_inputs` does](#what-ep-_download_inputs-does) (steps 1-5),
+[3. OpenSERP in detail](#3-openserp-in-detail), [4. Other enrichers](#4-other-enrichers),
+[5. Batch mode](#5-batch-mode), [6. Known gaps and findings](#6-known-gaps-and-findings).
 
 Order in `P3:main()` (lines 873-960): people_groups; places and link_parent_places and geocode
 (`_enrich_places_and_geocode`, line 145); bibliography; bibliography_resolve; document media; OpenSERP
