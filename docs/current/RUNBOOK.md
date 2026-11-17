@@ -39,6 +39,58 @@ aws ecs list-tasks --cluster dev-wwii-pipeline --desired-status RUNNING --region
 
 ---
 
+## Snapshot and restore a data set
+
+`scripts/phase_snapshot.py` saves the pipeline's data set and later returns the live data to it, for
+example to re-run Phase 3 from the same Phase 2 output while Phase 3 is being fixed. Every mode refuses
+to run while any ECS task in the pipeline cluster is running or starting, except the OpenSERP search
+server (it writes nothing; the OpenSERP worker does, so it counts), and exits non-zero on any AWS
+error. Lambdas are not checked: do not run a restore while a batch is pending (`batch_job#` rows, the
+batch poller resumes a book) or uploads are arriving. Use the AWS prefix from this runbook
+(`AWS_PROFILE=wwii`). A backup is complete once `backups/<name>/manifest.json` exists (written last);
+restore and verify refuse a backup without it.
+
+```bash
+# save: S3 output/ dedup/ manifests/ -> backups/<name>/, DynamoDB on-demand backup <name>,
+# every DynamoDB key + manifest.json. Names: 3-64 of [A-Za-z0-9._-]; a used name is refused.
+python3 scripts/phase_snapshot.py backup --name phase2-2026-11-17
+
+# compare live data with the backup (exit 1 on any difference); changes nothing
+python3 scripts/phase_snapshot.py verify --name phase2-2026-11-17
+
+# restore: prints the plan only; --apply changes data, then re-checks and prints "restored"
+python3 scripts/phase_snapshot.py restore --name phase2-2026-11-17
+python3 scripts/phase_snapshot.py restore --name phase2-2026-11-17 --apply
+```
+
+What a restore does:
+
+| Data | Rule |
+|---|---|
+| S3 `output/`, `dedup/`, `manifests/` | Made an exact copy of the backup: changed or missing objects copied back, objects added since deleted. The bucket is versioned, so anything deleted or overwritten stays recoverable as an older version. |
+| DynamoDB cached Grok answers (`<cache_type>#<64-hex>`, also under `books/<book>/`) | Kept as they are, so a re-run does not pay for them again. |
+| DynamoDB run state, locks, verdict and registry caches, fetch events and claims, dedup rows (`RESET_PREFIXES` in the script) | Returned to the snapshot: rows added since are deleted; rows changed or deleted since are put back. To find those, the table backup is restored to a temporary table `<table>-snap-<name>` (a few minutes, well under a cent), compared and dropped. `--no-table-restore` skips that and only deletes added rows. |
+| `reaper#state` (the idle reaper's hourly counter) | Ignored. |
+| A snapshot row whose DynamoDB TTL has passed | Treated as absent (put back, TTL would delete it again). |
+| Any other key | Unclassified: left alone and listed; `verify` fails until its prefix is added to the script's rules. |
+
+Copying a `output/content/*-parsed.json` file back fires the bucket's Phase 2 trigger (S3 -> SNS ->
+trigger Lambda). `restore --apply` refuses while its plan copies any, unless `--allow-phase2-trigger`
+is given. Every other object copied back under `output/` is re-checked by the S3 validation backstop
+Lambda (EventBridge "Object Created"); a valid record causes no write or alert, but if the schemas
+changed since the backup, a restored record that no longer validates is flagged and alerted.
+
+If a run is interrupted while the temporary table exists, the next run refuses and prints the
+`aws dynamodb delete-table --table-name <table>-snap-<name>` command to clean it up.
+
+Permissions needed: S3 list/get/put/copy/delete on the bucket; DynamoDB `CreateBackup`,
+`DescribeBackup`, `ListBackups`, `RestoreTableFromBackup`, `ListTables`, `DeleteTable`, `Scan`,
+`BatchWriteItem` (live and temporary table); ECS `ListTasks`, `DescribeTasks`. A table backup can only restore into a new table, so the script never replaces the live
+table. Whole-table recovery (from the backup, or from point-in-time recovery, which keeps 35 days)
+also lands in a new table, which the pipeline would then have to be pointed at: on ECS the task's
+`CACHE_TABLE` env var (the entrypoint copies it into `aws.cache_table`, `ecs_entrypoint.py:507-509`);
+locally `aws.cache_table` in `config.yaml`.
+
 ## Clear Locks
 
 Pipeline locks prevent concurrent runs. If a task crashes without cleanup:
