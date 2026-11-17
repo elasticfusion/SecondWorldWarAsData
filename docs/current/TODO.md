@@ -164,6 +164,101 @@ was verified. *refactor* = only a redesign fixes it. `EP` = `ecs_entrypoint.py`.
   Record Group"; it calls `_identify_nara_record`, a deterministic table lookup (`BR:1398-1432`) that
   never uses Grok.
 
+### Step: in_doc_map_links, image_map_vision (PHASE3_MAP §4.4)
+
+Code at `main` 17fe5296. Map vision (`prompts/map_vision.yaml`) returns a `depicted` block: `units[]`,
+`places[]`, `movements[]`, `front_line_or_sector`, `date_or_window`, `operation`, `description`,
+`legibility_confidence`. The only consumer is `map_source_adapter.recycle_map_as_source`
+(`src/extraction/map_source_adapter.py:263`), shared by the in-doc path and the OpenSERP maps path
+(`openserp_maps.py:607`). It flattens `depicted` to prose and writes `contentrepository/map-<id>/` (a
+meta.yaml + content.md pair) so the map re-enters Phase 1 -> 2 -> 3 as a new "book".
+
+- **HIGH - the map-as-source files never reach S3, so all extracted map data is lost.** The write goes to
+  `/app/contentrepository` -> `WORKDIR/content` on the container. Neither the periodic sync (`EP:401`,
+  `output/` and `artifacts/` only) nor the Phase 3 final sync (`EP:3470`, entity dirs + artifacts) uploads
+  that directory, so the files vanish when the task exits and no Phase 1 run is ever triggered. The Grok
+  vision call is still paid. Verified in code; not observed live (Phase 3 has not run since the
+  recycle was enabled).
+- **HIGH - the dedup claim is taken before the write, so a lost map is never retried.** `_content_is_new`
+  (`map_link_source.py:219`, `:238`) puts `contenthash#<sha of URL>` in DynamoDB before
+  `_recycle_as_source` runs. With the files lost (above), or a failed write, every later run skips the map
+  as a duplicate. Fix with the upload: claim after the source is durably in S3, or release the claim on
+  failure.
+- **MED *refactor* - `depicted` is not stored on the Map entity.** The Map record gets no units, places,
+  sector, date or movements; only the recycled prose carries them. Nothing links the Map's `MapID` to
+  the PeopleGroups, Places or Dates that Phase 2 later extracts from `map-<id>`: the meta carries the map
+  only as the slug, and no Phase 1/2 code reads its `source_type: map` (grep). Store `depicted` on the Map (with `vision` provenance) and link the derived
+  entities back to it.
+- **MED *refactor* - structure is thrown away, then re-extracted by a second LLM pass.** Unit, place and
+  date lists become sentences ("Units depicted on the map: ..."), which Phase 2 re-extracts with Grok.
+  That costs a second request per map and loses the link between a unit, its position and the time
+  shown. Unit-at-place-at-time placement and boundaries (unit sectors, national borders, phase lines)
+  have no field: `front_line_or_sector` is one free-text string, `movements[]` are strings, and there is
+  no geometry. Owner decision needed on a structured map-observation model (unit, place, datetime,
+  boundary/geometry, MapID) written directly, without the prose round-trip.
+- **MED - provenance of the derived data is weak.** The recycled meta has `license: Unknown`, empty
+  author and copyright, and `source_url` = the image URL. The originating book, chapter and
+  `SourceSectionID` that linked the map are not recorded, so events from `map-<id>` cannot cite where the
+  map was found. Per the provenance rule, record the parent source on the meta and the Map.
+- **LOW - the map-as-source vision request is never batched.** `_vision_depicted` (`map_link_source.py:61`)
+  makes one live `extract_json_with_image` call per map, up to `max_recycled_per_doc` (50) per document.
+  `image_map_vision` and the tier-3 `maybe_vision_classify_map` are also one live request per image.
+- **LOW - stale entry.** The HIGH-list item "In-doc map recycle (map-as-source) stays OFF in prod" says the
+  gate is `external_maps.enabled`; the gate is `external_maps.recycle_in_doc_maps`, which is `true` in
+  `config.yaml:248`, so the recycle is ON.
+
+### Step: OpenSERP group (PHASE3_MAP §3)
+
+- **MED - a web source OpenSERP finds and Grok confirms gets no bibliography record.**
+  `process_positive_url` (`src/enrichment/openserp_enrichment.py:808`) returns
+  `{url, title, summary, fetched_at, source}` (plus `archived_url` / `wayback_capture_timestamp` when the
+  page came from the Wayback Machine). The callers store it inline on the entity: places
+  `web_results[]` (`OE:2128`), people_groups `web_results[]` / veterans associations (`OE:1792`), source
+  sections `primary_sources[]` (`OE:1185` -> `OE:1744`), people `military_awards[]` (`OE:1272`; a
+  person's web hits are kept only as awards). No module in the OpenSERP path creates a `BibliographyID` or a
+  mention (grep: `BibliographyID` appears only in `bibliography_resolver`, `source_acquisition`,
+  `supplemental`, `bibliography` and `people`). Effect: these sources are not citable through the
+  bibliography, are not resolved (NARA/archive.org) and are not deduplicated against existing citations;
+  the docstring at `OE:712` already calls the result "the bibliographical record". Fix (DRY): pass each
+  confirmed hit through the existing `store_bibliography_entry` (`src/extraction/bibliography.py:774`,
+  find-or-create + mention) and keep only the `BibliographyID` and the summary on the entity.
+- **MED - every confirmed web page about a person is stored as a military award.**
+  `_apply_verified_web` (`OE:1247`) appends each summarized page from the people `web_results` queries
+  to `military_awards[]`, whatever the page is (an obituary, a unit history, a forum post). The site
+  would show these pages as awards. Fix with the entry above: store the page as a bibliography source,
+  and write `military_awards` only from an award-specific extraction.
+
+### Cross-cutting: how Phase 3 results reach the S3 JSON
+
+Every Phase 3 step writes its Grok-confirmed result into the local entity JSON through the one shared
+writer `write_json_with_lock` (schema guard + metadata). Examples: geocode `_apply_result` ->
+`_write_place` (`src/enrichment/places_grok_geocode.py:633-647`, `:903`: `coordinates`, `latitude`,
+`longitude`, `geocode_source`, `enrichment_status`); bibliography `save` (`supplemental_advanced.py:360`)
+and `bibliography_resolver.py:2142`; people_groups, equipment, places, source sections in
+`openserp_enrichment.py`; images, maps, events, weather. The background sync (`EP:399`, every 120 s, all
+of `output/` and `artifacts/` except `-parsed.json`, final flush in `stop()`) and `_final_sync`
+(`EP:3470`, entity dirs) then upload each changed file whole. Verified in code. Gaps:
+
+- **HIGH - a file Phase 3 deletes locally is never deleted from S3.** `track_deletion` (`EP:209`) is the
+  only way to fill `_deleted_keys`, which `_final_sync` deletes from S3 (`EP:3550`), and it has no callers
+  (trace_path: 0). Phase 3 case: `bibliography_resolve` moves each `not_citation` record to
+  `output/narrative_notes/` and unlinks the bibliography file (`_relocate_narrative_note`,
+  `bibliography_resolver.py:2252`). The note is uploaded but the old `bib_<hash>.json` stays in
+  `output/bibliography/` on S3 (534 records on the current data), so the site would list narrative
+  footnotes as citations and every later Phase 3 downloads and re-classifies them. Same root cause as
+  the reconcile entry above ("records the merge folds into another stay in S3"). Fix (DRY): call
+  `track_deletion` from each unlink of a synced record (or one shared `delete_record` helper used by
+  both), so `_final_sync` removes the key.
+- **LOW - each changed file is uploaded twice.** `_final_sync` skips only files unchanged since download
+  (`_unchanged_downloads`, `EP:262`); it does not know that `BackgroundSync.stop()` (called at `EP:1045`
+  before `_final_sync` at `EP:1087`) has just uploaded the same file. One extra S3 PUT per changed
+  record. Fix: share the background sync's `_uploaded_mtimes` with `_final_sync`.
+- Concurrency: whole-file PUTs mean last writer wins on shared records; covered by "was gap 28" below.
+  Latent today: `MULTI_DOC_ENABLED=false` on the live `dev-wwii-phase3-enrich` task definition, so Phase 3
+  runs one task at a time.
+- The map-as-source files in `contentrepository/` are outside `output/` and never uploaded; see the
+  map-vision step above.
+
 ### Carried over from PHASE3_MAP.md §6 (found by the 2026-11-17 documentation review)
 
 Not yet re-reviewed step by step; each keeps its old number ("was gap N"), which `PHASE3_MAP.md`

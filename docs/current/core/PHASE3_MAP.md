@@ -189,6 +189,12 @@ book-scoped run that downloads every shared map and bibliography record re-uploa
 touched. Two tasks that change the same shared record at the same time can still overwrite each other
 (gap 28).
 
+Every step writes through `write_json_with_lock`, and the background sync (`EP:399`, every 120 s) uploads
+any changed file under `output/` and `artifacts/` as well, so changed records are uploaded twice. Files
+deleted locally (for example a `not_citation` bibliography record moved to `narrative_notes/`) are not
+deleted from S3, and files written outside `output/` (the map-as-source `contentrepository/map-<id>/`) are
+not uploaded (Planned changes: `TODO.md` "Cross-cutting: how Phase 3 results reach the S3 JSON").
+
 It does not read `manifest#phase2` (only Phase 2 does) and it does not download `external_maps/`, so
 the external-maps step works from what is on local disk.
 
