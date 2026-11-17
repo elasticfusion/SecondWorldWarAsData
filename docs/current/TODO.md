@@ -55,6 +55,9 @@ tries, abort if never ready) -> `_clear_title_cache_if_reprocess` -> `_load_secr
   has a prefix scan-and-delete, `clear`, `src/utils/cache_backend.py:155`), and skip Phase 3. Owner decision
   before fixing: whether a reprocess should really drop paid answers (cost), or only the answers that
   failed.
+  Value at stake (Phase 2 backup key list, 2026-11-17): `books/USA-E-XChannel/events` holds 53 paid
+  event-extraction answers (plus 2,310 other per-book answers: supplemental 745, weather 647, logistics
+  636, casualties 282). They let Phase 2 be re-run without paying Grok again; the local directory holds none.
 - Not checked at preflight: the NARA key (warning only when missing), OpenSERP (see "was gap 1"),
   Nominatim. Owner decision whether any should block.
 
