@@ -75,6 +75,12 @@ Flags ARE forwarded to the statistical catcher: `validation_stats.record_record_
 `allow_flagged` datapoint per flag code (see `CATCHER_LOW_INFO_FLAGGED_DESIGN.md`). The per-mention merge path (`locked_json`/`save()`)
 is annotated too so coordinate-less creates are covered.
 
+`RESOLVED_IN_PHASE3 = {geo_missing_coords}` (`semantic_flags.py:213`): Phase 2 writes places without
+coordinates by design, so `phase2_extract.py` passes this set as `deferred_flags` to
+`write_validation_stats` and an `allow_flagged geo_missing_coords` cluster does not alert at the end of
+Phase 2 (it is still counted in `output/metrics/validation_stats.json`). `phase3_enrich_data.py` passes
+no deferral, so the same flag alerts after Phase 3.
+
 ## Expected base rates (calibrate the catcher, not false alarms)
 - `date_out_of_window`: with the generous default (1930–1950) only genuinely implausible dates fire
   (OCR errors, mis-parsed years) — WWII antecedents (1935–39) and late-1940s aftermath are IN-window

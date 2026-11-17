@@ -147,7 +147,7 @@ from src.extraction.events import extract_events
 from pathlib import Path
 
 event_file = extract_events(
-    parsed_file=Path("output/Book/chapter1-parsed.json"),
+    parsed_file=Path("output/content/Book/chapter1-parsed.json"),
     grok_client=client,
     output_dir=Path("output/content/Book"),
     max_retries=3,

@@ -71,12 +71,13 @@ Runs inside `phase3_enrich_data.py` as step `openserp_external_maps` when
 
 ## Output
 
-**Images**: `filestore/external_maps/{MapID}.{ext}`  
+**Images**: Grok search CLI: `filestore/external_maps/{MapID}.{ext}` (`grok_search_maps.main`). OpenSERP: only if
+`external_maps.image_storage_path` is set (no value in `config.yaml`; without it no image is downloaded).  
 **JSON**: `output/external_maps/{MapID}.json`
 
 Each JSON includes `found_via` field:
 - `"grok_search"` - Found in Phase 1 (whitelist)
-- `"openserp"` - Found in Phase 2 (broader search)
+- `"OpenSERP <engine> search"` (for example `OpenSERP google search`) - Found in Phase 2 (broader search)
 
 ## Example Output
 
@@ -201,9 +202,10 @@ Watch for:
 | Method | Source control | Verification | Setup | When to use |
 |---|---|---|---|---|
 | **Grok whitelist** (`grok_search_maps.py`) | Whitelist (`domain_blacklist.yaml`) | Grok **vision** (sees the image) | Python-only | Trusted authoritative sources; default Phase 1 |
-| **OpenSERP** (`openserp_maps.py`) | Blacklist | Content download | AWS SQS worker (or local Go) | Guaranteed real multi-engine results; Phase 2 breadth |
+| **OpenSERP** (`openserp_maps.py`) | Blacklist | Content download plus Grok vision and licence check | ECS OpenSERP service (Phase 3) or local `tools/setup_openserp.sh` | Guaranteed real multi-engine results; Phase 2 breadth |
 | **Manual YAML** (`external_maps.py`) | Full manual control | Metadata only | Edit a YAML file | A small, hand-curated set of specific maps |
 
-The combined orchestrator runs **Grok whitelist first** (quality) then **OpenSERP** (breadth, dedup
-against Phase 1), so you normally do not choose — you get both. Pick a single method only for a
-narrow one-off (e.g. Manual YAML for a known map).
+There is no combined orchestrator any more (see the status note at the top). The pipeline runs OpenSERP
+(Phase 3, when `external_maps.enabled`) and the local YAML import (Phase 2, same flag); the Grok whitelist
+search is run by hand. OpenSERP skips URLs already downloaded into `output/external_maps/`
+(`SearchHistory.get_downloaded_urls`), which covers maps the Grok search imported earlier.

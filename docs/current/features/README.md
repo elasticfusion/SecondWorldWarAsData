@@ -55,9 +55,8 @@ Hierarchical event extraction with sub-events, participants, and temporal/spatia
 
 **Key Features:**
 - Hierarchical event structure (events → sub-events)
-- Participant extraction with roles
-- Temporal and spatial context
-- Equipment and casualty mentions
+- One Event per source section, deterministic EventID / Sub-eventIDs
+- Sub-events grouped by paragraph number, with summary, exact paragraph text and note references
 - Structured output with ULIDs
 
 ---
@@ -71,9 +70,10 @@ Temporal entity extraction with central repository management.
 **Key Features:**
 - ISO 8601 date formatting
 - Precision levels (exact, approximate, range)
-- Central repository (one file per month)
-- Event linkage via MentionID
-- Deduplication by date value
+- Central repository (one file per distinct date, or date + time, key)
+- Resolved ISO interval (`resolved_earliest` / `resolved_latest`) derived from the stated precision
+- Event linkage via DateMentionID
+- Deduplication by normalized date key
 
 ---
 
@@ -84,8 +84,8 @@ Temporal entity extraction with central repository management.
 Geographic entity extraction with coordinates and central repository.
 
 **Key Features:**
-- GPS coordinates (latitude/longitude)
-- Country codes (ISO 3166-1 alpha-3)
+- GPS coordinates (latitude/longitude): Phase 3 geocoding, not Phase 2
+- Hierarchy (continent/country/region): Phase 3 enrichment
 - Place types (city, region, country, etc.)
 - Central repository (one file per place)
 - Deduplication by name
@@ -122,6 +122,14 @@ Military units and organizations extraction.
 - Country of origin
 - Event mention tracking
 - Deduplication system
+
+---
+
+### Source Section (`source_section.py`)
+**Status:** New  
+**Documentation:** [source_section/README.md](source_section/README.md)
+
+One coarse record per top-level source section (chapter, article, report), anchored 1:1 to the Event, with a short summary, the derived operation/campaign and Wikipedia/Grokipedia reference articles.
 
 ---
 
@@ -290,7 +298,7 @@ Parallel and batch extraction for performance.
 **Status:** Production  
 **Documentation:** [people/biographical-enrichment.md](people/biographical-enrichment.md)
 
-Wikipedia and Grokipedia integration for people.
+Wikipedia and Grokipedia integration for people. Runs in Phase 2 (`enrich_person_from_sources`, called from the people extractor).
 
 **Key Features:**
 - Wikipedia search and extraction

@@ -62,15 +62,10 @@ Each chapter needs a `chapter*-content.md` with markdown text:
 Paragraph 1 text here.
 
 Paragraph 2 text here.
-
-[^1]: Footnote text
-
-![Image caption](image.jpg "Image title")
-
-[MAP: Map description]
-
-[p. 123]
 ```
+
+Notes, images, maps, page markers, quotes and the meta file are described in
+[MARKDOWN_CONTENT_FORMAT.md](MARKDOWN_CONTENT_FORMAT.md).
 
 **From URL:**
 ```bash
@@ -128,15 +123,10 @@ The pipeline will:
 
 ### Content Format
 
-**Supported markdown:**
-- Paragraphs (separated by blank lines)
-- Footnotes: `[^1]: text`
-- Images: `![alt](url "caption")`
-- Maps: `[MAP: description]`
-- Page markers: `[p. 123]`
+**Supported markdown:** paragraphs separated by blank lines, notes, images, maps and page markers. The exact syntax Phase 1 reads (including that `[^1]` footnotes are NOT parsed) is in [MARKDOWN_CONTENT_FORMAT.md](MARKDOWN_CONTENT_FORMAT.md).
 
 **Not required:**
-- Headers (extracted from metadata)
+- Headings: an asterisk-wrapped heading (`## *Title*`) is dropped; a plain `# Heading` becomes a paragraph (see MARKDOWN_CONTENT_FORMAT.md)
 - Tables (preserved as text)
 - Lists (preserved as text)
 
@@ -239,9 +229,8 @@ python3 phase2_extract.py
 # 5. Review results
 ls output/content/NewBook/
 # chapter1-parsed.json
-# chapter1-event.json
-# chapter1-dates.json
-# chapter1-places.json
+# chapter1-endnotes.json
+# chapter1-event.json   (after Phase 2)
 
 ls output/people/
 # {Name}_{PersonID}.json (merged with existing)
@@ -309,9 +298,9 @@ After adding new content:
 output/
 ├── content/NewBook/
 │   ├── chapter1-parsed.json
-│   ├── chapter1-event.json
-│   ├── chapter1-dates.json
-│   └── chapter1-places.json
+│   ├── chapter1-endnotes.json
+│   └── chapter1-event.json
+├── dates/ and places/        (entity files, not per chapter)
 ├── people/
 │   ├── index.json (updated)
 │   ├── {existing people updated}

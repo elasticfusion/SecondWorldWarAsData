@@ -1,10 +1,10 @@
 # Documentation Index
 
-**Last Updated:** 2026-11-16
+**Last Updated:** 2026-11-17 (all docs reviewed against the code; see `docs/archive/2026-11-17/README.md`)
 
 ---
 
-## Phases 0-2: where to start
+## Phases 0-3: where to start
 
 | Phase | Read |
 |-------|------|
@@ -12,6 +12,9 @@
 | 0 Ingestion | [dataquality/INGESTION_PATHS.md](dataquality/INGESTION_PATHS.md) (as-built routing), [dataquality/CHANDRA_OCR_DESIGN.md](dataquality/CHANDRA_OCR_DESIGN.md) + [OCR_OPERATIONS.md](OCR_OPERATIONS.md) (PDF OCR, merge, cross-check), [dataquality/LANGUAGE_TRANSLATION.md](dataquality/LANGUAGE_TRANSLATION.md) |
 | 1 Parse | [core/PIPELINE.md](core/PIPELINE.md) (Phase 1, incl. a scanned book's own figures), [dataquality/PHASE1_PARSE_GUARD_DESIGN.md](dataquality/PHASE1_PARSE_GUARD_DESIGN.md), [dataquality/DETERMINISTIC_EVENT_IDS_DESIGN.md](dataquality/DETERMINISTIC_EVENT_IDS_DESIGN.md) |
 | 2 Extraction | [features/README.md](features/README.md) (per entity), [features/batch_processing/README.md](features/batch_processing/README.md) (xAI batch rounds, poller hand-off), [PROMPT_REFERENCE.md](PROMPT_REFERENCE.md), [PHASE2_DATA_VALIDATION.md](PHASE2_DATA_VALIDATION.md) (validation + provenance checks) |
+| Dedup review | [core/DEDUP_REVIEW_GATE.md](core/DEDUP_REVIEW_GATE.md) (detection, auto-merge, the review UI, the Phase 3 gate) |
+| 3 Enrichment | [core/PHASE3_ENRICHMENT.md](core/PHASE3_ENRICHMENT.md) (overview), [core/PHASE3_MAP.md](core/PHASE3_MAP.md) (current behaviour, per-entity map, OpenSERP, known gaps), [PHASE3_DATA_VALIDATION.md](PHASE3_DATA_VALIDATION.md) |
+| All phases | [core/GROK_REQUESTS.md](core/GROK_REQUESTS.md) (every Grok request), [dataquality/PROVENANCE_AND_INTEGRITY_GATES.md](dataquality/PROVENANCE_AND_INTEGRITY_GATES.md) (provenance, referential and content-truth gates; alert actions) |
 
 ## Active Documents
 
@@ -19,6 +22,8 @@
 | Document | Description |
 |----------|-------------|
 | [RUNBOOK.md](RUNBOOK.md) | Operations runbook — re-runs, locks, batch states, Spot recovery, cost runaway |
+| [core/LOCKS_AND_LEASES.md](core/LOCKS_AND_LEASES.md) | Every DynamoDB coordination key and S3 marker: writer, reader, expiry, stale symptom + fix |
+| [core/DOC_LIFECYCLE.md](core/DOC_LIFECYCLE.md) | An uploaded document from upload to done: `doc#` states, needs-review off-ramps, alerts |
 | [MONITORING.md](MONITORING.md) | CloudWatch alarms, dashboard, notifications, cost controls |
 | [NETWORKING_LIFECYCLE.md](NETWORKING_LIFECYCLE.md) | Dynamic NAT Gateway and VPC endpoint management |
 | [LAMBDA_FUNCTIONS.md](LAMBDA_FUNCTIONS.md) | All Lambda functions, schedules, SNS topics |
@@ -47,7 +52,9 @@
 | [core/CACHE_AUTO_RECOVERY.md](core/CACHE_AUTO_RECOVERY.md) | Poisoned cache detection |
 | [core/ISO_COUNTRY_CODES.md](core/ISO_COUNTRY_CODES.md) | Country codes used in records (incl. historical: SUN, DDR) |
 | [core/PHASE3_ENRICHMENT.md](core/PHASE3_ENRICHMENT.md) | Phase 3 enrichment overview |
-| [core/PHASE3_MAP.md](core/PHASE3_MAP.md) | Phase 3 per-entity map, OpenSERP engagement, known gaps |
+| [core/PHASE3_MAP.md](core/PHASE3_MAP.md) | Phase 3 current behaviour: step order, per-entity map, OpenSERP in detail, batch mode, ranked known gaps |
+| [core/GROK_REQUESTS.md](core/GROK_REQUESTS.md) | Every Grok request (all phases, Lambdas, unused code): purpose, cache type, prompt, gate, failure mode |
+| [core/DEDUP_REVIEW_GATE.md](core/DEDUP_REVIEW_GATE.md) | Duplicate review between Phase 2 and 3: detection, auto-merge, UI, undo, gate |
 
 ### Architecture & Design
 | Document | Description |
@@ -57,7 +64,7 @@
 | [ENTITY_RELATIONSHIP_MAP.md](ENTITY_RELATIONSHIP_MAP.md) | Cross-references between entities, ID types, structural inconsistencies |
 | [SCHEMA_VERSIONING.md](SCHEMA_VERSIONING.md) | Per-entity schema versions and the schema-change workflow |
 | [PROMPT_REFERENCE.md](PROMPT_REFERENCE.md) | Every prompt, where it is used, what it returns |
-| [design/maps-target-architecture.md](design/maps-target-architecture.md) | Maps across phases (Phase 1 capture, Phase 3 persistence) + [implementation plan](design/maps-implementation-plan.md) |
+| [design/maps-target-architecture.md](design/maps-target-architecture.md) | Maps across phases (Phase 1 capture, Phase 3 persistence) |
 | [design/MAP_AS_SOURCE_DOCUMENT.md](design/MAP_AS_SOURCE_DOCUMENT.md) | A map recycled as a source document |
 | [design/SCHEMA_ORG_REVIEW.md](design/SCHEMA_ORG_REVIEW.md) | schema.org alignment review + [tier-2 scope](design/SCHEMA_ORG_TIER2_SCOPE.md) |
 | [design/SRC_SCRIPTS_SEPARATION.md](design/SRC_SCRIPTS_SEPARATION.md) | src/ vs scripts/ separation plan (PR 1 done) |
@@ -84,9 +91,10 @@
 | [dataquality/CONCURRENCY_AND_NAT_SPEC.md](dataquality/CONCURRENCY_AND_NAT_SPEC.md) | Canonical spec: multi-job concurrency + reference-counted NAT lifecycle (partially implemented) |
 | [dataquality/GPU_NETWORKING_CONSOLIDATION.md](dataquality/GPU_NETWORKING_CONSOLIDATION.md) | GPU/ECS VPC endpoint consolidation (7 endpoints, AZ alignment, deploy-time GPU probe) |
 | [dataquality/MAP_IMAGE_AV_INGESTION.md](dataquality/MAP_IMAGE_AV_INGESTION.md) | Map/image/moving-image routing: deterministic-first funnel to minimize Grok, per-map dating, units-as-metadata, map georeferencing |
+| [dataquality/PROVENANCE_AND_INTEGRITY_GATES.md](dataquality/PROVENANCE_AND_INTEGRITY_GATES.md) | The provenance / referential / content-truth checks, where each runs, gate modes, alert → first action |
 | [PHASE2_DATA_VALIDATION.md](PHASE2_DATA_VALIDATION.md) | Phase 2 validation (validate_phase2, provenance P2-L1/L2/Q1/Q2) · [Phase 3](PHASE3_DATA_VALIDATION.md) |
 | Per-layer safeguard designs | [deterministic IDs](dataquality/DETERMINISTIC_EVENT_IDS_DESIGN.md) · [Phase-1 parse guard](dataquality/PHASE1_PARSE_GUARD_DESIGN.md) · [semantic flags](dataquality/SEMANTIC_FLAGS_DESIGN.md) · [catcher low-info/flagged](dataquality/CATCHER_LOW_INFO_FLAGGED_DESIGN.md) · [result dedup](dataquality/RESULT_DEDUP_DESIGN.md) · [S3 validation backstop](dataquality/S3_VALIDATION_BACKSTOP_DESIGN.md) |
-| Phase 3 designs | [URL-sourced enrichment](dataquality/URL_SOURCED_ENRICHMENT_DESIGN.md) · [artifact store](dataquality/ARTIFACT_STORE_DESIGN.md) · [external source usage](dataquality/EXTERNAL_SOURCE_USAGE.md) · [person disambiguation](dataquality/PERSON_DISAMBIGUATION_DESIGN.md) · [OpenSERP SQS scaling](dataquality/OPENSERP_SQS_SCALING_DESIGN.md) · [OpenSERP URL lifecycle](OPENSERP_URL_LIFECYCLE.md) · [Siegfried ch.1 test reference](dataquality/SIEGFRIED_CH1_PUBLISHED_WORKS.md) |
+| Phase 3 designs | [URL-sourced enrichment](dataquality/URL_SOURCED_ENRICHMENT_DESIGN.md) · [artifact store](dataquality/ARTIFACT_STORE_DESIGN.md) · [external source usage](dataquality/EXTERNAL_SOURCE_USAGE.md) · [person disambiguation](dataquality/PERSON_DISAMBIGUATION_DESIGN.md) · [OpenSERP SQS scaling](dataquality/OPENSERP_SQS_SCALING_DESIGN.md) · [Siegfried ch.1 test reference](dataquality/SIEGFRIED_CH1_PUBLISHED_WORKS.md) |
 
 ### Features (Entity Types)
 | Document | Description |
@@ -97,6 +105,7 @@
 ### Pipeline Operations
 | Document | Description |
 |----------|-------------|
+| [pipeline/MARKDOWN_CONTENT_FORMAT.md](pipeline/MARKDOWN_CONTENT_FORMAT.md) | **The markdown Phase 1 reads**: layout, meta file, notes, page markers, maps, translation marker (verified example) |
 | [pipeline/ADDING_DATA_SOURCES.md](pipeline/ADDING_DATA_SOURCES.md) | How to add new books |
 | [pipeline/HYPERWAR_HTML_IMPORT.md](pipeline/HYPERWAR_HTML_IMPORT.md) | HyperWar import process |
 | [pipeline/PDF_CONVERSION.md](pipeline/PDF_CONVERSION.md) | PDF to markdown conversion |
@@ -126,6 +135,7 @@ See [scripts/README.md](../../scripts/README.md) for all 70+ utility scripts, ca
 ## Archived Documents
 
 Historical implementation logs, review documents, and completed specs in `docs/archive/`:
+- **`2026-11-17/`** — all-docs review against the code: archived the shipped maps implementation plan and the dated OpenSERP URL-lifecycle review; merged four overlapping Phase 3 behaviour drafts into `core/PHASE3_MAP.md`; added six docs (Grok requests, provenance gates, markdown content format, locks and leases, document lifecycle, dedup review gate). See `2026-11-17/README.md`.
 - **`2026-11-16/`** — Phase 0-2 documentation review: archived 13 docs (the 2026-10-20/21 Phase-2 reviews and re-reviews, the CloudFormation security review (open items tracked in TODO.md), the built fetch-provenance design, the storage review, the Phase-2 observability audit, 3 design docs (container split never built, maps architecture review, organizations/equipment findings), the never-built maps S3 backend, an external-maps change note). The broken `core/error_handling.md` symlink was removed; its target is `archive/contextmanagement/Specs/error_handling.md`. See `2026-11-16/README.md`.
 - **`2026-10-11/`** — comprehensive documentation-audit batch: archived 11 stale docs (3 equipment, 2 supplemental, 2 external-maps, `PHASE3_REVIEW_FINDINGS.md`, `new_entity_types.md`, `INTAKE_FRONT_DOOR_STATE.md`, `people/duplicate-exclusions.md`) + 1 merged (`external-maps/grok-search.md` → `combined-search.md`). See `2026-10-11/README.md` and `UNVALIDATED_CLAIMS_FOR_REVIEW.md`.
 - **`2026-10-05/`** — documentation-audit batch: `PHASE3_REVIEW.md`, `SUPPLEMENTARY_SEARCH_REVIEW.md` (unresolved findings carried into [TODO.md](TODO.md) → High Priority), `eto_oob_division_coverage_report.md`, `ISOLATION_AUDIT.md`, `UNATTENDED_READINESS.md`, `CODE_REVIEW-2026-06-13.md`, `PROMPT_AND_MODEL_RECOMMENDATIONS.md`, `TAILSCALE_EXIT_NODE.md` + `PROTONVPN_EXIT_NODE.md` (rejected egress approaches). See `2026-10-05/README.md`.

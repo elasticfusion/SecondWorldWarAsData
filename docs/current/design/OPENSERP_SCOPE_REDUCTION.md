@@ -1,6 +1,10 @@
 # OpenSERP Scope Reduction — PDF/EPUB Source Discovery + Human-Gated Acquisition
 
-**Status (2026-11-16):** still a PROPOSAL; no review queue, `needs-review/sources/` records or discard/block records exist in the code (Phase 3 topic; still referenced by `docs/current/TODO.md`). Original: Proposal (operator-directed, 2026-10-19). **Supersedes** the broad Phase-3 OpenSERP
+**Status (2026-11-17):** still a PROPOSAL, not built: the broad five-entity OpenSERP enrichment still runs in Phase 3 (`_run_openserp_enrichment`, see
+`docs/current/core/PHASE3_MAP.md`), `_openserp_fetcher` (`src/enrichment/acquisition_fetchers.py:161`) still accepts only bare document-suffix URLs, and no
+`needs-review/sources/` queue or ADD/DISCARD/NEVER UI exists. Related pieces that DO exist and differ from this design: `link_asset_review` enqueues outbound document links
+for human review (`links.review_external`), `fetch_review.decide_exclude_scope` lets a reviewer exclude a domain, and the URL registry stores a persistent site denylist
+(`url_registry.exclude_domain`, key `excludedomain#<host>`, no TTL) that the Phase 3 OpenSERP driver applies (`_drop_excluded_domains`). Earlier status (2026-11-16): still a PROPOSAL; no review queue, `needs-review/sources/` records or discard/block records exist in the code (Phase 3 topic; still referenced by `docs/current/TODO.md`). Original: Proposal (operator-directed, 2026-10-19). **Supersedes** the broad Phase-3 OpenSERP
 enrichment with a narrow, human-gated source-acquisition flow. **Related:** A00 (OpenSERP redesign),
 A0/A0+ (parallelize enrichment). **Author:** pipeline agent.
 

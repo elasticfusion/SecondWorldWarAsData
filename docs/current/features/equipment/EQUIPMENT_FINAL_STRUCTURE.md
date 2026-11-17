@@ -61,7 +61,8 @@
 ### Mention Level
 - `MentionID` - ULID for this mention
 - `EventID` - Links to Event.EventID in chapter event file
-- `Sub_eventID` - Links to Sub-eventID in Event.Sub-events[] array
+- `Sub_eventID` - Links to Sub-eventID in Event.Sub-events[] array (nullable in the schema: a
+  related-equipment stub's naming mention has none)
 
 ---
 
@@ -104,7 +105,8 @@ supporting_units[].EquipmentID → output/equipment/{file}.json
 ## What Was Removed
 
 To avoid confusing the LLM, these optional fields were removed:
-- ❌ `book`, `author`, `series`, `chapter` - Available via EventID lookup
+- ❌ `author`, `series`, `chapter` - Available via EventID lookup (`book` IS retained on the mention,
+  and is what makes a mention citable)
 - ❌ `description` - Redundant with performance notes
 
 **Note:** `original_text` is **retained** (it was previously dropped). The extractor
@@ -146,8 +148,11 @@ Relationships the **source text asserts** between this equipment and a **distinc
   version of the M4") stays an **inline `variants[]`** entry — NOT `related_equipment`.
   Only a **distinct piece** (M26 Pershing, M10) gets a `related_equipment` link.
 - When the related piece has no record yet, a **minimal record** (`EquipmentID` +
-  `common_name`) is **auto-created** so the link carries a real ID; otherwise `name` is
-  kept with a null `EquipmentID`. Relationships accumulate across mentions (deduped by
+  `common_name` + `extracted_date`) is **auto-created** so the link carries a real ID; if
+  creation fails, `name` is kept with no `EquipmentID`. The stub carries one naming mention
+  (`EventID`, `Event_Name`, `paragraph_numbers`, `book` from the naming record's mention, the
+  relation's `original_text`, `context` "named as related equipment (<relationship>)"; no
+  `Sub_eventID`, `DateID` or `assertion_source`). `backfill_stub_mentions` repairs older stubs. Relationships accumulate across mentions (deduped by
   relationship+name; conflicting relationships are all kept).
 
 ---

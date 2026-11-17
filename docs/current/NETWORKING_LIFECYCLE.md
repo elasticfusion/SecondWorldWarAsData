@@ -17,11 +17,11 @@ NAT Gateway ($0.045/hr + $0.045/GB) and VPC endpoints are created and destroyed 
 | Resource | Cost When Active | Managed By |
 |----------|-----------------|------------|
 | NAT Gateway | $0.045/hr | nat_manager Lambda |
-| Elastic IP | $0 (associated) / $0.005/hr (idle) | nat_manager Lambda (reuses existing) |
+| Elastic IP | $0 (associated) / $0.005/hr (idle) | nat_manager Lambda (new EIP per NAT, released on delete) |
 | VPC Endpoints (Interface type) | $0.01/hr each | nat_manager Lambda |
 | VPC Endpoints (Gateway type: S3, DynamoDB) | $0 | Always present (CloudFormation) |
 
-**Interface VPC endpoints created on demand** (`INTERFACE_ENDPOINTS` in `lambda_handlers/nat_manager.py`): ECR API, ECR DKR, CloudWatch Logs, Secrets Manager, ECS, ECS agent, ECS telemetry (needed for GPU Batch instances to join the cluster), and EC2 and Lambda (for the in-VPC nat_teardown decider); see that list for any later additions.
+**Interface VPC endpoints created on demand** (`INTERFACE_ENDPOINTS` in `lambda_handlers/nat_manager.py`): ECR API, ECR DKR, CloudWatch Logs, Secrets Manager, ECS, ECS agent, ECS telemetry (needed for GPU Batch instances to join the cluster), and EC2, Lambda and EventBridge Scheduler (for the in-VPC nat_teardown decider); see that list for any later additions.
 
 ---
 
@@ -31,7 +31,7 @@ NAT Gateway ($0.045/hr + $0.045/GB) and VPC endpoints are created and destroyed 
 IDLE (no NAT, no interface endpoints, OpenSERP desired=0)
   │
   ├── trigger Lambda invokes nat_manager(create) ──→ ACTIVE
-  │   (before launching any ECS task)
+  │   (async warm-up when launching an ECS task; phases re-verify readiness)
   │
   └── batch_poller invokes nat_manager(create) ──→ ACTIVE
       (before launching retrieve task)
@@ -54,23 +54,23 @@ Phases 1/2/3 never tear NAT down; they only request `create`. Demand is `nat_man
 
 ## Creation Flow
 
-**Triggered by:** trigger Lambda or batch_poller Lambda before launching ECS tasks.
+**Triggered by:** trigger Lambda (async warm-up), batch_poller Lambda, openserp_worker_autoscaler, and Phase 2/3 tasks (`ecs_entrypoint.py`, which retry up to `NatReadyMaxAttempts`).
 
 ```
 nat_manager receives {"action": "create"}
-  1. Check for existing NAT (tag: {env}-wwii-nat, state != deleted)
-     → If exists and available: return immediately
-  2. Look for unassociated EIP with tag {env}-wwii-nat-eip
-     → If none: allocate new EIP
-  3. Create NAT Gateway in public subnet with EIP
-  4. Tag NAT: Name={env}-wwii-nat, CreatedAt=<timestamp>
-  5. Wait for NAT state = "available" (up to NatWaitSeconds, default 180)
-  6. Add route 0.0.0.0/0 → NAT to private route table
-  7. Create the interface VPC endpoints (list above)
-  8. Return NAT Gateway ID
+  1. Take the DynamoDB lock `lock#nat-manager` (10 min TTL). If another invocation holds it,
+     wait for that one to finish and return its result
+  2. Create the interface VPC endpoints (list above)
+  3. Find an existing NAT (tag Name={env}-nat, state not deleting/deleted/failed);
+     if none, release any unassociated EIPs, allocate a new EIP and create the NAT in the
+     public subnet, tagged Name={env}-nat
+  4. Wait for NAT state = "available" (waiter: 10 s x 18 attempts)
+  5. Add route 0.0.0.0/0 → NAT to the private route table
+  6. Stamp a `nat#lease#gateway` floor lease (NAT_LEASE_HOURS, default 4 h)
+  7. Return {status: ready | not_ready, missing: [...]} from the readiness check
 ```
 
-**EIP reuse:** The Lambda looks for an existing EIP tagged `{env}-wwii-nat-eip` before allocating a new one. This avoids EIP churn and potential account limit issues.
+**EIP handling:** every NAT gets a fresh EIP (`_create_nat`); unassociated EIPs are released before allocating, which avoids `AddressLimitExceeded`, and the NAT's EIP is released when the NAT is deleted.
 
 ---
 
@@ -112,14 +112,12 @@ The `phase2-complete` SNS subscription on nat_manager is a no-op (`_handle_sns_r
 
 ```
 nat_manager receives {"action": "delete"}
-  1. Find NAT Gateway by tag {env}-wwii-nat
-     → If none found or already deleted: return success
-  2. Delete NAT Gateway
-  3. Wait for deletion (state = "deleted")
-  4. Remove 0.0.0.0/0 route from private route table
-  5. Delete the interface VPC endpoints (list above)
+  0. Unless force=true, refuse if NAT demand is present
+  1. Find NAT Gateway by tag Name={env}-nat
+     → If none found or already deleted: skip to step 3
+  2. Delete NAT Gateway, then release its EIP(s)
+  3. Delete the interface VPC endpoints (list above)
      → Gateway endpoints (S3, DynamoDB) are NOT deleted (free, always needed)
-  6. Disassociate EIP but do NOT release it (reused on next create)
 ```
 
 ---
@@ -144,13 +142,13 @@ nat_manager receives {"action": "delete"}
 ```bash
 # Check NAT status
 aws ec2 describe-nat-gateways \
-  --filter "Name=tag:Name,Values=dev-wwii-nat" \
+  --filter "Name=tag:Name,Values=dev-nat" \
   --query 'NatGateways[?State!=`deleted`].[NatGatewayId,State,CreateTime]' \
   --region us-east-1 --output table
 
-# Force delete
+# Force delete (without "force": true, delete is refused while NAT demand is present)
 aws lambda invoke --function-name dev-wwii-nat-manager \
-  --payload '{"action": "delete"}' \
+  --payload '{"action": "delete", "force": true}' \
   --cli-binary-format raw-in-base64-out --region us-east-1 /tmp/out.json
 cat /tmp/out.json
 ```
@@ -196,7 +194,8 @@ aws ec2 delete-vpc-endpoints --vpc-endpoint-ids <vpce-xxx> --region us-east-1
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
-| `NatWaitSeconds` | 180 | Max seconds to wait for NAT to become available |
+| `NatWaitSeconds` | 270 | Base for the trigger's stale-lock grace window and the batch-poller's NAT wait (the trigger no longer waits synchronously) |
+| `NatReadyMaxAttempts` | 6 | How many times a Phase 2/3 task invokes nat_manager before failing loud |
 | `TeardownDelayMinutes` | 30 | Passed as `TEARDOWN_DELAY_MINUTES`; no code reads it any more |
 
 ---
@@ -206,3 +205,4 @@ aws ec2 delete-vpc-endpoints --vpc-endpoint-ids <vpce-xxx> --region us-east-1
 - [LAMBDA_FUNCTIONS.md](LAMBDA_FUNCTIONS.md) — nat_manager, nat_teardown and openserp_manager details
 - [RUNBOOK.md](RUNBOOK.md) — Networking issues section
 - [AWS_DEPLOYMENT.md](AWS_DEPLOYMENT.md) — Network architecture overview
+- [core/LOCKS_AND_LEASES.md](core/LOCKS_AND_LEASES.md) — every `nat#lease#` and `lock#` key, who writes it, how it expires

@@ -1,7 +1,7 @@
 # External Maps Vision-Based Verification
 
-**Date:** 2026-02-26  
-**Status:** Implemented
+**Date:** 2026-02-26 (updated 2026-11-17)  
+**Status:** Implemented (`src/extraction/search_external_maps.py`, prompt `prompts/map_vision.yaml`). Reviewed 2026-11-17.
 
 ## Overview
 
@@ -34,7 +34,10 @@ Modified `_verify_map_relevance()` to:
   - Page title
   - Alt text and caption
 - Ask Grok to analyze the actual image content
-- Return true if any image is confirmed as relevant
+- Return `(is_relevant, is_government_map, approved_image_url, depicted)`; true if any image is confirmed. Each image's URL passes the SSRF gate
+  `_ssrf_safe_image_url` first (public IPs only) and the Grok call is `extract_json_with_image` with `cache_type="external_maps_verification"`.
+- The same prompt also extracts a `depicted` block (units, places, front/sector, date, operation, movements, description, `legibility_confidence`);
+  the in-document map path (`map_link_source._vision_depicted`) and map-as-source recycling reuse it.
 
 ### 3. Grok Vision API Support (`grok_client.py`)
 
@@ -51,7 +54,7 @@ Added `extract_json_with_image()` method:
     ]
   }
   ```
-- Caches results (keyed by prompt + image URL)
+- Caches results (keyed by prompt + image URL, per `cache_type`)
 - Returns parsed JSON response
 - Handles various image formats (JPEG, PNG, GIF, etc.)
 
@@ -63,8 +66,8 @@ Added search URL logging to help debug and verify searches:
 - Displays the search limit
 - Example output:
   ```
-  🔍 Searching: Omaha Beach
-     OpenSERP URL: http://localhost:7001/mega/search?text=WWII+map+%22Omaha+Beach%22+1944&engines=google,bing,duckduckgo&limit=50
+     OpenSERP URL: http://localhost:7001/mega/search?text=WWII%20map%20%22Omaha%20Beach%22%201944&engines=google,bing,duckduckgo&limit=50
+  (logged by `search_with_openserp`; the actual search runs through `./tools/search_maps`, which is not in the Docker image, see domain-blacklist.md)
   ```
 
 ## Workflow
@@ -123,42 +126,29 @@ You can:
 curl "http://localhost:7001/mega/search?text=WWII+map+%22Omaha+Beach%22&engines=google&limit=5"
 ```
 
-## Example Prompt to Grok
+## Prompt
 
+The prompt is `prompts/map_vision.yaml` (rendered by `render_prompt("map_vision", place_name, date, event_context, title)`), shared by
+`search_external_maps`, `grok_search_maps.verify_map_with_vision` and `map_link_source`. It has two steps: (1) verify that the image is a
+genuine WWII-era map of the place (government-document override accepts official War Office / US Army maps regardless of host copyright);
+(2) only when relevant, extract `depicted`. The answer schema is:
+
+```json
+{"is_relevant": true, "is_government_map": false, "reason": "...", "depicted": {"units": [], "places": [], "front_line_or_sector": null,
+ "date_or_window": null, "operation": null, "movements": [], "description": "...", "legibility_confidence": 0.85}}
 ```
-Analyze this image to determine if it's a WWII-era map of Omaha Beach.
 
-Context:
-- Place: Omaha Beach
-- Date: 1944-06-06
-- Event: Breakout and Pursuit - Allied Invasion of Normandy
-- Page title: D-Day Landing Maps - Library of Congress
-- Image alt text: Tactical map showing Omaha Beach defenses
-- Image caption: Map prepared by Allied intelligence, June 1944
+`depicted` is null when `is_relevant` is false. Unreadable fields are null or `[]`.
 
-Questions:
-1. Is this image a historical map (not a photograph, diagram, or modern map)?
-2. Does it show Omaha Beach or the surrounding area?
-3. Is it from the WWII era (1935-1950)?
-4. Is it relevant to the event context?
-
-REJECT if:
-- Modern map (satellite imagery, Google Maps style)
-- Photograph of people/equipment (not a map)
-- Wrong geographic area
-- Wrong time period
-
-Respond with ONLY a JSON object:
-{"is_relevant": true or false, "reason": "Brief explanation based on what you see in the image"}
-```
+---
 
 ## Testing
 
 To test with OpenSERP running:
 
 ```bash
-# Start OpenSERP
-cd openserp && ./openserp serve -p 7001 &
+# Start OpenSERP (tools/setup_openserp.sh builds it; on ECS Phase 3 scales the service up itself)
+./openserp serve -p 7001 &
 
 # Run Phase 3 enrichment (external_maps.enabled: true; the OpenSERP step uses vision verification)
 python3 phase3_enrich_data.py

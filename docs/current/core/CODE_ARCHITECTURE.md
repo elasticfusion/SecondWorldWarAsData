@@ -62,15 +62,17 @@ python3 phase2_extract.py [--log-level LEVEL] [--batch] [--book BOOK] [--expecte
 #### `phase3_enrich_data.py`
 Enriches extracted entities with external data.
 
-**What it enriches:**
-- People — biographical data from Wikipedia/Grokipedia (birth/death dates, service history, awards)
-- Groups — additional organizational context and hierarchy
-- Places — enhanced geographic data and historical context
-- Bibliography — expanded citation metadata and source verification
+**What it enriches** (everything except Grokipedia/Wikipedia, which Phase 2 owns; step order and per-entity detail in [PHASE3_MAP.md](PHASE3_MAP.md)):
+- People groups — structured organizational facts (`enrich_groups_data`)
+- Places — hierarchy and names, then the geocoding cascade
+- Bibliography — citation metadata (`enrich_bibliography`) and source resolution (`resolve_bibliography_dir`)
+- Document media — in-document map links and map vision
+- OpenSERP group (people, equipment, groups, places, source_section) when `supplemental_material.use_openserp` is true
+- Equipment images (Grok vision) and NOAA weather (when `api.noaa_api_token` is set)
 
 **Options:**
 - `--max-items N` — limit items per entity type
-- `--people-only` — skip non-people enrichment
+- `--people-only` — skips every remaining step (people enrichment moved to Phase 2, so the flag now leaves nothing to run)
 - `--no-references` — skip reference following (faster)
 
 **Usage:**
@@ -298,6 +300,7 @@ class Paragraph:
     absolute_number: int
     text: str
     page_number: Optional[int]
+    translated_from: Optional[str]   # Phase 0 translation provenance, set by the parser (Footnote has it too)
     page_end: Optional[int]
     section_id: str
     source_file: str
@@ -630,7 +633,7 @@ Calculates copyright status and public domain eligibility for source documents.
 
 ## Enrichment Modules (`src/enrichment/`)
 
-Phase 3 enrichment logic — adds external data to already-extracted entities.
+Enrichment logic that adds external data to already-extracted entities. Most modules run in Phase 3; the Wikipedia/Grokipedia ones run inside the Phase 2 extractors.
 
 ### External-data enrichers
 
@@ -638,8 +641,8 @@ Phase 3 enrichment logic — adds external data to already-extracted entities.
 |--------|----------------|
 | `bibliography_resolver.py` | Resolve citations to real sources (NARA Record Group → OpenSERP → Archive.org / Gutenberg), with Grok URL content verification |
 | `openserp_enrichment.py` | OpenSERP-backed media/source search (portraits, papers, oral histories, photos) with Grok verification + circuit breaker |
-| `groups_wikipedia.py` | Organizational history / command structure from Wikipedia/Grokipedia |
-| `equipment_wikipedia.py` | Equipment specifications and imagery from Wikipedia/Grokipedia |
+| `groups_wikipedia.py` | Wikipedia/Grokipedia text and images for groups (called by the Phase 2 groups extractor, not a Phase 3 step) |
+| `equipment_wikipedia.py` | Wikipedia/Grokipedia text and images for equipment (called by the Phase 2 equipment extractor, not a Phase 3 step) |
 | `noaa_weather.py` | Observed historical weather from the NOAA CDO API (supplements Open-Meteo reanalysis) |
 
 ### Place geocoding cascade (2026-09)

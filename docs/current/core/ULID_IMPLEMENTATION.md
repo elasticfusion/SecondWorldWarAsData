@@ -1,6 +1,6 @@
 # ULID Implementation Review
 
-**Date:** 2026-03-03 (updated 2026-11-16)  
+**Date:** 2026-03-03 (updated 2026-11-17)  
 **Purpose:** Document how ULIDs are implemented across the project
 
 ---
@@ -11,7 +11,7 @@ The project uses **ULIDs (Universally Unique Lexicographically Sortable Identifi
 
 **Library:** `ulid-py`  
 **Format:** 26 characters `[0-9A-HJKMNP-TV-Z]{26}`  
-**Example:** `01H8XYZI1AB123CD456EF789GH`
+**Example:** `01H8XYZI1AB123CD456EF789GH` (illustrative only: the example ids in this file contain `I`, which is not a valid ULID character)
 
 ---
 
@@ -104,9 +104,9 @@ def _name_to_filename(name: str, entity_id: str) -> str:
 **Prefix length:** 8 characters is the usual prefix (places, groups, dates, equipment via `batch_parallel`); `people.py` uses 12 (`{name}_{PersonID[:12]}.json`), and a fallback `place_<12>` / `date_<12>` / `map_<12>` name is used when the name is not filename-safe.
 
 **Why 8 characters?**
-- Sufficient uniqueness (281 trillion combinations)
-- Readable filenames
-- Readable; the name part carries the sort order
+- Readable filenames; the name part carries the sort order
+- For a random (`ulid.new()`) id the first 10 characters are the 48-bit millisecond timestamp, so an 8-character prefix only distinguishes ids minted more than about one second apart (the last 2 timestamp characters and all 16 random characters are cut off). Uniqueness of a filename therefore comes from the name part plus the prefix, and the 12-character prefix in `people.py` and the `place_<12>` / `date_<12>` fallbacks add timestamp precision. The full id inside the JSON is the real key.
+- For a deterministic id (`event_id`, `book_id`) the characters are hash bits, so any prefix is uniformly spread
 
 ### Pattern 2: Date + ULID Suffix
 

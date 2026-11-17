@@ -92,22 +92,9 @@ Write `chapter*-content.md`:
 The first paragraph of the chapter.
 
 The second paragraph continues the narrative.
-
-[^1]: Footnote reference
-
-![Image caption](image.jpg "Image title")
-
-[MAP: Map description]
-
-[p. 123]
 ```
 
-**Supported elements:**
-- Paragraphs (separated by blank lines)
-- Footnotes: `[^1]: text`
-- Images: `![alt](url "caption")`
-- Maps: `[MAP: description]`
-- Page markers: `[p. 123]`
+**Supported elements:** paragraphs (blank-line separated), notes, images, maps and page markers. The exact syntax and a complete example chapter are in [pipeline/MARKDOWN_CONTENT_FORMAT.md](pipeline/MARKDOWN_CONTENT_FORMAT.md).
 
 ### Sub-chapters
 

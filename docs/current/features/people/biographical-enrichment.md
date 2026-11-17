@@ -1,7 +1,7 @@
-# Biographical Enrichment (Phase 3)
+# Biographical Enrichment (Phase 2)
 
-**Status:** Production Ready  
-**Last Updated:** 2026-10-05
+**Status:** Production Ready. Moved from Phase 3 to Phase 2.  
+**Last Updated:** 2026-11-17
 
 ---
 
@@ -9,25 +9,25 @@
 
 Enriches person biographies by searching external sources (Grokipedia, Wikipedia),
 capturing the person's **portrait photo**, sourcing **authoritative award citations**,
-following references, and validating source URLs. Runs as Phase 3 (step 1/6) after
-entity extraction — **before** the OpenSERP people pass (Grokipedia/Wikipedia are
-sequenced ahead of the search engine).
+following references, and validating source URLs.
+
+**Where it runs.** Phase 2, inside the people extractor: `people._enrich_person_phase2` and
+`people._enrich_person_batch_apply` call `enrich_biographies.enrich_person_from_sources`, which
+enriches the person dict in place before the extractor saves it (no file I/O of its own). Phase 3
+no longer enriches people from Grokipedia/Wikipedia (see the note above
+`enrich_groups_data` in `phase3_enrich_data.py`); it only runs the OpenSERP people pass (step 5/6),
+which prefers the portrait captured here. The file-based `enrich_all_people` /
+`enrich_person_biography` flow (the numbered pipeline below) is kept for the module CLI and tests:
 
 ```bash
-# Recommended: use retry wrapper
-python3 phase3_retry.py
-
-# Direct with options
-python3 phase3_enrich_data.py --max-items 10 --log-level DEBUG
-python3 phase3_enrich_data.py --no-references    # Skip reference following (faster)
-python3 phase3_enrich_data.py --people-only       # Only enrich people
+python3 -m src.extraction.enrich_biographies --max-people 10 [--no-references]
 ```
 
 ---
 
 ## Pipeline
 
-For each person in `output/people/`:
+For each person (the file-based flow below; the Phase-2 path runs steps 1-8 on the in-memory record and leaves 9-10 to the extractor):
 
 1. **Search Grokipedia** — HTTP GET `https://grokipedia.com/search?q={name}`, extract page text
 2. **Search Wikipedia** — Wikipedia API (`prop=extracts|pageimages`, `piprop=original`), extract intro section **and the lead portrait**
@@ -147,9 +147,9 @@ Per person: ~2-7 API calls (1-2 HTTP searches, 1-2 Grok extractions, 0-3 referen
 
 ## Code Reference
 
-**Entry point:** `phase3_enrich_data.py` → `enrich_all_people()`  
-**Core module:** `src/extraction/enrich_biographies.py`  
-**Retry wrapper:** `phase3_retry.py`
+**Pipeline entry point:** `people._enrich_person_phase2` → `enrich_biographies.enrich_person_from_sources()`  
+**CLI/test entry point:** `enrich_biographies.enrich_all_people()` (not called by `phase3_enrich_data.py`)  
+**Core module:** `src/extraction/enrich_biographies.py`
 
 Key functions:
 - `search_grokipedia()` / `search_wikipedia()` — Source search
@@ -173,8 +173,8 @@ Key functions:
 
 A civilian title implies (often multiple, concurrent) group memberships —
 "Representative John Smith from NJ, a Republican" → **House of Representatives + New
-Jersey + Republican Party**. These are derived at Phase 3 from the person's
-title/aliases into `biographical_profile.group_affiliations` (schema v2.6).
+Jersey + Republican Party**. These are derived in `enrich_person_from_sources` (Phase 2) from the person's
+title/aliases (`_derive_and_validate_title_memberships`) into `biographical_profile.group_affiliations` (schema v2.6).
 
 **Correctness guard — honorifics are point-in-time.** A later honorific does NOT prove
 the person held that role in the source's timeframe. Every title-derived membership is

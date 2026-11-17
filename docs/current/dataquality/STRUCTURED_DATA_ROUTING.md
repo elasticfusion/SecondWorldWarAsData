@@ -164,7 +164,7 @@ media_type: null           # (when content_type: media) photograph | map
 ```
 
 Defaults (`content_type: prose`, `source_format: markdown`) preserve all
-current behavior. `discovery.py` reads these and tags each `ChapterGroup` (or,
+current behavior. **Not built:** `src/discovery.py` does not read these keys today. In the design, `discovery.py` reads these and tags each `ChapterGroup` (or,
 for media, a new `MediaGroup`). Two axes:
 
 - **`content_type`** — what the pipeline does with the extracted meaning:
@@ -204,7 +204,7 @@ front door that unifies them.
 | `markdown` | none (ready) | text | ✅ exists |
 | `html` | HTML→markdown (HyperWar converter, generalized) | text | ⚠️ exists for ibiblio only |
 | `pdf` | Chandra OCR → markdown → `ocr_promote` → chapters | text | ✅ **Built** (trigger OCR track, see `CHANDRA_OCR_DESIGN.md`; `region_converter.py` is the older disposition-based converter used by `phase0_ingest`) |
-| `pdf` (scanned tables) | Chandra OCR markdown → **section parsers** → rows | text | ✅ **Built** (`src/ingestion/oob_markdown/*`: command-staff, campaigns, command-posts, statistics, organic-units + division inference) — see note below on markdown-parser vs. CSV-field-map |
+| `pdf` (scanned tables) | Chandra OCR markdown → **section parsers** → rows | text | ✅ **Built** (`src/ingestion/oob_markdown/*`: command-staff, campaigns, command-posts, statistics, organic-units, attachments (with detachments), higher-units + division inference) — see note below on markdown-parser vs. CSV-field-map |
 | `csv` | tabular parser (declarative field-map) | text (entities) | ❌ to build (still the right path for *cleanly*-CSV sources) |
 | `epub` | epub→markdown (pandoc) | text | ✅ **Built** (`src/ingestion/text_converters.py`, `epub_to_markdown`) |
 | `docx` (Word) | docx→markdown (pandoc) — carries embedded images/tables | text (+ media) | ✅ **Built** (`src/ingestion/text_converters.py`, `docx_to_markdown`) |
@@ -343,7 +343,8 @@ captioned photograph.
 > - Parsed OOB rows are persisted to their **own store** (`output/oob/<section>/`)
 >   via `src/ingestion/oob_markdown/persist.py`, and linked to existing people
 >   with a **non-destructive name→`PersonID` crosswalk**
->   (`crosswalk.py`) — currently **exact normalized-name match only**.
+>   (`crosswalk.py`, `name_resolver.py`): exact normalized-name match, then a
+>   last-name-gated fuzzy tier flagged `needs_review` (both built; see step 9).
 > - This is intentional (design "C1"): it does **not** write into
 >   `output/people/` at ingestion, because write-time dedup there is pure
 >   normalized-name match with **no fuzzy step**, so merging garbled OCR names
@@ -352,7 +353,9 @@ captioned photograph.
 >   crosswalk preserves both inputs pristine so a **fuzzy / LLM-verified matcher**
 >   can be applied later without redoing ingestion.
 >
-> **The remaining bridge to full convergence** is therefore: (1) a fuzzy/verified
+> **The remaining bridge to full convergence** (status: the fuzzy matcher and the
+> people emit step now exist, see steps 9-10 below; groups and dates are not
+> converged) was: (1) a fuzzy/verified
 > matcher that upgrades the crosswalk's `match_method` from `exact`/`none`, then
 > (2) an emit step that turns confidently-matched OOB rows into the *same*
 > `people`/`people_groups`/`dates` entity JSON (or merges into existing ones) so
@@ -404,7 +407,7 @@ date:
 #### Mapper (single generic module — replaces all bespoke silos)
 
 ```python
-# src/parser/tabular.py
+# src/parser/tabular.py  (proposed; not built, and src/parser.py is a module so the path would need renaming)
 def parse_tabular(csv_path: Path, field_map: dict) -> list[dict]:
     """Convert CSV rows to pipeline entities per a declarative field-map.
 
@@ -576,11 +579,11 @@ handler where one exists.
 3. ⚠️ **HTML handler** — generalize `import_hyperwar_html.py`. *(exists for ibiblio)*
 4. ✅ **PDF handler** — region converter drives Chandra OCR → markdown, with
    image/map asset extraction. *(built)*
-5. ✅ **txt / epub / docx / html handlers** — `src/ingestion/text_converters.py`, run by `phase0_convert.py` (trigger convert track: `.epub .docx .html .htm .xhtml`). *(built)*
+5. ✅ **txt / epub / docx / html handlers** — `src/ingestion/text_converters.py`, run by `phase0_convert.py` (trigger convert track: `.epub .docx .html`; `_split_by_media` also lists `.htm`/`.xhtml`, but `_content_keys` rejects those two as `unrecognized-type` first). *(built)*
 
 **Tabular (scanned OOB — built via markdown parsers)**
 6. ✅ **OOB markdown section parsers** — command-staff, campaigns, command-posts,
-   statistics, organic-units on a shared `_common` framework, with **division
+   statistics, organic-units, attachments, higher-units on a shared `_common` framework, with **division
    inference** (Signal 1) and verification-flagging. *(built)*
 7. ✅ **Persist + crosswalk** — rows → `output/oob/<section>/`; non-destructive
    name→`PersonID` crosswalk. *(built — design "C1")*

@@ -155,6 +155,11 @@ The upsert, safe-merge and capped `history[]` are built.
 
 ## Open decisions
 
+Resolved in the build (2026-11-17 check): (1) the map is central, `result_dedup.DEDUP_FIELDS`, not under
+`src/schemas/`; (2) write-through only, no at-rest sweep script exists; (3) the canonical-hash fallback
+for entries with no url/id is built (`_canonical_hash`). `history[]` is capped at `_MAX_HISTORY = 20`.
+Original text of the decisions:
+
 1. Declaration location: a `DEDUP_FIELDS` map in `src/schemas/` (alongside the schema)
    vs a dedup block inside each schema dict. Recommend a single central map keyed by
    entity (easiest to audit for consistency).

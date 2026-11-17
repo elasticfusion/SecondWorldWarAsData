@@ -566,8 +566,8 @@ Use `scripts/find_duplicate_places_v2.py` (wrapper for `src/dedup/find_duplicate
 
 ## Phase 3 Enrichment
 
-**Step 3/6 (always runs; the Phase-3 pass is for the Phase 3 docs review).** Hierarchy/name enrichment + `link_parent_place_ids`, then the
-**geocoding cascade** (Nominatim → hill/terrain → Grok fallback) writes WGS84 coordinates +
+**Step 2/6** (`enrich_places.enrich_all_places`) fills hierarchy and historical names (Grok, Wikipedia fallback), then `places.link_parent_place_ids` links `parent_place_id`. **Step 3/6** runs the
+**geocoding cascade** (`places_grok_geocode.cascade_geocoder`: Nominatim → hill/terrain → Grok fallback; first result above `MIN_GEOCODE_CONFIDENCE` wins, otherwise the best low-confidence one is kept and flagged) and writes WGS84 coordinates +
 provenance (low-confidence flagged, never fabricated). This is also the coordinate source the
 maps overlay inherits via resolved PlaceID. See
 [Phase 3 Enrichment](../../core/PHASE3_ENRICHMENT.md).

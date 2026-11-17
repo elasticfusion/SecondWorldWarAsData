@@ -68,6 +68,10 @@ graph TD
 | Casualties | `event_context.Sub-eventID` | Sub-events | Always present |
 | People Groups | `members[].PersonID` | People | Added during enrichment |
 | Places | `hierarchy.parent_place_id` | Places | Added during enrichment |
+| Places | `containedInPlace[]` / `containsPlace[]` (`{PlaceID, name}`) | Places | Schema 2.30, nullable ID-typed hierarchy edges |
+| Events, Sub-events | `SourceSectionID` | Source Section | Stamped in Phase 3 (events 2.25) |
+| Source Section | `EventID` | Events | One section record per source section, in `output/content/{Book}/source_section/` |
+| Images | `SourceSectionID`, `contentLocation.PlaceID`, `superseded_by_map_id` (-> Maps) | Source Section, Places, Maps | Nullable (images 2.27/2.28) |
 | All entities | `event_mentions[].EventID` | Events | Present on all entities |
 | All entities | `event_mentions[].Sub_eventID` | Sub-events | Present on all entities |
 

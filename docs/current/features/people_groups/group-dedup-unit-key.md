@@ -44,7 +44,7 @@ armored division, `PZ` → panzer (→ armored arm), `VG` → volksgrenadier, `A
 |---|---|
 | **numbers** | MUST match (and at least one number present). |
 | **service** | Armed SERVICE (Army / AAF / Navy / Marines / Coast Guard), from the name. **Mismatch ⇒ ABSOLUTE VETO** (1st Marine Division ≠ 1st Infantry Division). Default ARMY. |
-| **arm (combat arm)** | Absent → defaults to `infantry`; **branch mismatch ⇒ VETO**. |
+| **arm (combat arm)** | Absent → `infantry` only for a US Army division/regiment (see "Combat arm default" below), otherwise unknown. **Both known AND different ⇒ VETO**. |
 | **echelon** | Absent → permissive (no veto); **present on both AND different ⇒ VETO**. |
 | **nationality** | From the stored `nationality` field (or a nationality word in the name); **both known AND different ⇒ VETO** ('2nd Division (Canadian)' ≠ '2nd Division (US)'); unknown on either side is permissive. |
 
@@ -65,6 +65,11 @@ armored division, `PZ` → panzer (→ armored arm), `VG` → volksgrenadier, `A
 | 3d Armored Division (less CCB) | 3d Armored Division | **NO match** | exclusion modifier (complement ≠ whole) |
 | 2d Armd Div (less CCA) | 2d Armd Div (less CCB) | **NO match** | distinct exclusions |
 | 9th Division | 10th Division | NO match | number mismatch |
+
+A pair that fails only because one side's arm is the *defaulted* infantry and the other states a
+different arm ("82d Division" vs "82d Airborne Division") is surfaced as a human-review candidate by
+`defaulted_arm_review_reason`, never auto-merged. A candidate must also be compatible with every
+member already in the cluster (`find_duplicate_groups._canonical_match`).
 
 ## Primary vs fallback
 
@@ -109,7 +114,7 @@ they resolve identically.
 ## Combat arm default + Combat Commands (echelon-aware)
 
 - **Infantry default is echelon-conditional:** a bare numbered **division/regiment**
-  (Army) defaults to arm=infantry; **below regiment** (battalion/company/…) arm stays
+  (US Army, no non-US nationality/formation signal) defaults to arm=infantry; **below regiment** (battalion/company/…) arm stays
   **unknown** — bare lower units are not reliably infantry. (The echelon veto still keeps
   a battalion from matching a division.)
 - **Combat Commands** (CCA / CCB / CCR, or "Combat Command A/B/R") are the armored
@@ -121,3 +126,5 @@ they resolve identically.
   subordinate units). A **bare CC** (letter only, no parent division) is *underspecified*
   → it does NOT confidently match and is routed to the human gate, where the surrounding
   text — typically the **commanding officer** — is the disambiguating evidence.
+
+See also: [Dedup review gate (Phase 2 to Phase 3)](../../core/DEDUP_REVIEW_GATE.md) for detection, auto-merge, the gate, the review UI and the operator runbook.

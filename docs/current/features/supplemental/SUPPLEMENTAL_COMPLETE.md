@@ -20,13 +20,12 @@ Extracts, classifies, and routes referenced materials (footnotes, endnotes, bibl
 
 ## Architecture: Supplemental Split
 
-Grok classifies each endnote/footnote into one of three categories:
+Grok classifies each endnote/footnote with `content_class` (`_route_one_material`):
 
-- `document_reference` — pure citation → `output/bibliography/` (deduplicated, one file per document)
-- `factual_content` — historical narrative with extractable entities → `output/{Book}/{chapter}-notes-event.json`
-- `ambiguous` — unclear classification → `output/bibliography/review_queue.json` for human review
-
-Mixed entries (factual statement + citation) are split into separate entries.
+- `citation` (legacy `document_reference`) — pure citation → `output/bibliography/` (deduplicated, one file per document), if `_has_document` finds a real title/author/publisher, an archive reference number, or a verbatim reference of at least 8 characters
+- `prose` (legacy `factual_content`) — historical narrative → `{chapter}-notes-event.json` in the event file's directory (`_write_notes_event`)
+- `hybrid` — both: the citation half goes to the bibliography and the prose half to the notes-event
+- `ambiguous`, or any material that routed to neither place (bare cross-reference, empty citation and prose) → `output/bibliography/review_queue.json` for human review (`_append_to_review_queue`)
 
 How the endnote/footnote **text** reaches the prompt (parse-time capture, HTML fallback,
 "cited in n. X" resolution, semicolon splitting) is in [ENDNOTE_HANDLING.md](ENDNOTE_HANDLING.md).
@@ -49,11 +48,11 @@ How the endnote/footnote **text** reaches the prompt (parse-time capture, HTML f
 - `content_class` routing — Grok classifies each note
 - Reference type classification (endnote/footnote/bibliography)
 - Availability determination (online/offline/archive/unknown)
-- Basic license detection (public_domain/copyright/unknown)
+- Basic license detection (`_apply_license`, pure computation)
 - ISO 3166-1 alpha-3 country codes
 - JSON schema validation before file write
 - ULID fixing via `_fix_invalid_ulids` for Grok's fake ULIDs
-- Retry logic with exponential backoff (3 attempts)
+- Retry (3 attempts; the cache is used on the first only; a schema-validation failure is not retried)
 - Anachronistic citation filtering (rejects citations newer than source copyright year)
 - Factual content written as event-like JSON for downstream entity extraction
 - Bibliography deduplication with fuzzy title matching
@@ -62,35 +61,30 @@ How the endnote/footnote **text** reaches the prompt (parse-time capture, HTML f
 **File:** `src/extraction/supplemental_search.py`, driven by `src/enrichment/bibliography_resolver.py` (the sequence below is the original design; the resolver now orders and verifies candidates itself)
 
 **Features:**
-- Sequential search strategy (LLM → Archive.org → OpenSERP)
-- Gutenberg.org search for books/periodicals (via OpenSERP)
-- Archive.org Advanced Search API integration
-- LLM search using Grok API (cached)
-- OpenSERP web search fallback
-- URL validation (HEAD request)
-- **Content verification using LLM (prevents hallucinations)**
-- Search metadata tracking
-- **Skips empty/unknown citations**
+- Gutenberg.org search (Gutendex API) and Archive.org Advanced Search API
+- NARA catalog and OpenSERP candidates
+- Grok "LLM search" as a last resort (cached)
+- Every candidate is Grok-verified against the citation before it is kept (prevents hallucinated URLs)
+- Citations with no usable title/verbatim are skipped (`not_citation`)
 
-**Search Strategy:**
-1. Gutenberg.org (books/periodicals only) → Public domain
-2. LLM Search (Grok) → First pass
-3. Archive.org API → Second pass
-4. OpenSERP → Third pass
-5. Stop when valid URL found **and content verified**
+**Search order** (`bibliography_resolver._search_online_sources`, aggregated, not first-hit):
+1. NARA (`_find_in_nara`)
+2. OpenSERP (`_find_in_openserp`)
+3. Archive.org (`_find_in_archive_org`)
+4. Gutenberg (`_find_in_gutenberg`)
+5. Grok LLM search (`_find_in_llm`), only when 1-4 found nothing
+
+Resolver choice depends on `document_type`/`availability` (`_pick_resolver`): archive types and
+`availability: archive` go to the NARA/archive resolver; books try Archive.org/Gutenberg/OpenSERP
+(then `alt_title`, then the LLM); articles use the article search; untyped entries use the full order
+above. Entries already held locally (`local_holdings`), and entries with `resource_urls`, are
+short-circuited. All verified findings are kept in `resource_urls` and `source_metadata.findings`.
 
 **Content Verification:**
 - Uses Grok to verify URL matches citation
 - Checks title and author
 - Rejects incorrect URLs (e.g., SoundCloud when expecting book)
 - Prevents hallucinated results
-
-**QA Results:**
-- Pylint: 9.94/10 ✅
-- Mypy: 0 errors ✅
-- Bandit: 0 security issues ✅
-- Complexity: C (18) - Acceptable
-- Maintainability: A (46.11) ✅
 
 ### ✅ Advanced Features (Complete; pipeline Phase 3, off in config)
 **File:** `src/extraction/supplemental_advanced.py`
@@ -106,12 +100,6 @@ How the endnote/footnote **text** reaches the prompt (parse-time capture, HTML f
 - EU/UK: Life + 70 years
 - Government works: Public domain
 
-**QA Results:**
-- Pylint: 9.81/10 ✅
-- Mypy: 0 errors ✅
-- Bandit: 0 security issues ✅
-- Complexity: D (21) - Acceptable for copyright logic
-- Maintainability: A (43.28) ✅
 
 ## Configuration
 
@@ -119,15 +107,15 @@ How the endnote/footnote **text** reaches the prompt (parse-time capture, HTML f
 supplemental_material:
   # Phase 1: Core extraction
   enabled: true                    # Enable supplemental material extraction (config.yaml: true)
-  extract_citations: true          # Parse citations into structured format
-  max_materials_per_chapter: 100   # Limit materials per chapter (config.yaml: 500)
+  extract_citations: true          # (config.yaml: true; no code reads it)
+  max_materials_per_chapter: 500   # (config.yaml: 500; no code reads it)
   
   # Phase 3: search (bibliography_resolver) - Phase 2 performs NO supplemental searches
   llm_search: true                 # Use LLM for search (first pass)
   search_gutenberg: true           # Search Gutenberg.org for books/periodicals
   search_archive_org: true         # Search Archive.org (second pass)
   use_openserp: true               # Use OpenSERP for web search (third pass)
-  openserp_url: "http://localhost:7001"
+  # OpenSERP URL is external_maps.openserp_url
   
   # Phase 3: Advanced features
   extract_isbn: false              # Extract ISBN for books (post-1966)
@@ -163,7 +151,8 @@ supplemental_material:
 ```
 
 ```bash
-python3 phase2_extract.py
+python3 phase2_extract.py      # extraction + routing
+python3 phase3_enrich_data.py  # searches (bibliography_resolver) and advanced features
 ```
 
 ### Standalone Usage
@@ -174,10 +163,10 @@ from src.extraction.supplemental import extract_supplemental
 from src.grok_client import GrokClient
 
 # Phase 1: Extract + route (bibliography + factual content)
-supplemental_file = extract_supplemental(
-    event_file=Path("output/BreakoutAndPursuit/chapter1-event.json"),
+notes_file = extract_supplemental(
+    event_file=Path("output/content/<book>/chapter1-event.json"),
     grok_client=GrokClient(Path("cache")),
-    output_dir=Path("output"),
+    output_root=Path("output"),
 )
 # Creates: output/bibliography/*.json, output/BreakoutAndPursuit/chapter1-notes-event.json
 ```
@@ -268,7 +257,7 @@ Ambiguous items queued for human review:
 
 ### Phase 1: Core Extraction + Split Routing
 1. Load event file and the chapter's parsed file
-2. For each note-bearing window of each sub-event:
+2. Fetch note texts (`fetch_endnote_texts`), then for each note-bearing window of each sub-event:
    - Build prompt with reference context
    - After the answer, `locate_notes` sets reference_number / verbatim_reference deterministically
    - Grok extracts structured citations with `content_class`
@@ -276,21 +265,15 @@ Ambiguous items queued for human review:
    - `generate_ulids` replaces GENERATE_NEW_ULID placeholders
    - `sanitize_supplemental_data` applies field defaults
    - `validate_supplemental_json` validates against schema
-3. Route by `content_class`:
-   - `document_reference` → `bibliography.store_bibliography_entry()` (merge or create)
-   - `factual_content` → `_write_notes_event()` as event-like JSON
-   - `ambiguous` → `_append_to_review_queue()`
+3. Route by `content_class` (`_route_by_content_class`):
+   - `citation` / `hybrid` → `bibliography.store_bibliography_entry()` (merge or create)
+   - `prose` / `hybrid` → `_write_notes_event()` as event-like JSON
+   - `ambiguous` or unrouted → `_append_to_review_queue()`
 4. Filter anachronistic citations (newer than source copyright year)
 
 ### Phase 2: Search Integration (pipeline Phase 3, `bibliography_resolver`)
 1. Load the bibliography entries
-2. For each material without URLs:
-   - Try Gutenberg.org (books/periodicals)
-   - Try LLM search
-   - Try Archive.org API
-   - Try OpenSERP
-   - Validate URL
-   - Stop when found
+2. For each material without `resource_urls`: search in the order given under "Search order" and Grok-verify each candidate
 3. Update search metadata
 4. Write updated file
 
@@ -306,22 +289,9 @@ Ambiguous items queued for human review:
 
 ## Performance
 
-### Timing
-- Phase 1: ~5-10 seconds per chapter
-- Phase 2: ~10-20 seconds per chapter (with searches)
-- Phase 3: ~5-10 seconds per chapter (with LLM calls)
-- Total: ~20-40 seconds per chapter (all phases)
-
 ### API Calls
-- Phase 1: 1 LLM call per note-bearing window of a sub-event
-- Phase 2: 1-3 calls per material (LLM, Archive.org, validation)
-- Phase 3: 1-2 LLM calls per material (ISBN, death date)
-
-### Cost
-- Phase 1: ~$0.01 per chapter
-- Phase 2: ~$0.001-0.003 per material
-- Phase 3: ~$0.002-0.005 per material
-- Total: ~$0.01-0.05 per chapter
+- Pipeline Phase 2: 1 Grok request per note-bearing window of a sub-event (`cache_type` `supplemental`, temperature 0.1; one `ask_all` batch round).
+- Pipeline Phase 3: per bibliography entry, Grok verification of each search candidate, the `alt_title` expansion and (last) the LLM search; ISBN and author-death-date lookups only when `extract_isbn` / `determine_copyright` are on (both false in `config.yaml`).
 
 ## Error Handling
 
@@ -332,31 +302,12 @@ Ambiguous items queued for human review:
 - Individual material failures → Continue with next
 
 ### Retry Logic
-- Phase 1: 3 retries with exponential backoff
-- Phase 2: No retries (searches are idempotent)
-- Phase 3: No retries (LLM calls are cached)
+- Extraction: 3 attempts (see Validation).
+- Search and advanced stages: no retries.
 
-### Timeout Handling
-- LLM calls: 360 seconds (Grok client default)
-- Archive.org: 30 seconds
-- URL validation: 10 seconds
-- OpenSERP: 30 seconds
-
-## Quality Assurance
-
-### All Phases Pass QA
-- **Pylint**: 9.81-10.00/10 ✅
-- **Mypy**: 0 errors ✅
-- **Bandit**: 0 security issues ✅
-- **Complexity**: Acceptable (C-D for complex logic)
-- **Maintainability**: A (43-52) ✅
-
-### Code Standards
-- Lazy % formatting for logging
-- Type hints throughout
-- JSON schema validation
-- Error handling patterns from the archived `docs/archive/contextmanagement/Specs/error_handling.md`
-- QA standards from `quality_assurance.md`
+### Timeouts
+- Grok requests: `GrokClient` defaults (see `src/grok_client.py`).
+- Archive.org metadata and URL checks: per-call timeouts in `supplemental_search.py` and `supplemental_advanced.verify_archive_url` (10 s default).
 
 ## Documentation
 
@@ -368,22 +319,13 @@ Ambiguous items queued for human review:
 - `docs/archive/2026-03-22/SUPPLEMENTAL_PHASE1.md` - Phase 1 details (archived)
 - `docs/archive/2026-03-22/SUPPLEMENTAL_PHASE2.md` - Phase 2 details (archived)
 - `docs/archive/2026-10-11/features/supplemental/SUPPLEMENTAL_ERROR_HANDLING.md` - Error handling (archived)
-- `docs/current/features/supplemental/SUPPLEMENTAL_VALIDATION.md` - Validation details
+- [SUPPLEMENTAL_VALIDATION.md](SUPPLEMENTAL_VALIDATION.md) - Validation details
 
 ### This Document
 - Complete overview of all phases
 - Configuration guide
 - Usage examples
 - Performance metrics
-
-## Dependencies
-
-All in `requirements.txt`:
-- httpx - HTTP client
-- ulid-py - ULID generation
-- jsonschema - JSON validation
-- subprocess - OpenSERP integration
-- Standard library: json, datetime, re, logging, pathlib
 
 ## Testing
 
@@ -401,25 +343,11 @@ supplemental_material:
   verify_archive_urls: true
 
 # 2. Run pipeline
-python3 phase2_extract.py
+python3 phase2_extract.py && python3 phase3_enrich_data.py
 
 # 3. Check output
 ls -lh output/bibliography/ | head
 jq '.mentions[0]' output/bibliography/<one file>.json
-```
-
-### Expected Output
-
-```
-Processing: Breakout_and_Pursuit/chapter1-event.json
-  Extracting supplemental material...
-  Extracted supplemental material
-  Enriching with online searches...
-  Searching for: The Rise and Fall of the Third Reich
-    ✓ Found: https://archive.org/details/...
-  Enriched 1 material(s)
-  Applying advanced features...
-  Applied advanced features to 1 material(s)
 ```
 
 ## Limitations
@@ -445,9 +373,7 @@ Processing: Breakout_and_Pursuit/chapter1-event.json
 
 ## Status
 
-✅ **Production Ready**
-
-All three phases complete, tested, and integrated into the pipeline. Ready for use on real WWII historical documents.
+Implemented. Extraction and routing run in pipeline Phase 2; the search and advanced stages run in pipeline Phase 3 (`bibliography_resolver`, `enrich_bibliography`).
 
 ## Quick Reference
 
@@ -465,15 +391,12 @@ supplemental_material:
 ### Run Pipeline
 ```bash
 python3 phase2_extract.py
+python3 phase3_enrich_data.py
 ```
 
 ### Check Results
 ```bash
-find output/supplemental -name "*.json" -exec jq '.materials | length' {} \;
+ls output/bibliography/*.json | wc -l
+jq 'length' output/bibliography/review_queue.json
 ```
 
----
-
-**Implementation Date:** March 7, 2026 (Phase 1-3), March 19, 2026 (Split Architecture)  
-**Total Lines of Code:** 1,542 (922 + 152 + 243 + 225)  
-**Status:** ✅ Complete

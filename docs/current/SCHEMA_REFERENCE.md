@@ -37,7 +37,7 @@ All entity types follow a consistent pattern for linking:
 | `WeatherID` | `output/weather/*.json` | `WeatherID` (top-level) |
 | `LogisticsID` | `output/logistics/*.json` | `LogisticsID` (top-level) |
 | `MapID` | `output/map_features/*.json` | `MapID` (FeatureCollection top-level) |
-| `SourceSectionID` | `output/source_section/*.json` | `SourceSectionID` (top-level) |
+| `SourceSectionID` | `output/content/{Book}/source_section/*.json` | `SourceSectionID` (top-level) |
 
 ---
 
@@ -741,6 +741,14 @@ The per-entity JSON examples above predate several Phase 2 additions. The enforc
 | equipment | `variant_of`, `distinguishing_features` (lineage, 2.30), `lineage_source` (`grok_disambiguation`), `identity_scope` (`specific`/`generic`/`unresolved`), `identity_resolution`, `presence`, `absence_reason`, `extended_text` | nullable |
 | logistics | `original_text` (verbatim anchor), `weather_impact` `{WeatherID, impact_description, severity, ...}`, `impacted_places[]` | nullable |
 | casualties | `magnitude` (`none`/`light`/`moderate`/`heavy`/`severe`), `is_comparative` (bool), `impacted_equipment[]`, `impacted_logistics[]` | nullable |
+| places, people, people_groups, equipment, source_section | `openserp_searched_at` (number), `wikipedia_checked_at` (string) | nullable enrichment bookkeeping |
+| places, people_groups | `web_results[]` (free-form objects) | nullable |
+| places | `geo_review`, `geocode_source`, `grokipedia_checked_at` | nullable strings |
+| people_groups | `unit_patch`, `veterans_associations`, `wikipedia_extract` | nullable |
+| equipment | `_provenance`, `wikipedia_extract`, `wikipedia_wwii_relevant`, `description_source_url`, `image_candidates_checked_at` | nullable |
+| map_features | `title_en` | nullable |
+| images | `thumbnailUrl` (must match `^https?://`), `caption_method`, `caption_confidence`, `map_vision_attempts` (integer >= 0), `needs_review` | nullable |
+| source_section | Whole entity (`src/schemas/source_section_output.py`, one record per source section, stored beside the book's events in `output/content/{Book}/source_section/`). Only `SourceSectionID` is required. Fields: `section_title`, `section_summary`, `source` `{book, author, series}`, `EventID`, `operation` `{name, wikipedia_title, aliases[], confidence, source}`, `reference_articles[]` `{source, title, url, extract, references[], license, retrieved_at}`, `primary_sources[]`, `wikipedia_checked_at`, `media_checked_at`, `openserp_searched`, `openserp_searched_at` | nullable except the ID |
 | bibliography | `source_qualification` (how a source qualifies for a fact, not veracity), `source_metadata` | nullable objects |
 | maps | `is_map`, `map_vision_checked_at`, `PeopleGroupID`, `PeopleGroupMentionID`, `PeopleGroup_Name` | nullable |
 | images | `map_check`, `map_check_basis`, `is_map`, `superseded_by_map_id`, `vision_classification`, `SourceSectionID`, schema.org fields (`contentUrl`, `caption`, `creditText`, `copyrightNotice`, `copyrightHolder`, `acquireLicensePage`, `contentLocation`, `dateCreated`, `datePublished`, `width`, `height`, `encodingFormat`, `exifData`) | nullable |

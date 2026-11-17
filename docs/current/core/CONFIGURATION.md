@@ -1,7 +1,7 @@
 # Configuration Guide
 
 **File:** `config.yaml` (shipped defaults: `config.yaml.example`; `config.yaml` is gitignored local state)  
-**Last Updated:** 2026-11-16
+**Last Updated:** 2026-11-17 (checked against code at main 0dac86fa)
 
 Complete reference for all configuration options in the WWII data extraction pipeline.
 
@@ -47,8 +47,10 @@ api:
     base_url: "https://api.x.ai/v1/chat/completions"
     model: "grok-4.3"
     model_map: {}                 # per-task model overrides, e.g. isbn: "grok-3-mini" (empty = all tasks use `model`)
-    max_retries: 3
-    timeout: 60
+    max_retries: 3                # shipped, but NOT read by code (see Options)
+    timeout: 60                   # shipped, but NOT read by code (see Options)
+  nara_api_key: ""                # secret; env NARA_API_KEY overrides (src/utils/config.py:_apply_env_overrides)
+  noaa_api_token: ""
   calls_per_minute: 20            # Rate limit: max API calls per minute (across all threads; 1-200, validated in src/utils/config.py; divided by pool size in `grok_client._effective_calls_per_minute`)
 ```
 
@@ -56,17 +58,16 @@ api:
 - `base_url` — Grok API endpoint
 - `model` — Default model for all tasks. Used when `model_map` has no entry for the task.
 - `model_map` — Per-task model routing for cost optimization. Maps `cache_type` (task name) to a model. Uncommented entries use cheaper/faster models for simple tasks. Keys: `events`, `dates`, `places`, `people`, `peoplegroups`, `weather`, `equipment`, `logistics`, `casualties`, `supplemental`, `isbn`, `url_verify`, `copyright`, `nara_match`, `openserp_verify`. Unset keys use the default `model`.
-- `max_retries` — Number of retry attempts on failure
-- `timeout` — Request timeout in seconds
-- `calls_per_minute` — Proactive rate limit across all threads (`config.yaml.example` ships 20; the code falls back to 30 if the key is absent). Irrelevant in batch mode.
+- `max_retries`, `timeout` — present in `config.yaml.example` but not read by any code. `GrokClient` hard-codes a 600 s read timeout (`src/grok_client.py:479`, connect timeout 10 s at `:1463`) and 5 attempts with exponential backoff of 4-60 s (`:1477-1478`).
+- `calls_per_minute` — Proactive rate limit across all threads (`config.yaml.example` ships 20; the code falls back to 30 if the key is absent; profiles set 30, 60, 30). Irrelevant in batch mode.
 
 **NARA Catalog API:**
-- `nara_api_key` — API key for National Archives catalog search. Get from [archives.gov](https://www.archives.gov/research/catalog/help/api-getting-started). Used by bibliography resolver to find digitized military records and identify Record Groups. 10,000 requests/month limit. Leave empty to skip NARA search (Grok still identifies Record Groups without it).
+- `api.nara_api_key` — API key for National Archives catalog search. Get from [archives.gov](https://www.archives.gov/research/catalog/help/api-getting-started). Used by bibliography resolver to find digitized military records and identify Record Groups. 10,000 requests/month limit. Leave empty to skip NARA search (Grok still identifies Record Groups without it).
 
 **External Search Cache:**
 All external search results (Wikipedia, Grokipedia, Archive.org, NARA, LOC, OpenSERP) are cached in DynamoDB (AWS) or local disk (local mode):
-- Positive results: cached 30 days
-- Negative results (not found): cached 7 days
+- Positive results: cached 30 days (`POSITIVE_TTL_DAYS`, `src/utils/search_cache.py:17`)
+- Negative results (not found): cached 7 days (`NEGATIVE_TTL_DAYS`, `:18`)
 - Prevents redundant HTTP calls across pipeline runs
 
 **Environment Variables Required:**
@@ -84,12 +85,14 @@ processing:
   generate_jq_queries: false
   generate_download_scripts: false
   force_reprocess: false             # WARNING: expensive — reprocesses all content regardless of cache
+  reprocess_types: []                # entity types re-extracted even if already processed (src/utils/config.py:should_reprocess)
+  date_window: {start: "1930-01-01", end: "1950-12-31"}  # semantic flag date_out_of_window; env DATE_WINDOW_START / DATE_WINDOW_END override
 ```
 
 **Options:**
-- `validate_ulids` - Verify ULID format for all IDs
-- `generate_jq_queries` - Create jq query files for data exploration
-- `generate_download_scripts` - Generate shell scripts for bulk downloads
+- `validate_ulids`, `generate_jq_queries`, `generate_download_scripts` - shipped in the example; no code under `src/` or the `phase*.py` entrypoints reads them (UNVERIFIED for scripts/)
+- `reprocess_types` - entity types that ignore the processed registry (`should_reprocess`)
+- `date_window` - plausibility window for the advisory `date_out_of_window` flag (`src/utils/semantic_flags.py:42-49`)
 - `force_reprocess` - When true, ignores existing output files and reprocesses everything. **Use with caution** — this bypasses all skip logic and will re-call the Grok API for all chapters.
 
 ---
@@ -104,12 +107,14 @@ batch:
   phase3: false                      # Phase 3 uses live calls (avoids a network bounce between submit/retrieve)
   max_rounds: 8                      # Phase 2 batch rounds before the batch.rounds_over_cap alert + stop
   in_task_wait_minutes: 5            # per round: how long the task waits for the batch; env BATCH_IN_TASK_WAIT_MINUTES
+  min_requests: 50                   # fewer queued requests are answered live, not batched; env BATCH_MIN_REQUESTS; 0 = always batch
 ```
 
 **Options:**
 - `phase2` - When true, Phase 2 auto-delegates to `run_submit_only` (submits batch, enqueues job, exits). The batch poller Lambda handles retrieval.
 - `phase3` - When true, Phase 3 auto-delegates to `run_submit_only` (same flow as Phase 2). Default `false`.
 - `max_rounds` - Phase 2 runs batch **rounds** (`src/utils/batch_rounds.py`): collect requests, submit, repeat until a pass queues nothing. After this many rounds it alerts (`batch.rounds_over_cap`) and stops.
+- `min_requests` - A submission with fewer requests than this is answered live (`GrokClient.submit_batch`, `src/utils/batch_api.py:43` `batch_min_requests`), because a batch can take up to 24 h. Default 50.
 - `in_task_wait_minutes` - Each round the task polls its batch for this long (`src/utils/batch_api.in_task_wait_minutes`); an unanswered batch is handed to the batch poller Lambda, which launches a `--retrieve-only` task when it is answered.
 
 **Behavior:** When `batch.phase2: true`, calling `ecs_entrypoint.py` with `--phase phase2` automatically runs in submit-only mode. The entrypoint detects the batch config and delegates without needing `--submit-only` explicitly. This means the trigger Lambda doesn't need to know about batch mode — it launches Phase 2 normally and the entrypoint handles the rest.
@@ -134,9 +139,7 @@ weather:
 - `enabled` - Enable/disable weather extraction
 - `fetch_api_data` - Query external weather API
 - `api_provider` - Currently only `open-meteo` supported
-- `cache_responses` - Cache API responses to avoid re-fetching
-- `only_precise_dates` - Skip dates like "early June" (only process exact dates)
-- `timeout` - API request timeout
+- `cache_responses`, `only_precise_dates`, `timeout` - shipped in the example; the Phase 2 weather step (`phase2_extract.py:396-415`) reads only `enabled` and `fetch_api_data` (UNVERIFIED in `src/extraction/weather*.py`)
 
 **API:** [Open-Meteo Historical Weather API](https://open-meteo.com/)
 
@@ -155,8 +158,9 @@ equipment:
 
 **Options:**
 - `enabled` - Enable/disable equipment extraction
-- `enable_enrichment` - Enrich equipment with external data (Wikipedia, Grokipedia)
-- `verify_media_with_vision` - Use Grok vision API to verify downloaded media is relevant
+- `enable_enrichment` - Enrich equipment with external data (Wikipedia, Grokipedia); read at `phase2_extract.py:446`
+- `verify_media_with_vision` - Use Grok vision API to verify downloaded media is relevant (`src/extraction/equipment.py:_verify_media_with_vision`)
+- `logistics.enabled` - the same on/off switch for logistics extraction (`phase2_extract.py:474`)
 
 **Output:** `output/equipment/{name}_{ulid}.json`
 
@@ -211,7 +215,7 @@ license is derived from the citation fields. There is no `enrich_with_searches` 
 - `llm_search` - Ask Grok for an online copy of the cited work (last resort, only when no other source found one; the URL is fetched SSRF-safely and content-verified)
 - `search_gutenberg` - Search Project Gutenberg
 - `search_archive_org` - Search Internet Archive
-- `use_openserp` - Use OpenSERP for live web search (images, academic sources, event content, external maps, repository search)
+- `use_openserp` - Use OpenSERP for live web search (images and web pages for people, equipment, groups and places; primary sources for source sections; external maps when `external_maps.enabled`; bibliography repository search)
 
 **Phase 3 (Advanced):**
 - `verify_archive_urls` - Verify that discovered archive URLs are still accessible
@@ -232,15 +236,17 @@ concurrency:
   max_event_files: 3               # Process N event files concurrently
   max_extraction_group: 3          # Max parallel extractions per group
   max_enrichment_workers: 4        # enrichment fetch threads (Phase 2 bio pool, Phase 3 per entity type)
+  bio_enrichment_parallel: true    # parallelize the per-person Phase 2 bio fetch (persist stays serial); false forces serial
 ```
 
 **Options:**
 - `enabled` - Enable/disable concurrent chapter processing
 - `max_event_files` - Number of event files to process in parallel
 - `max_extraction_group` - Max parallel extractions within a single group (dates, places, etc.)
+- `bio_enrichment_parallel` - `src/extraction/bio_enrich_parallel.py:73`; default true.
 - `max_enrichment_workers` - enrichment fetch threads: the Phase-2 biography-enrichment pool (`bio_enrich_parallel`, capped at 16) and Phase 3's per-entity-type pool (shipped 4; code fallback 6 when unset). Grok API calls are rate-limited; extra threads keep the external search/geocode/OpenSERP requests running in parallel. (Grokipedia/Wikipedia enrichment runs in Phase 2, not here.)
 
-**Note:** Concurrent processing is experimental. See `docs/current/FUTURE_ENHANCEMENTS.md` for distributed processing options.
+**Note:** Concurrent processing is experimental. See `docs/archive/FUTURE_ENHANCEMENTS.md` for distributed processing options. `src/utils/config.py` validates the three `max_*` keys as positive integers.
 
 ---
 
@@ -303,89 +309,61 @@ maps:
 - `storage_path` - Local path for map metadata
 - `image_storage_path` - Local path for downloaded map images
 
-**Note:** This extracts maps that are already in your source documents, not external searches.
+**Note:** This extracts maps that are already in your source documents, not external searches. No code reads the `maps:` block (no `config["maps"]` lookup exists in `src/`, `phase*.py` or `ecs_entrypoint.py`); the keys are shipped defaults only. `maps.download_images` is one of the keys the cost-optimized profile sets (`config/profiles/cost-optimized.yaml`).
+
+## Images
+
+```yaml
+images:
+  enabled: true                    # Phase 2 image extraction (phase2_extract.py:597)
+  download: true                   # fetch image bytes into output/ (phase3_enrich_data.py:675)
+  image_storage_path: "output/images/files/"   # phase2_extract.py:605
+```
+
+Optional keys read with code defaults: `images.link_people` and `images.link_places` (both default true, `phase3_enrich_data.py:353,367`) and `images.vision_caption` (default false, `src/extraction/images.py:670`).
 
 ---
 
 ## External Maps Search
 
-Search for historical maps using OpenSERP and verify with Grok vision API.
+Search for historical maps using OpenSERP and verify with Grok vision API. The block shipped in `config.yaml.example` is small; the other keys below have code defaults and are read only if you add them.
 
 ```yaml
 external_maps:
-  enabled: false                   # Enable external maps search (needs OpenSERP running)
-  max_places: 50                   # Maximum places to search (null for all)
-  openserp_url: "http://localhost:7001"  # OpenSERP service URL
-  search_limit: 50                 # Max results per search
-  verify_with_vision: true         # Use Grok vision API to verify maps
-  max_images_per_page: 5           # Max images to analyze per page
-  image_download_timeout: 30       # Timeout for downloading images (seconds)
-  page_download_timeout: 15        # Timeout for downloading HTML pages (seconds)
+  enabled: false                   # paid OpenSERP web search + vision (needs OpenSERP running)
+  recycle_in_doc_maps: true        # read what each in-document map depicts (Grok vision), recycle as a map-as-source document
+  max_recycled_per_doc: 50         # cost cap per document (alerts when hit)
+  # allowed_hosts: []              # extra hosts whose map links may be fetched (ibiblio.org is built in)
 ```
 
-### Core Settings
+Keys read by code (all in `phase3_enrich_data.py` unless noted):
 
-- `enabled` - Enable/disable external map searching
-- `max_places` - Limit number of places to search (use `null` for all 220 places)
-- `openserp_url` - URL of OpenSERP service (must be running)
-- `search_limit` - Maximum search results per place
+| Key | Code default | Use |
+|---|---|---|
+| `enabled` | false | external map search (`:334`) |
+| `openserp_url` | `http://localhost:7001` | OpenSERP URL when `aws.enabled` is false (`src/utils/openserp_client.py:26`) |
+| `max_places` | none (then `--max-items`) | limit places searched (`:343`) |
+| `search_limit` | 50 | results per place (`:344`) |
+| `page_download_timeout` | 10 | seconds for HTML pages (`:346`) |
+| `image_download_timeout` | 30 | seconds for images (`:347`, `:630`) |
+| `image_storage_path` | none | where map images are stored (`:348`) |
+| `download` | true | download map images (`:641`) |
+| `recycle_in_doc_maps` | false (shipped true) | in-document map recycling (`:609`); independent of `enabled` |
+| `follow_in_doc_links` | true | also required for recycling (`:610`) |
+| `max_recycled_per_doc` | 50 | cap per document (`:632`) |
+| `allowed_hosts` | none | extra hosts for in-document map links (`:631`) |
+| `storage_backend` | `filesystem` | YAML map import, `phase2_extract.py:642` |
+| `allowed_licenses` | `["Public Domain", "CC0", "CC-BY", "CC-BY-SA"]` | licence filter, `src/extraction/external_maps.py:374` |
 
-### Vision Verification
+Previously documented keys `verify_with_vision`, `max_images_per_page`, `require_license`, `supported_formats`, `link_to_places`, `link_to_dates`, `s3_bucket`, `s3_prefix` and `s3_region` (under `external_maps`) are not read anywhere in the code and have been removed from this guide.
 
-- `verify_with_vision` - Use Grok vision API to analyze actual map images
-- `max_images_per_page` - How many images per page to send to Grok (1-5 recommended)
+In-document maps (author-curated, linked from the narrative) are always persisted as Map entities; only the paid recycle step sits behind `recycle_in_doc_maps` (`phase3_enrich_data.py:_run_document_media_steps`).
 
-### Timeouts
-
-- `image_download_timeout` - Seconds to wait for image downloads (default: 30)
-- `page_download_timeout` - Seconds to wait for HTML page downloads (default: 10)
-
-**Increase timeouts if you see timeout errors for slow servers.**
-
-### Storage (Not Yet Implemented)
-
-```yaml
-  image_storage_path: "filestore/external_maps/"
-  storage_path: "output/external_maps/"
-  s3_bucket: ""                    # S3 bucket name (if using S3)
-  s3_prefix: "maps/"               # S3 key prefix
-  s3_region: "us-east-1"           # AWS region
-```
-
-### License Filtering
-
-```yaml
-  require_license: true            # Reject maps without license info
-  allowed_licenses:
-    - "Public Domain"
-    - "CC0"
-    - "CC-BY"
-    - "CC-BY-SA"
-    - "Unknown"
-  download_images: false           # Download map images if permitted
-  download_timeout: 30             # Image download timeout (seconds)
-```
-
-### Supported Formats
-
-```yaml
-  supported_formats:
-    - jpg
-    - png
-    - tif
-    - pdf
-```
-
-### Linking
-
-```yaml
-  link_to_places: true             # Link maps to PlaceIDs
-  link_to_dates: true              # Link maps to DateIDs
-```
+**Increase the two timeouts if you see timeout errors for slow servers.**
 
 ### Prerequisites
 
-**OpenSERP must be running:**
+**OpenSERP must be running** when `external_maps.enabled` is true:
 ```bash
 cd openserp
 ./openserp serve -p 7001 &
@@ -393,6 +371,21 @@ cd openserp
 
 **Domain blacklist configured:**
 See `config/domain_blacklist.yaml` for filtering unwanted domains.
+
+---
+
+## OpenSERP (enrichment)
+
+```yaml
+openserp:
+  results_per_query: 10
+  max_images_per_entity: 3
+  max_web_results_per_entity: 3
+  rate_limit_seconds: 5            # spacing between serial OpenSERP queries
+  request_timeout_seconds: 60      # per-query HTTP timeout
+```
+
+Read in `src/enrichment/openserp_enrichment.py` (`load_config().get("openserp")`, lines 362, 1391, 1486). `openserp.worker_visibility_seconds` (default 900) is read by `openserp_worker.py:309`. The profiles change these values (see Deploy Profiles).
 
 ---
 
@@ -413,29 +406,26 @@ aws:
   openserp:
     cluster: "dev-wwii-pipeline"
     service: "dev-wwii-openserp"
-    health_check_url: "/health"
     startup_timeout: 120
-  database:
-    backend: "dynamodb"              # "dynamodb" or "mongodb"
-    dynamodb_table_prefix: "dev-wwii-"
-    mongodb_uri: ""
 ```
+
+`config.yaml.example` ships only `enabled`, `region` and `notification_email` under `aws:`. The other keys are read with code defaults only if present (CloudFormation sets the matching env vars on ECS tasks; see below). `ecs_entrypoint.py:488-503` patches `aws.enabled: true`, `aws.s3_bucket` and `storage.entity_backend: filesystem` at runtime. The `health_check_url` and `database.backend/mongodb_uri` keys previously listed here are not read by any code; the health check is a fixed `GET {url}/health` (`src/utils/openserp_client.py:95`). `database.dynamodb_table_prefix` appears only in `lambda_handlers/import_handler.py`.
 
 **Options:**
 - `enabled` — When true, storage uses S3, cache uses DynamoDB, OpenSERP uses ECS Fargate
-- `cache_table` — DynamoDB table for Grok API response caching (avoids re-calling for same prompts)
-- `cache_ttl_days` — How long cached responses are kept (default 90 days)
-- `secrets_id` — Secrets Manager secret name containing the Grok API key
-- `dynamodb_table_prefix` — Prefix for entity tables (people, places, groups, etc.)
+- `cache_table` — DynamoDB table for Grok API response caching (code default `wwii-api-cache`, `src/utils/backends.py:36`, `src/grok_client.py:382`)
+- `cache_ttl_days` — How long cached responses are kept (default 90 days, `src/utils/backends.py:38`)
+- `s3_prefix` — optional key prefix for the S3 backend (`src/utils/backends.py:20`)
+- `secrets_id` — Secrets Manager secret name containing the Grok API key (`lambda_handlers/_handler_common.py:31`)
 - `notification_email` — Email address for pipeline completion notifications. Read by `deploy_aws.py` and passed to CloudFormation. Leave empty to skip. Requires SNS email confirmation after first deploy.
 
-**Note:** In ECS containers, the `ecs_entrypoint.py` automatically patches `aws.enabled: true` at runtime.
+**Note:** In ECS containers, `ecs_entrypoint.py` patches `aws.enabled: true` at runtime.
 
 ---
 
 ## Prompt Templates
 
-Extraction prompts are loaded from YAML files in `prompts/` (34 files). Search query templates are in `search_queries/` (8 files). Missing files cause a hard build failure (validated by `deploy_all.sh`).
+Extraction prompts are loaded from YAML files in `prompts/` (34 files, listed in `PROMPT_REFERENCE.md`). Search query templates are in `search_queries/` (8 files). Missing files cause a hard build failure (validated by `deploy_all.sh`).
 
 ```
 prompts/           # 34 LLM prompt templates
@@ -450,7 +440,7 @@ search_queries/    # 8 third-party search query templates
 
 **Each search query YAML contains:** category → list of query template strings with `{variable}` placeholders.
 
-**S3 override:** Upload to `s3://<bucket>/prompts/<name>.yaml` to override the local template at runtime. The `prompt_loader.py` checks S3 first, falls back to the container's local copy.
+**S3 override:** Upload to `s3://<bucket>/prompts/<name>.yaml` to override the local template at runtime. `src/utils/prompt_loader.py:_load_from_s3` checks S3 first, only when `S3_BUCKET` is set and `aws.enabled` is true, and falls back to the container's local copy. Any S3 error is swallowed and the local file is used. Loaded prompts are `lru_cache`d per process (`clear_cache()` resets).
 
 **Cache invalidation:** Cache key hashes `system_prompt + prompt + temperature + model`. Any YAML change auto-invalidates relevant cache entries.
 
@@ -460,6 +450,7 @@ search_queries/    # 8 third-party search query templates
 - `{sub_event_summary}`, `{sub_event_id}` — Sub-event context
 - `{text}` — Chapter/section text to extract from
 - `{schema}` — Auto-injected from the `schema` field
+- `{quote_rule}` — shared quote rule text from `src/utils/quote_match.QUOTE_RULE`, set by default
 
 ---
 
@@ -568,7 +559,7 @@ GROK_MODEL=grok-4.3                # overrides api.grok.model (src/utils/grok_mo
 
 ### ECS Task Environment Variables (AWS mode)
 
-Set automatically by CloudFormation on ECS task definitions:
+Set by CloudFormation on ECS task definitions (`cloudformation/compute.yaml`) or by the entrypoint / trigger Lambda, as noted:
 
 | Variable | Task | Description |
 |----------|------|-------------|
@@ -580,7 +571,7 @@ Set automatically by CloudFormation on ECS task definitions:
 | `CONTENT_TOPIC_ARN` | Phase 2 | SNS topic for content-uploaded events (used to re-trigger pipeline for pending content) |
 | `DEDUP_REVIEW_URL` | Phase 2 | URL of the dedup review UI (included in notification emails) |
 | `BOOK_NAME` | Phase 3 | Scopes S3 downloads to a specific book (set by trigger Lambda) |
-| `SKIP_RETRY` | Retrieve task | When true, skips retry logic (results already in cache) |
+| `SKIP_RETRY` | Retrieve task | Set by `ecs_entrypoint.py:4721` (not CloudFormation); `phase2_extract.py:868` then skips the empty-event retry pass |
 | `ENV_NAME` | All | Environment name prefix (e.g., `dev`) |
 
 ### CloudFormation Timing Parameters
@@ -599,7 +590,7 @@ Configurable via CloudFormation stack parameters in `cloudformation/compute.yaml
 | Key | Written by | Read by | Description |
 |-----|-----------|---------|-------------|
 | `lock#<family>` | Trigger Lambda | Trigger Lambda, entrypoint | Pipeline task locks (conditional put, 2h TTL) |
-| `manifest#phase2` | Phase 2 final sync, dedup UI | Phase 3 download | List of S3 keys changed by Phase 2 and dedup review |
+| `manifest#phase2` | Phase 2 final sync, dedup UI | Phase 2 download only (`_read_manifest`, legacy fallback after `pending#parsed#<book>`) | List of S3 keys changed by Phase 2 and dedup review. Phase 3 does not read it (see [LOCKS_AND_LEASES.md](LOCKS_AND_LEASES.md)) |
 | `pending#content` | Trigger Lambda | Phase 2 post-process | Queued content keys when pipeline is busy |
 | `pending#parsed#<book>` | Trigger Lambda | Phase 2 `_read_manifest` | Per-book parsed file queue (consumed on task start) |
 | `pending#enrich#<book>` | Trigger Lambda | Phase 3 `_get_next_pending_enrich` | Per-book enrichment queue (consumed on completion) |
@@ -621,10 +612,10 @@ Configurable via CloudFormation stack parameters in `cloudformation/compute.yaml
 
 ## Configuration Validation
 
-The pipeline validates configuration on startup and will fail with clear error messages if:
-- Required paths don't exist and can't be created
-- OpenSERP is not running (when external_maps.enabled = true)
-- Required environment variables are missing
-- Invalid configuration values are provided
+`load_config()` (`src/utils/config.py`) raises `ValueError` when:
+- the file is not a YAML mapping, or the `paths` or `api` section is missing
+- `api.grok.model` is not a string, or `api.calls_per_minute` is not an integer in 1-200
+- `batch.phase2` / `batch.phase3` is not a boolean
+- `concurrency.max_event_files`, `max_extraction_group` or `max_enrichment_workers` is not a positive integer
 
-Check logs for validation errors before the pipeline starts processing.
+Nothing else is validated at load time. Paths are created by the code that writes to them. A missing OpenSERP service surfaces when the OpenSERP step runs. `GROK_API_KEY` is checked when the client is built.

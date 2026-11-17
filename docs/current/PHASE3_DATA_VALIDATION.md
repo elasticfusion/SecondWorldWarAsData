@@ -1,5 +1,9 @@
 # Phase-3 Data Validation — Design, Audit & Plan
 
+**Status (2026-11-17):** `scripts/validate_phase3.py` is implemented (see "The validator" below). The Q3 write-guard bypasses (weather, bibliography) are fixed, and Q2 coverage rollups now exist for geocode, bibliography, weather, places and groups. Q1 (a live run stepping through each enhancer) is not recorded here. The step inventory and the "delete steps 1/6 + 2/6" decision below are historical: groups and places structured enrichment stayed in Phase 3 (`phase3_enrich_data.py`); the current step order is in [core/PHASE3_ENRICHMENT.md](core/PHASE3_ENRICHMENT.md). The Phase-3 provenance checks (`P3-B1`, `P3-R1`, `P3-A1`, `P3-C1`) live in `scripts/validate_provenance.py --phase 3`.
+
+See [dataquality/PROVENANCE_AND_INTEGRITY_GATES.md](dataquality/PROVENANCE_AND_INTEGRITY_GATES.md) for how the validation, completeness and referential gates fit together, where they run, and the alerts.
+
 **Owner-driven.** Three questions, per enhancer:
 1. **Do the data enhancements work as expected?** (step through each)
 2. **Do we have complete observability?** (a coverage rollup + loud anomaly per enhancer)
@@ -12,15 +16,15 @@ augments them in place (idempotent/resumable). The write-guard (`write_json_with
 `locked_json` → `_validate_entity`) is the single mechanism that enforces schema + mandatory fields
 + records a block in `validation_stats`; **any enricher that raw-writes bypasses all of that.**
 
-## Phase-3 enhancer inventory (phase3_enrich_data.py, 6 steps)
+## Phase-3 enhancer inventory (original 6-step audit; current order in core/PHASE3_ENRICHMENT.md)
 | Step | Enhancer | Source | Entity | code |
 |---|---|---|---|---|
-| 1/6 | people_groups Wikipedia/Grokipedia | wiki/grok | people_groups | `enrich_groups.py` |
-| 2/6 | places Wikipedia/Grokipedia | wiki/grok | places | `enrich_places.py` |
-| 3/6 | places geocoding (coords) | nominatim→hill→grok cascade | places | `*_geocode.py` |
-| 4/6 | bibliography (ISBN/copyright/archive/NARA/death-date) | supplemental_advanced | bibliography | `supplemental_advanced.py` |
-| 5/6 | OpenSERP (images/urls) | openserp | people, equipment, groups, places, source_section | `openserp_enrichment.py` |
-| 6/6 | NOAA weather | noaa | weather | `noaa_weather.py` |
+| 1/6 | people_groups Wikipedia/Grokipedia | wiki/grok | people_groups | `src/extraction/enrich_groups.py` |
+| 2/6 | places Wikipedia/Grokipedia | wiki/grok | places | `src/extraction/enrich_places.py` |
+| 3/6 | places geocoding (coords) | nominatim→hill→grok cascade | places | `src/enrichment/places_grok_geocode.py` |
+| 4/6 | bibliography (ISBN/copyright/archive/NARA/death-date) | supplemental_advanced | bibliography | `src/extraction/supplemental_advanced.py` |
+| 5/6 | OpenSERP (images/urls) | openserp | people, equipment, groups, places, source_section | `src/enrichment/openserp_enrichment.py` |
+| 6/6 | NOAA weather | noaa | weather | `src/enrichment/noaa_weather.py` |
 | (+) | `link_parent_place_ids` (hierarchy) | — | places | `places.py` |
 
 ## Audit findings (initial static pass — the 3 questions)
@@ -31,22 +35,21 @@ augments them in place (idempotent/resumable). The write-guard (`write_json_with
 - ✅ **OpenSERP** (`openserp_enrichment`) — uses `write_json_with_lock` (has a few raw writes to
   verify are metrics/cache, not entities).
 - ✅ **FIXED (verified 2026-11-16):** `noaa_weather.py` `_enrich_weather_file` now writes via `write_json_with_lock(f, data, entity="weather")` (src/enrichment/noaa_weather.py:354-356). Original finding follows.
-- 🔴 **weather** (`noaa_weather.py:327` `_enrich_weather_file`) — **RAW `f.write_text(json.dumps(...))`
+- (historical) **weather** (`noaa_weather.py` `_enrich_weather_file`) — **RAW `f.write_text(json.dumps(...))`
   of a weather ENTITY → BYPASSES the schema guard.** A NOAA-enriched weather record is not
   schema-validated on write; a malformed/missing-mandatory record is neither caught nor alerted.
   (Contrast: `weather_central.py` Phase-2 writes DO use the guard.)
-- ⚠ **bibliography** (`src/extraction/supplemental_advanced.py`; guarded via `write_json_with_lock` when an `entity` argument is passed (~line 358); a raw `json.dump` fallback remains at ~line 372 when it is not; callers not re-audited in the 2026-11-16 pass) — **RAW `json.dump(data, f)` of the enriched
-  bibliography ENTITY → BYPASSES the guard.** Same gap.
+- ✅ **FIXED (verified 2026-11-17):** bibliography enrichment writes through `_save_enriched_data(..., entity="bibliography")` (src/extraction/supplemental_advanced.py:531), which calls `write_json_with_lock` (line 360). The raw `json.dump` fallback at line 372 only runs when `entity` is None (the supplemental container file). Original finding: raw `json.dump` bypassed the guard.
 - ◻ **geocode helpers** (`nominatim`/`hill`) — return coords to a guarded caller; they don't write
   entities themselves (OK) — confirm.
 
-**Fix (Q3):** route the weather + bibliography enrichment writes through `write_json_with_lock`
+**Fix (Q3, done):** route the weather + bibliography enrichment writes through `write_json_with_lock`
 (entity=`weather` / `bibliography`) so schema + mandatory fields are enforced and a violation is
 recorded/alerted via `validation_stats` (the `block`/`allow_flagged` path + the existing systematic-
 failure SNS alert). These are also 2 of the repo's counted raw-write sites — moving them tightens
 the raw-write gate.
 
-### Q2 — observability / coverage rollup (per enhancer)
+### Q2 — observability / coverage rollup (per enhancer) — initial findings; now emitted: `geocode.summary`/`.anomaly` (phase3_enrich_data.py), `bibliography.summary`, `bibliography.resolve_summary`/`.resolve_anomaly`, `weather.summary`/`.anomaly`, `places.summary`/`.anomaly`, `groups.summary`/`.anomaly`, `openserp.summary`/`.anomaly`
 - people_groups / places / openserp: emit OBSERV / metrics (openserp has `write_metrics`).
 - bibliography: only a plain `"Enriched N of M"` log — **no `OBSERV *.summary` + no 0-of-N anomaly**
   (same silent-aggregate class as the pre-fix enrichment/supplemental blind spots).
@@ -70,14 +73,13 @@ Each with the **source link captured + traceable** (the Phase-2 A4 rule, applied
 
 ## The validator — `scripts/validate_phase3.py` (post-Phase-3)
 Extends `validate_phase2.py`'s A/B model with Phase-3-specific checks:
-- **A (hard):** every enriched entity still schema-valid + version-matched (re-use the P2 A1/A2);
-  an enriched record carrying an external source (wiki/grok/NARA/openserp/noaa) MUST carry the
-  source LINK + be schema-clean; referential integrity still 0-dangling.
-- **B (warn):** per-enhancer coverage below an expected floor (e.g. 0 places geocoded when places
-  exist); geocode `geo_missing_coords` residue after Phase 3 (should be ~0, unlike pre-Phase-3).
-- LOUD summary + non-zero exit on A; wired post-Phase-3 in `phase3_enrich_data.py` main().
+Implemented. It runs the Phase-2 checks A1/A2 (schema + version), A3 (source traceback) and A3/B1 (referential integrity) unchanged, then:
+- **P3-A5 (hard):** every record with `enrichment_status == "enriched"` in people, people_groups and equipment (`entity_records.ENRICHED_ENTITIES`) is schema-valid, version-matched, traceable and carries a source link (`entity_records.has_source_link`). Places, bibliography and weather are deliberately not gated by A5.
+- **P3-B4 (warn; hard with `--strict-coverage`):** places exist but 0 have coordinates; bibliography records exist but 0 are resolved (`search_status == "resolved"` or `resource_urls`); weather records exist but 0 have `noaa_observed`. OpenSERP coverage is not gated.
+- CLI: `python -m scripts.validate_phase3 [--output-root output] [--strict-coverage]`. Output: `OBSERV phase3.validation result=PASS|FAIL ...`; exit 1 on any hard failure.
+- Wiring: `phase3_enrich_data.py` runs it only for local runs (no `S3_BUCKET`). On ECS it runs in `ecs_entrypoint.py` after the final sync, in `_phase3_durable_referential_fix` and its caller (around lines 2280-2320), against the synced corpus. The `geo_missing_coords` semantic flag is resolved in Phase 3 (`src/utils/semantic_flags.py` `RESOLVED_IN_PHASE3`), so it is not alerted at Phase 2.
 
-## Plan / sequencing
+## Plan / sequencing (steps 1-3 done 2026-11; step 4 open)
 1. **Fix Q3 bypasses** (weather + bibliography → write-guard) — correctness-critical, their own PR.
 2. **Fill Q2 gaps** (coverage summary + anomaly for bibliography/weather/geocode).
 3. **`validate_phase3.py`** + wire post-Phase-3.

@@ -2,18 +2,32 @@
 
 The `config/domain_blacklist.yaml` file controls which domains and URL paths are excluded from external map search results.
 
+> **Status (2026-11-17), checked against code:**
+> - The Go filter is `tools/search_maps.go`, run by `openserp_maps.search_with_openserp` as `./tools/search_maps -place ... -limit ... -openserp <url>`
+>   with NO `-blacklist` flag. The flag defaults to `domain_blacklist.yaml` in the working directory, and the file lives at
+>   `config/domain_blacklist.yaml`, so the Go tool prints a warning and filters with an empty blacklist. Pass `-blacklist config/domain_blacklist.yaml` to make
+>   the rules below apply (not done in code today).
+> - `tools/` is not copied into the Docker image (`Dockerfile` copies `src/`, `scripts/`, `prompts/`, `search_queries/`, `config/`, `data/`), so
+>   the Phase 3 step `openserp_external_maps` cannot run the binary on ECS (the `subprocess` failure is caught and the search returns no results).
+> - The Go tool never writes to the YAML. The `# Filtered:` audit comments below are not produced by any code. The only automatic write is Python's
+>   `openserp_maps._add_to_blacklist`, which inserts a domain plus `# Blacklisted: <url> (license rejected)` when the licence check rejects a page.
+> - Whitelist precedence in the Go code (`filterMapURLs`): a whitelisted URL SKIPS the blacklist and source-material checks. Where this doc
+>   says "blacklist always wins", the code does the opposite.
+> - Other readers of the same file: `grok_search_maps.load_whitelisted_sites` (`whitelist:`), `source_retrieval.load_blacklist` (`blacklist:`),
+>   `link_relevancy` (`link_relevancy_whitelist:`, separate list), and `runtime_tables` (the file must parse and `blacklist:` must be non-empty).
+> - Phase 3 OpenSERP enrichment (people, equipment, groups, places) does not use this file; it drops results with the URL registry's site denylist
+>   (`openserp_enrichment._drop_excluded_domains`).
+
 ## How It Works
 
 When OpenSERP returns search results, the Go search tool (`search_maps`) filters out URLs before sending results to Python for verification.
 
 **Approach:** Blacklist (reject known bad domains/paths) instead of whitelist (accept only known good domains)
 
-**Automatic Logging:** When a URL is filtered out, it's automatically appended as a comment to `domain_blacklist.yaml` with the reason for filtering. This creates an audit trail of what was blocked and why.
-
-Example comments added automatically:
+**Logging:** Only licence rejections are logged to the YAML (see the status note). Example written by `_add_to_blacklist`:
 ```yaml
-# Filtered: https://www.pinterest.com/pin/normandy-map/ (blacklisted domain: pinterest.com)
-# Filtered: https://www.ibiblio.org/hyperwar/USA/USA-E-Breakout/maps/map1.jpg (source material: ibiblio.org/hyperwar/USA/USA-E-Breakout/)
+- curtiswrightmaps.com
+# Blacklisted: https://curtiswrightmaps.com/terms-and-conditions/ (license rejected)
 ```
 
 ## Two Types of Filtering
@@ -30,7 +44,7 @@ Allows specific domains/paths that would otherwise be blocked. Useful for:
 - Specific paths on otherwise problematic domains
 - Correcting overly broad blacklist rules
 
-**Important:** Blacklist always takes precedence. If a URL matches both whitelist and blacklist, it will be blocked.
+**Important:** In the Go filter the whitelist takes precedence: a URL that matches the whitelist skips the blacklist and source-material checks (it must still contain "map" and the place name).
 
 **Why separate?** Allows blocking specific paths (e.g., our source documents) while keeping the rest of the domain available for other maps.
 
@@ -43,10 +57,10 @@ Results are included if:
 4. ✅ Contains "map" in title/description/URL AND
 5. ✅ Mentions the place name
 
-**Precedence:** Whitelist < Blacklist (blacklist is decisive in conflicts)
+**Precedence:** Whitelist > Blacklist (a whitelisted URL is never blocked by the blacklist or source-material paths)
 
-Results are excluded if:
-- ❌ URL contains any blacklisted domain (even if whitelisted)
+Results are excluded if (and not whitelisted):
+- ❌ URL contains any blacklisted domain (case-insensitive substring match)
 - ❌ URL contains any source material path (case-insensitive substring match)
 
 ## Configuration Examples
@@ -69,8 +83,9 @@ Result:
 - ✅ `en.wikipedia.org/wiki/File:Map.jpg` - Allowed (whitelisted)
 - ❌ `en.wikipedia.org/wiki/Article` - Blocked (not whitelisted)
 - ❌ `de.wikipedia.org/wiki/File:Map.jpg` - Blocked (not whitelisted)
+(The whitelist match is a substring test on the whole URL, so `wikipedia.org` as a whitelist entry, as in the checked-in file, whitelists every wikipedia.org URL.)
 
-### Conflict Resolution (Blacklist Wins)
+### Conflict Resolution (Whitelist Wins)
 ```yaml
 blacklist:
   - pinterest.com
@@ -78,7 +93,7 @@ whitelist:
   - pinterest.com/historical
 ```
 Result:
-- ❌ `pinterest.com/historical/maps` - Blocked (blacklist is decisive)
+- ✅ `pinterest.com/historical/maps` - Allowed (whitelist match skips the blacklist)
 - ❌ `pinterest.com/anything` - Blocked
 
 ### Block Specific Path (Source Material)
@@ -157,17 +172,12 @@ whitelist:
 - Specific path on otherwise problematic domain
 - Correcting overly broad blacklist rules
 
-**Remember:** Blacklist always wins in conflicts. If a URL matches both, it will be blocked.
+**Remember:** Whitelist wins in conflicts in the Go filter (see above).
 
 ## Rebuilding After Changes
 
-After modifying the blacklist, rebuild the Go binary:
-
-```bash
-go build -o search_maps search_maps.go
-```
-
-**Note:** The blacklist/whitelist is loaded at runtime, so changes take effect immediately. No cache clearing needed.
+The blacklist/whitelist is read at runtime by the Go tool, so editing the YAML needs no rebuild. Rebuild the binary only after changing
+`tools/search_maps.go` (`cd tools && go build -o search_maps search_maps.go`). The checked-in `tools/search_maps` binary is a build artefact.
 
 ## Cache Behavior
 
@@ -179,28 +189,15 @@ The blacklist/whitelist configuration is read fresh on each search:
 
 ## Audit Trail
 
-The tool automatically appends comments to `domain_blacklist.yaml` when URLs are filtered:
-
-```yaml
-# Filtered: https://example.com/map (blacklisted domain: example.com)
-```
-
-This creates an audit trail showing:
-- Which URLs were blocked
-- Why they were blocked (domain blacklist vs source material)
-- When they were encountered
-
-You can periodically review these comments to:
-- Verify filtering is working correctly
-- Identify patterns in blocked content
-- Decide if domains should be permanently blacklisted
+Only licence rejections leave a trace in the YAML: `# Blacklisted: <url> (license rejected)` beside the domain entry. Blocked URLs
+are not logged anywhere by the Go tool.
 
 ## Custom Blacklist Path
 
 Specify a different blacklist file:
 
 ```bash
-./search_maps -place "Omaha Beach" -blacklist /path/to/custom_blacklist.yaml
+./tools/search_maps -place "Omaha Beach" -openserp http://localhost:7001 -blacklist config/domain_blacklist.yaml
 ```
 
 ## Why Blacklist Instead of Whitelist?

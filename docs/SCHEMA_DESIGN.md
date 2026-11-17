@@ -14,12 +14,13 @@ zero) — per the cost/architecture decisions.
 > `transform.py`, `load.py`) loads `output/` into a SQLite dialect of the relational model; the
 > Postgres path (pgvector, PostGIS, HNSW, `schema_pg_extras.sql`) is not written yet
 > (`src/loader/load.py` docstring). The `~40k entity records` figure is from the original snapshot.
+> The SQLite schema (`src/loader/schema.sql`) has tables `sources`, `events`, `sub_events`, `people`, `people_groups`, `places`, `equipment`, `dates`, `casualties`, `logistics`, `weather`, `images`, `maps` and `mentions`. The `oob_*` tables and `content_chunks` from the DDL sketch below are not implemented, and there is no `source_section` table. In `mentions` the key is the composite `(mention_id, entity_type, entity_id, sub_event_id)`, not `mention_id` alone.
 
 ## The model in one sentence
 
 Every extracted fact links, via `EventID`/`Sub_eventID` and per-mention IDs,
 to a central **events → sub-events** spine sourced from
-`output/content/<Book>/chapter*-event.json`; the sub-event narrative text is the
+`output/content/<Book>/*-event.json`; the sub-event narrative text is the
 RAG corpus, and the typed entities (people, places, casualties, …) are the
 structured/faceted-search corpus.
 

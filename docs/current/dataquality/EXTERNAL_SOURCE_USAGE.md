@@ -1,11 +1,11 @@
 # External-Source Usage & Phase Split (Grokipedia / Wikipedia / OpenSERP / NOAA / NARA)
 
-**Date:** 2026-10-06 (Phase-2 table checked against the code 2026-11-16). The pipeline splits external enrichment **by source**:
+**Date:** 2026-10-06 (checked against the code 2026-11-17). The pipeline splits external enrichment **by source**:
 
 - **Phase 2 (extraction)** — **ALL Grokipedia + Wikipedia** enrichment (descriptive text +
   images), committed natively by each extractor as it writes the entity.
 - **Phase 3 (enrichment)** — **everything else**: geocoding (Nominatim/Grok coordinates), NOAA
-  weather, OpenSERP (images/academic), NARA/Archive.org bibliography, plus **structured**
+  weather, OpenSERP (images, web pages, primary sources), NARA/Archive.org bibliography, plus **structured**
   hierarchy/org-history Grok passes (place hierarchy/names, group unit-history) that promote
   facts into spec fields — structured enrichment, not descriptive Grok/Wiki text.
 
@@ -31,9 +31,9 @@ All gated (stamped-even-on-miss `*_checked_at` markers → no redundant re-fetch
 | Geocoding (Nominatim→hill→Grok) | places | `places_grok_geocode.cascade_geocoder` | always | coordinates + provenance; null-over-fake |
 | Structured hierarchy/names Grok | places | `enrich_places._enrich_place_data` | always | promotes hierarchy/country into spec fields (NOT descriptive text) |
 | Structured org/unit-history Grok | people_groups | `enrich_groups.enrich_group` | always | promotes unit_type/nationality/officers into spec fields |
-| OpenSERP (images/academic) | people, equipment | `openserp_enrichment` | `use_openserp` | search-engine media |
+| OpenSERP (images, web results, unit patch) | people, equipment (SPECIFIC scope only), people_groups, places, source_section, plus external maps when `external_maps.enabled` | `openserp_enrichment.enrich_{people,equipment,groups,places,source_sections}_with_openserp` | `supplemental_material.use_openserp` (config.yaml default true) | search-engine media; per-entity 90-day `openserp_searched` gate. Detail: `docs/current/core/PHASE3_MAP.md` |
 | NOAA GHCND | weather | `noaa_weather` | `noaa_api_token` | station-observed |
-| NARA / Archive.org / LOC / Gutenberg | bibliography | `bibliography_resolver` | config | source resolution |
+| NARA / Archive.org / Gutenberg / OpenSERP / Grok LLM search | bibliography | `bibliography_resolver` | `api.nara_api_key` (NARA), `search_archive_org`, `search_gutenberg`, `llm_search`, `use_openserp` | source resolution (no LOC adapter) |
 
 ---
 
@@ -71,9 +71,12 @@ Non-applicable features are correctly N/A (their enrichment is non-Grok/Wiki or 
 ## OpenSERP metrics (measurement)
 
 Phase 3 writes a per-run OpenSERP effectiveness/health summary to
-`output/metrics/openserp_metrics.json` (and logs a one-line summary): entities_searched /
-entities_enriched (+ enrichment_rate), queries_issued / results_returned / zero_result_queries
-(+ zero_result_rate), verify_yes / verify_no (+ verify_pass_rate), breaker_opened, items_added.
-High zero_result_rate or breaker_opened > 0 signals an OpenSERP health problem (e.g. anti-bot
-blocking) at a glance — the signal that was missing when the empty-results bug had to be
-diagnosed by hand.
+`output/metrics/openserp_metrics.json` (`openserp_enrichment.write_metrics`) and logs a one-line summary. Counters
+(`_METRIC_KEYS`): entities_eligible, entities_searched, entities_enriched, entities_skipped_no_name,
+queries_issued, results_returned, zero_result_queries, verify_yes, verify_no, breaker_opened, urls_fetched,
+items_added, write_failed, records_unreadable (and `results_site_excluded` when the domain denylist drops
+results). Derived: enrichment_rate, verify_pass_rate, zero_result_rate, search_rate (searched / eligible).
+`_emit_openserp_anomalies` logs `OBSERV openserp.anomaly` when the breaker opened, when 0 of N searched
+entities were enriched, when searched is under 50% of eligible (starvation), and when 50% or more of
+candidates were skipped for a missing name. A zero-result response counts as a breaker failure, so
+5 consecutive empty queries open the breaker for the rest of the driver run.

@@ -185,7 +185,7 @@ Recommended sequencing: **Goal 2 (unit roster + map-as-supplement) first**
 ## Storage / query fit
 
 All branches emit the same typed entities + provenance into the confirmed
-**Postgres + pgvector single store** (see `SCHEMA_DESIGN_rag_store_tradeoff.md`).
+**Postgres + pgvector single store** (see `docs/SCHEMA_DESIGN_rag_store_tradeoff.md`).
 Goal-2 answers are a structured join (unit × date → Maps/Image); Goal-3 adds
 PostGIS geo. Map images themselves are served from S3/CDN as the graphical
 supplement, referenced by `ImageID`.

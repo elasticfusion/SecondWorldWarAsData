@@ -2,7 +2,7 @@
 
 **Version:** 2.0.0  
 **Status:** ✅ Implemented (AI-Ready)  
-**Last Updated:** 2026-11-16
+**Last Updated:** 2026-11-17
 
 ---
 
@@ -75,10 +75,10 @@ The local `external_maps.yaml` corpus imports during Phase 2 (when `external_map
 python3 phase2_extract.py
 ```
 
-Or run standalone:
-```bash
-python3 -m src.extraction.external_maps
-```
+There is no working standalone entry point: `python3 -m src.extraction.external_maps` is broken
+(`main()` in `src/extraction/external_maps.py` resolves the repo root one level too high, so it looks
+for `src/external_maps.yaml`, and it passes an `events_dir` argument that `import_maps` no longer takes).
+Use Phase 2. Phase 2 reads `external_maps.yaml` from the repo root and skips the step silently if the file is missing.
 
 ### 4. Review Output
 
@@ -95,15 +95,21 @@ Edit `config.yaml`:
 
 ```yaml
 external_maps:
-  enabled: false                   # Set to true to enable (checked-in config.yaml: false)
-  storage_path: "output/external_maps/"
-  require_license: true            # Reject maps without license
-  allowed_licenses:
+  enabled: false                   # checked-in config.yaml: false. Gates the Phase 2 YAML import and the Phase 3 OpenSERP search
+  storage_backend: "filesystem"    # optional; read by Phase 2 (default "filesystem")
+  allowed_licenses:                # optional; if absent the code default is Public Domain, CC0, CC-BY, CC-BY-SA
     - "Public Domain"
     - "CC0"
     - "CC-BY"
-  download_images: false           # Download map images
+  # Phase 3 OpenSERP search (all optional): openserp_url (default http://localhost:7001), max_places,
+  # search_limit (50), page_download_timeout (10), image_download_timeout (30), image_storage_path
+  # In-document maps (independent of `enabled`): recycle_in_doc_maps, max_recycled_per_doc,
+  # follow_in_doc_links, allowed_hosts
 ```
+
+`output/external_maps/` is fixed in code (Phase 2 and Phase 3 both write there); `require_license`,
+`download_images` and `storage_path` are not read by any code. A map whose `license` is not in
+`allowed_licenses` is rejected, and a missing `license` field is a validation error.
 
 ---
 
@@ -159,12 +165,11 @@ found_date: "2026-02-24"                       # When entry was added
 
 ## Supported Licenses
 
-Default allowed licenses (configurable in `config.yaml`):
+Default allowed licenses (`import_maps` default; override with `external_maps.allowed_licenses` in `config.yaml`). `Unknown` is NOT allowed by default: add it to `allowed_licenses` to import AI-populated entries pending human review.
 - Public Domain
 - CC0
 - CC-BY
 - CC-BY-SA
-- Unknown (for AI population - human review later)
 
 To allow additional licenses, edit `config.yaml`:
 ```yaml

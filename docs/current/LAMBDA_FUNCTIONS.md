@@ -18,13 +18,13 @@
 | ocr-merge | EventBridge (Batch job SUCCEEDED on a Chandra queue) + ECS task state change | — | Merges OCR chunks, promotes chapters to `contentrepository/` |
 | ocr-spot-controller | EventBridge | 1 hour | Routes spot-starved OCR jobs to the on-demand queue (48 h cap) |
 | slack-formatter | SNS (`phase2-complete`) | — | Wraps free-form alerts in Chatbot's schema and republishes to the Slack topic |
-| s3-validation-backstop | S3 event on `output/` | — | Schema-validates every object written under `output/`; tags invalid ones `quarantine=true` |
+| s3-validation-backstop | EventBridge rule (S3 `Object Created`, prefix `output/`) | — | Schema-validates every object written under `output/`; tags invalid ones `quarantine=true` |
 | metrics | API Gateway GET | — | Pipeline metrics dashboard |
-| dedup-gate | — | — | Blocks Phase 3 until dedup review is complete |
+| dedup-gate | none wired in CloudFormation (manual invoke only) | — | Checks `dedup/review_status.json` before forwarding to Phase 3. The live gate is `ecs_entrypoint._dedup_gate_decision`; the `dedup-complete` topic goes to `trigger` |
 | dedup-ui | API Gateway (GET/POST) | — | Web UI for dedup review |
 | mdreview-ui | API Gateway | — | OCR markdown-review UI (page image beside editable snippet) |
 | urlreview-ui | API Gateway | — | Review UI for textual fetch finds (Phase 3) |
-| dedup-auth | API Gateway Authorizer | — | Basic auth for dedup, mdreview, urlreview + metrics APIs |
+| dedup-auth | API Gateway Authorizer | — | Basic auth for the dedup/mdreview/urlreview API (`DedupApi`) and the metrics API |
 | enumerate-pending / clamp-pool / human-gate | Step Functions (`cloudformation/dispatcher.yaml`) | — | Dispatcher state-machine helpers (`lambda_handlers/dispatcher_handlers.py`) |
 | s3-notif-setup | CloudFormation Custom Resource | — | Configures S3 bucket notifications |
 
@@ -45,10 +45,11 @@
 - Routes S3 events by topic (content uploaded → ingestion routing by media type: PDF/scan → Chandra OCR, EPUB/DOCX/HTML → convert, video, structured reference docs → OOB track, chapters → Phase 1; parsed file → queue for Phase 2)
 - Checks for running ECS tasks before launching new ones (single-task concurrency)
 - Extracts `BOOK_NAME` from pending queues and passes to ECS tasks
+- Fires an async NAT warm-up and launches immediately; Phase 2/3 check NAT readiness themselves
 - Reconciles stale locks — detects dead tasks and re-triggers
 - Detects "dedup complete but Phase 3 never ran" state
 
-**Environment variables:** `CLUSTER`, `PHASE1_TASK_DEF`, `PHASE2_TASK_DEF`, `PHASE3_TASK_DEF`, `CACHE_TABLE`, `S3_BUCKET`
+**Environment variables (see `TriggerFunction` in `cloudformation/compute.yaml`):** `ECS_CLUSTER`, `PHASE0_TASK_DEF`, `PHASE0_VIDEO_TASK_DEF`, `PHASE1_TASK_DEF`, `PHASE2_TASK_DEF`, `PHASE3_TASK_DEF`, `AV_SCAN_ENABLED`, `AV_SCAN_TASK_DEF`, `CACHE_TABLE`, `S3_BUCKET`, `NAT_MANAGER_FN`, `MULTI_DOC_ENABLED`, `DISPATCHER_STATE_MACHINE_ARN`, `POOL_MIN`, `POOL_MAX`
 
 ---
 
@@ -58,7 +59,7 @@
 
 **Schedule:** Every 5 minutes (configurable via `BatchPollerIntervalMinutes` CloudFormation parameter).
 
-**State machine:** Jobs flow through: `pending` → `ready` → `complete` (or `failed`). Phase 2 first waits in-task for the batch (`batch.in_task_wait_minutes`, 5 min); only a batch still unanswered is left to this Lambda.
+**State machine:** Jobs flow through: `in_task` (a running task is waiting for the batch) → `pending` → `ready` → `retrieved` (set by the retrieve task; or `failed`). An `in_task` job older than `BATCH_IN_TASK_ADOPT_SECONDS` (2 h) is adopted as `pending`. Phase 2 first waits in-task for the batch (`batch.in_task_wait_minutes`, 5 min); only a batch still unanswered is left to this Lambda.
 
 **What it does:**
 - Scans DynamoDB for `batch_job#` rows with `status: "pending"` or `status: "ready"`
@@ -66,9 +67,9 @@
 - When a batch completes: atomically marks as `ready`, invokes nat-manager (synchronous), waits for NAT, launches the Phase 2 ECS task with `--retrieve-only` (the task then starts the next batch round, up to 8 rounds)
 - For ready jobs (retrieve previously failed): retries launching the retrieve task
 - Guards against duplicate retrieve tasks (checks for running ECS tasks before launching)
-- Updates job status in DynamoDB (pending → ready → complete, or failed)
+- Updates job status in DynamoDB (pending → ready, or failed; the retrieve task sets `retrieved`)
 
-**Environment variables:** `CACHE_TABLE`, `CLUSTER`, `PHASE2_TASK_DEF`, `NAT_MANAGER_ARN`
+**Environment variables:** `ENV_NAME`, `SECRETS_ID`, `PRIVATE_SUBNET_IDS`, `SECURITY_GROUP_ID`, `CACHE_TABLE`, `ECS_CLUSTER`, `NOTIFICATION_TOPIC_ARN`, `NAT_WAIT_SECONDS`
 
 ---
 
@@ -77,7 +78,7 @@
 **Purpose:** Dynamic networking lifecycle — creates/deletes NAT gateway and VPC endpoints on demand.
 
 **Invocation sources:**
-- Lambda invoke from trigger/batch-poller/ocr-merge (action: "create")
+- Lambda invoke from trigger/batch-poller/openserp-worker-autoscaler and the pipeline tasks in `ecs_entrypoint.py` (action: "create")
 - Lambda invoke from nat-teardown / idle-backstop-reaper / openserp-manager (action: "delete")
 - SNS subscription to `phase2-complete`: still subscribed but a no-op (teardown is owned by nat-teardown)
 
@@ -124,9 +125,9 @@
 **Purpose:** Gate between Phase 2 and Phase 3. Blocks enrichment until duplicates are reviewed.
 
 **What it does:**
-- Reads `dedup/review_status.json` from S3
-- Returns whether review is complete
-- Called by trigger Lambda before launching Phase 3
+- Reads `dedup/review_status.json` from S3 and returns `blocked` while review is incomplete
+- On a `dedup_complete` SNS record from the trusted `dedup-complete` topic, invokes Phase 3 for all entity files (`PHASE3_FUNCTION_NAME`)
+- Not called by `trigger` and has no CloudFormation event source. `dedup-complete` is subscribed by `trigger` (`events.yaml` `DedupCompleteSubscription`), and Phase 3 is gated in `ecs_entrypoint._dedup_gate_decision`
 
 ---
 
@@ -147,11 +148,11 @@
 
 ### dedup-auth (`dev-wwii-dedup-auth`)
 
-**Purpose:** API Gateway custom authorizer for both dedup and metrics APIs.
+**Purpose:** API Gateway custom authorizer for the dedup/mdreview/urlreview API and the metrics API.
 
 **What it does:**
 - Validates Basic auth credentials from `Authorization` header
-- Credentials stored in environment variable `AUTH_TOKEN` (format: `user:pass`)
+- Credentials are resolved from Secrets Manager (`{env}-wwii-pipeline/dedup-auth`) into the environment variable `AUTH_TOKEN` (format: `user:pass`)
 - Returns IAM policy allowing/denying API access
 
 ---
@@ -186,10 +187,10 @@
 | `trigger` via EventBridge | Stale lock reconciliation | Scheduled (configurable, default 15 min) |
 | `trigger` via `aws lambda invoke` | Manual pipeline trigger | Operator |
 | `batch-poller` via EventBridge | Poll Grok batch status | Scheduled (5 min) |
-| `nat-manager` via Lambda invoke | Create/delete NAT | batch-poller, trigger |
+| `nat-manager` via Lambda invoke | Create/delete NAT | create: trigger, batch-poller, openserp-worker-autoscaler, pipeline tasks (`ecs_entrypoint.py`); delete: nat-teardown, idle-backstop-reaper, openserp-manager |
 | `nat-teardown` via EventBridge | NAT/endpoint teardown decision | Scheduled (4 h) |
 | `openserp-manager` via EventBridge | Idle cost monitoring | Scheduled (10 min) |
-| `dedup-gate` via Lambda invoke | Check review status | trigger |
+| `dedup-gate` via Lambda invoke | Check review status | not wired: nothing invokes it (manual invoke only) |
 | `s3-notif-setup` via CloudFormation | Configure S3 notifications | Stack deploy only |
 
 Get current URLs:
@@ -206,7 +207,7 @@ aws cloudformation describe-stacks --stack-name wwii-pipeline-dev --region us-ea
 |----------|------|--------|
 | `dev-wwii-stale-lock-check` | configurable (default 15 min) | trigger (with `{"source": "scheduled"}`) |
 | `dev-wwii-batch-poller-schedule` | configurable (default 5 min) | batch-poller |
-| `dev-wwii-openserp-idle-monitor` | 10 min | openserp-manager |
+| `dev-wwii-openserp-idle-monitor` (`events.yaml`) | 10 min | openserp-manager |
 | nat-teardown (4 h), idle-backstop-reaper (`rate(1 hour)`), ocr-spot-controller (`rate(1 hour)`) | see Function Overview | `cloudformation/compute.yaml`, `cloudformation/ocr.yaml` |
 
 ---

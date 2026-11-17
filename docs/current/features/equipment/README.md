@@ -32,7 +32,8 @@ Phase 2 extract (per chapter's event file)
               place_name → single PlaceID, assertion_source, original_text (retained)
             - denormalize DateID (event:sub-event date index) + PlaceID
        d. record-level related_equipment (narrative-sourced): resolve name→EquipmentID,
-          auto-create a minimal distinct record (EquipmentID+common_name) when absent
+          auto-create a minimal distinct record (EquipmentID+common_name + one naming mention,
+          context "named as related equipment (<relationship>)") when absent
        e. merge_or_create_equipment:
             - match: technical_identifier → exact common_name → fuzzy (≥0.80, alt names)
             - merge fields (alt names, variants, related_equipment accumulate+dedup);
@@ -56,8 +57,9 @@ Enrichment-on-identity (follows identity resolution)
     identity (stamped canonical_name + identity_source); enrichment then uses that name.
   - once a record resolves to a SPECIFIC designation (M4 Sherman, M2 .50 cal — has a
     technical_identifier or a non-generic common_name), enrich ONCE (stamped
-    enrichment_status, never re-run): Grokipedia/Wikipedia text/specs/URLs + a canonical
-    reference image; vision VERIFIES the TYPE (never the event). Fires for auto-created
+    enrichment_status, never re-run): Grokipedia/Wikipedia text/specs/URLs. Images are NOT fetched in Phase 2: Phase 3
+    (`src/enrichment/equipment_images.py`) takes candidates from the qualified Wikipedia
+    article (plus any OpenSERP candidates) and Grok vision must confirm each one. Fires for auto-created
     related records too (fixes the Pershing stub). Generic names are skipped.
   - a second mention of an already-enriched record is MERGED, not re-enriched; a record
     whose first enrichment FAILED is retried on the next merge (idempotent).
@@ -76,7 +78,9 @@ Enrichment-on-identity (follows identity resolution)
 | Dedup — how it works (spec) | [EQUIPMENT_DEDUPLICATION.md](EQUIPMENT_DEDUPLICATION.md) |
 | Dedup (detection scoring) | `src/dedup/find_duplicate_equipment.py` |
 | Merge tool | `scripts/merge_equipment.py`, `scripts/archive/merge_equipment_dupes.py` |
-| Media backfill | `scripts/archive/backfill_equipment_media.py` |
+| Phase 3 image candidates + vision check | `src/enrichment/equipment_images.py` (`resolve_equipment_images`, called from `phase3_enrich_data._resolve_equipment_images`) |
+| Phase 3 OpenSERP image search | `src/enrichment/openserp_enrichment.py` (`enrich_equipment_with_openserp`, queries in `search_queries/equipment.yaml`) |
+| Media backfill (archived script) | `scripts/archive/backfill_equipment_media.py` |
 | Wikipedia enrichment | `src/enrichment/equipment_wikipedia.py` |
 | Enrichment staleness gate | `src/enrichment/enrichment_gate.py` |
 | Source-recheck gap-fill | `src/extraction/equipment_source_recheck.py` (uses the reusable `src/extraction/source_recheck.py`) |
@@ -104,14 +108,17 @@ aliases, supporting-unit alias/fuzzy linking, merge reference-redirect — are d
   any change here.
 - **Vision verification + OpenSERP image path untested live (equipment).** Wikipedia
   image/license + Grok text/specs enrichment are live-validated; the equipment **vision
-  TYPE verification** and **OpenSERP image search** are not (the `search_media` binary is
-  absent here). Vision is a cross-feature capability on the shared
+  TYPE verification** and **OpenSERP image search** (Phase 3, `enrich_equipment_with_openserp`) are not confirmed
+  on a live book. Vision is a cross-feature capability on the shared
   `GrokClient.extract_json_with_image*` primitive (see [../../SHARED_HELPERS.md](../../SHARED_HELPERS.md));
   this gap is specifically the equipment image path. `image_scope` default is unit-tested.
-- **Curated alias table is thin.** `config/equipment_aliases.yaml` lacks Sd.Kfz. numbers,
-  British Sherman-marks/A-numbers, and `Pz.Kpfw.`⇄`Panzer`/`Ausf.` normalization. The
-  runtime Grok resolver + learned-alias store cover the long tail, but the deterministic
-  (no-Grok) path depends on human promotion of
+- **Curated alias table covers US, German and British (ETO) types only.**
+  `config/equipment_aliases.yaml` has Sd.Kfz. numbers (181, 171, 161, 141, 142, 251, 234),
+  Sherman marks I-V, firefly/IC/VC, British A-numbers and service names, and
+  `_normalize_designation` unifies `Pz.Kpfw.`/`PzKpfw`/`Panzerkampfwagen` to `panzer`. Japan,
+  Italy and Soviet sections are empty TODOs. Other designations (further Sd.Kfz. numbers,
+  Ausf. letters) go through the runtime Grok resolver and learned-alias store, and the
+  deterministic (no-Grok) path depends on human promotion of
   `output/equipment/disambiguation_suggestions.jsonl` into the curated YAML. A bad learned
   resolution persists until a curated override is added (curated wins). See
   [EQUIPMENT_DESIGNATION_SYSTEMS.md](EQUIPMENT_DESIGNATION_SYSTEMS.md).
@@ -155,6 +162,8 @@ aliases, supporting-unit alias/fuzzy linking, merge reference-redirect — are d
 
 ## Phase 3 Enrichment
 
-**Step 4b (gated on `equipment.enabled`)** Wikipedia images + extracts
-(`equipment_wikipedia`); **step 5/6 (gated on `use_openserp`)** OpenSERP images/academic
-sources. See [Phase 3 Enrichment](../../core/PHASE3_ENRICHMENT.md).
+Equipment text enrichment runs in Phase 2, not Phase 3. Phase 3 runs two equipment steps:
+`openserp_equipment` (inside the OpenSERP group, gated on `supplemental_material.use_openserp`)
+and `equipment_images` (always, not gated by `use_openserp`; vision-checks candidates). See
+[EQUIPMENT_MEDIA_INTEGRATION.md](EQUIPMENT_MEDIA_INTEGRATION.md) and
+[Phase 3 Enrichment](../../core/PHASE3_ENRICHMENT.md).

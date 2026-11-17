@@ -14,8 +14,8 @@ workflow (when it runs, auto-merge vs human gate), see
 Dedup runs at **Phase-2 task completion** (`ecs_entrypoint._run_dedup_detection`).
 `find_duplicate_*` (now `src/dedup/find_duplicate_*.py`; `scripts/` holds wrappers) writes candidate groups to `duplicate_report.json`, then:
 
-- **Auto-merge** merges only groups whose names are **byte-identical after
-  normalization** (`_auto_merge_exact_duplicates`). Deliberately conservative.
+- **Auto-merge** merges only people groups whose names are **byte-identical after
+  normalization** (`ecs_entrypoint._auto_merge_exact_duplicates`). Deliberately conservative.
 - Everything else → the **human review gate** (unchanged by any of the work below).
 
 The weighted scoring below improves the **ranking of human-review candidates**. It does
@@ -139,7 +139,7 @@ say a surname is "common" without the population it's common *in*).
 
 ## Other entity types (intentionally different — do NOT force this model on them)
 
-- **Groups / organizations** — a *similar* pattern will follow, but keyed on **structured
+- **Groups / organizations** — built separately (see [group-dedup-unit-key.md](../people_groups/group-dedup-unit-key.md)), keyed on **structured
   unit designations** (`9th Infantry Division` / `9th Inf Div` / `the 9th`): numerics +
   echelon, not surname rarity.
 - **Equipment** — a **different** problem: the human habit of calling one thing many
@@ -154,3 +154,5 @@ say a surname is "common" without the population it's common *in*).
 - [Group dedup rules & pipeline](../people_groups/GROUP_DEDUP_RULES_REVIEW.md) — group dedup
 - [../../SCHEMA_REFERENCE.md](../../SCHEMA_REFERENCE.md) — `nationality` / `nationality_served` / `ranks`
 - Config: `config.yaml` → `dedup.people`; data: `data/surname_frequency.yaml`
+
+See also: [Dedup review gate (Phase 2 to Phase 3)](../../core/DEDUP_REVIEW_GATE.md) for detection, auto-merge, the gate, the review UI and the operator runbook.

@@ -92,8 +92,18 @@ For each casualty (_build_casualty):
   ↓ resolve places -> PlaceID           (_resolve_places)
   ↓ cause + side validated against enums
   ↓ _set_direct_anchors (hoist single person/place to top-level PersonID/PlaceID)
-Write output/casualties/{CasualtyID}.json
+Write output/casualties/{CasualtyID}.json  (_save_new: each statement once)
 ```
+
+**Re-runs do not duplicate.** `_save_new` skips a casualty whose key is already on disk
+(`_existing_statements` reads every saved record). The key (`_casualty_statement`) is the
+shared statement identity (`entity_records.mention_identity`: sub-event, event, `original_text`,
+type, side, description) plus the case-folded type, side and the sorted names of
+`impacted_organizations` and `impacted_people`, so one quote that yields several claims ("100
+killed and 200 wounded", one record per side or unit) still yields several records. Unreadable
+saved records are logged as `OBSERV casualties.unreadable_record` and not deduplicated against.
+When the chapter has no parsed text file, `_ask_casualties` falls back to asking over the
+sub-events instead of windows. A produced-count line `OBSERV casualties.extract` is logged per event.
 
 Resolution reuses each category's **shared library** (not bespoke exact-string matching):
 - **People_groups** → GroupID via the canonical `unit_key` (`group_resolver.resolve_group_id`

@@ -12,7 +12,7 @@ Deploy and run Chandra OCR independently from the main pipeline.
 bash scripts/deploy_all.sh --ocr-standalone
 ```
 
-This builds the Chandra Docker image (with GPU support and model weights baked in), pushes it to ECR, and deploys the AWS Batch infrastructure (GPU Spot instances, job queue, job definition). Does not touch the main pipeline stack.
+This builds the Chandra and Paddle Docker images, pushes them to ECR, and deploys the `wwii-ocr-dev` stack (`cloudformation/ocr.yaml`): the spot and on-demand job queues, compute environments and job definitions. `ComputeType` defaults to `EC2` (on-demand); set `OCR_COMPUTE_TYPE=SPOT` to deploy the spot environment (`submit_ocr_job.py` re-deploys with the stack's existing value). Does not touch the main pipeline stack.
 
 **Prerequisites:** The network stack must already be deployed (provides subnets and security groups).
 
@@ -22,7 +22,7 @@ This builds the Chandra Docker image (with GPU support and model weights baked i
 
 ### One-Time Setup
 
-1. **Request GPU Spot quota** — G-type instances may default to 0 vCPUs for Spot. Request an increase (32 vCPUs = 8 parallel jobs):
+1. **Request GPU Spot quota** — G-type instances may default to 0 vCPUs for Spot. Request an increase (each job uses 4 vCPUs; 32 vCPUs = 8 parallel jobs; the stack's `MaxvCpus` parameter defaults to 280):
    ```bash
    aws service-quotas request-service-quota-increase \
      --service-code ec2 --quota-code L-3819A6DF \
@@ -167,7 +167,7 @@ See `manifests/eto_order_of_battle.txt` — 68 sections covering every division 
 
 ### Concurrency
 
-All manifest jobs submit at once. AWS Batch runs them in parallel up to the compute limit (`MaxvCpus: 32` = 8 simultaneous g5.xlarge). Remaining jobs queue in `RUNNABLE` state and run automatically as slots free up. No jobs are lost — Batch handles the queue.
+All manifest jobs submit at once. AWS Batch runs them in parallel up to the compute limit (`MaxvCpus` parameter, default 280; each job needs 4 vCPUs, and the live G/VT Spot quota can be lower). Remaining jobs queue in `RUNNABLE` state and run automatically as slots free up. No jobs are lost — Batch handles the queue.
 
 ---
 
@@ -292,7 +292,8 @@ publishes      contentrepository/{book}/chapterN/chapterN-{meta.yaml,content.md}
 | Component | Detail |
 |-----------|--------|
 | Compute | AWS Batch, GPU Spot (g5.xlarge/2xlarge, g6.xlarge/2xlarge; 24GB-VRAM floor, g4dn excluded because Chandra OOMs on 16GB) |
-| Scaling | 0 instances when idle, up to 32 vCPUs under load |
+| Scaling | 0 instances when idle; up to `MaxvCpus` (default 280) on the main environment and `OnDemandMaxvCpus` (default 96) on the on-demand fallback queue `{env}-wwii-chandra-gpu-ondemand` |
+| Spot fallback | `ocr-spot-controller` Lambda (hourly): a job RUNNABLE on the spot queue longer than `OCR_SPOT_WAIT_SECS` (1 h) is resubmitted to the on-demand queue; on-demand time is capped at 48 h per job, then it is terminated and alerted |
 | Cost | ~$0.35/hr per instance, ~$0.02 per 50-page chunk |
 | Networking | Reuses existing NAT + VPC endpoints (nat_manager Lambda) |
 | Logs | CloudWatch: `/aws/batch/dev-wwii-chandra` (14-day retention) |
@@ -303,7 +304,7 @@ publishes      contentrepository/{book}/chapterN/chapterN-{meta.yaml,content.md}
 - Separate CloudFormation stack (`wwii-ocr-dev`)
 - Separate job queue and compute environment
 - Shares only: subnets, security group, NAT manager
-- No locks, no DynamoDB interaction
+- No pipeline locks. The spot controller and the trigger's OCR bookkeeping use DynamoDB rows in `{env}-wwii-api-cache` (`ocrctl#...`)
 - Can run simultaneously with pipeline phases
 
 ---

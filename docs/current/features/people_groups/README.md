@@ -28,7 +28,11 @@ echelon and nationality; the item is attributed to the sub-event holding its quo
 - Enrichment: `src/extraction/enrich_groups.py` (disambiguated query + wrong-article guard)
 - Dedup: `src/dedup/find_duplicate_groups.py` + `src/dedup/unit_key.py` + `data/unit_nicknames.yaml`
 - Person→group linking: `src/extraction/enrich_biographies.py::_link_person_to_groups`
-  (canonical-key for units; name-match for civilian memberships, carrying `date_verified`)
+  (canonical-key for units; name-match for civilian memberships, carrying `date_verified`).
+  It is reached only through `enrich_all_people` (module CLI and tests); `phase3_enrich_data.py`
+  does not call it, so the pipeline does not currently fill `members[]`.
+- Wikipedia/Grokipedia text + images: `src/enrichment/groups_wikipedia.py::enrich_group_from_wikipedia`,
+  called in Phase 2 from `batch_parallel` (live windowed path, line ~1813) and `people_groups.extract_people_groups` (older path)
 
 ## Related (People)
 - [../people/deduplication.md](../people/deduplication.md)
@@ -37,6 +41,8 @@ echelon and nationality; the item is attributed to the sub-event holding its quo
 
 ## Phase 3 Enrichment
 
-**Step 2/6** external unit-history enrichment (`enrich_groups.enrich_all_groups`), then
-**step 4c** Wikipedia images + extracts (`groups_wikipedia`). Gated by the shared
-`enrichment_gate`. See [Phase 3 Enrichment](../../core/PHASE3_ENRICHMENT.md).
+**Step 1/6** (`phase3_enrich_data.enrich_groups_data` -> `enrich_groups.enrich_all_groups`) adds
+structured unit-history facts (unit_type, nationality, commanders, operations) to
+`enrichment_data`, gated by the shared `enrichment_gate`. Wikipedia/Grokipedia text and images
+for groups are Phase 2, not Phase 3 (see the comment above the `people_groups` step in
+`phase3_enrich_data.py`). See [Phase 3 Enrichment](../../core/PHASE3_ENRICHMENT.md).

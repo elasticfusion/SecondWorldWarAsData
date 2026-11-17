@@ -60,7 +60,8 @@ output/dates/
 - Exact dates: `YYYYMMDD_{ULID_prefix}.json`
 - Approximate: `{Precision}YYYYMM_{ULID_prefix}.json`
   - `E` = Early, `M` = Mid, `L` = Late
-  - `SP` = Spring, `SU` = Summer, `FA` = Fall, `WI` = Winter
+  - `SP` = Spring, `SU` = Summer, `FA` = Fall, `AU` = Autumn, `WI` = Winter
+- With a time: `YYYYMMDD_HHMM_{ULID_prefix}.json`; the ULID prefix is 8 characters (`date_id[:8]`)
 
 ---
 

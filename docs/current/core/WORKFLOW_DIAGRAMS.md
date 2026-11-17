@@ -2,7 +2,7 @@
 
 Visual representations of the WWII data extraction pipeline phases.
 
-**Last Updated:** 2026-11-16. The Mermaid source below is current for Phases 0-2 (checked against `lambda_handlers/trigger_handler.py`, `phase1_parse.py`, `phase2_extract.py`, `src/utils/batch_rounds.py`). The PNGs in `images/` are rendered from these blocks by `scripts/render_mermaid_diagrams.py` (it re-renders only a diagram whose source hash in `images/mermaid_manifest.json` changed; set `MERMAID_NO_SANDBOX=1` where the OS blocks Chrome's sandbox). Re-run it after editing a diagram.
+**Last Updated:** 2026-11-17. The Mermaid source below is current for Phases 0-3 (checked against `lambda_handlers/trigger_handler.py`, `phase1_parse.py`, `phase2_extract.py`, `phase3_enrich_data.py`, `src/utils/batch_rounds.py`). The PNGs in `images/` are rendered from these blocks by `scripts/render_mermaid_diagrams.py` (it re-renders only a diagram whose source hash in `images/mermaid_manifest.json` changed; set `MERMAID_NO_SANDBOX=1` where the OS blocks Chrome's sandbox). Re-run it after editing a diagram.
 
 ---
 
@@ -55,7 +55,7 @@ flowchart TD
     LoadConfig --> Discover["discover_content_structure:<br/>contentrepository/book/chapterN/<br/>(skips sourcedocument/ and _figures/)"]
     Discover --> ForEach{For each<br/>chapter}
     ForEach --> ReadMD["Read chapterN-content.md<br/>+ chapterN-meta.yaml"]
-    ReadMD --> ParseChapters["Parse paragraphs, footnotes/endnotes,<br/>page markers, images, maps"]
+    ReadMD --> ParseChapters["Parse paragraphs, footnotes/endnotes,<br/>page markers, images, maps;<br/>lift Phase 0 translation markers -> translated_from"]
     ParseChapters --> NumberParas["Number paragraphs absolutely<br/>(absolute_number + page_number)"]
 
     NumberParas --> OCR{"OCR'd PDF book?"}
@@ -158,26 +158,32 @@ flowchart TD
     LoadConfig --> InitGrok[Initialize Grok client + API cache]
     InitGrok --> Note["Phase 3 = ALL external enrichment EXCEPT Grok/Wiki<br/>(Grokipedia/Wikipedia moved to Phase 2)"]
 
-    Note --> S1["Step 1: people_groups structured unit/org history (Grok)"]
-    S1 --> S2["Step 2: places hierarchy/names (structured) + link parents"]
-    S2 --> S3["Step 3: places geocoding cascade<br/>Nominatim → hill/terrain → Grok (coords + provenance)"]
-    S3 --> S4["Step 4: bibliography — ISBN/copyright +<br/>NARA & non-NARA resolution<br/>(Archive.org, HathiTrust, university, Google Books, LOC)"]
-    S4 --> S5Gate{use_openserp?}
+    Note --> S1["people_groups: structured unit/org history (Grok)"]
+    S1 --> S2["places: hierarchy/names (structured) + link parents"]
+    S2 --> S3["places: geocoding cascade<br/>Nominatim → hill/terrain → Grok (coords + provenance)"]
+    S3 --> S4["bibliography: ISBN/copyright, then NARA & non-NARA resolution<br/>(Archive.org, Gutenberg, OpenSERP, Grok)"]
+    S4 --> Media["Document media: in_doc_map_links, image_map_vision<br/>(independent of OpenSERP)"]
+    Media --> S5Gate{use_openserp?<br/>forced on in ECS}
 
-    S5Gate -->|Yes| S5["<b>Step 5: OpenSERP (5 entities)</b>"]
-    S5Gate -->|No| S6
-    S5 --> O1["people / equipment / groups / places / source_section"]
+    S5Gate -->|Yes| S5["<b>OpenSERP group</b>"]
+    S5Gate -->|No| Eq
+    S5 --> O1["people / equipment / groups / places / source_section<br/>(+ external maps if enabled)"]
     O1 --> OQ["Queries: entity-fact-sharpened,<br/>multi-language (places), operation-keyed (source_section)"]
     OQ --> OV["Grok verify (FAIL-CLOSED: title+snippet+url)"]
     OV --> OR{Verified?}
     OR -->|No| ONeg["Cache URL verdict REJECT (90d) → skip"]
     OR -->|Yes, textual| OFetch["Fetch page → Grok summarize →<br/>store {url,title,summary,fetched_at}<br/>+ cache summary (90d)"]
     OR -->|Yes, image| OImg["Store image reference"]
-    OFetch --> S6
-    OImg --> S6
-    ONeg --> S6
+    O1 --> NS["Non-search steps nested in the group:<br/>image_person_link, link_asset_review, image_place_link,<br/>intra_corpus_links, event_provenance_stamp"]
+    OFetch --> Eq
+    OImg --> Eq
+    ONeg --> Eq
+    NS --> Eq
 
-    S6["Step 6: weather — NOAA GHCND observed"] --> Summary["Per-source stats → .phase_results.json<br/>→ email/Slack (isolated: one failure never aborts)"]
+    Eq["equipment_images: Grok vision confirms candidates<br/>for SPECIFIC equipment (not gated by use_openserp)"] --> NoaaGate{"api.noaa_api_token<br/>set?"}
+    NoaaGate -->|Yes| S6["weather: NOAA GHCND observed"]
+    NoaaGate -->|No| Summary
+    S6 --> Summary["Per-source stats → .phase_results.json<br/>→ email/Slack (isolated: one failure never aborts)"]
     Summary --> End([Phase 3 Complete])
 
     style Start fill:#90EE90
@@ -192,10 +198,11 @@ flowchart TD
 - No Grokipedia/Wikipedia here — that is Phase 2. Phase 3 keeps geocoding, NOAA, OpenSERP, and
   NARA + non-NARA bibliography resolution, plus the *structured* hierarchy/org-history Grok
   passes (which promote facts into spec fields, not descriptive text).
-- OpenSERP covers 5 entities with fact-sharpened / multi-language / operation-keyed queries.
+- The OpenSERP group covers people, equipment, groups, places and source_section with fact-sharpened / multi-language / operation-keyed queries. Dates, casualties, logistics and events have no search step.
 - Positive URLs are Grok-verified **fail-closed**, then textual pages are fetched + summarized;
   every URL verdict (summary or REJECT) is cached 90 days to prevent reprocessing.
 - Each source isolated via `_run_step`; outcomes surface through `.phase_results.json`.
+- Per-entity detail and known gaps: [PHASE3_MAP.md](PHASE3_MAP.md).
 
 ---
 
@@ -507,5 +514,5 @@ flowchart LR
 ---
 
 **Generated:** 2026-03-15  
-**Updated:** 2026-11-16 (Mermaid source for Phases 0-2, dedup, batch, error flows)  
+**Updated:** 2026-11-17 (Phase 3 and Phase 1 diagrams revised; Phases 0-2, dedup, batch, error flows checked 2026-11-16)  
 **Pipeline Version:** 2.0

@@ -2,7 +2,7 @@
 
 Extract structured data from World War II historical documents using AI-powered entity extraction. Produces cross-referenced JSON entities (events, people, places, dates, equipment, and 6 more types) from markdown source material.
 
-**Version:** 2.6 | **Last Updated:** 2026-10-05
+**Schema version:** per entity, 2.24 to 2.30 (`src/schemas/__init__.py`) | **Last Updated:** 2026-11-17
 
 ---
 
@@ -42,12 +42,13 @@ Phase 3: Enrich   →  Geocoding, Open-Meteo/NOAA, OpenSERP, NARA + non-NARA arc
 ```
 
 Phase 0 (ingestion normalization, `src/ingestion/`) detects media type,
-classifies each page's disposition, converts to Markdown, and parses scanned
+classifies each page's disposition, converts to Markdown, translates non-English
+text to English by default (`ingestion.translate`), and parses scanned
 reference tables (e.g. the ETO Order of Battle) into structured rows. It is
 runnable as `python phase0_ingest.py` (local) or `ecs_entrypoint.py
 phase0_ingest.py` (AWS); see [Ingestion Front-End](docs/current/dataquality/INGESTION_FRONT_END.md).
 
-In AWS mode, Phase 2 submits requests asynchronously via the Grok Batch API (50% discount), retrieves results via Lambda poller, then runs dedup and enrichment automatically.
+In AWS mode, Phase 2 submits requests in rounds through the Grok Batch API (50% discount; up to `batch.max_rounds` = 8, and fewer than `batch.min_requests` = 50 queued requests are answered live) and retrieves results via a Lambda poller. It then runs dedup detection. Phase 3 starts automatically only when no duplicates are pending; otherwise a human reviews them in the dedup UI first.
 
 See [Pipeline Overview](docs/current/core/PIPELINE.md) | [Workflow Diagrams](docs/current/core/WORKFLOW_DIAGRAMS.md)
 
@@ -81,20 +82,22 @@ All entities are JSON with ULIDs for cross-referencing:
 SecondWorldWarAsData/
 ├── config.yaml              # All configuration (local + AWS)
 ├── ecs_entrypoint.py        # ECS orchestrator (S3 sync, batch, dedup)
-├── phase{1,2,3}_*.py        # Phase scripts
+├── phase{1,2,3}_*.py        # Phase scripts (+ phase{2,3}_retry.py wrappers)
+├── phase0_*.py             # Phase 0 entry points (ingest, convert, video, OCR cross-check)
 ├── src/
-│   ├── ingestion/           # Phase 0: media detection, disposition, region
-│   │   └── oob_markdown/    #          conversion, OOB table parsers + crosswalk
-│   ├── extraction/          # 11 entity extractors
-│   ├── enrichment/          # OpenSERP, Wikipedia, NARA
+│   ├── ingestion/           # Phase 0: media detection, OCR, translation, disposition,
+│   │   └── oob_markdown/    #          region conversion, OOB table parsers + crosswalk
+│   ├── extraction/          # Phase 2 entity extractors
+│   ├── enrichment/          # geocoding, OpenSERP, NARA, NOAA, bibliography, Wikipedia
 │   ├── dedup/               # Deduplication logic
+│   ├── loader/              # Relational loader (SQLite today)
 │   ├── utils/               # Storage, cache, entity_store, config
 │   └── grok_client.py       # Grok API (batch + real-time)
 ├── lambda_handlers/         # AWS Lambda functions
 ├── cloudformation/          # Infrastructure as code
 ├── prompts/                 # YAML prompt templates
-├── tests/                   # 1,380+ passing tests
-└── scripts/                 # 130+ utility scripts
+├── tests/                   # 4,700+ test functions
+└── scripts/                 # 85+ utility scripts and subfolders
 ```
 
 ---
@@ -110,8 +113,8 @@ SecondWorldWarAsData/
 
 ## Status
 
-✅ Production: Events, Dates, Places, People, Groups, Equipment, Maps, Supplemental, Dedup, Batch Mode, AWS/Local  
-⚠️ Experimental: Weather, Logistics, Casualties
+✅ Production: Events, Dates, Places, People, Groups, Maps, Bibliography, Dedup, Batch Mode, AWS/Local  
+⚠️ Experimental: Equipment, Weather, Logistics, Casualties (see [Feature Index](docs/current/features/README.md))
 
 ---
 

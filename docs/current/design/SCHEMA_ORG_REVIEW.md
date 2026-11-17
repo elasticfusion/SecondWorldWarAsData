@@ -380,12 +380,12 @@ Therefore the new schema.org fields are classified by producer:
 |---|---|---|
 | images `width`/`height`/`encodingFormat` | **deterministic (Phase 2)** ✅ DONE | computed from the bytes we already download (PIL) |
 | images `contentLocation` | **deterministic (Phase 3)** ✅ DONE — the M3/M5 linker's resolved PlaceID | already computed; now written to the image record |
-| places `sameAs` | **deterministic (Phase 3)** ✅ PARTIAL — folds the already-resolved `wikipedia_url`/`grokipedia_url` into `sameAs[]` (no new fetch). Wikidata-QID / GeoNames-id are TIER-2 (geocoder must CAPTURE them — not already in hand) | identity cross-walk |
-| places `elevation_m` | **TIER-2 (not yet)** — the geocoder does not return elevation today; needs a new capture/source | a measurement, not already-fetched |
+| places `sameAs` | **deterministic (Phase 3)** ✅ — folds the resolved `wikipedia_url`/`grokipedia_url` into `sameAs[]`; the Wikidata QID (piggybacked on the Wikipedia call) and the OSM object URL (from Nominatim) are also written (see SCHEMA_ORG_TIER2_SCOPE.md). GeoNames id is not implemented | identity cross-walk |
+| places `elevation_m` | **deterministic (Phase 3)** ✅ opt-in — `places.capture_elevation` (default off) calls the elevation API after a confident geocode (`places_grok_geocode._capture_elevation`) | a measurement, not already-fetched |
 | places `containedInPlace`/`containsPlace` | **deterministic** — hierarchy resolver (ID-typed) | graph edge, not a text fact |
 | places `geo` (shape) | mixed — map-as-source vision / future | a shape from a map |
 | images licensing (`creditText`/`copyrightNotice`/…), `dateCreated`, `caption` | **source/prompt** (if ever) | genuinely text/source-derived |
 
-A corollary follow-up worth doing (NOT "show the full schema"): a **consistency guard** that the
+A corollary guard (NOT "show the full schema"): `scripts/check_prompt_schema_alignment.py` (run by `scripts/deploy_all.sh`, tested by `tests/test_prompt_schema_alignment.py`) already validates each prompt's `{schema}` example against its output schema. The part still open is the reverse check, a **consistency guard** that the
 extraction Pydantic models stay a SUBSET of the enforced schema, and that the source-derived fields
 each have a prompt slot — the inverse of the fingerprint guard, catching silent prompt/schema drift.

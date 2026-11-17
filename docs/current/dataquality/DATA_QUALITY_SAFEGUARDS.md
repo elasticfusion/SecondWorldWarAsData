@@ -1,6 +1,6 @@
 # Data Quality — Safeguards & Guarantees
 
-**Last Updated:** 2026-11-16
+**Last Updated:** 2026-11-17
 
 This document is the authoritative overview of **how data quality is enforced** in the WWII
 data pipeline: what is validated, where, when, and what is deliberately *not* yet guaranteed.
@@ -77,7 +77,7 @@ it never wrongly blocks a legitimately-old record on rewrite (which would silent
 | **same version** (`ok`) | validate against current schema |
 | **older, registered upgrader** (`upgraded`) | apply the upgrade, then validate the upgraded record (and persist the upgraded form) |
 | **older, no upgrader** (`needs_upgrade`) | **allow with a warning** — do not lose a legitimately-old record; a targeted reprocess/upgrade is the owner's job |
-| **newer than this code** (`future`) | allow **as-is**, never mutate or block (blocking would lose a newer-schema record) |
+| **newer than this code** (`future`) | allow **as-is**, never mutate or block (blocking would lose a newer-schema record). Exception: an impossible newer version stamped by an LLM on a fresh record is first repaired to the real target (`_repair_schema_version`, `file_lock.py`) so it cannot bypass validation |
 | **no `_schema_version` at all** | treated as **malformed, not old** → **strict** validation (block if invalid) |
 
 Discernment uses a numeric per-entity version tuple via `schema_contract.read_record`.
@@ -245,4 +245,4 @@ the layer is built or proposed:
 | Catcher sees low-info / flagged allows | [CATCHER_LOW_INFO_FLAGGED_DESIGN.md](CATCHER_LOW_INFO_FLAGGED_DESIGN.md) | built |
 | Phase-1 parse-output guard | [PHASE1_PARSE_GUARD_DESIGN.md](PHASE1_PARSE_GUARD_DESIGN.md) | built |
 | S3-perimeter validation backstop | [S3_VALIDATION_BACKSTOP_DESIGN.md](S3_VALIDATION_BACKSTOP_DESIGN.md) | built (in `compute.yaml`) |
-| OpenSERP SQS scaling | [OPENSERP_SQS_SCALING_DESIGN.md](OPENSERP_SQS_SCALING_DESIGN.md) | built |
+| OpenSERP SQS scaling | [OPENSERP_SQS_SCALING_DESIGN.md](OPENSERP_SQS_SCALING_DESIGN.md) | infra deployed, not in use (nothing runs `phase3_enqueue_openserp.py`; the inline `phase3_enrich_data._run_openserp_enrichment` path is live) |

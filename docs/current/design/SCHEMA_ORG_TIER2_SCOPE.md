@@ -24,14 +24,14 @@ Do **T2-A first** — the finding below makes it nearly free.
 ## 1. T2-A — Wikidata QID into `places.sameAs`  ⭐ ✅ IMPLEMENTED (2026-10-27)
 
 **Finding (important):** the places Wikipedia enrichment ALREADY calls the MediaWiki API with
-`prop=extracts|pageimages|categories` (`src/extraction/enrich_places.py:112` `_fetch_place_wikipedia_full`,
+`prop=extracts|pageimages|categories` (`src/extraction/enrich_places.py:123` `_fetch_place_wikipedia_full`,
 via the SSRF-safe, cached, provenance-recorded `recorded_fetch`). Adding **`pageprops` to the `prop`
 list + `ppprop=wikibase_item`** returns the article's **Wikidata QID in the SAME response** — no new
 request, no new rate-limit surface.
 
-- **Integration point:** `_fetch_place_wikipedia_full` params (enrich_places.py:131) — add
+- **Integration point:** `_fetch_place_wikipedia_full` params (enrich_places.py:154) — add
   `"pageprops"` to `prop` and `"ppprop": "wikibase_item"`. Parse `pages[].pageprops.wikibase_item`
-  (e.g. `Q181943`) in `_build_wiki_place_result` (enrich_places.py:81).
+  (e.g. `Q181943`) in `_build_wiki_place_result` (enrich_places.py:83).
 - **Write:** turn the QID into a canonical URL `https://www.wikidata.org/wiki/Q181943` and feed it
   through the EXISTING `_add_place_sameas` (enrich_places.py:31) — it already dedups into `sameAs[]`.
   (Optionally also store the bare QID in `identifier[]` if/when that field is adopted — see
@@ -52,15 +52,15 @@ request, no new rate-limit surface.
 
 ## 2. T2-B — `places.elevation_m` (new source)  ◆ ✅ IMPLEMENTED (opt-in, 2026-10-27)
 
-The geocoder's `GeocodeResult` (`src/enrichment/places_grok_geocode.py:84`) carries ONLY
-`latitude/longitude/country/confidence/source` — **no elevation**. So elevation is a genuine new
+The geocoder's `GeocodeResult` (`src/enrichment/places_grok_geocode.py:102`) carries
+`latitude/longitude/country/confidence/source` (plus `external_ids`, added for T2-C) — **no elevation**. So elevation is a genuine new
 capture: given the coords we already have, call an elevation API.
 
 - **Source options:** Open-Elevation (free, no key), USGS EPQS (US only), or Open-Meteo elevation.
   Open-Elevation is the simplest global default. One GET per geocoded place: `?locations=lat,lon` →
   `{results:[{elevation}]}`.
 - **Integration point:** a new step AFTER a successful geocode, in `_apply_result`
-  (places_grok_geocode.py:561) or a sibling pass in `_enrich_places_and_geocode`
+  (places_grok_geocode.py:613; it calls `_capture_elevation` at line 663, which uses `src/enrichment/elevation_verify.py`) or a sibling pass in `_enrich_places_and_geocode`
   (phase3_enrich_data.py:145) — gated on a confident `coordinates` existing (don't look up
   elevation for an ungeocoded place).
 - **Must reuse / add (NON-NEGOTIABLE for a new external call):**
@@ -89,7 +89,7 @@ A second gazetteer id strengthens dedup (the open place-dedup-by-coords issue) b
 
 - **Two capture paths:**
   1. **Nominatim piggyback (cheaper):** the Nominatim geocoder already calls the OSM API
-     (`nominatim_geocode.py:161` params). Nominatim returns `osm_type`+`osm_id` and, with
+     (`nominatim_geocode.py`; `_osm_external_ids` builds the OSM URL). Nominatim returns `osm_type`+`osm_id` and, with
      `extratags=1`/`namedetails=1`, sometimes a `wikidata`/`wikipedia` tag. Capture `osm_id` →
      `https://www.openstreetmap.org/<type>/<id>` into `sameAs[]`. BUT: Nominatim is only ONE rung of
      the cascade (Grok geocoder is primary), so this only fires when Nominatim won — partial coverage.

@@ -33,7 +33,7 @@ Groups whose names are byte-identical after normalization are merged automatical
 
 ### Step 2: Review and merge (Dedup Review UI)
 
-The Dedup Review UI shows each group; the reviewer merges it or marks it "Not Duplicates". Merging (`src/dedup/merge.py`) combines event mentions with the shared
+The Dedup Review UI (`lambda_handlers/dedup_ui_handler.py`, `POST /dedup/api/action`) shows each group; the reviewer chooses merge, skip, or exclude ("Not Duplicates"). Before each merge the handler writes pre-merge snapshots to `dedup/history/<snapshot_id>/` (`_save_merge_snapshot`) so `POST /dedup/api/undo` can restore them. Merging (`src/dedup/merge.py`) combines event mentions with the shared
 mention rule (`entity_records.merge_mentions`), updates `output/people/index.json`, backs up and deletes the merged files. The interactive
 `scripts/merge_duplicate_people.py` CLI no longer exists.
 
@@ -56,11 +56,9 @@ There is no Grok verification step in the detector (the older "Grok verification
 
 ### Name Normalization
 
-`normalize_name()` applies aggressive normalization before comparison:
-- Strips periods and commas
-- ASCII-folds Unicode characters (e.g., ö → o, é → e)
-- Lowercases
-- Collapses whitespace
+Names are normalized before comparison (`src/dedup/find_duplicate_people.py`: `_normalize_unicode`, `_normalize_german`; exclusion keys use `exclusions._normalize_exclusion_name`):
+- ASCII-folds Unicode characters (e.g., ö → o, é → e); German transliteration handled by `_normalize_german`
+- Lowercases, strips periods and commas, collapses whitespace (exclusion-key normalization)
 
 ## Duplicate Report Format
 
@@ -116,7 +114,7 @@ vs "General Barker"). Confirmed non-duplicates are recorded so they never resurf
   (`{person1, person2}` filenames). Matching is bidirectional (order-independent) and survives
   across runs; future detection skips excluded pairs automatically.
 - **Name-based exclusion** — the Dedup Review UI writes BOTH a filename-based and a name-based
-  exclusion (`name_exclusion#people#<book>#<normalized name>`) when "Not Duplicates" is selected,
+  exclusion (`name_exclusion#people#<normalized name A>#<normalized name B>`, names sorted; `exclusions._make_name_pair_key`) when "Not Duplicates" is selected,
   so the exclusion persists even if the files are later regenerated.
 - **How to exclude** — in the Dedup Review UI, mark a group "Not Duplicates" (the old
   `merge_duplicate_people.py` CLI is gone). `not_duplicates.json` can also be hand-edited.
@@ -132,3 +130,5 @@ vs "General Barker"). Confirmed non-duplicates are recorded so they never resurf
 - [Weighted Scoring & Surname Suggestion Report](dedup-weighting.md) — config-driven
   proximity/rarity/rank scoring subtleties + the growth-triggered, human-gated surname
   frequency suggestion report (skew-safe, suggestion-only).
+
+See also: [Dedup review gate (Phase 2 to Phase 3)](../../core/DEDUP_REVIEW_GATE.md) for detection, auto-merge, the gate, the review UI and the operator runbook.

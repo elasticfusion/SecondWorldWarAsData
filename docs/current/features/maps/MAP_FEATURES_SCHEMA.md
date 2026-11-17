@@ -4,6 +4,11 @@
 False`), validated by `tests/test_map_features_schema.py` and self-checked by
 `scripts/proto_map_vision.py` before write. This doc is the rationale; the module is the
 source of truth.
+**Pipeline status:** prototype only. No pipeline step writes `map_features` records: Phase 3 does not
+produce them, and `src/extraction/source_section_media.py` writes only `images` records (maps tagged
+`image_type: "map"`). `scripts/proto_map_vision.py` (usage: `proto_map_vision.py [map_image [out_json]] [--translate]`)
+writes `<map image>.features.json` beside the image by default, not `output/map_features/`.
+`map_registration.register_dir` and `load_map_extents` have no caller outside tests.
 **Purpose:** Hold the *interior* of a historical map (units, places, boundaries, routes,
 fortifications) extracted by Grok vision, as a **unified, deduplicated** feature set that
 (a) links to our entity graph (PlaceID / GroupID / DateID), (b) carries provenance +
@@ -133,13 +138,17 @@ elevation | front_line`
 - `route` → `LineString` → **GroupID**, ordered named-place anchors, `dtg`/DateID (Tier-2).
 - `fortification` (West Wall) / `river` / `road` / `railroad` → `Point`/`LineString`.
 
+Top-level fields in the enforced schema that the sketch above omits: `title_en`, `elevation_scale`,
+`distance_scale`, `covered_places` (PlaceIDs), `date_range` (`earliest`/`latest`), `resolution_report`
+(prototype diagnostics), and legend `date_text` / `meaning_en`. `geometry` may be null.
+
 ### Field groups
 | Group | Fields | Notes |
 |---|---|---|
 | Provenance | `original_label`, `source="map"`, `MapID`, `confidence`, `legend_key`, `tile_id`, `coordinate_source` | source is authority; verbatim label always kept |
 | Entity links | `PlaceID`, `GroupID`, `PersonID`, `DateID` | resolved via shared libs; `null` when below confidence floor |
 | 2525/APP-6 modifiers | `sidc`, `uniqueDesignation`, `higherFormation`, `additionalInformation`, `dtg` | names reused verbatim from the standard |
-| Tactical semantics | `affiliation` (friend/hostile/neutral/unknown), `echelon`, `posture` (attack/defend/axis) | 2525/APP-6 aligned enums; `posture` is Tier-2 |
+| Tactical semantics | `affiliation` (friend/hostile/neutral/unknown), `echelon`, `branch`, `posture` (attack/defend/axis) | 2525/APP-6 aligned enums; `posture` is Tier-2 |
 
 ---
 
@@ -161,13 +170,15 @@ elevation | front_line`
 
 ---
 
-## Open questions before building the enforced schema
+## Open questions (as of the enforced schema; question 3 is still open)
 
 1. Confirm the `feature_kind` enum covers the Green Book series (anything to add/drop?).
 2. Confidence floor for auto-resolving PlaceID/GroupID (suggest reuse the weather/equipment
    matcher thresholds — ~0.88 name match) before falling back to `null` + verbatim label.
 3. Do we store the FeatureCollection on the existing map record (new `map_features` key) or
-   as a sibling `output/map_features/<MapID>.json`? (Leaning sibling — keeps the catalog
+   as a sibling `output/map_features/<MapID>.json`? (`map_features` is registered as a flat entity dir
+   in `src/utils/schema_registry.py:33` and `map_registration.load_map_extents` reads a sibling dir; no
+   writer exists yet. Leaning sibling — keeps the catalog
    record small and lets the overlay layer be regenerated independently.)
 
 ---
@@ -289,8 +300,3 @@ prompt, Grok returns them verbatim:
 - **Revisit the tandem only for degraded/hand-drawn maps** where Grok's label OCR
   measurably fails (the prototype's "106 XX 28" noise is the signal). On clean Green Book
   maps that bottleneck did not appear. Tandem value scales with source degradation.
-2. Confidence floor for auto-resolving PlaceID/GroupID (suggest reuse the weather/equipment
-   matcher thresholds — ~0.88 name match) before falling back to `null` + verbatim label.
-3. Do we store the FeatureCollection on the existing map record (new `map_features` key) or
-   as a sibling `output/map_features/<MapID>.json`? (Leaning sibling — keeps the catalog
-   record small and lets the overlay layer be regenerated independently.)

@@ -1,6 +1,6 @@
 # Development Guide
 
-**Last Updated:** 2026-11-16
+**Last Updated:** 2026-11-17 (checked against code at main 0dac86fa)
 
 ## Setup
 
@@ -109,7 +109,7 @@ bash scripts/gate.sh             # linters + tests
 bash scripts/gate.sh --no-tests  # linters only
 ```
 
-It runs black (check), pylint (`--fail-under=5.0` over `src/ lambda_handlers/`), mypy, basedpyright (baseline in `.basedpyright/baseline.json`; only new errors fail), bandit, ruff (B rules), radon (no new C-or-worse blocks; grandfathered ones in `scripts/.radon_inherent`), vulture, the unreachable-modules check, cfn-lint, a JSON lint, pip-audit, then `pytest tests/ -m "not slow and not requires_api"`. Single tools, e.g. `python3 -m black file.py` or `python3 -m pylint file.py`, are fine while iterating. See [TESTING.md](TESTING.md).
+It runs black (check), pylint (`--fail-under=5.0` over `src/ lambda_handlers/`), mypy, basedpyright (baseline in `.basedpyright/baseline.json`; only new errors fail), bandit, ruff (B rules), radon (no new C-or-worse blocks; grandfathered ones in `scripts/.radon_inherent`), vulture, the unreachable-modules check, cfn-lint, a JSON lint, pip-audit (all three requirements files plus the installed environment), `scripts/check_raw_writes.sh` (no new raw `json.dump`/`write_text` that bypasses the write guard), then `pytest tests/ -m "not slow and not requires_api"`. The test step copies `config.yaml.example` over `config.yaml` for the run and restores your copy afterwards. `scripts/ai_review.sh` (the independent code and security review sub-agents) is separate and not part of the gate. Single tools, e.g. `python3 -m black file.py` or `python3 -m pylint file.py`, are fine while iterating. See [TESTING.md](TESTING.md).
 
 ### Security Scanning (Deploy)
 
@@ -129,7 +129,7 @@ cfn-nag cloudformation/*.yaml
 trivy image wwii-pipeline:latest
 ```
 
-These are run automatically by `scripts/deploy_all.sh` before pushing images.
+`scripts/deploy_all.sh` runs these before pushing images: hadolint and cfn-nag only if installed, and hadolint warnings do not block; Trivy (HIGH/CRITICAL, `--ignore-unfixed`) can block (`trivy_scan`, `scripts/deploy_all.sh:19-58`).
 
 ### Standards
 
@@ -156,7 +156,7 @@ Add `prompts/<entity>.yaml` (`system_prompt`, `prompt_template`, `schema`, `rule
 
 ### 3. Create the extraction module
 
-In `src/extraction/<entity>.py`. Entity discovery runs over fixed 3-paragraph windows of the raw parsed text (`src/extraction/windows.py`: `chapter_windows`, `window_event_for`), never over the events' summaries. Each answer item must carry a quote that is checked against the source (`windows.settle`) so every record has provenance; an item whose quote the source does not support is dropped with `quote_unsupported`. Requests are queued on the `GrokClient` and answered by xAI batch rounds, so the extractor must be safe to call again after the batch answers (idempotent, cache-first).
+In `src/extraction/<entity>.py`. Entity discovery runs over fixed windows of the raw parsed text (`extraction.window_paragraphs`, default 3) (`src/extraction/windows.py`: `chapter_windows`, `window_event_for`), never over the events' summaries. Each answer item must carry a quote that is checked against the source (`windows.settle`) so every record has provenance; an item whose quote the source does not support is dropped with `quote_unsupported`. Requests are queued on the `GrokClient` and answered by xAI batch rounds, so the extractor must be safe to call again after the batch answers (idempotent, cache-first).
 
 ```python
 def extract_new_entity(event_file: Path, grok_client: GrokClient, output_dir: Path,
@@ -293,11 +293,11 @@ extract_events(
 All API calls are cached automatically:
 
 ```python
-# First call - hits API
-result1 = client.extract_structured(prompt, schema)
+# First call - hits API (or is queued for the batch API)
+result1 = client.extract_json(prompt, system_prompt=system, cache_type="events", book=book)
 
-# Second call - uses cache
-result2 = client.extract_structured(prompt, schema)
+# Second call with the same prompt, system prompt, temperature and model - uses cache
+result2 = client.extract_json(prompt, system_prompt=system, cache_type="events", book=book)
 ```
 
 ### Skip Logic

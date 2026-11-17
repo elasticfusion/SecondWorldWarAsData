@@ -66,7 +66,7 @@
 **Cross-references:**
 - `DateMentionID` in mentions → top-level `DateID` in `output/dates/*.json`
 - `members[].PersonID` → top-level `PersonID` in `output/people/*.json`
-- `enrichment_data` populated during Phase 3 enrichment (Phase 2 also does a Wikipedia/Grokipedia lookup for each new unit, WWII pages only: `groups_wikipedia.enrich_group_from_wikipedia`)
+- `enrichment_data` populated by Phase 3 step 1/6 `enrich_groups.enrich_all_groups` (Phase 2 also does a Wikipedia/Grokipedia lookup for each new unit, WWII pages only: `groups_wikipedia.enrich_group_from_wikipedia`)
 
 ### Extraction Logic
 
@@ -74,8 +74,8 @@
 (`batch_parallel._extract_people_groups`, cache type `peoplegroups`). The request asks for each unit's `name`, `type`, `country` (ISO alpha-3), `context`
 and a verbatim `original_text`; it does **not** ask for members. Each item is settled against the source (`windows.settle`) and attributed to the real
 sub-event. A new record is `{name, group_name, group_type: "military_unit", nationality, source_language}` plus a minted `GroupID` and the mention.
-Individual ships are equipment, not units. `members[]` is filled afterwards by Phase 3 person linking
-(`enrich_biographies._link_person_to_groups`), not by the extraction request. The older per-sub-event path (`people_groups.extract_people_groups`,
+Individual ships are equipment, not units. `members[]` is filled only by person linking
+(`enrich_biographies._link_person_to_groups`), not by the extraction request. That linker runs from `enrich_all_people`, which `phase3_enrich_data.py` no longer calls (module CLI and tests only), so a pipeline run leaves `members[]` empty unless the older per-sub-event path supplied it. The older per-sub-event path (`people_groups.extract_people_groups`,
 `prompts/people_groups.yaml`) does ask for `members`, and `people_groups._merge_group` still merges them by PersonID.
 
 The older per-sub-event prompt extracts:
@@ -148,5 +148,5 @@ Could add reverse index:
 
 - `members` merge by PersonID: `src/extraction/people_groups.py::_merge_group`
 - `members` field in the older per-sub-event prompt (`prompts/people_groups.yaml`); the live windowed Phase-2 request does not ask for it
-- Members are linked in Phase 3 (`enrich_biographies._link_person_to_groups`)
+- Person linking (`enrich_biographies._link_person_to_groups`) is reachable only through `enrich_all_people` (CLI/tests); it is not wired into Phase 2 or Phase 3
 - Passed all QA checks (pylint 10/10, mypy, bandit)

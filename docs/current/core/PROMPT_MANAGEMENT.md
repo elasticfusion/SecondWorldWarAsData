@@ -1,6 +1,6 @@
 # Grok Prompt Management
 
-**Last Updated:** 2026-11-16
+**Last Updated:** 2026-11-17 (checked against main 0dac86fa)
 
 How prompts reach Grok, how answers are validated, and where to change things. The per-prompt catalog (which code invokes which prompt, with its variables and cache lane) is [PROMPT_REFERENCE.md](../PROMPT_REFERENCE.md); how to edit a prompt safely is [PROMPT_EDITING_GUIDE.md](../PROMPT_EDITING_GUIDE.md). This file does not repeat them.
 
@@ -47,7 +47,7 @@ Details: [JSON_REPAIR.md](JSON_REPAIR.md), [CACHE_AUTO_RECOVERY.md](CACHE_AUTO_R
 
 ## Prompt patterns
 
-- **Windows.** All entity discovery prompts (dates, places, people, people_groups, equipment, weather, logistics, casualties) see a window of 3 paragraphs of the raw parsed text (`src/extraction/windows.py`); `event_name` / `sub_event_summary` are empty for them. Only `events` is one request per chapter.
+- **Windows.** All entity discovery prompts (dates, places, people, people_groups, equipment, weather, logistics, casualties) see a window of `extraction.window_paragraphs` paragraphs (default 3) of the raw parsed text (`src/extraction/windows.py`); `event_name` / `sub_event_summary` are empty for them. Only `events` is one request per chapter.
 - **Quotes are provenance.** Every answer item carries the verbatim quote it came from; `windows.settle` checks it against the source and drops unsupported items. The quote wording lives in the shared `{quote_rule}`.
 - **Anti-hallucination.** Prompts say to extract only what the text states and not to copy the schema's example values; ids are not the model's to invent (EventID and Sub-eventID come from `deterministic_ids`, see [ULID_IMPLEMENTATION.md](ULID_IMPLEMENTATION.md)).
 - **Temperature.** 0.1 for extraction. Lookup and yes/no verification calls pass 0.0 explicitly; grep the call site for `temperature=`.
