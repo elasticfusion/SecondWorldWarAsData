@@ -17,7 +17,7 @@ Thread-safe (merges run multi-threaded). Fail-safe: recording never raises into 
 import logging
 import threading
 from collections import Counter
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterable, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -209,17 +209,21 @@ def _qualifies_as_cluster(count: int, rate: float) -> bool:
     return count >= _SMALL_BATCH_MIN_COUNT and rate >= _SMALL_BATCH_MIN_RATE
 
 
-def systematic_clusters() -> List[Dict[str, Any]]:
+def systematic_clusters(deferred: Iterable[str] = ()) -> List[Dict[str, Any]]:
     """Return CONCERN clusters that look like a CODE defect (count + rate thresholds), sorted by
     severity. Concern outcomes = block + allow_empty + allow_flagged (a book-wide run of empty or
-    same-flag records is as diagnostic as a block cluster). Each row:
+    same-flag records is as diagnostic as a block cluster). ``deferred`` flag codes are resolved
+    by a later phase (``semantic_flags.RESOLVED_IN_PHASE3``) and are no cluster. Each row:
     {entity, outcome, keyword, version_state, count, entity_total, rate}."""
+    deferred = frozenset(deferred)
     totals = _entity_totals()
     out: List[Dict[str, Any]] = []
     with _lock:
         items = list(_counts.items())
     for (entity, outcome, keyword, version_state), n in items:
-        if outcome not in _CONCERN_OUTCOMES:
+        if outcome not in _CONCERN_OUTCOMES or (
+            outcome == OUTCOME_FLAGGED and keyword in deferred
+        ):
             continue
         total = totals.get(entity, 0) or 1
         rate = n / total
@@ -243,8 +247,10 @@ def systematic_clusters() -> List[Dict[str, Any]]:
     return out
 
 
-def get_stats() -> Dict[str, Any]:
-    """Snapshot: per-outcome totals, per-entity breakdown, and systematic clusters."""
+def get_stats(deferred: Iterable[str] = ()) -> Dict[str, Any]:
+    """Snapshot: per-outcome totals, per-entity breakdown, and systematic clusters (``deferred``
+    flag codes excluded from the clusters: ``systematic_clusters``)."""
+    deferred = frozenset(deferred)
     with _lock:
         items = list(_counts.items())
     by_outcome: "Counter[str]" = Counter()
@@ -264,19 +270,24 @@ def get_stats() -> Dict[str, Any]:
         "totals": dict(by_outcome),
         "block_rate": round(by_outcome.get(OUTCOME_BLOCK, 0) / total, 4),
         "by_entity": detail,
-        "systematic_clusters": systematic_clusters(),
+        "systematic_clusters": systematic_clusters(deferred),
+        "deferred_flags": sorted(deferred),
     }
 
 
-def write_validation_stats(output_dir: Any) -> Dict[str, Any]:
+def write_validation_stats(
+    output_dir: Any, deferred_flags: Iterable[str] = ()
+) -> Dict[str, Any]:
     """Dump the aggregate to output/metrics/validation_stats.json + log a one-line summary and,
     if any systematic cluster exists, a loud warning (the upstream-fix signal). Fail-safe.
+    ``deferred_flags``: flag codes a later phase resolves (no alert now; still counted in the
+    JSON breakdown).
     """
     import json as _json
     from datetime import datetime, timezone
     from pathlib import Path
 
-    snap = get_stats()
+    snap = get_stats(deferred_flags)
     snap["generated_at"] = datetime.now(timezone.utc).isoformat()
     try:
         mdir = Path(output_dir) / "metrics"

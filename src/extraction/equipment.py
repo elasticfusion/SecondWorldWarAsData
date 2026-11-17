@@ -3029,6 +3029,7 @@ def _persist_equipment_item(
             equipment_index,
             output_dir,
             grok_client,
+            mention,
         )
 
     # Record-level crew_accounts (narrative-sourced; original_text mandatory; person-linked)
@@ -3226,6 +3227,7 @@ def _link_related_equipment(
     equipment_index: Dict[str, Path],
     output_dir: Path,
     grok_client: Optional[GrokClient] = None,
+    source_mention: Optional[Dict[str, Any]] = None,
 ) -> List[Dict[str, Any]]:
     """Build the record-level related_equipment list. Each entry is narrative-sourced
     (original_text retained). Resolve name->EquipmentID; auto-create a minimal distinct
@@ -3249,6 +3251,7 @@ def _link_related_equipment(
                 equipment_index,
                 output_dir,
                 grok_client,
+                _stub_mention(source_mention, rel.original_text, rel.relationship),
             )
         if eq_id:
             entry["EquipmentID"] = eq_id
@@ -3256,11 +3259,41 @@ def _link_related_equipment(
     return linked
 
 
+# WHERE a stub is named in the source - what it inherits from the mention of the record that names
+# it. Only the event and paragraphs: the source names it there, it does not say it was present
+# (no sub-event, date, operator or quantity claims).
+_SOURCE_LOCATION_KEYS = ("EventID", "Event_Name", "paragraph_numbers", "book")
+
+
+def _stub_mention(
+    source_mention: Optional[Dict[str, Any]],
+    original_text: Optional[str],
+    relation: str = "",
+) -> Optional[Dict[str, Any]]:
+    """The provenance of an auto-created related-equipment stub: where the source NAMES it (the
+    naming mention's event and paragraphs) with the relation's own verbatim text. A naming
+    reference, not a presence claim: no sub-event or date, no ``assertion_source``, and
+    ``context`` says how it is named. None without a source mention that has an EventID.
+    """
+    if not isinstance(source_mention, dict) or not source_mention.get("EventID"):
+        return None
+    mention = {
+        k: source_mention[k]
+        for k in _SOURCE_LOCATION_KEYS
+        if source_mention.get(k) is not None
+    }
+    mention["MentionID"] = str(ulid.new())
+    mention["original_text"] = original_text or source_mention.get("original_text")
+    mention["context"] = f"named as related equipment ({relation or 'related'})"
+    return mention
+
+
 def _autocreate_minimal_equipment(
     name: str,
     equipment_index: Dict[str, Path],
     output_dir: Path,
     grok_client: Optional[GrokClient] = None,
+    mention: Optional[Dict[str, Any]] = None,
 ) -> Optional[str]:
     """Create a minimal equipment record (EquipmentID + common_name) for a distinct piece
     the narrative relates but that has no record yet. Because the stub has no mention of
@@ -3273,7 +3306,8 @@ def _autocreate_minimal_equipment(
             "EquipmentID": equipment_id,
             "common_name": name,
             "extracted_date": datetime.now(timezone.utc).isoformat(),
-            "event_mentions": [],
+            # the mention that names it: a stub is traceable to its source like any record
+            "event_mentions": [mention] if mention else [],
         }
         # Enrich the stub on identity (no Sub_eventID -> no date context).
         _enrich_on_identity(record, grok_client)
@@ -3675,6 +3709,100 @@ def _prepare_and_persist_items(
         failures=failures,
     )
     return [f for _p, f in persisted if f]
+
+
+def _relation_source(
+    mentions: List[Dict[str, Any]], original_text: Optional[str]
+) -> Optional[Dict[str, Any]]:
+    """The relating record's mention a relation was stated in: the one whose verbatim text holds
+    the relation's text (or is held by it), else its only mention. None when it is ambiguous.
+    """
+    text = " ".join(str(original_text or "").split()).casefold()
+    if text:
+        for m in mentions:
+            own = " ".join(str(m.get("original_text") or "").split()).casefold()
+            if own and (text in own or own in text):
+                return m
+    return mentions[0] if len(mentions) == 1 else None
+
+
+def _load_equipment_records(
+    equipment_dir: Path,
+) -> Dict[str, Tuple[Path, Dict[str, Any]]]:
+    """{EquipmentID: (file, record)} of the equipment records in ``equipment_dir``."""
+    from src.utils.entity_records import is_record_file, load_json
+
+    records: Dict[str, Tuple[Path, Dict[str, Any]]] = {}
+    for f in equipment_dir.glob("*.json"):
+        data = load_json(f) if is_record_file(f) else None
+        if isinstance(data, dict) and data.get("EquipmentID"):
+            records[data["EquipmentID"]] = (f, data)
+    return records
+
+
+def _backfill_from(data: Dict[str, Any], records: Dict[str, Any], stubs: set) -> int:
+    """Give each still-mentionless stub ``data`` relates to the mention it was named in."""
+    from src.utils.file_lock import write_json_with_lock
+
+    repaired = 0
+    for rel in data.get("related_equipment") or []:
+        eid = rel.get("EquipmentID") if isinstance(rel, dict) else None
+        if not isinstance(eid, str) or eid not in stubs:
+            continue
+        if records[eid][1].get("event_mentions"):
+            continue
+        src = _relation_source(
+            data.get("event_mentions") or [], rel.get("original_text")
+        )
+        mention = _stub_mention(
+            src, rel.get("original_text"), rel.get("relationship") or ""
+        )
+        if mention:
+            stub_file, stub = records[eid]
+            stub["event_mentions"] = [mention]
+            write_json_with_lock(stub_file, stub, entity="equipment")
+            repaired += 1
+    return repaired
+
+
+def backfill_stub_mentions(equipment_dir: Path) -> int:
+    """Deterministic provenance repair: an auto-created related-equipment stub written with no
+    mention (before stubs inherited one) gets the mention of the record that names it, from that
+    record's ``related_equipment`` entry. Idempotent. Stubs it cannot place are reported.
+    Returns the number repaired."""
+    if not equipment_dir.exists():
+        return 0
+    records = _load_equipment_records(equipment_dir)
+    stubs = {eid for eid, (_f, d) in records.items() if not d.get("event_mentions")}
+    repaired = sum(
+        _backfill_from(d, records, stubs) for _f, d in list(records.values())
+    )
+    _observe_stub_backfill(records, stubs, repaired)
+    return repaired
+
+
+def _observe_stub_backfill(records: Dict[str, Any], stubs: set, repaired: int) -> None:
+    left = sorted(
+        records[e][0].name for e in stubs if not records[e][1].get("event_mentions")
+    )
+    logger.info(
+        "OBSERV equipment.stub_backfill stubs=%d repaired=%d unplaced=%d",
+        len(stubs),
+        repaired,
+        len(left),
+    )
+    if left:
+        from src.utils.observe import observe_warn
+
+        observe_warn(
+            "equipment",
+            "stub_without_source",
+            count=len(left),
+            example=left[0],
+            note="equipment records with no mention and no relating record that names them: "
+            "find who wrote them (grep the file name in the Phase 2 logs) and give them a "
+            "mention or delete them",
+        )
 
 
 def generate_equipment_index(equipment_dir: Path) -> None:

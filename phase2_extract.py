@@ -796,6 +796,13 @@ def _run_source_section_enrichment(output_root, grok_client, logger):
 
 def _run_analysis(output_root, logger):
     """Run duplicate detection and group analysis."""
+    # Provenance repair before the audit: related-equipment stubs written without a mention
+    try:
+        from src.extraction.equipment import backfill_stub_mentions
+
+        backfill_stub_mentions(output_root / "equipment")
+    except Exception as e:  # noqa: BLE001 - repair must not abort the analysis
+        logger.error("  ✗ Equipment stub provenance backfill failed: %s", e)
     # People duplicates
     logger.info("[phase2 step 5/5] Analyzing for duplicate people")
 
@@ -1148,9 +1155,11 @@ def _run_post_extraction_steps(
     _run_analysis(output_root, logger)
     logger.info("Phase 2 complete: %d processed, %d failed", processed, failed)
     grok_client.log_cache_stats()
+    from src.utils.semantic_flags import RESOLVED_IN_PHASE3
     from src.utils.validation_stats import write_validation_stats as _write_val_stats
 
-    _write_val_stats(paths["output_root"])
+    # places without coordinates are geocoded in Phase 3: no defect yet
+    _write_val_stats(paths["output_root"], deferred_flags=RESOLVED_IN_PHASE3)
 
 
 def _warn_if_env_contradicts_config(env_value: str, logger) -> None:

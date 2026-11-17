@@ -207,6 +207,11 @@ _VALIDATORS = {
     "bibliography": _citation_flags,
 }
 
+# Flags a LATER phase resolves: Phase 2 writes places without coordinates by design (Phase 3
+# geocodes them and the flag clears), so at the end of Phase 2 they are no code defect and must not
+# raise the systematic-failure alert. After Phase 3 the same flag is a real signal and alerts.
+RESOLVED_IN_PHASE3 = frozenset({"geo_missing_coords"})
+
 # The flag codes THIS module owns (recomputed + replaced on every annotate, so they clear once the
 # underlying problem is fixed). Foreign codes on a record are preserved.
 _OWNED_FLAGS = {
