@@ -123,6 +123,58 @@ What several HIGH items in later groups depend on; MED/LOW items are here when a
 **Test:** restore, run with OpenSERP off: the non-search steps run; force each alert once; a relocated
 record disappears from S3; two queued books each run exactly once.
 
+#### Resilience tasks added 2026-11-18 (owner: "deferred yes, dropped never")
+Owner rule: no outage loses a book. After Grok funds, an AZ or AWS networking come back, the work
+continues from where it stopped. Order: 1.2b, 1.1b, 1.2c, 1.2e, 1.2d, 1.1c.
+- **1.2b - defer, never drop.** Past the attempt cap `pending_queue.claim_attempt` deletes the
+  `pending#enrich#<book>` row (task 1.2), so the book is never picked up again. Instead keep the row
+  as `deferred` with its cause: `funding` and `connectivity` use no attempt and resume automatically
+  when their check passes; `failure` stays capped at `queue.phase3_max_attempts` and resumes with
+  `scripts/resume_book.sh <book>` (or all deferred books). Preflight aborts do not count as attempts
+  (owner decision 4(b)). The reconcile launches nothing while a funding or connectivity check fails.
+- **1.2c - the NAT does not fail over.** A NAT gateway is zonal by default; `nat_manager` always
+  creates it in `PUBLIC_SUBNET_ID` (PublicSubnet1, `lambda_handlers/nat_manager.py:528`) and both
+  private subnets route through it. If that AZ fails, both AZs lose egress and the re-create fails in
+  the same subnet. Fix: either an AWS regional NAT gateway (`--availability-mode regional`, expands
+  across AZs on its own, no public subnet;
+  https://docs.aws.amazon.com/vpc/latest/userguide/nat-gateways-regional.html) or a zonal fallback
+  to PublicSubnet2. Check regional NAT hourly pricing (per AZ?) on the VPC pricing page first. Alert
+  on a failover.
+- **1.2d - the resume point.** Phase 3 skips already-enriched records, but work since the last S3
+  sync (`SYNC_INTERVAL` 120 s) is redone, and `_reset_openserp_searched` runs at every Phase 3 start,
+  clearing "searched" on every person/equipment record with no images and no awards, so each resume
+  repeats those searches. That reset cannot tell three outcomes apart; owner rules (2026-11-18):
+  1. OpenSERP found nothing: log it for later review (entity ID, query), mark searched, move on.
+  2. Grok rejected every candidate: log it with the Grok prompt, the candidates, the verdicts, model
+     and RequestID (the prompt may need revising), mark searched, move on.
+  3. Grok failed: handled by the shared Grok client library and resubmitted; never treated as a NO.
+  Then delete `_reset_openserp_searched`; the existing 90-day re-search gate stays. Also check every
+  other step's skip logic; test that a run killed midway resumes with no repeated Grok or OpenSERP
+  work. Review log: JSONL in S3 (one prefix per book), written through the shared S3 writers.
+- **1.2e - OpenSERP verification bypasses the shared Grok library** (found 2026-11-18). `GrokClient`
+  (`src/grok_client.py`) already retries transport errors (`_call_api`: 5 tries, exponential backoff
+  on HTTPError/ConnectionError) and repairs or re-asks a malformed JSON answer (`extract_json`). The
+  OpenSERP verifiers call raw `chat_completion` and parse the text themselves
+  (`src/enrichment/openserp_enrichment.py` `_verify_result`, `_verify_results_batch`,
+  `_parse_batch_verdicts`):
+  - a reply that does not start with "YES" becomes NO and is **cached for 90 days**, so a malformed
+    reply is a permanent-looking rejection, never resubmitted;
+  - in the batch path an unparseable reply gives `[]`, every result becomes NO, and each NO is
+    **cached** (the comment says fail-closed and "not cached", but only the exception path skips it);
+    the raw malformed reply is also cached by the client under `openserp_verify_batch`;
+  - after the client's retries are spent, the error is a NO, and the record is still marked searched
+    (`openserp_enrichment.py:1496`), so only the start-of-run reset retries it.
+  Fix (DRY): verify through `extract_json` (JSON verdict array: repair, re-ask), cache only real
+  verdicts, never cache or mark searched on a failure; a Grok outage follows D8 (retry, then stop
+  with an alert) and defers the book `connectivity` (1.2b). Belongs with Group 2 batching of these
+  calls. Check the other Phase 3 callers of raw `chat_completion` for the same pattern.
+- **1.1c - Grok balance thresholds.** Read the real prepaid balance from the xAI Management API
+  (`GET https://management-api.x.ai/v1/billing/teams/{team_id}/prepaid/balance`; management key + team
+  ID in Secrets Manager). Under $50 (configurable) at the start of any phase: stop before any Grok spend
+  and alert (defer `funding`). At or under $10 during a run: loud repeating alert, the run continues
+  (owner); if xAI then refuses for credit, the book defers `funding` and resumes after a top-up.
+  Balance unreadable: stop, do not guess. Waits on the owner's management key and team ID.
+
 #### Task 1.1 follow-ups (found in review, 2026-11-18)
 - **MED - an alert from a task that has no network path is lost.** When NAT never becomes ready the
   task has no route to SNS (nat-manager creates interface endpoints for ecr, logs, secretsmanager,
@@ -1672,6 +1724,23 @@ it materializes writes NO -parsed.json sibling, so the PR-704 people_groups fail
 that path IF it ran — but it doesn't (dead code). Also it never carried book/author/series (same
 Unknown-provenance gap, pre-existing). Decide: wire it (thread book metadata + write the sibling) or
 retire it. Not a live regression (dead path).
+
+### Group 15 - after the Phase 3 refactor: failover tests (owner 2026-11-18)
+
+Run once the refactor (Groups 1-14) is complete, in dev, with owner approval for the deploy and the
+Grok spend. Each test checks the outcome the owner asked for: downtime is acceptable, a lost book or
+repeated paid work is not. For each: the alert arrives on Slack and email, the book is deferred (never
+dropped), and after recovery the run continues from where it stopped (compare Grok request counts and
+per-step counts against an uninterrupted run).
+- **Task killed mid-Phase 3** (stop the ECS task; also a SIGKILL-equivalent): relaunched, resumes.
+- **AZ loss:** block AZ1 (e.g. NACL deny on PublicSubnet1/PrivateSubnet1): the NAT comes back in the
+  other AZ (1.2c), a new task runs in PrivateSubnet2, the book resumes.
+- **NAT / networking loss mid-run:** delete the NAT or blackhole the default route: `connectivity`
+  deferral, automatic resume when NAT is back.
+- **Grok funds:** under $50 at start (stops before spend); $10 alert mid-run; xAI credit refusal
+  mid-run (simulate with an invalid-credit response or a test key): `funding` deferral, resume after
+  top-up.
+- **OpenSERP / Nominatim / NARA unavailable:** behave as D8b-D8d, and resume.
 
 ### Track P - Phase 2 changes (needs a new Phase 2 run and a new snapshot)
 
