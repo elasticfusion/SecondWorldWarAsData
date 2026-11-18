@@ -1176,12 +1176,16 @@ def run_phase(phase_script: str, extra_args: list) -> None:
                 }
             },
         )
-        _notify_failure(phase_script, result.returncode)
-        _final_sync_failed_phase(phase_script)
-        _audit_failed_phase2(phase_script, result.returncode)
-        if "phase3" not in phase_script:
+        try:
+            _notify_failure(phase_script, result.returncode)
+            _final_sync_failed_phase(phase_script)
+            _audit_failed_phase2(phase_script, result.returncode)
+        finally:
+            # every phase, Phase 3 too (owner decision D10, task 1.3), even if a step above
+            # raised: the book is still queued (src/utils/pending_queue) and the reconcile's
+            # retry needs the lock free
             _remove_lock(phase_script)
-        _release_nat_lease()  # M3: task exiting — drop NAT demand
+            _release_nat_lease()  # M3: task exiting — drop NAT demand
         sys.exit(result.returncode)
 
     logger.info(
@@ -2646,24 +2650,30 @@ def _post_process(phase_script: str, env: dict) -> None:
                 _invoke_trigger_phase_complete("2")
 
     if "phase3" in phase_script:
-        # Phase 3 complete — release lock and check for next book in enrich queue
-        _remove_lock(phase_script)
+        # Phase 3 complete. The lock is released only AFTER the S3-side repair and the provenance
+        # gate below (task 1.3): released first, another task could start and download the
+        # records while they are being rewritten.
         # DURABLE referential repair + validation: run it HERE (after _final_sync, against S3) — NOT
         # only inside phase3 main(). The in-main() enforcement ran before the final local->S3 sync,
         # so its S3-side down-bind repair was clobbered by the sync and it audited a local tree that
         # lacks output/content (events) -> false EventID danglers. Post-sync S3 is the authoritative,
         # complete corpus; repairing it now makes the fix durable and the audit truthful.
-        refreshed = _phase3_durable_referential_fix()
-        _notify_url_review_pending()  # email the operator if URL finds await human review
-        # After every merge (dedup auto-merge, bibliography reconcile, review-UI merges): the book
-        # is "done" only if its provenance holds - in gate mode block, held for review instead.
-        # the corpus the fix refreshed is reused; if its refresh failed, the gate refreshes itself
-        if _phase_end_held(_provenance_gate("3", refresh=not refreshed), "Phase 3"):
-            _offramp_doc_needs_review("provenance validation failed after Phase 3")
-        else:
-            _advance_doc_lifecycle("3")  # doc# -> done (multi-doc; terminal)
-        # done either way: a provenance off-ramp goes to human review, not to an automatic rerun
-        _finish_own_enrich_row()
+        try:
+            refreshed = _phase3_durable_referential_fix()
+            _notify_url_review_pending()  # email the operator if URL finds await human review
+            # After every merge (dedup auto-merge, bibliography reconcile, review-UI merges): the book
+            # is "done" only if its provenance holds - in gate mode block, held for review instead.
+            # the corpus the fix refreshed is reused; if its refresh failed, the gate refreshes itself
+            if _phase_end_held(_provenance_gate("3", refresh=not refreshed), "Phase 3"):
+                _offramp_doc_needs_review("provenance validation failed after Phase 3")
+            else:
+                _advance_doc_lifecycle("3")  # doc# -> done (multi-doc; terminal)
+            # done either way: a provenance off-ramp goes to human review, not to an automatic rerun
+            _finish_own_enrich_row()
+        finally:
+            # released even if the repair or the gate raises (D10; the enrich row then stays
+            # queued for the reconcile), and before the next book is triggered: it needs the lock
+            _remove_lock(phase_script)
         next_enrich = _get_next_pending_enrich()
         if next_enrich:
             logger.info(
@@ -4364,18 +4374,35 @@ def _acquire_lock(phase_script: str) -> bool:
         return True
 
 
+# locks this task has already released. Released once only: the delete has no owner check, so a
+# second release (a SIGTERM during the Phase 3 post-sync repair, then its finally) could delete
+# the lock a retry task has just taken (task 1.3)
+_released_locks: set = set()
+
+
 def _remove_lock(phase_script: str) -> None:
-    """Remove the DynamoDB lock for this phase."""
+    """Remove the DynamoDB lock for this phase (once per task)."""
     lock_key = _lock_key(phase_script)
-    if not lock_key:
+    if not lock_key or lock_key in _released_locks:
         return
     try:
         table_name = os.environ.get("CACHE_TABLE", "dev-wwii-api-cache")
         table = boto3.resource("dynamodb", region_name=REGION).Table(table_name)
+        _released_locks.add(
+            lock_key
+        )  # before the delete: a SIGTERM mid-call must not repeat it
         table.delete_item(Key={"cache_key": lock_key})
         logger.info("Removed lock: %s", lock_key)
     except Exception as e:
-        logger.warning("Failed to remove lock %s: %s", lock_key, e)
+        _released_locks.discard(lock_key)  # not released: a later call may retry
+        logger.warning(
+            "Failed to remove lock %s: %s. The next run of this phase waits for the lock's 2h "
+            "TTL; delete item cache_key=%s from table %s to release it sooner",
+            lock_key,
+            e,
+            lock_key,
+            os.environ.get("CACHE_TABLE", "dev-wwii-api-cache"),
+        )
 
 
 def _clear_all_locks() -> None:
