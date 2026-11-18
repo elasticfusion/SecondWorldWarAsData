@@ -11,7 +11,7 @@ import threading
 import time
 import uuid
 from pathlib import Path
-from typing import Dict, Optional, Union
+from typing import Any, Dict, Optional, Union
 
 import boto3
 
@@ -117,18 +117,86 @@ def _requeue_interrupted_resume() -> None:
         logger.error("Could not re-queue batch %s: %s", _current_resume_batch, e)
 
 
+# Set once a failure alert for this task has gone out, so a later path (the watchdog's SIGTERM, a
+# re-raised exception) does not alert the same stop twice.
+_stop_alerted = False
+
+
+def _mark_stop_alerted() -> None:
+    """A stop already alerted another way (the watchdog's _notify_failure)."""
+    global _stop_alerted
+    _stop_alerted = True
+
+
+def _alert_phase_stopped(event: str, note: str, **fields: Any) -> None:
+    """ONE alert for a phase that stops without finishing (task 1.1, 2026-11-18): an
+    ``OBSERV phase.<event> status=error`` line, which observe_error escalates to the
+    phase2-complete topic (email + Slack). Carries phase and book; ``note`` says what to do. At
+    most once per task. Never raises."""
+    global _stop_alerted
+    if _stop_alerted:
+        logger.info(
+            "OBSERV phase.stop_alert_suppressed event=%s status=ok "
+            "(this task's stop was already alerted)",
+            event,
+        )
+        return
+    _stop_alerted = True
+    try:
+        observe_error(
+            "phase",
+            event,
+            note=note,
+            phase=Path(_current_phase_script).stem if _current_phase_script else "",
+            book=os.environ.get("BOOK_NAME", ""),
+            task=os.environ.get("ECS_TASK_ID", ""),
+            **fields,
+        )
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - callers (SIGTERM, exit paths) must reach their exit
+        logger.error(
+            "OBSERV phase.stop_alert_failed event=%s err=%s", event, type(e).__name__
+        )
+
+
 def _handle_sigterm(_signum, _frame):
     """Emergency sync on spot termination — 30 second window."""
     logger.warning("SIGTERM received — performing emergency S3 sync")
+    synced = False
     try:
         _final_sync(_current_phase_script)
-        _remove_lock(_current_phase_script)
-        _release_nat_lease()
-        # last: it publishes an alert, which must not eat the window the lock + lease need
-        _requeue_interrupted_resume()
-        logger.info("Emergency sync complete — exiting cleanly")
+        synced = True
+        logger.info("Emergency sync complete")
     except Exception as e:
         logger.error("Emergency sync failed: %s", e)
+    # Each step on its own: a failed upload must not keep the lock (it would block the re-trigger
+    # the alert asks for, up to the 2 h TTL) or the NAT lease. Then the batch re-queue (preserves
+    # work) and, last, the stop alert (informational) in what is left of the 30 s window.
+    for step in (lambda: _remove_lock(_current_phase_script), _release_nat_lease,
+                 _requeue_interrupted_resume):  # fmt: skip
+        try:
+            step()
+        except (
+            Exception
+        ) as e:  # noqa: BLE001 - the emergency path must reach the alert and exit
+            logger.error("SIGTERM cleanup step failed: %s", type(e).__name__)
+    _alert_phase_stopped(
+        "task_stopped",
+        (
+            (
+                "the task was stopped (Spot interruption, ECS stop or deploy) before the phase "
+                "finished; what had changed was uploaded. Re-trigger the phase for this book"
+            )
+            if synced
+            else (
+                "the task was stopped before the phase finished AND its emergency upload failed: "
+                "changes since the last 2-minute sync are lost. Re-trigger the phase for this book"
+            )
+        ),
+        signal="SIGTERM",
+        synced=synced,
+    )
     sys.exit(143)
 
 
@@ -392,6 +460,8 @@ class BackgroundSync:
                     _notify_failure(_current_phase_script, -1)
                 except Exception:
                     pass
+                # _notify_failure marks the stop alerted when it was delivered, so the SIGTERM
+                # below alerts only if that notice failed
                 os.kill(os.getpid(), signal.SIGTERM)
         except Exception as e:
             logger.warning("Background sync error: %s", e)
@@ -718,6 +788,19 @@ def _ensure_nat_if_needed(phase_script: str) -> None:
         stem,
         max_attempts,
     )
+    _alert_phase_stopped(
+        "nat_not_ready",
+        f"NAT never became ready after {max_attempts} attempts, so the phase stopped before any "
+        "work. Check the nat-manager Lambda logs, then re-trigger the phase for this book",
+        attempts=max_attempts,
+    )
+    # KNOWN GAP (task 1.1): with no NAT this task has no route to SNS (no SNS VPC endpoint), so the
+    # alert above is most likely not delivered, and the ECS task-failure rule only clears locks.
+    # Tracked in docs/current/TODO.md (Group 1, "alert from outside the task").
+    logger.error(
+        "OBSERV phase.alert_undeliverable status=error reason=no_nat - the nat_not_ready alert "
+        "probably did not reach SNS; this log line is the record. See the nat-manager logs"
+    )
     # Release the phase lock the trigger holds BEFORE exiting so a sibling can
     # relaunch immediately instead of waiting out the stale-lock grace window
     # (~5 min) or the 2h lock TTL. Queued work (pending#*) is untouched and the
@@ -779,8 +862,27 @@ def _start_openserp_if_needed(phase_script: str) -> None:
                 return
             time.sleep(10)
         logger.warning("OpenSERP service did not start in 12 min")
+        _alert_openserp_down("did not start within 12 minutes")
     except Exception as e:
         logger.warning("Failed to start OpenSERP: %s", e)
+        _alert_openserp_down(type(e).__name__)
+
+
+def _alert_openserp_down(reason: str) -> None:
+    """OpenSERP is unavailable for this Phase 3 run ("was gap 1": it was silent). Until owner
+    decision D8c is built (stop the phase, re-queue the book), this run's OpenSERP searches return
+    nothing and entities are stamped searched: say so and what to do. Never raises."""
+    observe_error(
+        "openserp",
+        "unavailable",
+        note=(
+            "OpenSERP is unavailable, so this Phase 3 run's web searches return nothing and the "
+            "entities are marked searched for 90 days. Check the ECS service "
+            f"{os.environ.get('ENV_NAME', 'dev')}-wwii-openserp, then re-run Phase 3 for this book"
+        ),
+        reason=reason,
+        book=os.environ.get("BOOK_NAME", ""),
+    )
 
 
 def _patch_openserp_url(ip: str) -> None:
@@ -823,9 +925,20 @@ def _preflight_credit_check() -> None:
             resp.status_code == 403 and "credit" in resp.text.lower()
         ):
             logger.error("PREFLIGHT FAILED: Grok API credits depleted. Aborting.")
+            _alert_phase_stopped(
+                "grok_credits_depleted",
+                "xAI reports no API credits (HTTP %d), so the phase stopped before any work. "
+                "Top up the xAI account, then re-trigger the phase for this book"
+                % resp.status_code,
+            )
             sys.exit(1)
         if resp.status_code == 401:
             logger.error("PREFLIGHT FAILED: Invalid API key. Aborting.")
+            _alert_phase_stopped(
+                "grok_key_invalid",
+                "xAI rejected the API key (HTTP 401), so the phase stopped before any work. "
+                "Fix the Secrets Manager secret named by SECRETS_ID, then re-trigger the phase",
+            )
             sys.exit(1)
         resp.raise_for_status()
         logger.info("Preflight OK: Grok API credits available")
@@ -1474,22 +1587,31 @@ def _wait_for_reconcile_barrier() -> str:
     # distinct anomaly (not the soft 'might miss'), and doubly so if the poller is disabled.
     outstanding = _pending_batches_for_book()
     if outstanding:
-        logger.warning(
-            "OBSERV reconcile.barrier_timeout_incomplete keys=%s waited=%ds pending_batches=%d "
-            "book=%s — proceeding with KNOWN-INCOMPLETE data (late bibliography/endnote records "
-            "from the queued batch WILL be missed; they land only when the batch-poller drains the "
-            "queue — re-enrich after)",
-            ",".join(keys),
-            waited,
-            outstanding,
-            os.environ.get("BOOK_NAME", ""),
+        observe_error(
+            "reconcile",
+            "barrier_timeout_incomplete",
+            note=(
+                "Phase 3 is going on with KNOWN-INCOMPLETE bibliography data: late "
+                "bibliography/endnote records from the queued batch will be missed. Re-run Phase 3 "
+                "for this book after the batch-poller has drained the queue"
+            ),
+            keys=",".join(keys),
+            waited_s=waited,
+            pending_batches=outstanding,
+            book=os.environ.get("BOOK_NAME", ""),
         )
         return "timeout_incomplete"
-    logger.warning(
-        "OBSERV reconcile.barrier_timeout keys=%s waited=%ds — proceeding (Phase 3 may snapshot "
-        "before reconcile finished; a late bibliography record could be missed this run)",
-        ",".join(keys),
-        waited,
+    observe_error(
+        "reconcile",
+        "barrier_timeout",
+        note=(
+            "Phase 3 did not see the bibliography reconcile finish and is going on; late "
+            "bibliography records can be missing. Check the end of the Phase 2 log for the "
+            "reconcile (failed, or slower than RECONCILE_BARRIER_WAIT_SECS), then re-run Phase 3"
+        ),
+        keys=",".join(keys),
+        waited_s=waited,
+        book=os.environ.get("BOOK_NAME", ""),
     )
     return "timeout"
 
@@ -1658,30 +1780,37 @@ def _observe_bibliography_download_coverage(
             barrier_status,
         )
         if local_count < s3_count:
-            # Correlate with the drain barrier so the root cause is unambiguous.
+            # Correlate with the drain barrier so the root cause is unambiguous (the `cause` field;
+            # the note is capped at 300 characters by observe, so the cause rides separately).
             if barrier_status in ("timeout", "timeout_incomplete"):
                 cause = (
-                    "the reconcile barrier TIMED OUT, so Phase 3 snapshotted before reconcile "
-                    "finished publishing (HIGH#5 drain miss — raise RECONCILE_BARRIER_WAIT_SECS "
-                    "or investigate why reconcile is slow/failed)"
+                    "reconcile barrier TIMED OUT: Phase 3 snapshotted before the reconcile "
+                    "finished; raise RECONCILE_BARRIER_WAIT_SECS or find why it is slow/failed"
                 )
             elif barrier_status == "seen":
                 cause = (
-                    "the reconcile barrier was SEEN (ordering held), so this shortfall is NOT the "
-                    "drain race — likely a scoped-download filter dropping cross-book files"
+                    "barrier SEEN, so not the drain race: likely a scoped-download filter "
+                    "dropping cross-book bibliography files"
                 )
             else:
                 cause = (
-                    f"barrier status={barrier_status}; likely a scoped-download filter "
-                    "dropping cross-book bibliography files"
+                    f"barrier {barrier_status}: likely a scoped-download filter dropping "
+                    "cross-book bibliography files"
                 )
-            logger.warning(
-                "Phase 3 bibliography download SHORTFALL: %d/%d records present locally "
-                "(missing %d). Cause: %s.",
-                local_count,
-                s3_count,
-                s3_count - local_count,
-                cause,
+            observe_error(
+                "phase3",
+                "bib_download_shortfall",
+                note=(
+                    f"SHORTFALL: {local_count} of {s3_count} bibliography records downloaded, so "
+                    "the resolver runs on a partial set. Fix the cause (field cause), then re-run "
+                    "Phase 3 for this book"
+                ),
+                cause=cause,
+                local=local_count,
+                s3=s3_count,
+                missing=s3_count - local_count,
+                barrier=barrier_status,
+                book=os.environ.get("BOOK_NAME", ""),
             )
     except Exception as e:  # noqa: BLE001 - observability must never break the download
         logger.debug("bibliography download coverage check failed: %s", e)
@@ -2365,8 +2494,30 @@ def _phase3_durable_referential_fix() -> bool:
 
         rc = _validate_phase3(str(WORKDIR / "output"), strict_coverage=False)
         logger.info("Post-sync Phase-3 validation exit=%d (0=pass, 1=fail)", rc)
+        if rc != 0:
+            observe_error(
+                "phase3",
+                "validation_failed",
+                note=(
+                    "the post-sync Phase 3 validation found hard failures (the FAIL lines above "
+                    "'=== PHASE3 VALIDATION FAIL' in this task's log). Fix the records or the "
+                    "step that wrote them, then re-run Phase 3 for this book"
+                ),
+                exit_code=rc,
+                book=os.environ.get("BOOK_NAME", ""),
+            )
     except Exception as e:  # noqa: BLE001 - validation must never crash teardown
         logger.warning("post-sync Phase-3 validation skipped: %s", e)
+        observe_error(
+            "phase3",
+            "validation_not_run",
+            note=(
+                "the post-sync Phase 3 validation could not run, so this book's Phase 3 output "
+                "is unchecked. Run scripts/validate_phase3.py on the corpus, or re-run Phase 3"
+            ),
+            error=type(e).__name__,
+            book=os.environ.get("BOOK_NAME", ""),
+        )
     return refreshed
 
 
@@ -2933,6 +3084,17 @@ def _reconcile_bibliography_full_corpus() -> None:
         Exception
     ) as e:  # noqa: BLE001 - reconcile is best-effort, never blocks dedup
         logger.warning("Full-corpus bibliography reconcile failed: %s", e)
+        observe_error(
+            "reconcile",
+            "failed",
+            note=(
+                "the full-corpus bibliography reconcile failed, so no barrier was published: the "
+                "next Phase 3 waits out RECONCILE_BARRIER_WAIT_SECS and works on unmerged "
+                "bibliography shards. Fix the cause (see this task's log), then re-run the "
+                "reconcile (Phase 2 dedup step) before Phase 3"
+            ),
+            error=type(e).__name__,
+        )
 
 
 # S3 key for the "Phase-2 dedup/reconcile finished publishing bibliography" barrier. Book-scoped so
@@ -3895,20 +4057,26 @@ def _stop_openserp_if_running(phase_script: str) -> None:
 
 
 def _notify_failure(phase_script: str, returncode: int) -> None:
-    """Publish failure notification to SNS."""
-    topic_arn = os.environ.get("NOTIFICATION_TOPIC_ARN", "")
-    if not topic_arn:
-        return
+    """Publish the failure notification (the one publisher, publish_alert). Marks the stop
+    alerted only when it was delivered, so a failed publish does not suppress a later alert.
+    """
     phase_name = PHASE_NAMES.get(phase_script, phase_script)
-    try:
-        sns = boto3.client("sns", region_name=REGION)
-        sns.publish(
-            TopicArn=topic_arn,
-            Subject=f"WWII Pipeline: {phase_name} FAILED",
-            Message=f"{phase_name} failed with exit code {returncode}.\nBucket: {BUCKET}\n\nCheck logs: aws logs tail /ecs/dev-wwii-pipeline --region us-east-1 --since 30m",
+    # one line, bounded (the slug is validated at intake; do not trust it in a message body)
+    book = " ".join((os.environ.get("BOOK_NAME", "") or "(all books)").split())[:120]
+    sent = publish_alert(
+        f"WWII Pipeline: {phase_name} FAILED",
+        f"{phase_name} failed with exit code {returncode} for book {book}.\nBucket: {BUCKET}\n\n"
+        "Check logs: aws logs tail /ecs/dev-wwii-pipeline --region us-east-1 --since 30m",
+    )
+    if sent:
+        _mark_stop_alerted()
+        logger.info("OBSERV phase.failure_notice status=ok returncode=%s", returncode)
+    else:
+        logger.warning(
+            "OBSERV phase.failure_notice status=warn returncode=%s - not delivered (no "
+            "NOTIFICATION_TOPIC_ARN or SNS error); a later stop alert may still go out",
+            returncode,
         )
-    except Exception as e:
-        logger.warning("Failed to send failure notification: %s", e)
 
 
 def _notify_complete(phase_script: str) -> None:
@@ -4958,6 +5126,28 @@ def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> Non
     logger.info("Retrieve-only complete for batch %s", batch_id)
 
 
+def _dispatch(argv: list) -> None:
+    """Run the requested mode. A wrapper crash (an Exception, not a deliberate SystemExit) sends
+    one alert before it propagates (task 1.1): before, only the traceback was left."""
+    try:
+        if argv[1] == "--submit-only":
+            run_submit_only(argv[2], argv[3:])
+        elif argv[1] == "--retrieve-only":
+            run_retrieve_only(argv[3], argv[4:], batch_id=argv[2])
+        else:
+            run_phase(argv[1], argv[2:])
+    except (
+        Exception
+    ) as crash:  # SystemExit is not an Exception: deliberate exits pass through
+        _alert_phase_stopped(
+            "crashed",
+            "the task's wrapper (ecs_entrypoint.py) crashed before the phase finished; see the "
+            "traceback in this task's log, fix it, then re-trigger the phase for this book",
+            error=type(crash).__name__,
+        )
+        raise
+
+
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print(
@@ -4977,9 +5167,4 @@ if __name__ == "__main__":
 
     _atexit.register(_release_nat_lease)
 
-    if sys.argv[1] == "--submit-only":
-        run_submit_only(sys.argv[2], sys.argv[3:])
-    elif sys.argv[1] == "--retrieve-only":
-        run_retrieve_only(sys.argv[3], sys.argv[4:], batch_id=sys.argv[2])
-    else:
-        run_phase(sys.argv[1], sys.argv[2:])
+    _dispatch(sys.argv)

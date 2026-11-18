@@ -123,6 +123,21 @@ What several HIGH items in later groups depend on; MED/LOW items are here when a
 **Test:** restore, run with OpenSERP off: the non-search steps run; force each alert once; a relocated
 record disappears from S3; two queued books each run exactly once.
 
+#### Task 1.1 follow-ups (found in review, 2026-11-18)
+- **MED - an alert from a task that has no network path is lost.** When NAT never becomes ready the
+  task has no route to SNS (nat-manager creates interface endpoints for ecr, logs, secretsmanager,
+  ecs, ec2, lambda and scheduler, not sns), so the `phase.nat_not_ready` alert most likely never
+  arrives; the task logs `OBSERV phase.alert_undeliverable reason=no_nat` as the record. The ECS
+  task-failure rule (`cloudformation/compute.yaml:735`) only sends `check_locks`. Fix (DRY): have the
+  trigger Lambda, on that STOPPED/non-zero event, publish one alert through the same phase2-complete
+  path when the task did not report its own stop (e.g. a `phase.stop_alerted` marker it writes to
+  DynamoDB, which the gateway endpoint reaches without NAT). This also covers a SIGKILL'd task.
+- **LOW - a standalone Phase 3 re-run can repeat the barrier-timeout alert.** The alerts ask the
+  operator to re-run Phase 3; if the reconcile barrier and run marker lack a `run_id`, freshness falls
+  back to `completed_at >= task start - 30 s`, so the re-run waits the full 300 s and raises
+  `reconcile.barrier_timeout` again with nothing new. Verify run ids are always written; if not, skip
+  the wait for an operator re-run (or downgrade the repeat).
+
 #### Step: EP run_phase preflight (PHASE3_MAP §1 "ECS wrapper") (moved here from Group 4)
 - **MED - three of the four preflight aborts send no alert.** Credits depleted, invalid API key
   (`EP:820-829`) and NAT never ready (`EP:715-729`) are a `logger.error` and `sys.exit(1)`. No

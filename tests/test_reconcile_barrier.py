@@ -140,7 +140,9 @@ def test_coverage_shortfall_correlates_with_barrier_status(
     with caplog.at_level(logging.WARNING):
         ee._observe_bibliography_download_coverage(s3, barrier_status="timeout")
     msg = " ".join(r.message for r in caplog.records)
-    assert "SHORTFALL" in msg and "TIMED OUT" in msg
+    # an alert now (task 1.1): status=error, escalated to email + Slack, with the cause as a field
+    assert "phase3.bib_download_shortfall status=error" in msg
+    assert "SHORTFALL" in msg and "TIMED_OUT" in msg
 
 
 def _s3_with(barrier_body, marker_body):
