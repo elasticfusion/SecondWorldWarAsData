@@ -17,6 +17,7 @@ import boto3
 
 from src.utils.observe import (
     observe,
+    observe_alert,
     observe_error,
     observe_warn,
     observe_warn_counted,
@@ -39,6 +40,7 @@ if os.environ.get("ECS_CONTAINER_METADATA_URI"):
 
             _task_meta = _req.get(f"{_meta_uri}/task", timeout=2).json()
             os.environ["ECS_TASK_ID"] = _task_meta.get("TaskARN", "").split("/")[-1]
+            os.environ.setdefault("ECS_TASK_FAMILY", _task_meta.get("Family", ""))
         except Exception:
             pass
 logger = logging.getLogger(__name__)
@@ -130,9 +132,51 @@ _watchdog_stop = False
 
 
 def _mark_stop_alerted() -> None:
-    """A stop already alerted another way (the watchdog's _notify_failure)."""
+    """A stop already alerted another way (the watchdog's _notify_failure), delivered."""
     global _stop_alerted
     _stop_alerted = True
+    _mark_task(alerted=True)
+
+
+def _reset_spot_ladder() -> None:
+    """The phase succeeded: reset this family and book's Spot price ladder (src/utils/spot_ladder,
+    task 1.1b). Never raises: a leftover row only makes the next launch start one rung up.
+    """
+    family = os.environ.get("ECS_TASK_FAMILY", "")
+    if not family:
+        return
+    from src.utils import spot_ladder
+
+    try:
+        spot_ladder.reset(_cache_table(), family, os.environ.get("BOOK_NAME", ""))
+    except Exception as e:  # noqa: BLE001 - the phase already succeeded
+        logger.warning(
+            "OBSERV spot.ladder_reset_failed status=warn family=%s err=%s - the next launch of "
+            "this book starts one rung up (never above the on-demand price)",
+            family,
+            type(e).__name__,
+        )
+
+
+def _mark_task(**fields: Any) -> bool:
+    """Record ``fields`` on this task's stop marker (src/utils/task_marker), read by the trigger
+    Lambda when ECS reports the task STOPPED (task 1.1b). Only in ECS. Never raises."""
+    task_id = os.environ.get("ECS_TASK_ID", "")
+    if not task_id:
+        return False
+    from src.utils import task_marker
+
+    try:
+        task_marker.mark(_cache_table(), task_id, **fields)
+        return True
+    except Exception as e:  # noqa: BLE001 - exit paths must reach their exit
+        logger.warning(
+            "OBSERV task.marker_failed status=warn fields=%s err=%s - the trigger Lambda may "
+            "alert this stop a second time",
+            ",".join(sorted(fields)),
+            type(e).__name__,
+        )
+        return False
 
 
 def _alert_phase_stopped(event: str, note: str, **fields: Any) -> None:
@@ -150,15 +194,19 @@ def _alert_phase_stopped(event: str, note: str, **fields: Any) -> None:
         return
     _stop_alerted = True
     try:
-        observe_error(
+        if observe_alert(
             "phase",
             event,
             note=note,
+            dedup_key=os.environ.get("ECS_TASK_ID", "") or "local",
             phase=Path(_current_phase_script).stem if _current_phase_script else "",
             book=os.environ.get("BOOK_NAME", ""),
             task=os.environ.get("ECS_TASK_ID", ""),
             **fields,
-        )
+        ):
+            _mark_task(
+                alerted=True
+            )  # else the trigger Lambda alerts when ECS reports the stop
     except (
         Exception
     ) as e:  # noqa: BLE001 - callers (SIGTERM, exit paths) must reach their exit
@@ -168,24 +216,27 @@ def _alert_phase_stopped(event: str, note: str, **fields: Any) -> None:
 
 
 def _sigterm_next_step() -> "tuple[str, bool]":
-    """(what the SIGTERM alert says happens next, whether to give the attempt back). A stop from
-    OUTSIDE the task (a Spot reclaim, an ECS stop, a deploy) is not the book's fault: its Phase 3
+    """(what the SIGTERM alert says happens next, whether this is an OUTSIDE stop). A stop from
+    outside the task (a Spot reclaim, an ECS stop, a deploy) is not the book's fault: its Phase 3
     attempt is given back (task 1.2b, owner: Spot can be lost at any time) and the queue row
-    stays, so the reconcile resumes it. A watchdog stop (the run stalled) or an already-alerted
-    stop still counts. Decided BEFORE the alert (which marks the stop alerted); no AWS call.
-    """
-    book = os.environ.get("BOOK_NAME", "")
-    if not book or "phase3" not in _current_phase_script:
-        return "Re-trigger the phase for this book", False
+    stays; the dev-wwii-spot-recovery / task-failure rules relaunch it as soon as ECS reports the
+    stop. A watchdog stop (the run stalled) or an already-alerted stop still counts. Decided
+    BEFORE the alert (which marks the stop alerted); no AWS call."""
+    queued = "phase3" in _current_phase_script and bool(os.environ.get("BOOK_NAME"))
     if _watchdog_stop or _stop_alerted:
+        if queued:
+            return (
+                "The book stays queued and is retried (this counts as an attempt)",
+                False,
+            )
+        return "Re-trigger the phase for this book", False
+    if queued:
         return (
-            "The book stays queued; the hourly reconcile retries it (this counts as an attempt)",
-            False,
+            "The book stays queued and is relaunched when ECS reports the stop; no "
+            "re-trigger needed",
+            True,
         )
-    return (
-        "The book stays queued; the hourly reconcile resumes it, no re-trigger needed",
-        True,
-    )
+    return "Re-trigger the phase for this book", True
 
 
 def _give_back_own_attempt() -> bool:
@@ -198,7 +249,14 @@ def _give_back_own_attempt() -> bool:
 
     book = os.environ.get("BOOK_NAME", "")
     try:
-        return pending_queue.give_back(_cache_table(), book)
+        given = pending_queue.give_back(
+            _cache_table(), book, task_id=os.environ.get("ECS_TASK_ID", "")
+        )
+        if given:
+            _mark_task(
+                given_back=True
+            )  # the trigger Lambda must not give it back again
+        return given
     except Exception as e:  # noqa: BLE001 - exit paths must reach their alert and exit
         logger.error(
             "OBSERV queue.give_back_failed book=%s err=%s status=error - this attempt still "
@@ -230,13 +288,33 @@ def _handle_sigterm(_signum, _frame):
             Exception
         ) as e:  # noqa: BLE001 - the emergency path must reach the alert and exit
             logger.error("SIGTERM cleanup step failed: %s", type(e).__name__)
-    next_step, give_back = _sigterm_next_step()
+    next_step, outside = _sigterm_next_step()
+    # An outside stop is reported by the trigger Lambda, which knows its cause (Spot reclaim, ECS
+    # stop, deploy) and the next launch (src/utils/spot_ladder): one alert, not two. The task only
+    # records what it knows; if that record fails, it alerts itself.
+    if outside and _mark_task(sigterm=True, synced=synced):
+        logger.info(
+            "OBSERV phase.stop_reported_by_trigger status=ok synced=%s - the trigger Lambda "
+            "alerts this stop with its cause",
+            synced,
+        )
+    else:
+        _alert_stop_in_task(synced, next_step)
+    if (
+        outside
+    ):  # after the alert: a slow DynamoDB call must not cost the alert (30 s window)
+        _give_back_own_attempt()
+    sys.exit(143)
+
+
+def _alert_stop_in_task(synced: bool, next_step: str) -> None:
+    """The SIGTERM alert, sent by the task itself (a watchdog stop, or no stop marker)."""
     _alert_phase_stopped(
         "task_stopped",
         (
             (
-                "the task was stopped (Spot interruption, ECS stop or deploy) before the phase "
-                f"finished; what had changed was uploaded. {next_step}"
+                "the task was stopped before the phase finished; what had changed was uploaded. "
+                f"{next_step}"
             )
             if synced
             else (
@@ -247,11 +325,6 @@ def _handle_sigterm(_signum, _frame):
         signal="SIGTERM",
         synced=synced,
     )
-    if (
-        give_back
-    ):  # after the alert: a slow DynamoDB call must not cost the alert (30 s window)
-        _give_back_own_attempt()
-    sys.exit(143)
 
 
 signal.signal(signal.SIGTERM, _handle_sigterm)
@@ -1276,6 +1349,7 @@ def run_phase(phase_script: str, extra_args: list) -> None:
     logger.info("[step] %s: final S3 sync", phase_name)
     _final_sync(phase_script)
     _post_process(phase_script, env)
+    _reset_spot_ladder()  # finished: this book's next launch starts small on Spot again
     _release_nat_lease()  # M3: task done — drop NAT demand
 
 
@@ -2855,6 +2929,9 @@ def _mark_watchdog_stop() -> None:
 def _mark_attempt_claimed() -> None:
     global _attempt_claimed
     _attempt_claimed = True
+    # the trigger Lambda gives the attempt back for a task killed by an outside stop before it
+    # could (task 1.1b); it must know this task, and not an earlier one, counted it
+    _mark_task(claimed=True, book=os.environ.get("BOOK_NAME", ""))
 
 
 def _claim_enrich_attempt() -> bool:
@@ -2876,7 +2953,9 @@ def _claim_enrich_attempt() -> bool:
     except Exception:  # noqa: BLE001 - the default cap still applies
         cap = pending_queue.DEFAULT_MAX_ATTEMPTS
     try:
-        attempts, allowed = pending_queue.claim_attempt(_cache_table(), book, cap)
+        attempts, allowed = pending_queue.claim_attempt(
+            _cache_table(), book, cap, task_id=os.environ.get("ECS_TASK_ID", "")
+        )
     except Exception as e:  # noqa: BLE001 - not counting must not stop a run
         observe_warn(
             "queue",

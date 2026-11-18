@@ -29,6 +29,10 @@ def alerts(monkeypatch):
         return "error"
 
     monkeypatch.setattr(ee, "observe_error", _capture)
+    # the stop alert reports delivery (task 1.1b): captured the same way
+    monkeypatch.setattr(
+        ee, "observe_alert", lambda *a, **k: _capture(*a, **k) and False
+    )
     monkeypatch.setattr(ee, "_stop_alerted", False)
     monkeypatch.setattr(ee, "_current_phase_script", "phase3_enrich_data.py")
     monkeypatch.setenv("BOOK_NAME", "USA-E-XChannel")

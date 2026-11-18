@@ -182,7 +182,7 @@ def finish(table: Any, kind: str, book: str) -> None:
 
 
 def claim_attempt(
-    table: Any, book: str, max_attempts: int = DEFAULT_MAX_ATTEMPTS
+    table: Any, book: str, max_attempts: int = DEFAULT_MAX_ATTEMPTS, task_id: str = ""
 ) -> Tuple[int, bool]:
     """A Phase 3 task for ``book`` is starting: count the attempt on its row (atomic ADD; the row
     is created if absent, so a failed run is retried) and clear any deferral (this run is the
@@ -190,13 +190,18 @@ def claim_attempt(
     (kept, never dropped) and allowed is False: the caller must not run, and alerts.
     """
     key = {"cache_key": row_key("enrich", book)}
+    values: dict = {":b": book, ":t": int(time.time()), ":one": 1}
+    claimed_by = ""
+    if task_id:  # only this task may give this attempt back (give_back)
+        values[":task"] = task_id
+        claimed_by = ", claimed_by = :task"
     resp = table.update_item(
         Key=key,
         UpdateExpression=(
-            "SET book = :b, queued_at = if_not_exists(queued_at, :t), started_at = :t "
-            "ADD attempts :one"
+            "SET book = :b, queued_at = if_not_exists(queued_at, :t), started_at = :t"
+            f"{claimed_by} ADD attempts :one"
         ),
-        ExpressionAttributeValues={":b": book, ":t": int(time.time()), ":one": 1},
+        ExpressionAttributeValues=values,
         ReturnValues="UPDATED_NEW",
     )
     attempts = int((resp.get("Attributes") or {}).get("attempts", 1))
@@ -263,16 +268,24 @@ def _condition_failed(e: Exception) -> bool:
     return code == "ConditionalCheckFailedException"
 
 
-def give_back(table: Any, book: str) -> bool:
-    """Undo this task's attempt (the stop was not the book's fault). Only on an existing row
-    with attempts > 0: a finished book's row is never re-created. Returns True if given back.
-    """
+def give_back(table: Any, book: str, task_id: str = "") -> bool:
+    """Undo an attempt (the stop was not the book's fault). Only on an existing row with
+    attempts > 0, so a finished book's row is never re-created. With ``task_id``, only the attempt
+    THAT task claimed (``claimed_by``), once: the task and the trigger Lambda can both try, and a
+    later run's attempt is never undone. Returns True if given back."""
+    cond = "attribute_exists(cache_key) AND attempts > :zero"
+    update = "ADD attempts :minus"
+    values: dict = {":minus": -1, ":zero": 0}
+    if task_id:
+        cond += " AND claimed_by = :task"
+        update += " REMOVE claimed_by"
+        values[":task"] = task_id
     try:
         table.update_item(
             Key={"cache_key": row_key("enrich", book)},
-            UpdateExpression="ADD attempts :minus",
-            ConditionExpression="attribute_exists(cache_key) AND attempts > :zero",
-            ExpressionAttributeValues={":minus": -1, ":zero": 0},
+            UpdateExpression=update,
+            ConditionExpression=cond,
+            ExpressionAttributeValues=values,
         )
         return True
     except Exception as e:  # noqa: BLE001 - re-raised unless it is the guard

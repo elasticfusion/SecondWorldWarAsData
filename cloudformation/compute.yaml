@@ -731,7 +731,10 @@ Resources:
         - Id: TriggerLambda
           Arn: !GetAtt TriggerFunction.Arn
 
-  # --- ECS task failure detection (any non-zero exit) ---
+  # --- ECS task failure detection (any non-zero exit, or a task that never started) ---
+  # The whole event goes to the trigger (no fixed Input, task 1.1b): it alerts a stop the task did
+  # not report itself (killed, out of memory, no network for its alert, failed to start) and gives
+  # back the attempt of an outside stop, then runs the same lock/queue recovery as before.
   TaskFailureRule:
     Type: AWS::Events::Rule
     Properties:
@@ -747,13 +750,88 @@ Resources:
             - !Sub arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:cluster/${EnvironmentName}-wwii-pipeline
           lastStatus:
             - STOPPED
-          containers:
-            exitCode:
-              - anything-but: 0
+          $or:
+            - containers:
+                exitCode:
+                  - anything-but: 0
+            - stopCode:
+                - TaskFailedToStart
       Targets:
         - Id: TriggerLambda
           Arn: !GetAtt TriggerFunction.Arn
-          Input: '{"source": "scheduled", "action": "check_locks"}'
+
+  # --- Daily Fargate price refresh for the Spot price ladder (task 1.1b) ---
+  # Own role (least privilege): Cost Explorer + Price List reads, one api-cache item, alerts.
+  # One Cost Explorer request a day ($0.01). lambda_handlers/price_refresh.py.
+  PriceRefreshRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${EnvironmentName}-wwii-price-refresh-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: { Service: lambda.amazonaws.com }
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: price-refresh
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              # neither action supports resource-level permissions
+              - Effect: Allow
+                Action:
+                  - ce:GetCostAndUsage
+                  - pricing:GetProducts
+                Resource: '*'
+              - Effect: Allow
+                Action: dynamodb:PutItem
+                Resource: !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${CacheTableName}
+                Condition:
+                  ForAllValues:StringLike:
+                    dynamodb:LeadingKeys:
+                      - price#fargate#*
+              - Effect: Allow
+                Action: sns:Publish
+                Resource: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-phase2-complete
+
+  PriceRefreshFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${EnvironmentName}-wwii-price-refresh
+      Runtime: python3.12
+      Handler: lambda_handlers.price_refresh.handler
+      Role: !GetAtt PriceRefreshRole.Arn
+      Timeout: 60
+      MemorySize: 256
+      Code:
+        S3Bucket: !Ref LambdaCodeBucket
+        S3Key: !Ref LambdaCodeKey
+      Environment:
+        Variables:
+          ENV_NAME: !Ref EnvironmentName
+          CACHE_TABLE: !Ref CacheTableName
+          NOTIFICATION_TOPIC_ARN: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-phase2-complete
+
+  PriceRefreshSchedule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub ${EnvironmentName}-wwii-price-refresh-daily
+      ScheduleExpression: rate(1 day)
+      State: ENABLED
+      Targets:
+        - Arn: !GetAtt PriceRefreshFunction.Arn
+          Id: price-refresh
+
+  PriceRefreshInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref PriceRefreshFunction
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt PriceRefreshSchedule.Arn
 
   # --- OCR cross-check task died without finishing: relaunch once, then alert ---
   # The task is one-shot (no restart). Every STOPPED event of its family goes to the OCR merge

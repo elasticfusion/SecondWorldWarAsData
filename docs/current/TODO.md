@@ -218,6 +218,40 @@ continues from where it stopped. Order: 1.2b, 1.1b, 1.2c, 1.2e, 1.2d, 1.2f, 1.1c
   trigger Lambda, on that STOPPED/non-zero event, publish one alert through the same phase2-complete
   path when the task did not report its own stop (e.g. a `phase.stop_alerted` marker it writes to
   DynamoDB, which the gateway endpoint reaches without NAT). This also covers a SIGKILL'd task.
+- **1.1b scope additions (owner 2026-11-18):**
+  - Fix the SIGTERM alert text: a Spot-stopped book is relaunched at once by the
+    `dev-wwii-spot-recovery` rule (`trigger_handler._handle_task_stopped_event`), not by the
+    hourly reconcile. Reuse that path (DRY) for the stop marker and for giving back an attempt when
+    a task is killed outright (`stopCode`, SIGKILL).
+  - Spot is never benign: the alert carries the book's reclaim count and the next launch (rung).
+  - **Fargate Spot price ladder.** Goal: finish the work at the lowest price available at that
+    moment; NEVER above the on-demand hourly price of the original task size (critical). On each
+    reclaim of a book, relaunch on Fargate Spot at double the vCPU and memory, while the Spot
+    hourly price of that size stays at or below the original size's on-demand price; when the next
+    rung would exceed it, launch ON-DEMAND at the ORIGINAL size. Per-launch `cpu`/`memory`
+    overrides on RunTask (no new task definitions); the rung is stored on the book's queue row; a
+    success resets it. Phase 3 example (0.5 vCPU / 1 GB, on-demand ~$0.025/h): Spot 0.5/1 ->
+    Spot 1/2 -> on-demand 0.5/1. Prices: the AWS Price List API has Fargate ON-DEMAND rates
+    (`USE1-Fargate-vCPU-Hours:perCPU` $0.04048, `USE1-Fargate-GB-Hours` $0.004445, checked
+    2026-11-18) but NO Fargate Spot rates. Owner choice (b): the Spot rate actually charged, from
+    Cost Explorer (cost / usage of the `SpotUsage-Fargate-*` usage types over 7 days; 2026-11-04..18
+    gave $0.014542/vCPU-h and $0.001597/GB-h), refreshed daily ($0.01 a request).
+- **1.1b follow-ups (from review, 2026-11-18):**
+  - MED - a stop alert that SNS never accepts is lost after Lambda's 2 async retries: the trigger
+    Lambda has no DLQ / on-failure destination, the `stopevt#<task>` row stays `failed` and is
+    never swept, and `wwii-trigger-errors` (`cloudformation/events.yaml`) alarms only at 3 errors
+    in 5 minutes - through SNS too. Add an on-failure destination (SQS) and a sweep that
+    re-reports `failed` rows; alarm on 1 error.
+  - LOW - the pipeline task role may write any key in the cache table, so a compromised task could
+    forge `price#fargate#` (bounded by `Rates.sane`) or `spot#` rows. Deny those prefixes to it.
+  - LOW - Spot rates are historical (highest daily rate actually charged in 7 days); a Spot price
+    rise since the last Spot day is not seen. Documented; `spot_ladder.max_fraction_of_on_demand`
+    is the margin if wanted.
+- **1.1d - EC2 Spot price ladder for the GPU OCR (AWS Batch, g5/g6)** (owner 2026-11-18, its own
+  task). Same rule per instance type: on reclaim, move up the instance types while the live Spot
+  price (`describe_spot_price_history`) stays at or below the original type's on-demand price
+  (Price List API); then the on-demand queue at the original type. Extends `ocr_spot_controller`
+  (today: Spot wait -> on-demand fallback, 48 h cap; no upsizing).
 - **LOW - the end-of-run chain can pick a book that is already running.** Queue rows now stay while
   their book runs (task 1.2), so `_get_next_pending_enrich` may name a running book; its lock is held,
   the trigger re-queues it, and the next free book waits for the hourly reconcile (up to an hour).

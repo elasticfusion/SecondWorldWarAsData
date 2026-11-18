@@ -101,6 +101,15 @@ queue:
   phase3_max_attempts: 3
   defer_retry_minutes: 50              # under the hourly reconcile, so its next run retries
 
+# Fargate Spot price ladder (src/utils/spot_ladder.py, owner 2026-11-18). Every task starts on Spot at
+# its task-definition size. Each reclaim of a book's task doubles vCPU and memory for its next launch,
+# still on Spot, while that Spot price is at or under the ORIGINAL size's on-demand price x the
+# fraction below; then it launches on-demand at the original size. Rates: lambda_handlers/
+# price_refresh.py (daily; Spot from Cost Explorer, on-demand from the Price List API).
+spot_ladder:
+  max_fraction_of_on_demand: 1.0       # may be lowered, never raised above 1.0
+  max_price_age_days: 3                # older rates: never upsize
+
 batch:
   phase2: true                         # 50% off extraction
   phase3: false                        # Live calls — avoids network bounce between submit/retrieve

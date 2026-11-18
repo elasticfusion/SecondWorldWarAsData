@@ -80,12 +80,17 @@ RESET_PREFIXES = tuple(
             "metrics#",
             "credit#",
             "contenthash#",  # Phase 3 fetch claims (src/enrichment/fetch_review.py)
+            "spot#",  # Spot price ladder per book (src/utils/spot_ladder.py)
+            "taskstop#",  # a task's own stop report (src/utils/task_marker.py)
+            "stopevt#",  # stop events already reported (trigger_handler._first_report)
         )
     )
 )
 IGNORED_KEYS = frozenset(
     {"reaper#state"}
 )  # lambda_handlers/idle_backstop_reaper._save_state
+# Operational caches, not run state: the daily Fargate rates (lambda_handlers/price_refresh.py)
+IGNORED_PREFIXES = ("price#",)
 GROK_KEY = re.compile(r"(books/[A-Za-z0-9._-]+/)?[a-z0-9_]+#[0-9a-f]{64}")
 _NAME_RE = re.compile(r"[A-Za-z0-9._-]{3,64}")  # DynamoDB BackupName rules
 _ENV_RE = re.compile(r"[a-z0-9-]{1,20}")
@@ -95,7 +100,7 @@ _S3_BATCH = 1000  # S3 DeleteObjects limit
 
 def classify(key: str) -> str:
     """'ignore' | 'reset' | 'grok' | 'unclassified' for a DynamoDB cache_key (module rules)."""
-    if key in IGNORED_KEYS:
+    if key in IGNORED_KEYS or key.startswith(IGNORED_PREFIXES):
         return "ignore"
     if key.startswith(RESET_PREFIXES):
         return "reset"

@@ -54,6 +54,7 @@ class FakeTable:
         if "attribute_exists" in cond and (
             current is None
             or ("attempts >" in cond and current.get("attempts", 0) <= 0)
+            or ("claimed_by" in cond and current.get("claimed_by") != v.get(":task"))
         ):
             err = RuntimeError("ConditionalCheckFailedException")
             err.response = {"Error": {"Code": "ConditionalCheckFailedException"}}
@@ -64,6 +65,8 @@ class FakeTable:
                 item.pop(field.strip(), None)
         elif ":minus" in v:
             item["attempts"] = item.get("attempts", 0) + v[":minus"]
+            if "REMOVE claimed_by" in UpdateExpression:
+                item.pop("claimed_by", None)
         elif ":c" in v:
             item.update(defer_cause=v[":c"], deferred_at=v[":t"], defer_reason=v[":r"])
         else:
@@ -72,6 +75,8 @@ class FakeTable:
             if "ADD attempts" in UpdateExpression:
                 item["attempts"] = item.get("attempts", 0) + v[":one"]
                 item["started_at"] = v[":t"]
+            if ":task" in v:
+                item["claimed_by"] = v[":task"]
         return {"Attributes": {"attempts": item.get("attempts", 0)}}
 
     def delete_item(self, Key):  # noqa: N803

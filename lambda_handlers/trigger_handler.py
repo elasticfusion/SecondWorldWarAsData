@@ -14,13 +14,14 @@ from typing import Optional
 
 import boto3
 
-from src.utils.observe import observe_error
+from src.utils.observe import observe, observe_alert, observe_error
 
 logger = logging.getLogger()
 logger.setLevel(os.getenv("LOG_LEVEL", "INFO"))
 
 # Environment variables (set by CloudFormation)
 CLUSTER = os.environ.get("ECS_CLUSTER", "")
+AWS_REGION = os.environ.get("AWS_REGION", "us-east-1")
 SUBNETS = [
     s.strip() for s in os.environ.get("PRIVATE_SUBNET_IDS", "").split(",") if s.strip()
 ]
@@ -1366,19 +1367,266 @@ s3 = boto3.client("s3")
 dynamo = boto3.resource("dynamodb").Table(CACHE_TABLE)
 
 
+# ECS stop codes for a stop from OUTSIDE the task: not the book's fault (owner 2026-11-18)
+OUTSIDE_STOPS = (
+    "SpotInterruption",
+    "UserInitiated",
+    "ServiceSchedulerInitiated",
+    "TerminationNotice",
+)
+
+
 def _handle_task_stopped_event(event):
-    """Spot-interruption recovery (dev-wwii-spot-recovery rule). A task STOPPED — recover NOW rather
-    than waiting up to 15 min for the scheduled sweep. Reuses the SAME safe reconciliation
-    (_handle_scheduled_check: clear a lock only when no RUNNING task remains, then drain pending#*),
-    so there is no new double-launch surface — the authoritative STOPPED event just runs it now.
+    """A pipeline task STOPPED (the dev-wwii-spot-recovery and dev-wwii-task-failure rules): report
+    it (_report_task_stop, task 1.1b), then recover NOW rather than waiting for the hourly sweep.
+    Reuses the SAME safe reconciliation (_handle_scheduled_check: clear a lock only when no RUNNING
+    task remains, then drain pending#*), so there is no new double-launch surface.
     """
-    reason = str(event.get("detail", {}).get("stoppedReason", ""))
+    detail = event.get("detail") or {}
+    undelivered = None
+    reason = str(detail.get("stoppedReason", ""))
     logger.warning(
-        "OBSERV spot.task_stopped status=warn reason=%s — running immediate lock/pending "
-        "reconciliation (spot-interruption recovery)",
+        "OBSERV spot.task_stopped status=warn reason=%s code=%s — running immediate lock/pending "
+        "reconciliation",
         " ".join(reason.split())[:120] or "unknown",
+        detail.get("stopCode", ""),
     )
-    return _handle_scheduled_check()
+    task_id = str(detail.get("taskArn", "")).rsplit("/", 1)[-1]
+    try:
+        _report_task_stop(detail)
+    except StopAlertUndelivered as e:
+        undelivered = e  # retried below, after the recovery
+    except Exception as e:  # noqa: BLE001 - recovery must still run
+        observe_alert(
+            "phase",
+            "stop_report_failed",
+            note="a stopped task could not be reported or its Spot ladder updated; the "
+            "recovery below still runs. Check the trigger Lambda logs",
+            dedup_key=task_id,
+            task=task_id,
+            error=type(e).__name__,
+        )
+    result = _handle_scheduled_check()
+    if undelivered:
+        # fail this invocation so Lambda's async retry reports the stop again (the report is
+        # marked failed, so it is not skipped; the ladder and give-back are idempotent)
+        raise undelivered
+    return result
+
+
+class StopAlertUndelivered(RuntimeError):
+    """A stop alert could not be published (SNS): the invocation fails so it is retried."""
+
+
+def _override_env(detail: dict) -> dict:
+    """The container environment overrides of a task event, as a dict."""
+    env = {}
+    for c in (detail.get("overrides") or {}).get("containerOverrides") or []:
+        env.update(
+            {kv.get("name"): kv.get("value") for kv in c.get("environment") or []}
+        )
+    return env
+
+
+def _first_nonzero_exit(detail: dict):
+    exits = [c.get("exitCode") for c in detail.get("containers") or []]
+    return next((x for x in exits if x not in (None, 0)), exits[0] if exits else None)
+
+
+def _stop_facts(detail: dict) -> dict:
+    """The fields of an ECS Task State Change (STOPPED) event that the report uses."""
+    return {
+        "task_id": str(detail.get("taskArn", "")).rsplit("/", 1)[-1],
+        "family": str(detail.get("group", "")).removeprefix("family:"),
+        "book": _override_env(detail).get("BOOK_NAME", ""),
+        "base": _override_env(detail).get("SPOT_LADDER_BASE", ""),
+        "code": str(detail.get("stopCode", "")),
+        "reason": " ".join(str(detail.get("stoppedReason", "")).split())[:160],
+        "exit": _first_nonzero_exit(detail),
+        "cpu": int(detail.get("cpu") or 0),
+        "memory": int(detail.get("memory") or 0),
+    }
+
+
+STOP_REPORT_STALE_S = 960  # longer than this Lambda's 900 s timeout
+
+
+def _first_report(task_id: str) -> bool:
+    """True when this task's stop should be reported now: not seen yet, or a report that started
+    and never finished (the Lambda timed out or crashed) - EventBridge retries the event. Both
+    rules can deliver the same event; a finished or in-progress report is not repeated.
+    """
+    now = int(time.time())
+    try:
+        dynamo.put_item(
+            Item={
+                "cache_key": f"stopevt#{task_id}",
+                "status": "started",
+                "started_at": now,
+                "ttl": now + 7 * 86400,
+            },
+            ConditionExpression=(
+                "attribute_not_exists(cache_key) OR #s = :failed OR "
+                "(#s = :started AND started_at < :stale)"
+            ),
+            ExpressionAttributeNames={"#s": "status"},
+            ExpressionAttributeValues={
+                ":started": "started",
+                ":failed": "failed",
+                ":stale": now - STOP_REPORT_STALE_S,
+            },
+        )
+        return True
+    except Exception as e:  # noqa: BLE001 - only the guard means "already reported"
+        code = (getattr(e, "response", None) or {}).get("Error", {}).get("Code", "")
+        if code == "ConditionalCheckFailedException":
+            return False
+        raise
+
+
+def _report_done(task_id: str, delivered: bool = True) -> None:
+    """Mark the report done, or failed (its alert was not published) so a retry reports it."""
+    dynamo.update_item(
+        Key={"cache_key": f"stopevt#{task_id}"},
+        UpdateExpression="SET #s = :s",
+        ExpressionAttributeNames={"#s": "status"},
+        ExpressionAttributeValues={":s": "done" if delivered else "failed"},
+    )
+    if not delivered:
+        logger.error(
+            "OBSERV phase.stop_alert_undelivered status=error task=%s - SNS did not take the "
+            "alert; this invocation fails so Lambda retries it",
+            task_id,
+        )
+        raise StopAlertUndelivered(task_id)
+
+
+def _report_task_stop(detail: dict) -> None:
+    """One alert per stopped pipeline task, with its cause and what happens next (task 1.1b):
+
+    * a Spot reclaim moves the book up its price ladder and ALWAYS alerts (never benign): the
+      reclaim count, whether the task's emergency upload worked, and the next launch;
+    * any other stop the task did not report itself (killed outright, out of memory, no network
+      for its alert) is alerted here;
+    * an outside stop of a Phase 3 task gives back the attempt the task claimed, if the task could
+      not (src/utils/task_marker).
+    """
+    from src.utils import task_marker
+
+    facts = _stop_facts(detail)
+    if facts["family"] not in set(TASK_FAMILIES.values()) or not facts["task_id"]:
+        return  # services (OpenSERP) and tasks this Lambda does not launch
+    if not _first_report(facts["task_id"]):
+        return
+    marker = task_marker.read(dynamo, facts["task_id"])
+    outside = facts["code"] in OUTSIDE_STOPS
+    gave_back = _give_back_for_task(facts, marker) if outside else False
+    delivered = True
+    if facts["code"] == "SpotInterruption":
+        # always alerted, even if the task alerted too: only this alert has the next launch
+        delivered = _alert_spot_reclaim(facts, marker, gave_back)
+    elif (
+        facts["exit"] not in (0, None)
+        or outside
+        or facts["code"] == "TaskFailedToStart"
+    ):
+        if not marker.get("alerted"):
+            delivered = _alert_unreported_stop(facts, marker, gave_back)
+    _report_done(facts["task_id"], delivered)
+
+
+def _give_back_for_task(facts: dict, marker: dict) -> bool:
+    """Give back the Phase 3 attempt the stopped task claimed and could not give back itself."""
+    from src.utils import pending_queue, task_marker
+
+    if facts["family"] != TASK_FAMILIES.get(PHASE3_TASK_DEF) or not facts["book"]:
+        return False
+    if marker.get("given_back"):
+        return True
+    if not marker.get("claimed"):
+        return False  # the task never counted one: do not forgive an earlier run's
+    # bound to THIS task's claim (claimed_by): never twice, never another run's attempt
+    if pending_queue.give_back(dynamo, facts["book"], task_id=facts["task_id"]):
+        task_marker.mark(dynamo, facts["task_id"], given_back=True)
+        return True
+    return False
+
+
+def _sync_text(facts: dict, marker: dict) -> str:
+    if facts["code"] == "TaskFailedToStart":
+        return "it never started, so no work was lost"
+    if not marker.get("sigterm"):
+        return "it was killed before its emergency upload: up to 2 min of work lost"
+    if marker.get("synced"):
+        return "its emergency upload worked"
+    return "its emergency upload FAILED: up to 2 min of work lost"
+
+
+def _alert_spot_reclaim(facts: dict, marker: dict, gave_back: bool) -> bool:
+    from src.utils import spot_ladder
+
+    rates, frac = _ladder_inputs()
+    state = spot_ladder.record_reclaim(
+        dynamo,
+        facts["family"],
+        facts["book"],
+        facts["cpu"],
+        facts["memory"],
+        rates,
+        frac,
+        task_id=facts["task_id"],
+        base=spot_ladder.parse_base_env(facts["base"]),
+    )
+    nxt = spot_ladder.launch_for(
+        state["base_cpu"], state["base_mem"], state["rung"], rates, frac
+    )
+    limit = (
+        f"${rates.hourly(state['base_cpu'], state['base_mem'], spot=False) * frac:.4f}/h"
+        if rates
+        else "unknown (no fresh rates)"
+    )
+    return observe_alert(
+        "spot",
+        "task_reclaimed",
+        note=(
+            f"Spot reclaim {state['reclaims']} of this book; {_sync_text(facts, marker)}. "
+            f"Next launch: {nxt.describe()}, limit {limit}. Queued work relaunches now; "
+            "repeated reclaims mean Spot capacity is short"
+        ),
+        dedup_key=facts["task_id"],
+        family=facts["family"],
+        book=facts["book"] or "all",
+        reclaims=state["reclaims"],
+        rung=state["rung"],
+        attempt_given_back=gave_back,
+    )
+
+
+def _alert_unreported_stop(facts: dict, marker: dict, gave_back: bool) -> bool:
+    """A stop with no alert from the task: an outside stop it recorded (it leaves the alert to
+    this Lambda, which knows the cause), or one it could not report at all."""
+    queued = facts["family"] == TASK_FAMILIES.get(PHASE3_TASK_DEF) and facts["book"]
+    how = "was stopped" if marker.get("sigterm") else "stopped unreported"
+    code = facts["code"] or "unknown"
+    if facts["exit"] is not None:
+        code += f", exit {facts['exit']}"
+    return observe_alert(
+        "phase",
+        "task_stopped" if marker.get("sigterm") else "task_stopped_unreported",
+        note=(
+            f"the task {how} ({code}: {facts['reason'][:60] or 'no reason'}); "
+            f"{_sync_text(facts, marker)}. "
+            + (
+                "The book stays queued and relaunches now"
+                if queued
+                else "Check its logs, then re-trigger the phase for this book"
+            )
+        ),
+        dedup_key=facts["task_id"],
+        family=facts["family"],
+        book=facts["book"] or "all",
+        attempt_given_back=gave_back,
+    )
 
 
 def _handle_manual_trigger(event):
@@ -2261,9 +2509,8 @@ def _override_container(task_def: str) -> str:
 
 def _launch_ecs_task(task_def, source, book_name, extra_env, lock_key, family):
     """Build container overrides and run the ECS task; on launch failure release
-    the (already-held) lock then re-raise. Extracted verbatim from _run_task — the
-    ecs.run_task args, the lock-release-on-failure path, and _notify_launch are
-    unchanged."""
+    the (already-held) lock then re-raise. The capacity and size come from the book's Spot price
+    ladder (_launch_plan, task 1.1b)."""
     # Launch task
     logger.info(
         "Launching ECS task %s from %s (book=%s)", family, source, book_name or "all"
@@ -2279,31 +2526,8 @@ def _launch_ecs_task(task_def, source, book_name, extra_env, lock_key, family):
         else {}
     )
     try:
-        resp = ecs.run_task(
-            cluster=CLUSTER,
-            taskDefinition=task_def,
-            count=1,
-            capacityProviderStrategy=[
-                {"capacityProvider": "FARGATE_SPOT", "weight": 4, "base": 0},
-                {"capacityProvider": "FARGATE", "weight": 1, "base": 0},
-            ],
-            networkConfiguration={
-                "awsvpcConfiguration": {
-                    "subnets": SUBNETS,
-                    "securityGroups": [SG],
-                    "assignPublicIp": "DISABLED",
-                }
-            },
-            overrides=overrides,
-        )
-        # ECS run_task does NOT raise on a PLACEMENT failure (capacity/quota — common with
-        # FARGATE_SPOT): it returns {"tasks":[], "failures":[...]}. Treat an empty tasks list /
-        # any failure as a launch failure so we don't hold the lock with no task running
-        # (§1.0d H1).
-        if not resp.get("tasks") or resp.get("failures"):
-            raise RuntimeError(
-                f"ECS run_task placed no task (failures={resp.get('failures')})"
-            )
+        plan = _launch_plan(task_def, family, book_name)
+        _run_with_capacity_fallback(task_def, overrides, plan, family, book_name)
     except Exception as e:
         # Launch failed AFTER we took the lock — release it so the content isn't stuck
         # behind a held lock until the 2h TTL (that would need manual intervention).
@@ -2315,6 +2539,167 @@ def _launch_ecs_task(task_def, source, book_name, extra_env, lock_key, family):
         raise
     # Notify operator that a task was launched
     _notify_launch(family, book_name, source)
+
+
+class NoPlacement(RuntimeError):
+    """RunTask returned without placing the task (no capacity, quota): nothing was started."""
+
+
+def _ecs_run(task_def, capacity, overrides):
+    """One RunTask on ``capacity``. Raises on a placement failure too: ECS run_task does NOT raise
+    when it places nothing (capacity/quota, common with FARGATE_SPOT) - it returns
+    {"tasks":[], "failures":[...]} - and a held lock with no task would stall the book (§1.0d H1).
+    """
+    resp = ecs.run_task(
+        cluster=CLUSTER,
+        taskDefinition=task_def,
+        count=1,
+        capacityProviderStrategy=[
+            {"capacityProvider": capacity, "weight": 1, "base": 0}
+        ],
+        networkConfiguration={
+            "awsvpcConfiguration": {
+                "subnets": SUBNETS,
+                "securityGroups": [SG],
+                "assignPublicIp": "DISABLED",
+            }
+        },
+        overrides=overrides,
+    )
+    if not resp.get("tasks") or resp.get("failures"):
+        raise NoPlacement(
+            f"ECS run_task placed no task (failures={resp.get('failures')})"
+        )
+    return resp
+
+
+def _run_with_capacity_fallback(task_def, overrides, plan, family, book_name):
+    """Launch on the plan's capacity and size (Spot at the task-definition size when there is no
+    ladder row). Spot with no capacity right now: launch ON-DEMAND at the ORIGINAL size instead -
+    never a larger on-demand size, so the owner's price limit holds (task 1.1b)."""
+    from src.utils import spot_ladder
+
+    capacity = plan.capacity if plan else spot_ladder.SPOT
+    sized = dict(overrides)
+    if plan and plan.overridden:
+        sized = _sized_overrides(overrides, plan)
+    try:
+        resp = _ecs_run(task_def, capacity, sized)
+    except NoPlacement as e:
+        # only when NOTHING was started: a timeout or throttle may have started a task, and an
+        # on-demand retry would run the book twice
+        if capacity != spot_ladder.SPOT:
+            raise
+        observe(
+            "spot",
+            "no_capacity",
+            status="warn",
+            note="Fargate Spot placed no task; launching on-demand at the original size",
+            family=family,
+            book=book_name or "all",
+            error=str(e)[:160],
+        )
+        capacity = spot_ladder.FARGATE
+        resp = _ecs_run(task_def, capacity, overrides)
+    _log_launch(family, book_name, capacity, plan)
+    return resp
+
+
+def _sized_overrides(overrides, plan):
+    """``overrides`` with the plan's task size, and its ORIGINAL size in SPOT_LADDER_BASE so a
+    later reclaim keeps the right limit even if the ladder row is gone."""
+    from src.utils import spot_ladder
+
+    sized = json.loads(
+        json.dumps(overrides)
+    )  # deep copy: the fallback reuses the original
+    sized.update(cpu=str(plan.cpu), memory=str(plan.memory))
+    containers = sized.setdefault("containerOverrides", [{"name": "pipeline"}])
+    containers[0].setdefault("environment", []).append(
+        {
+            "name": spot_ladder.BASE_ENV,
+            "value": spot_ladder.base_env_value(*_plan_base(plan)),
+        }
+    )
+    return sized
+
+
+def _plan_base(plan):
+    """The original (rung 0) size of an upsized plan: its size halved once per rung."""
+    k = int(plan.rung)
+    return plan.cpu // 2**k, plan.memory // 2**k
+
+
+def _log_launch(family, book_name, capacity, plan) -> None:
+    size = (
+        plan.describe()
+        if plan is not None and capacity == plan.capacity
+        else "task definition"
+    )
+    logger.info(
+        "OBSERV spot.launch status=ok family=%s book=%s capacity=%s rung=%s size=%s",
+        family,
+        book_name or "all",
+        capacity,
+        plan.rung if plan else 0,
+        size,
+    )
+
+
+def _trigger_config() -> dict:
+    """config.yaml, or {} (callers' defaults apply) if it cannot be read."""
+    try:
+        from src.utils.config import load_config
+
+        return load_config() or {}
+    except Exception as e:  # noqa: BLE001 - defaults are safe
+        logger.warning("OBSERV config.unreadable status=warn err=%s", type(e).__name__)
+        return {}
+
+
+def _ladder_inputs():
+    """(the stored Fargate rates or None, the configured max fraction of on-demand)."""
+    from src.utils import fargate_prices, spot_ladder
+
+    config = _trigger_config()
+    try:
+        age = int((config.get("spot_ladder") or {}).get("max_price_age_days", 3))
+    except (TypeError, ValueError):
+        age = fargate_prices.DEFAULT_MAX_AGE_DAYS
+    try:
+        rates = fargate_prices.load(dynamo, AWS_REGION, age)
+    except Exception as e:  # noqa: BLE001 - no rates: the ladder never upsizes
+        logger.warning(
+            "OBSERV spot.rates_unreadable status=warn err=%s", type(e).__name__
+        )
+        rates = None
+    return rates, spot_ladder.max_fraction(config)
+
+
+def _launch_plan(task_def, family, book_name):
+    """The book's next launch from its Spot price ladder (src/utils/spot_ladder), or None for
+    rung 0 (Spot at the task-definition size). Re-checked against today's rates. ``family`` is the
+    TASK_FAMILIES name, the same name the stop report keys the ladder on (the ECS event's group).
+    """
+    from src.utils import spot_ladder
+
+    if _override_container(task_def) != "pipeline":
+        return None
+    try:
+        state = spot_ladder.get_state(dynamo, family, book_name)
+    except Exception as e:  # noqa: BLE001 - rung 0 is always within the limit
+        logger.warning(
+            "OBSERV spot.ladder_unreadable status=warn family=%s err=%s - launching rung 0",
+            family,
+            type(e).__name__,
+        )
+        return None
+    if not state:
+        return None
+    rates, frac = _ladder_inputs()
+    return spot_ladder.launch_for(
+        state["base_cpu"], state["base_mem"], state["rung"], rates, frac
+    )
 
 
 def _notify_launch(family: str, book_name: str, source: str) -> None:
