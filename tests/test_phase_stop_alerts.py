@@ -52,6 +52,8 @@ def _one(sent, event):
 )  # fmt: skip
 def test_a_preflight_abort_alerts(alerts, monkeypatch, status, text, event):
     monkeypatch.setenv("GROK_API_KEY", "k")
+    # what happens next comes from the queue deferral (task 1.2b, tests/test_queue_deferral.py)
+    monkeypatch.setattr(ee, "_queue_followup", lambda cause, reason: f"NEXT-{cause}")
     resp = SimpleNamespace(status_code=status, text=text)
     with mock.patch("requests.post", return_value=resp):
         with pytest.raises(SystemExit):
@@ -59,7 +61,8 @@ def test_a_preflight_abort_alerts(alerts, monkeypatch, status, text, event):
     a = _one(alerts, event)
     assert a["scope"] == "phase"
     assert a["book"] == "USA-E-XChannel" and a["phase"] == "phase3_enrich_data"
-    assert "re-trigger" in a["note"]
+    cause = "funding" if event == "grok_credits_depleted" else "config"
+    assert a["note"].endswith(f"NEXT-{cause}")
 
 
 def test_nat_never_ready_alerts(alerts, monkeypatch):

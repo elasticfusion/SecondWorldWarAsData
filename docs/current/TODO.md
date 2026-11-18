@@ -125,13 +125,24 @@ record disappears from S3; two queued books each run exactly once.
 
 #### Resilience tasks added 2026-11-18 (owner: "deferred yes, dropped never")
 Owner rule: no outage loses a book. After Grok funds, an AZ or AWS networking come back, the work
-continues from where it stopped. Order: 1.2b, 1.1b, 1.2c, 1.2e, 1.2d, 1.1c.
+continues from where it stopped. Order: 1.2b, 1.1b, 1.2c, 1.2e, 1.2d, 1.2f, 1.1c.
 - **1.2b - defer, never drop.** Past the attempt cap `pending_queue.claim_attempt` deletes the
   `pending#enrich#<book>` row (task 1.2), so the book is never picked up again. Instead keep the row
   as `deferred` with its cause: `funding` and `connectivity` use no attempt and resume automatically
   when their check passes; `failure` stays capped at `queue.phase3_max_attempts` and resumes with
   `scripts/resume_book.sh <book>` (or all deferred books). Preflight aborts do not count as attempts
   (owner decision 4(b)). The reconcile launches nothing while a funding or connectivity check fails.
+- **1.2b follow-ups (from review, 2026-11-18):**
+  - MED - no cap on repeated auto-resume. `funding`/`connectivity` give the attempt back, so a book
+    that keeps exiting 80/81 (a bug, or one book's own fetch) retries hourly forever. Unreachable
+    until 1.1c/1.2e/1.2f add producers of those exit codes; add a give-back counter with a cap that
+    escalates to a `failure` hold in the same change.
+  - LOW - a held (`failure`/`config`) book is only logged (`OBSERV queue.deferred_held`) by each
+    reconcile after its one deferral alert; add a rate-limited reminder alert.
+  - LOW - the cluster-wide hold picks books alphabetically; a book that keeps renewing the hold
+    starves the others. Pick by the oldest `deferred_at` (with the cap above).
+  - LOW - an ordinary failure whose alert was not delivered, then an outside SIGTERM in the same
+    task, gives that attempt back (rare; bounded to once per task).
 - **1.2c - the NAT does not fail over.** A NAT gateway is zonal by default; `nat_manager` always
   creates it in `PUBLIC_SUBNET_ID` (PublicSubnet1, `lambda_handlers/nat_manager.py:528`) and both
   private subnets route through it. If that AZ fails, both AZs lose egress and the re-create fails in
@@ -168,6 +179,29 @@ continues from where it stopped. Order: 1.2b, 1.1b, 1.2c, 1.2e, 1.2d, 1.1c.
   verdicts, never cache or mark searched on a failure; a Grok outage follows D8 (retry, then stop
   with an alert) and defers the book `connectivity` (1.2b). Belongs with Group 2 batching of these
   calls. Check the other Phase 3 callers of raw `chat_completion` for the same pattern.
+- **1.2f - every external service is resumable** (owner 2026-11-18). Grok, NOAA weather,
+  geocoding (Nominatim), archive.org, NARA, OpenSERP, HyperWar and any other fetch can fail at the
+  service or the network level. For each: one shared retry policy (`src/utils/failure_taxonomy`
+  causes: transient -> retry with backoff), then stop with `src/utils/stop_cause.EXIT_CONNECTIVITY`
+  (1.2b defers the book, no attempt used, resumes automatically) instead of stamping records as
+  done or skipping silently; on resume the step continues from the first record not finished. Grok
+  batches: an in-flight batch is adopted on resume; a failed or expired batch is resubmitted whole,
+  a partly failed one only for its failed requests (`Policy.RESUBMIT_BOUNDED` / `RECOVER_SUBSET`,
+  already defined, check they are wired). Inventory every Phase 3 caller of an external service
+  first (OBSERV per service: `<service>.unavailable`), then fix each through the shared libraries;
+  D8, D8b, D8c and D8d are cases of this rule.
+  **AWS services too** (owner 2026-11-18): SNS, SQS, S3, DynamoDB, Lambda, Secrets Manager, and
+  ECS/EC2 failing to launch a task (RunTask capacity or API errors; Spot capacity). Same rule:
+  bounded retry through one shared helper, then leave the work queued (never lost) and alert; on
+  recovery continue from the first unfinished record. Known cases to check: a failed `RunTask`
+  keeps the queue row (task 1.2, verify every launcher); an S3 write that fails must not mark the
+  record done (ties to 1.6); an undeliverable SNS alert must still leave a record (1.1b); an SQS
+  message that fails processing must return to the queue, not be deleted.
+  **Spot** (owner 2026-11-18): a Spot task can be reclaimed at any time (SIGTERM, ~2 min warning,
+  or killed). Today that counts as a Phase 3 attempt, so repeated reclaims push a book to the
+  `failure` cap. In 1.1b the trigger Lambda reads the STOPPED event's `stopCode`; for
+  `SpotInterruption` it gives the attempt back (`pending_queue.give_back`), so only real failures
+  count. Work since the last S3 sync (120 s) is the only loss; 1.2d makes the resume skip the rest.
 - **1.1c - Grok balance thresholds.** Read the real prepaid balance from the xAI Management API
   (`GET https://management-api.x.ai/v1/billing/teams/{team_id}/prepaid/balance`; management key + team
   ID in Secrets Manager). Under $50 (configurable) at the start of any phase: stop before any Grok spend
@@ -1741,6 +1775,16 @@ per-step counts against an uninterrupted run).
   mid-run (simulate with an invalid-credit response or a test key): `funding` deferral, resume after
   top-up.
 - **OpenSERP / Nominatim / NARA unavailable:** behave as D8b-D8d, and resume.
+- **Every external service** in the 1.2f inventory (Grok, NOAA weather, geocoding, archive.org,
+  HyperWar, ...): service down and network down, at start and mid-step; a Grok batch failed,
+  expired or partly failed (resubmitted whole or only the failed requests).
+- **AWS services:** SNS publish fails, SQS delivery fails, S3 put/get fails, DynamoDB throttles,
+  RunTask fails (no capacity), Secrets Manager unreachable: nothing is lost, the work stays queued,
+  an alert or a record exists, and the run resumes.
+- **Spot reclaim:** stop a Spot task mid-step (SIGTERM) and kill one outright: the attempt is given
+  back, the book resumes from its last synced state.
+Owner rule: simulate ALL of these failure cases (2026-11-18). Each case also gets a unit or moto
+test while it is built; this group is the live end-to-end check.
 
 ### Track P - Phase 2 changes (needs a new Phase 2 run and a new snapshot)
 

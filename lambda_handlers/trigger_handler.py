@@ -2541,11 +2541,22 @@ def _queue_pending_enrich(book_name: str) -> None:
 
 
 def _get_pending_books_for_enrich() -> list:
-    """Books with pending enrichment queues, all scan pages (src/utils/pending_queue)."""
+    """Books queued for Phase 3 that may run now, all scan pages (src/utils/pending_queue): a
+    deferred book is held (task 1.2b), and a recent funding/connectivity deferral holds them all.
+    """
     from src.utils import pending_queue
 
     try:
-        return pending_queue.pending_books(dynamo, "enrich")
+        from src.utils.config import load_config
+
+        config = load_config()
+    except Exception as e:  # noqa: BLE001 - the default retry interval still applies
+        logger.warning("Config unreadable for the queue retry interval: %s", e)
+        config = {}
+    try:
+        return pending_queue.runnable_books(
+            dynamo, "enrich", pending_queue.defer_retry_minutes(config)
+        )
     except Exception as e:
         logger.warning("Failed to scan pending enrich: %s", e)
         return []

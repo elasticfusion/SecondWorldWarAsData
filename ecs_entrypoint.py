@@ -121,6 +121,13 @@ def _requeue_interrupted_resume() -> None:
 # re-raised exception) does not alert the same stop twice.
 _stop_alerted = False
 
+# Phase 3 attempt bookkeeping for THIS task (task 1.2b): set when _claim_enrich_attempt counted
+# an attempt; cleared once it is given back, so a task gives back at most once and never gives
+# back a previous run's attempt. _watchdog_stop: the watchdog (not Spot/ECS) sent the SIGTERM - a
+# stalled run is a real failure and keeps its attempt, whether or not its alert was delivered.
+_attempt_claimed = False
+_watchdog_stop = False
+
 
 def _mark_stop_alerted() -> None:
     """A stop already alerted another way (the watchdog's _notify_failure)."""
@@ -160,6 +167,48 @@ def _alert_phase_stopped(event: str, note: str, **fields: Any) -> None:
         )
 
 
+def _sigterm_next_step() -> "tuple[str, bool]":
+    """(what the SIGTERM alert says happens next, whether to give the attempt back). A stop from
+    OUTSIDE the task (a Spot reclaim, an ECS stop, a deploy) is not the book's fault: its Phase 3
+    attempt is given back (task 1.2b, owner: Spot can be lost at any time) and the queue row
+    stays, so the reconcile resumes it. A watchdog stop (the run stalled) or an already-alerted
+    stop still counts. Decided BEFORE the alert (which marks the stop alerted); no AWS call.
+    """
+    book = os.environ.get("BOOK_NAME", "")
+    if not book or "phase3" not in _current_phase_script:
+        return "Re-trigger the phase for this book", False
+    if _watchdog_stop or _stop_alerted:
+        return (
+            "The book stays queued; the hourly reconcile retries it (this counts as an attempt)",
+            False,
+        )
+    return (
+        "The book stays queued; the hourly reconcile resumes it, no re-trigger needed",
+        True,
+    )
+
+
+def _give_back_own_attempt() -> bool:
+    """Give back the attempt THIS task claimed, at most once (task 1.2b). Never raises."""
+    global _attempt_claimed
+    if not _attempt_claimed:
+        return False
+    _attempt_claimed = False
+    from src.utils import pending_queue
+
+    book = os.environ.get("BOOK_NAME", "")
+    try:
+        return pending_queue.give_back(_cache_table(), book)
+    except Exception as e:  # noqa: BLE001 - exit paths must reach their alert and exit
+        logger.error(
+            "OBSERV queue.give_back_failed book=%s err=%s status=error - this attempt still "
+            "counts toward queue.phase3_max_attempts",
+            book,
+            type(e).__name__,
+        )
+        return False
+
+
 def _handle_sigterm(_signum, _frame):
     """Emergency sync on spot termination — 30 second window."""
     logger.warning("SIGTERM received — performing emergency S3 sync")
@@ -181,22 +230,27 @@ def _handle_sigterm(_signum, _frame):
             Exception
         ) as e:  # noqa: BLE001 - the emergency path must reach the alert and exit
             logger.error("SIGTERM cleanup step failed: %s", type(e).__name__)
+    next_step, give_back = _sigterm_next_step()
     _alert_phase_stopped(
         "task_stopped",
         (
             (
                 "the task was stopped (Spot interruption, ECS stop or deploy) before the phase "
-                "finished; what had changed was uploaded. Re-trigger the phase for this book"
+                f"finished; what had changed was uploaded. {next_step}"
             )
             if synced
             else (
                 "the task was stopped before the phase finished AND its emergency upload failed: "
-                "changes since the last 2-minute sync are lost. Re-trigger the phase for this book"
+                f"changes since the last 2-minute sync are lost. {next_step}"
             )
         ),
         signal="SIGTERM",
         synced=synced,
     )
+    if (
+        give_back
+    ):  # after the alert: a slow DynamoDB call must not cost the alert (30 s window)
+        _give_back_own_attempt()
     sys.exit(143)
 
 
@@ -462,6 +516,7 @@ class BackgroundSync:
                     pass
                 # _notify_failure marks the stop alerted when it was delivered, so the SIGTERM
                 # below alerts only if that notice failed
+                _mark_watchdog_stop()  # the stall counts as an attempt (not an outside stop)
                 os.kill(os.getpid(), signal.SIGTERM)
         except Exception as e:
             logger.warning("Background sync error: %s", e)
@@ -791,7 +846,10 @@ def _ensure_nat_if_needed(phase_script: str) -> None:
     _alert_phase_stopped(
         "nat_not_ready",
         f"NAT never became ready after {max_attempts} attempts, so the phase stopped before any "
-        "work. Check the nat-manager Lambda logs, then re-trigger the phase for this book",
+        "work. Check the nat-manager Lambda logs. "
+        + _queue_followup(
+            "connectivity", f"NAT not ready after {max_attempts} attempts"
+        ),
         attempts=max_attempts,
     )
     # KNOWN GAP (task 1.1): with no NAT this task has no route to SNS (no SNS VPC endpoint), so the
@@ -928,8 +986,8 @@ def _preflight_credit_check() -> None:
             _alert_phase_stopped(
                 "grok_credits_depleted",
                 "xAI reports no API credits (HTTP %d), so the phase stopped before any work. "
-                "Top up the xAI account, then re-trigger the phase for this book"
-                % resp.status_code,
+                "Top up the xAI account. " % resp.status_code
+                + _queue_followup("funding", "xAI reports no credits at preflight"),
             )
             sys.exit(1)
         if resp.status_code == 401:
@@ -937,7 +995,8 @@ def _preflight_credit_check() -> None:
             _alert_phase_stopped(
                 "grok_key_invalid",
                 "xAI rejected the API key (HTTP 401), so the phase stopped before any work. "
-                "Fix the Secrets Manager secret named by SECRETS_ID, then re-trigger the phase",
+                "Fix the Secrets Manager secret named by SECRETS_ID. "
+                + _queue_followup("config", "xAI rejected the API key (HTTP 401)"),
             )
             sys.exit(1)
         resp.raise_for_status()
@@ -953,7 +1012,15 @@ def _preflight_credit_check() -> None:
         logger.error(
             "PREFLIGHT FAILED: a configured Grok model is unavailable. Aborting."
         )
-        sys.exit(1)  # already alerted (OBSERV grok.model_unavailable + operator alert)
+        # the model alert (OBSERV grok.model_unavailable) says how to fix config.yaml; this one
+        # says the book is now held and how to resume it, or it would sit unnoticed
+        _alert_phase_stopped(
+            "grok_model_unavailable",
+            "A configured Grok model is unavailable (see grok.model_unavailable); stopped "
+            "before any work. "
+            + _queue_followup("config", "a configured Grok model is unavailable"),
+        )
+        sys.exit(1)
     except SystemExit:
         raise
     except Exception as e:
@@ -1177,7 +1244,9 @@ def run_phase(phase_script: str, extra_args: list) -> None:
             },
         )
         try:
-            _notify_failure(phase_script, result.returncode)
+            _notify_failure(
+                phase_script, result.returncode, _defer_on_stop_cause(result.returncode)
+            )
             _final_sync_failed_phase(phase_script)
             _audit_failed_phase2(phase_script, result.returncode)
         finally:
@@ -2707,6 +2776,19 @@ def _post_process(phase_script: str, env: dict) -> None:
     _notify_complete(phase_script)
 
 
+def _config_or_empty() -> dict:
+    """config.yaml, or {} (the callers' defaults apply) if it cannot be read."""
+    try:
+        from src.utils.config import load_config
+
+        return load_config() or {}
+    except Exception as e:  # noqa: BLE001 - a default is safer than stopping the chain
+        logger.warning(
+            "OBSERV config.unreadable status=warn err=%s - using defaults", e
+        )
+        return {}
+
+
 def _cache_table():
     """The api-cache table (queues, leases, locks)."""
     table_name = os.environ.get("CACHE_TABLE", "dev-wwii-api-cache")
@@ -2730,7 +2812,10 @@ def _get_next_pending_enrich() -> str:
 
     try:
         return pending_queue.next_book(
-            _cache_table(), "enrich", exclude=os.environ.get("BOOK_NAME", "")
+            _cache_table(),
+            "enrich",
+            exclude=os.environ.get("BOOK_NAME", ""),
+            retry_minutes=pending_queue.defer_retry_minutes(_config_or_empty()),
         )
     except Exception as e:
         logger.warning("Failed to check pending enrich: %s", e)
@@ -2762,12 +2847,24 @@ def _finish_own_enrich_row() -> None:
         )
 
 
+def _mark_watchdog_stop() -> None:
+    global _watchdog_stop
+    _watchdog_stop = True
+
+
+def _mark_attempt_claimed() -> None:
+    global _attempt_claimed
+    _attempt_claimed = True
+
+
 def _claim_enrich_attempt() -> bool:
     """A Phase 3 task is starting: count this attempt on the book's queue row FIRST (task 1.2;
     owner decision D8c-2). The row stays until the run succeeds (_finish_own_enrich_row), so any
     other ending - crash, preflight abort, SIGTERM, gate failure - leaves the book queued for the
     hourly reconcile, and the count bounds the retries. Returns False when the cap is passed:
-    the caller must not run (the row is removed and an alert says what to do)."""
+    the caller must not run (the row is deferred "failure", never dropped, and an alert gives
+    the resume command). A stop that is not the book's fault gives the attempt back
+    (_queue_followup, task 1.2b)."""
     book = os.environ.get("BOOK_NAME", "")
     if not book or "phase3" not in _current_phase_script:
         return True  # unscoped / other phases: not queue-managed here
@@ -2791,6 +2888,7 @@ def _claim_enrich_attempt() -> bool:
         )
         return True
     if allowed:
+        _mark_attempt_claimed()
         logger.info(
             "OBSERV queue.enrich_attempt book=%s attempt=%d max=%d status=ok",
             book,
@@ -2800,16 +2898,81 @@ def _claim_enrich_attempt() -> bool:
         return True
     observe_error(
         "queue",
-        "enrich_gave_up",
+        "enrich_deferred",
         note=(
-            f"Phase 3 has already been attempted {cap} times for this book without "
-            "succeeding, so it is no longer retried automatically. Fix the cause (see the "
-            "earlier alerts), then re-trigger Phase 3"
+            f"Run `{pending_queue.RESUME_COMMAND} {book}` after fixing the cause (earlier "
+            f"alerts): Phase 3 failed {cap} times, so the book is deferred, not retried"
         ),
         book=book,
+        cause="failure",
         attempts=attempts - 1,
     )
     return False
+
+
+def _queue_followup(cause: str, reason: str) -> str:
+    """A Phase 3 run stopped for ``cause`` (src/utils/pending_queue.CAUSES), not counted as a
+    failure (owner 2026-11-18, decision 4(b)): defer the book's queue row, give this attempt back,
+    and return the sentence the stop alert ends with (what happens next). Other phases are not
+    queue-managed here: "re-trigger". Never raises."""
+    book = os.environ.get("BOOK_NAME", "")
+    if not book or "phase3" not in _current_phase_script:
+        return "Then re-trigger the phase for this book"
+    from src.utils import pending_queue
+
+    try:
+        table = _cache_table()
+        deferred = pending_queue.defer(table, book, cause, reason)
+    except Exception as e:  # noqa: BLE001 - the caller is on its way to exit
+        logger.error(
+            "OBSERV queue.enrich_defer_failed book=%s cause=%s err=%s status=error",
+            book,
+            cause,
+            type(e).__name__,
+        )
+        global _attempt_claimed
+        _attempt_claimed = (
+            False  # as the alert says: this attempt counts (no later give-back)
+        )
+        return (
+            "The book could not be marked deferred, so this attempt still counts; its queue "
+            "row stays and the hourly reconcile retries it"
+        )
+    if not deferred:
+        logger.warning(
+            "OBSERV queue.enrich_not_queued book=%s cause=%s status=warn - no queue row (claim "
+            "failed or a duplicate task finished it)",
+            book,
+            cause,
+        )
+        return "The book has no Phase 3 queue row, so re-trigger the phase for it"
+    _give_back_own_attempt()
+    logger.info(
+        "OBSERV queue.enrich_deferred book=%s cause=%s reason=%s status=ok",
+        book,
+        cause,
+        reason,
+    )
+    if cause in pending_queue.AUTO_RESUME:
+        return (
+            f"The book is deferred ({cause}); Phase 3 is held and the hourly reconcile "
+            "retries on its own, nothing to re-trigger"
+        )
+    return (
+        f"After the fix run `{pending_queue.RESUME_COMMAND} {book}` (deferred: {cause})"
+    )
+
+
+def _defer_on_stop_cause(returncode: int) -> str:
+    """The phase script exited with a src/utils/stop_cause code (Grok funds, connectivity):
+    defer instead of counting a failure, and return what happens next for the failure notice.
+    Other codes: nothing (the attempt counts), ''."""
+    from src.utils.stop_cause import cause_for_exit
+
+    cause = cause_for_exit(returncode)
+    if not cause:
+        return ""
+    return _queue_followup(cause, f"the phase exited {returncode} ({cause})")
 
 
 def _dedup_has_no_pending() -> bool:
@@ -4116,9 +4279,10 @@ def _stop_openserp_if_running(phase_script: str) -> None:
         logger.warning("Failed to scale OpenSERP to 0: %s", e)
 
 
-def _notify_failure(phase_script: str, returncode: int) -> None:
+def _notify_failure(phase_script: str, returncode: int, next_step: str = "") -> None:
     """Publish the failure notification (the one publisher, publish_alert). Marks the stop
     alerted only when it was delivered, so a failed publish does not suppress a later alert.
+    ``next_step``: what happens to the book now (a queue deferral), added to the message.
     """
     phase_name = PHASE_NAMES.get(phase_script, phase_script)
     # one line, bounded (the slug is validated at intake; do not trust it in a message body)
@@ -4126,7 +4290,8 @@ def _notify_failure(phase_script: str, returncode: int) -> None:
     sent = publish_alert(
         f"WWII Pipeline: {phase_name} FAILED",
         f"{phase_name} failed with exit code {returncode} for book {book}.\nBucket: {BUCKET}\n\n"
-        "Check logs: aws logs tail /ecs/dev-wwii-pipeline --region us-east-1 --since 30m",
+        + (f"{next_step}.\n\n" if next_step else "")
+        + "Check logs: aws logs tail /ecs/dev-wwii-pipeline --region us-east-1 --since 30m",
     )
     if sent:
         _mark_stop_alerted()

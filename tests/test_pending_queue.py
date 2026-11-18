@@ -4,7 +4,7 @@ The api-cache table is 26 MB; a DynamoDB Scan returns at most 1 MB per call and 
 items READ before the filter, so unpaged lookups saw a few percent of the table (queued books,
 NAT leases and batch jobs beyond page 1 were invisible). A fake table that pages TWO items at a
 time shows the difference. Phase 3 rows: the task removes its OWN row on success, keeps and
-counts it on failure (reconcile retry, owner D8c-2) and drops it at the attempt cap.
+counts it on failure (reconcile retry, owner D8c-2) and defers it at the attempt cap (1.2b).
 """
 
 import os
@@ -44,15 +44,34 @@ class FakeTable:
         return out
 
     def update_item(
-        self, Key, UpdateExpression, ExpressionAttributeValues, **kw
+        self, Key, UpdateExpression, ExpressionAttributeValues=None, **kw
     ):  # noqa: N803
+        """Only the expressions pending_queue writes (the deferral ones are checked against moto
+        in tests/test_queue_deferral.py)."""
+        v = ExpressionAttributeValues or {}
+        cond = kw.get("ConditionExpression", "")
+        current = self.items.get(Key["cache_key"])
+        if "attribute_exists" in cond and (
+            current is None
+            or ("attempts >" in cond and current.get("attempts", 0) <= 0)
+        ):
+            err = RuntimeError("ConditionalCheckFailedException")
+            err.response = {"Error": {"Code": "ConditionalCheckFailedException"}}
+            raise err
         item = self.items.setdefault(Key["cache_key"], dict(Key))
-        v = ExpressionAttributeValues
-        item["book"] = v[":b"]
-        item.setdefault("queued_at", v[":t"])
-        if "ADD attempts" in UpdateExpression:
-            item["attempts"] = item.get("attempts", 0) + v[":one"]
-            item["started_at"] = v[":t"]
+        if UpdateExpression.startswith("REMOVE"):
+            for field in UpdateExpression[len("REMOVE") :].split(","):
+                item.pop(field.strip(), None)
+        elif ":minus" in v:
+            item["attempts"] = item.get("attempts", 0) + v[":minus"]
+        elif ":c" in v:
+            item.update(defer_cause=v[":c"], deferred_at=v[":t"], defer_reason=v[":r"])
+        else:
+            item["book"] = v[":b"]
+            item.setdefault("queued_at", v[":t"])
+            if "ADD attempts" in UpdateExpression:
+                item["attempts"] = item.get("attempts", 0) + v[":one"]
+                item["started_at"] = v[":t"]
         return {"Attributes": {"attempts": item.get("attempts", 0)}}
 
     def delete_item(self, Key):  # noqa: N803
@@ -136,7 +155,8 @@ def test_each_start_is_counted_until_the_cap():
         4,
         False,
     )  # a 4th run is refused
-    assert pq.pending_books(t, "enrich") == []  # given up: no retry loop
+    # deferred, never dropped (task 1.2b; the deferral itself: tests/test_queue_deferral.py)
+    assert pq.pending_books(t, "enrich") == ["A"]
 
 
 def test_requeueing_a_book_keeps_its_attempt_count():
@@ -174,6 +194,9 @@ import ecs_entrypoint as ee  # noqa: E402
 
 @pytest.fixture
 def table(monkeypatch):
+    # per-task wrapper state must not leak into later tests (task 1.2b)
+    for name in ("_stop_alerted", "_watchdog_stop", "_attempt_claimed"):
+        monkeypatch.setattr(ee, name, False)
     t = FakeTable(_filler(20))
     monkeypatch.setattr(ee, "_cache_table", lambda: t)
     monkeypatch.setattr(ee, "_current_phase_script", "phase3_enrich_data.py")
@@ -206,7 +229,9 @@ def test_each_phase3_start_is_counted_and_the_cap_stops_a_retry_loop(
     assert [ee._claim_enrich_attempt() for _ in range(3)] == [True, True, True]
     assert pq.pending_books(table, "enrich") == ["Utah"] and errors == []
     assert ee._claim_enrich_attempt() is False
-    assert pq.pending_books(table, "enrich") == [] and errors == ["enrich_gave_up"]
+    assert pq.pending_books(table, "enrich") == ["Utah"] and errors == [
+        "enrich_deferred"
+    ]
 
 
 def test_a_failed_run_leaves_the_book_queued_and_success_removes_it(table, monkeypatch):

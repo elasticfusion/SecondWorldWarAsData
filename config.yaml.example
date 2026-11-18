@@ -94,9 +94,12 @@ extraction:
 
 # Per-book phase queues (src/utils/pending_queue.py). Each Phase 3 start counts an attempt on the
 # book's pending#enrich# row; the row is removed on success, so a failed or stopped run is retried by
-# the hourly reconcile. Past this many attempts the book is no longer retried and an alert says so.
+# the hourly reconcile. A book is never dropped (owner 2026-11-18): past phase3_max_attempts it is
+# deferred "failure" and held until `python3 scripts/resume_book.py <book>`. A stop for Grok funds or
+# connectivity uses no attempt and holds EVERY book; the reconcile retries after defer_retry_minutes.
 queue:
   phase3_max_attempts: 3
+  defer_retry_minutes: 50              # under the hourly reconcile, so its next run retries
 
 batch:
   phase2: true                         # 50% off extraction
