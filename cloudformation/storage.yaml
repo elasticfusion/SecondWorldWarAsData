@@ -206,6 +206,68 @@ Resources:
                   's3:ExistingObjectTag/quarantine': 'true'
             - !Ref AWS::NoValue
 
+  # Deployed-config archive (task 0.3, 2026-11-18). config.yaml is gitignored (local only) but ships
+  # in the image and the Lambdas; every deploy copies the exact file here under its version
+  # (<commit>+cfg-<hash>, scripts/deploy_all.sh), so any deployed config can be fetched back
+  # (scripts/config_archive.sh). Private: no public access, encrypted, versioned, TLS only. No
+  # pipeline role is granted access (their S3 grants are scoped to the data bucket); only the
+  # operator's own credentials read and write it.
+  ConfigBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Sub ${EnvironmentName}-wwii-config-${AWS::AccountId}
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+            BucketKeyEnabled: true
+      VersioningConfiguration:
+        Status: Enabled
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+      # No lifecycle rule: superseded versions are kept (owner rule 2026-11-08, never expire old
+      # versions bucket-wide; tests/test_storage_lifecycle.py). The files are a few KB each. A key
+      # removed from config.yaml stays readable in older versions: rotate a leaked key, do not just
+      # delete it from the file.
+  ConfigBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref ConfigBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: DenyInsecureTransport
+            Effect: Deny
+            Principal: '*'
+            Action: 's3:*'
+            Resource:
+              - !GetAtt ConfigBucket.Arn
+              - !Sub '${ConfigBucket.Arn}/*'
+            Condition:
+              Bool:
+                'aws:SecureTransport': 'false'
+          # Defence in depth: no pipeline role (all named <env>-wwii-*: ECS, Lambda, Batch, the
+          # GitHub deploy role) may touch the deployed config, even if a future grant is broad.
+          # The operator (SSO) and CloudFormation are not wwii-* roles.
+          - Sid: DenyPipelineRoles
+            Effect: Deny
+            Principal: '*'
+            Action: 's3:*'
+            Resource:
+              - !GetAtt ConfigBucket.Arn
+              - !Sub '${ConfigBucket.Arn}/*'
+            Condition:
+              ArnLike:
+                'aws:PrincipalArn': !Sub 'arn:aws:iam::${AWS::AccountId}:role/${EnvironmentName}-wwii-*'
+
   # API response cache
   CacheTable:
     Type: AWS::DynamoDB::Table
@@ -388,6 +450,8 @@ Resources:
               Address: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-alarms
 
 Outputs:
+  ConfigBucketName:
+    Value: !Ref ConfigBucket
   DataBucketName:
     Value: !Ref DataBucket
   DataBucketArn:

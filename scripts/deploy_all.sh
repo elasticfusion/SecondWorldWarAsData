@@ -581,6 +581,15 @@ python3 scripts/deploy_aws.py deploy --env $ENV --region $REGION --template-buck
     || { echo "  ✗ CloudFormation deploy (deploy_aws.py) FAILED — hard stop (expected infra did not deploy)"; exit 1; }
 
 echo ""
+echo "=== 5b. Archiving the deployed config.yaml ==="
+# config.yaml is gitignored but ships: keep the exact file under its version in the private config
+# bucket (created by the StorageStack above), so this deploy's config can be fetched back later
+# (bash scripts/config_archive.sh get <version|latest>). Task 0.3.
+source scripts/config_archive.sh
+config_archive_put "$ENV" "$REGION" "$GIT_SHA" config.yaml \
+    || { echo "  ✗ config.yaml archive failed — hard stop (this deploy's config would not be recoverable)"; exit 1; }
+
+echo ""
 echo "=== 6. Updating Lambda code ==="
 bash scripts/update_lambdas.sh \
     || { echo "  ✗ Lambda update (update_lambdas.sh) FAILED — hard stop (expected lambdas did not deploy)"; exit 1; }
