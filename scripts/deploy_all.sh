@@ -51,15 +51,62 @@ build_scan_push() {
   ecr_login "${image%%/*}"
   ensure_ecr_repo "$repo"
   if [ "$dockerfile" = "." ]; then
-    docker build --no-cache --progress=plain -t "$tag" .
+    docker build --no-cache --progress=plain --build-arg GIT_SHA="$GIT_SHA" -t "$tag" .
   else
-    docker build --no-cache --progress=plain -f "$dockerfile" -t "$tag" .
+    docker build --no-cache --progress=plain --build-arg GIT_SHA="$GIT_SHA" -f "$dockerfile" -t "$tag" .
   fi
   trivy_scan "$tag" "$blocking" || exit 1
   docker tag "$tag:latest" "$image"
   docker push "$image"
   echo "  Pushed: $image"
 }
+
+# --- Deployed code must be committed (task 0.2, 2026-11-18) ---
+# >>> deploy-version (tests/test_deploy_git_sha.py runs this block as-is)
+# The pipeline image records the version it was built from (Dockerfile ARG GIT_SHA -> the
+# `OBSERV pipeline.version sha=` line each phase logs first), so a run's logs name the code that
+# ran. Version = <commit>+cfg-<first 8 hex of sha256(config.yaml)>: config.yaml is gitignored (local
+# only, not pinned by the commit) but ships in the image and the Lambdas, so its content is named
+# separately. An uncommitted or untracked file in any other path that ships (image, Lambdas, stacks)
+# is a hard stop. tests/, docs/, logs/, tmp/ do not ship and do not block. Other gitignored files
+# are invisible to git status; the only one under a deployed path today,
+# config/equipment_aliases_learned.yaml, is excluded from the image by .dockerignore. The other images
+# (chandra, paddle, video, clamav) declare no ARG GIT_SHA: docker warns the arg is unused and they
+# carry no version.
+DEPLOY_PATHS=(src scripts prompts search_queries config data ecs_modules lambda_handlers
+              cloudformation ':(glob)*.py' ':(glob)requirements*.txt' ':(glob)Dockerfile*')
+DEPLOY_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+stamp_version() {  # (re)compute GIT_SHA from HEAD_SHA + the current config.yaml
+  local cfg
+  cfg=$(sha256sum "$DEPLOY_ROOT/config.yaml" 2>/dev/null | cut -c1-8)
+  [ -n "$cfg" ] || { echo "  ✗ $DEPLOY_ROOT/config.yaml is missing or unreadable. Hard stop."; exit 1; }
+  GIT_SHA="${HEAD_SHA}+cfg-${cfg}"
+  echo "  Version: $GIT_SHA"
+}
+require_committed_tree() {
+  local dirty n
+  git -C "$DEPLOY_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1 || {
+    echo "  ✗ $DEPLOY_ROOT is not a git checkout - cannot tell which commit is deployed. Hard stop."; exit 1;
+  }
+  dirty=$(GIT_OPTIONAL_LOCKS=0 git -C "$DEPLOY_ROOT" status --porcelain --untracked-files=all -- "${DEPLOY_PATHS[@]}") || {
+    echo "  ✗ git status failed - cannot verify the tree is committed. Hard stop."; exit 1;
+  }
+  if [ -n "$dirty" ]; then
+    n=$(printf '%s\n' "$dirty" | wc -l)
+    echo "  ✗ uncommitted changes in deployed paths - commit or stash them, then deploy again:"
+    printf '%s\n' "$dirty" | head -20 | sed 's/^/      /'
+    [ "$n" -gt 20 ] && echo "      ... and $((n - 20)) more"
+    echo "    Hard stop (the image would not match the commit it reports)."; exit 1
+  fi
+  HEAD_SHA=$(git -C "$DEPLOY_ROOT" rev-parse --verify HEAD 2>/dev/null) || {
+    echo "  ✗ no commit to deploy (git rev-parse HEAD failed). Hard stop."; exit 1;
+  }
+  echo "  Deploying commit $HEAD_SHA"
+  stamp_version
+}
+# <<< deploy-version
+require_committed_tree
+cd "$DEPLOY_ROOT"  # every build below uses the tree that was just checked
 
 # --- OCR Standalone Mode ---
 if [ "$1" = "--ocr-standalone" ]; then
@@ -254,6 +301,7 @@ _apply_profile() {
     "$py" "$root/scripts/apply_config_profile.py" "$1" || {
         echo "  ✗ config profile '$1' failed — deploy aborted (config.yaml unchanged)."; exit 1;
     }
+    stamp_version  # the profile rewrote config.yaml: the version names the new content
 }
 case "${profile_choice:-5}" in
     1) _apply_profile balanced ;;
@@ -430,7 +478,7 @@ if command -v trivy &>/dev/null; then
 else
   # No Trivy: build+push but gate on pip-audit instead (requirements-level).
   ecr_login "$ECR_REPO"
-  docker build --no-cache --progress=plain -t wwii-pipeline . \
+  docker build --no-cache --progress=plain --build-arg GIT_SHA="$GIT_SHA" -t wwii-pipeline . \
     || { echo "  ✗ docker build FAILED — hard stop"; exit 1; }
   echo "  Trivy not installed — falling back to pip-audit"
   pip-audit -r requirements.txt --severity high 2>&1 | tail -10 || { echo "  ✗ pip-audit found vulnerabilities — aborting deploy"; exit 1; }
