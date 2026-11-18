@@ -1652,13 +1652,16 @@ def _reconcile_phase3(reason: str) -> bool:
     pending_enrich = _get_pending_books_for_enrich()
     if not pending_enrich:
         return False
-    logger.info(
-        "Reconcile (%s): enrich queue for %s -> launching Phase 3",
-        reason,
-        pending_enrich[0],
-    )
-    _run_task(PHASE3_TASK_DEF, f"reconcile-{reason}", book_name=pending_enrich[0])
-    return True
+    # Queue rows now stay while their book runs (src/utils/pending_queue), so the first one may
+    # be running: try each until one actually launches, instead of re-queuing the first forever
+    # (per-book locks would otherwise starve every other queued book).
+    for book in pending_enrich:
+        logger.info(
+            "Reconcile (%s): enrich queue for %s -> launching Phase 3", reason, book
+        )
+        if _run_task(PHASE3_TASK_DEF, f"reconcile-{reason}", book_name=book):
+            return True
+    return True  # queued work exists; every book's lock is held (they run or wait)
 
 
 def _handle_scheduled_check():
@@ -2132,8 +2135,9 @@ def _acquire_task_lock(task_def, family, lock_key, book_name, now) -> bool:
     return False
 
 
-def _run_task(task_def, source, book_name="", extra_env=None):
-    """Create networking, acquire lock, launch ECS task.
+def _run_task(task_def, source, book_name="", extra_env=None) -> bool:
+    """Create networking, acquire lock, launch ECS task. True when a launch was made (the lock
+    was taken); False when refused (unsafe name) or the lock is held (the request is queued).
 
     extra_env: optional list of {"name","value"} container env overrides (e.g.
     CONVERT_KEY for the Phase-0 convert task)."""
@@ -2155,9 +2159,10 @@ def _run_task(task_def, source, book_name="", extra_env=None):
             book_name=str(book_name)[:80],
             source=source,
         )
-        return
+        return False
     if _task_family(task_def) == _task_family(AV_SCAN_TASK_DEF):
-        return _run_av_scan(task_def, source, extra_env)
+        _run_av_scan(task_def, source, extra_env)
+        return True
     # Cancel any pending delayed teardown
     _cancel_delayed_teardown()
 
@@ -2167,7 +2172,9 @@ def _run_task(task_def, source, book_name="", extra_env=None):
     lock_key = _lock_key(family, book_name)
     now = int(time.time())
     if not _acquire_task_lock(task_def, family, lock_key, book_name, now):
-        return  # lock held by a live/recent invocation (request queued if per-book)
+        return (
+            False  # lock held by a live/recent invocation (request queued if per-book)
+        )
 
     # Lock is HELD. Kick off an ASYNC NAT warm-up (fire-and-forget) and launch
     # immediately — do NOT block the launch on NAT readiness. Phase 1 needs no
@@ -2182,6 +2189,7 @@ def _run_task(task_def, source, book_name="", extra_env=None):
     _fire_nat_warmup(family)
 
     _launch_ecs_task(task_def, source, book_name, extra_env, lock_key, family)
+    return True
 
 
 def _run_av_scan(task_def, source, extra_env) -> None:
@@ -2477,22 +2485,11 @@ def _queue_parsed(keys):
 
 
 def _get_pending_books() -> list:
-    """Return list of book names with pending parsed queues."""
+    """Books with pending parsed queues, all scan pages (src/utils/pending_queue)."""
+    from src.utils import pending_queue
+
     try:
-        resp = dynamo.scan(
-            FilterExpression="begins_with(cache_key, :prefix)",
-            ExpressionAttributeValues={":prefix": "pending#parsed#"},
-            ProjectionExpression="cache_key",
-            Limit=1000,  # Cap scan cost; pending queue will never exceed this
-        )
-        books = []
-        for item in resp.get("Items", []):
-            # pending#parsed#BookName → BookName
-            key = item["cache_key"]
-            book = key.split("#", 2)[2] if key.count("#") >= 2 else ""
-            if book:
-                books.append(book)
-        return sorted(books)
+        return pending_queue.pending_books(dynamo, "parsed")
     except Exception as e:
         logger.warning("Failed to scan pending books: %s", e)
         return []
@@ -2533,32 +2530,22 @@ def _launch_phase2_if_idle(book_name=""):
 
 
 def _queue_pending_enrich(book_name: str) -> None:
-    """Queue a book for Phase 3 enrichment when the lock is held."""
+    """Queue a book for Phase 3 enrichment when the lock is held (keeps its attempt count)."""
+    from src.utils import pending_queue
+
     try:
-        dynamo.put_item(
-            Item={"cache_key": f"pending#enrich#{book_name}", "book": book_name}
-        )
+        pending_queue.queue_enrich(dynamo, book_name)
         logger.info("Queued Phase 3 enrichment for %s", book_name)
     except Exception as e:
         logger.error("Failed to queue enrichment for %s: %s", book_name, e)
 
 
 def _get_pending_books_for_enrich() -> list:
-    """Return list of book names with pending enrichment queues."""
+    """Books with pending enrichment queues, all scan pages (src/utils/pending_queue)."""
+    from src.utils import pending_queue
+
     try:
-        resp = dynamo.scan(
-            FilterExpression="begins_with(cache_key, :prefix)",
-            ExpressionAttributeValues={":prefix": "pending#enrich#"},
-            ProjectionExpression="cache_key",
-            Limit=100,
-        )
-        books = []
-        for item in resp.get("Items", []):
-            key = item["cache_key"]
-            book = key.split("#", 2)[2] if key.count("#") >= 2 else ""
-            if book:
-                books.append(book)
-        return sorted(books)
+        return pending_queue.pending_books(dynamo, "enrich")
     except Exception as e:
         logger.warning("Failed to scan pending enrich: %s", e)
         return []

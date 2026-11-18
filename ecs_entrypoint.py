@@ -1076,6 +1076,10 @@ def run_phase(phase_script: str, extra_args: list) -> None:
     """Run a pipeline phase script with incremental S3 sync."""
     global _current_phase_script
     _current_phase_script = phase_script
+    # count this Phase 3 attempt before anything can fail (queue row = the retry; cap = no loop)
+    if not _claim_enrich_attempt():
+        _remove_lock(phase_script)  # free the lock the trigger took for this launch
+        sys.exit(0)  # deliberately not run: alerted, nothing to retry
     _acquire_nat_lease()  # M3: register NAT demand for the life of this task
     phase_name = Path(phase_script).stem
     WORKDIR.mkdir(parents=True, exist_ok=True)
@@ -2658,6 +2662,8 @@ def _post_process(phase_script: str, env: dict) -> None:
             _offramp_doc_needs_review("provenance validation failed after Phase 3")
         else:
             _advance_doc_lifecycle("3")  # doc# -> done (multi-doc; terminal)
+        # done either way: a provenance off-ramp goes to human review, not to an automatic rerun
+        _finish_own_enrich_row()
         next_enrich = _get_next_pending_enrich()
         if next_enrich:
             logger.info(
@@ -2675,7 +2681,7 @@ def _post_process(phase_script: str, env: dict) -> None:
                     InvocationType="Event",
                     Payload=payload.encode(),
                 )
-                _consume_pending_enrich(next_enrich)
+                # its row stays until ITS task succeeds (task 1.2)
             except Exception as e:
                 logger.warning(
                     "Failed to trigger Phase 3 for %s (will retry on next reconciliation): %s",
@@ -2691,56 +2697,109 @@ def _post_process(phase_script: str, env: dict) -> None:
     _notify_complete(phase_script)
 
 
+def _cache_table():
+    """The api-cache table (queues, leases, locks)."""
+    table_name = os.environ.get("CACHE_TABLE", "dev-wwii-api-cache")
+    return boto3.resource("dynamodb", region_name=REGION).Table(table_name)
+
+
 def _get_next_pending_book() -> str:
-    """Check DynamoDB for other books with pending parsed queues. Returns book name or ''."""
+    """The next book waiting for Phase 2 (all scan pages; src/utils/pending_queue), or ''."""
+    from src.utils import pending_queue
+
     try:
-        table_name = os.environ.get("CACHE_TABLE", "dev-wwii-api-cache")
-        table = boto3.resource("dynamodb", region_name=REGION).Table(table_name)
-        resp = table.scan(
-            FilterExpression="begins_with(cache_key, :prefix)",
-            ExpressionAttributeValues={":prefix": "pending#parsed#"},
-            ProjectionExpression="cache_key",
-            Limit=100,
-        )
-        for item in resp.get("Items", []):
-            key = item["cache_key"]
-            book = key.split("#", 2)[2] if key.count("#") >= 2 else ""
-            if book:
-                return book
+        return pending_queue.next_book(_cache_table(), "parsed")
     except Exception as e:
         logger.warning("Failed to check pending books: %s", e)
     return ""
 
 
 def _get_next_pending_enrich() -> str:
-    """Check DynamoDB for books with pending enrichment. Returns book name or ''."""
+    """The next book waiting for Phase 3, other than the one this task runs, or ''."""
+    from src.utils import pending_queue
+
     try:
-        table_name = os.environ.get("CACHE_TABLE", "dev-wwii-api-cache")
-        table = boto3.resource("dynamodb", region_name=REGION).Table(table_name)
-        resp = table.scan(
-            FilterExpression="begins_with(cache_key, :prefix)",
-            ExpressionAttributeValues={":prefix": "pending#enrich#"},
-            ProjectionExpression="cache_key",
-            Limit=100,
+        return pending_queue.next_book(
+            _cache_table(), "enrich", exclude=os.environ.get("BOOK_NAME", "")
         )
-        for item in resp.get("Items", []):
-            key = item["cache_key"]
-            book = key.split("#", 2)[2] if key.count("#") >= 2 else ""
-            if book:
-                return book
     except Exception as e:
         logger.warning("Failed to check pending enrich: %s", e)
     return ""
 
 
-def _consume_pending_enrich(book: str) -> None:
-    """Delete a pending enrich queue entry after successful trigger."""
+def _finish_own_enrich_row() -> None:
+    """Phase 3 succeeded for this book: remove ITS OWN queue row (task 1.2). Before, the row of
+    the NEXT book was deleted when it was triggered, so a failed book was never retried.
+    """
+    book = os.environ.get("BOOK_NAME", "")
+    if not book:
+        return
+    from src.utils import pending_queue
+
     try:
-        table_name = os.environ.get("CACHE_TABLE", "dev-wwii-api-cache")
-        table = boto3.resource("dynamodb", region_name=REGION).Table(table_name)
-        table.delete_item(Key={"cache_key": f"pending#enrich#{book}"})
-    except Exception as e:
-        logger.warning("Failed to consume pending#enrich#%s: %s", book, e)
+        pending_queue.finish(_cache_table(), "enrich", book)
+        logger.info("OBSERV queue.enrich_done book=%s status=ok", book)
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - a leftover row only means one extra (idempotent) run
+        observe_warn(
+            "queue",
+            "enrich_done_failed",
+            note="the finished book's pending#enrich# row was not removed; the reconcile may "
+            "run Phase 3 for it once more (harmless). Delete the row if it repeats",
+            book=book,
+            error=type(e).__name__,
+        )
+
+
+def _claim_enrich_attempt() -> bool:
+    """A Phase 3 task is starting: count this attempt on the book's queue row FIRST (task 1.2;
+    owner decision D8c-2). The row stays until the run succeeds (_finish_own_enrich_row), so any
+    other ending - crash, preflight abort, SIGTERM, gate failure - leaves the book queued for the
+    hourly reconcile, and the count bounds the retries. Returns False when the cap is passed:
+    the caller must not run (the row is removed and an alert says what to do)."""
+    book = os.environ.get("BOOK_NAME", "")
+    if not book or "phase3" not in _current_phase_script:
+        return True  # unscoped / other phases: not queue-managed here
+    from src.utils import pending_queue
+    from src.utils.config import load_config
+
+    try:
+        cap = pending_queue.max_attempts(load_config())
+    except Exception:  # noqa: BLE001 - the default cap still applies
+        cap = pending_queue.DEFAULT_MAX_ATTEMPTS
+    try:
+        attempts, allowed = pending_queue.claim_attempt(_cache_table(), book, cap)
+    except Exception as e:  # noqa: BLE001 - not counting must not stop a run
+        observe_warn(
+            "queue",
+            "claim_failed",
+            note="this Phase 3 attempt was not counted, so a failure will not be retried "
+            "automatically. Re-trigger Phase 3 by hand if it fails",
+            book=book,
+            error=type(e).__name__,
+        )
+        return True
+    if allowed:
+        logger.info(
+            "OBSERV queue.enrich_attempt book=%s attempt=%d max=%d status=ok",
+            book,
+            attempts,
+            cap,
+        )
+        return True
+    observe_error(
+        "queue",
+        "enrich_gave_up",
+        note=(
+            f"Phase 3 has already been attempted {cap} times for this book without "
+            "succeeding, so it is no longer retried automatically. Fix the cause (see the "
+            "earlier alerts), then re-trigger Phase 3"
+        ),
+        book=book,
+        attempts=attempts - 1,
+    )
+    return False
 
 
 def _dedup_has_no_pending() -> bool:
@@ -3932,21 +3991,12 @@ def _held_lock_keys() -> list:
     env_name = os.environ.get("ENV_NAME", "dev")
     table_name = os.environ.get("CACHE_TABLE", "dev-wwii-api-cache")
     if _multi_doc_enabled():
+        from src.utils.ddb_scan import scan_prefix
+
         table = boto3.resource("dynamodb", region_name=REGION).Table(table_name)
-        keys: list = []
-        kwargs = {
-            "FilterExpression": "begins_with(cache_key, :p)",
-            "ExpressionAttributeValues": {":p": "lock#"},
-            "ProjectionExpression": "cache_key",
-        }
-        while True:
-            resp = table.scan(**kwargs)
-            keys.extend(i["cache_key"] for i in resp.get("Items", []))
-            lek = resp.get("LastEvaluatedKey")
-            if not lek:
-                break
-            kwargs["ExclusiveStartKey"] = lek
-        return keys
+        return [
+            i["cache_key"] for i in scan_prefix(table, "lock#", projection="cache_key")
+        ]
     # Serial: exact keys only
     dynamodb = boto3.client("dynamodb", region_name=REGION)
     lock_keys = [
@@ -4333,14 +4383,14 @@ def _clear_all_locks() -> None:
     try:
         table_name = os.environ.get("CACHE_TABLE", "dev-wwii-api-cache")
         table = boto3.resource("dynamodb", region_name=REGION).Table(table_name)
-        resp = table.scan(
-            FilterExpression="begins_with(cache_key, :prefix)",
-            ExpressionAttributeValues={":prefix": "lock#"},
-            ProjectionExpression="cache_key",
-        )
-        for item in resp.get("Items", []):
-            table.delete_item(Key={"cache_key": item["cache_key"]})
-            logger.info("Cleared lock: %s", item["cache_key"])
+        from src.utils.ddb_scan import scan_prefix
+
+        # list every page first, then delete (do not delete while paging the same scan)
+        for key in [
+            i["cache_key"] for i in scan_prefix(table, "lock#", projection="cache_key")
+        ]:
+            table.delete_item(Key={"cache_key": key})
+            logger.info("Cleared lock: %s", key)
     except Exception as e:
         logger.warning("Failed to clear locks: %s", e)
 

@@ -105,13 +105,16 @@ def _nat_demand_present() -> bool:
 def _nat_live_lease_present(now: int) -> bool:
     """Demand check 1: any live nat#lease# entry (filtering expired TTLs). Raises on error so
     the caller's fail-safe (keep NAT on uncertainty) applies."""
-    resp = _lease_table().scan(
-        FilterExpression="begins_with(cache_key, :p)",
-        ExpressionAttributeValues={":p": "nat#lease#"},
-        ProjectionExpression="cache_key, #t",
-        ExpressionAttributeNames={"#t": "ttl"},
-    )
-    for item in resp.get("Items", []):
+    from src.utils.ddb_scan import scan_prefix
+
+    for (
+        item
+    ) in scan_prefix(  # all pages: a lease beyond the first 1 MB page counts (task 1.2)
+        _lease_table(),
+        "nat#lease#",
+        projection="cache_key, #t",
+        names={"#t": "ttl"},
+    ):
         ttl = item.get("ttl")
         if ttl is None or int(ttl) > now:
             logger.info("NAT demand: live lease present — keeping NAT")
@@ -164,16 +167,15 @@ def _grok_batch_pending() -> bool:
 
         now = int(time.time())
         max_age = int(os.getenv("NAT_BATCH_DEMAND_MAX_HOURS", "8")) * 3600
-        resp = _get_table().scan(
-            FilterExpression="begins_with(cache_key, :p) AND #s IN (:pending, :ready)",
-            ExpressionAttributeNames={"#s": "status"},
-            ExpressionAttributeValues={
-                ":p": "batch_job#",
-                ":pending": "pending",
-                ":ready": "ready",
-            },
-        )
-        for item in resp.get("Items", []):
+        from src.utils.ddb_scan import scan_prefix
+
+        for item in scan_prefix(  # all pages (task 1.2)
+            _get_table(),
+            "batch_job#",
+            names={"#s": "status"},
+            extra_filter="#s IN (:pending, :ready)",
+            values={":pending": "pending", ":ready": "ready"},
+        ):
             submitted = int(item.get("submitted_at", now))
             if now - submitted <= max_age:
                 return True  # a live (non-zombie) batch needs NAT

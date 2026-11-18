@@ -172,6 +172,7 @@ def _run_phase3_post_process(monkeypatch, provenance, mode, refreshed=True):
         monkeypatch.setattr(ee, name, mock.Mock())
     monkeypatch.setattr(ee, "_get_next_pending_enrich", lambda: "")
     monkeypatch.setattr(ee, "_get_next_pending_book", lambda: "")
+    monkeypatch.setattr(ee, "_finish_own_enrich_row", lambda: None)
     monkeypatch.setattr(
         ee,
         "_provenance_gate",

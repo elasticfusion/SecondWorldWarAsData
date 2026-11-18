@@ -123,7 +123,7 @@ def test_no_task_is_launched_for_an_unknown_or_unsafe_book(th, name):
         patch.object(th, "_run_av_scan") as av,
         patch.object(th.boto3, "client") as client,
     ):
-        assert th._run_task("phase2:1", "s3", book_name=name) is None
+        assert th._run_task("phase2:1", "s3", book_name=name) is False  # not launched
     assert err.call_args.args[:2] == ("trigger", "book_name_rejected")
     av.assert_not_called()
     client.assert_not_called()

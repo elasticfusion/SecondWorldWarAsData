@@ -92,6 +92,12 @@ enrichment:
 extraction:
   window_paragraphs: 3                 # people/groups/places/equipment discovery: paragraphs per request (env WINDOW_PARAGRAPHS)
 
+# Per-book phase queues (src/utils/pending_queue.py). Each Phase 3 start counts an attempt on the
+# book's pending#enrich# row; the row is removed on success, so a failed or stopped run is retried by
+# the hourly reconcile. Past this many attempts the book is no longer retried and an alert says so.
+queue:
+  phase3_max_attempts: 3
+
 batch:
   phase2: true                         # 50% off extraction
   phase3: false                        # Live calls — avoids network bounce between submit/retrieve

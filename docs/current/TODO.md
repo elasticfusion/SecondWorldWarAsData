@@ -132,6 +132,15 @@ record disappears from S3; two queued books each run exactly once.
   trigger Lambda, on that STOPPED/non-zero event, publish one alert through the same phase2-complete
   path when the task did not report its own stop (e.g. a `phase.stop_alerted` marker it writes to
   DynamoDB, which the gateway endpoint reaches without NAT). This also covers a SIGKILL'd task.
+- **LOW - the end-of-run chain can pick a book that is already running.** Queue rows now stay while
+  their book runs (task 1.2), so `_get_next_pending_enrich` may name a running book; its lock is held,
+  the trigger re-queues it, and the next free book waits for the hourly reconcile (up to an hour).
+  Reuse the reconcile's "try each until one launches" (`trigger_handler._reconcile_phase3`).
+- **LOW - Phase 3 batch mode is not attempt-counted.** `run_submit_only` / `run_retrieve_only` do not
+  call `_claim_enrich_attempt`; with `batch.phase3` on (Group 2) the retry cap would not apply. Add
+  the claim there when Group 2 turns batching on.
+- **LOW - the NAT teardown signal scans the 26 MB table three times per check** (one `scan_prefix`
+  per prefix). Let `scan_prefix` take several prefixes (one scan, OR-ed `begins_with`).
 - **LOW - a standalone Phase 3 re-run can repeat the barrier-timeout alert.** The alerts ask the
   operator to re-run Phase 3; if the reconcile barrier and run marker lack a `run_id`, freshness falls
   back to `completed_at >= task start - 30 s`, so the re-run waits the full 300 s and raises

@@ -222,6 +222,8 @@ def _ddb_networking_signal() -> bool:
 
     now = int(_t.time())
     try:
+        from src.utils.ddb_scan import scan_prefix  # Lambda zip carries src/; fail safe
+
         tbl = boto3.resource("dynamodb", region_name=REGION).Table(
             os.getenv("CACHE_TABLE", f"{ENV_NAME}-wwii-api-cache")
         )
@@ -230,13 +232,12 @@ def _ddb_networking_signal() -> bool:
             ("batch_job#", False),
             ("lock#", False),
         ):
-            resp = tbl.scan(
-                FilterExpression="begins_with(cache_key, :p)",
-                ExpressionAttributeValues={":p": prefix},
-                ProjectionExpression="cache_key, #t, #s",
-                ExpressionAttributeNames={"#t": "ttl", "#s": "status"},
-            )
-            for item in resp.get("Items", []):
+            for item in scan_prefix(  # all pages (task 1.2)
+                tbl,
+                prefix,
+                projection="cache_key, #t, #s",
+                names={"#t": "ttl", "#s": "status"},
+            ):
                 if prefix == "nat#lease#":
                     ttl = item.get("ttl")
                     if ttl is None or int(ttl) > now:
