@@ -76,7 +76,7 @@ python phase3_enrich_data.py --max-items N              # cap per entity type
 
 ## Known gaps
 
-Listed in [TODO.md, Phase 3 review](../TODO.md#phase-3-review-started-2026-11-17).
+Listed in [TODO.md, Phase 3 review](../TODO.md#phase-3-work-order-dependency-grouped-2026-11-17).
 
 ---
 

@@ -5,7 +5,7 @@ Verified against code on 2026-11-17 (main 0dac86fa). Method: source read and gre
 
 This is the single authoritative description of what Phase 3 does today. It describes CURRENT code
 only: flaws, owner decisions and planned features from the Phase 3 review (started 2026-11-17) are
-in [TODO.md, Phase 3 review](../TODO.md#phase-3-review-started-2026-11-17), and sections that have entries there link to them as "Planned changes". The narrative overview is
+in [TODO.md, Phase 3 work order](../TODO.md#phase-3-work-order-dependency-grouped-2026-11-17), and sections that have entries there link to them as "Planned changes". The narrative overview is
 [PHASE3_ENRICHMENT.md](PHASE3_ENRICHMENT.md). Every Grok request Phase 3 makes is listed in
 [GROK_REQUESTS.md](GROK_REQUESTS.md). The SQS fan-out design is
 [OPENSERP_SQS_SCALING_DESIGN.md](../dataquality/OPENSERP_SQS_SCALING_DESIGN.md). Counter definitions
@@ -58,7 +58,7 @@ flowchart TD
 clickable). The main ones: [ECS wrapper](#ecs-wrapper-eprun_phase-lines-975-1000),
 [What `EP _download_inputs` does](#what-ep-_download_inputs-does) (steps 1-5),
 [3. OpenSERP in detail](#3-openserp-in-detail), [4. Other enrichers](#4-other-enrichers),
-[5. Batch mode](#5-batch-mode), [TODO.md, Phase 3 review](../TODO.md#phase-3-review-started-2026-11-17) (known gaps and planned changes).
+[5. Batch mode](#5-batch-mode), [TODO.md, Phase 3 review](../TODO.md#phase-3-work-order-dependency-grouped-2026-11-17) (known gaps and planned changes).
 
 Order in `P3:main()` (lines 873-960): people_groups; places and link_parent_places and geocode
 (`_enrich_places_and_geocode`, line 145); bibliography; bibliography_resolve; document media; OpenSERP
@@ -102,7 +102,7 @@ none, `_load_parsed_docs` logs `OBSERV phase3.no_parsed_docs` once and each step
    downloaded record below its entity's schema version up to it, on local disk only (written with
    `os.replace`, not the write guard; an unreadable file is skipped without a log). While it runs it
    sets the trigger Lambda's reserved concurrency to 0 and removes the limit in a `finally`
-   (`EP:3708`, `EP:3756`). Planned changes: [TODO.md, Phase 3 review](../TODO.md#phase-3-review-started-2026-11-17), "Step: EP _download_inputs".
+   (`EP:3708`, `EP:3756`). Planned changes: [TODO.md, Phase 3 review](../TODO.md#phase-3-work-order-dependency-grouped-2026-11-17), "Step: EP _download_inputs".
 6. Background S3 sync every `SYNC_INTERVAL` (120 s) while `phase3_enrich_data.py` runs as a subprocess.
 
 #### What `EP _download_inputs` does
@@ -132,7 +132,7 @@ by the phase script name (`EP:1298-1315`). For Phase 3 the steps are:
    fails it only logs a warning (`EP:2935`), after it has deleted the old barrier, so Phase 3 then waits
    out the full timeout. The barrier's `canonical_count` is logged, not compared with the download.
    Reference copies of the current barrier files: `docs/phase3-review/reconcile-barrier/`. Planned
-   changes: [TODO.md, Phase 3 review](../TODO.md#phase-3-review-started-2026-11-17), "Step: EP _download_inputs".
+   changes: [TODO.md, Phase 3 review](../TODO.md#phase-3-work-order-dependency-grouped-2026-11-17), "Step: EP _download_inputs".
 3. **Download the entity records.** The directories are `_PHASE23_ENTITY_DIRS` (`EP:56-78`): people,
    people_groups, places, dates, equipment, weather, logistics, casualties, maps, images,
    supplemental, bibliography and narrative_notes.
@@ -587,7 +587,7 @@ it and the next Phase 3 moves it again.
   `_openserp_down` for the rest of the process, and later entries are tagged `backend_down` instead of
   `not_found`.
 - Planned changes (search order, content verification, batched verify, finding kinds, book and
-  article paths, Amazon affiliate and BookFinder links): [TODO.md, Phase 3 review](../TODO.md#phase-3-review-started-2026-11-17), "Step: bibliography_resolve".
+  article paths, Amazon affiliate and BookFinder links): [TODO.md, Phase 3 review](../TODO.md#phase-3-work-order-dependency-grouped-2026-11-17), "Step: bibliography_resolve".
 - Unresolved citations go to `bibliography/review_queue.json`. `_bibliography_resolve_config` (`P3:680`)
   supplies `nara_api_key`, `search_gutenberg`, `search_archive_org`, `llm_search` (default true),
   `use_openserp` (same flag) and `openserp_url`.
@@ -650,6 +650,6 @@ not re-run (gap 5). The multi-round poller hand-off in
 
 ## 6. Known gaps and findings
 
-Moved on 2026-11-17 to [TODO.md, Phase 3 review](../TODO.md#phase-3-review-started-2026-11-17), so
+Moved on 2026-11-17 to [TODO.md, Phase 3 review](../TODO.md#phase-3-work-order-dependency-grouped-2026-11-17), so
 every Phase 3 flaw and planned change is listed in one place. A "gap N" in this document is the entry
 tagged "(was gap N)" there.
