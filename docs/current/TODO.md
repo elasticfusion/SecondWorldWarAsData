@@ -42,7 +42,7 @@ was verified. *refactor* = only a redesign fixes it. `EP` = `ecs_entrypoint.py`.
 | D9 | No reprocess purge. Grok book results (`books/<book>/...` only, D9-2) expire 10 days after last access; no TTL refresh on snapshot restore (D9-3). |
 | D10 | Release the Phase 3 lock at once on failure. |
 | D11 | NARA not-online UI: two use cases (more human online searches; a College Park research visit). A human-found URL is approved directly (D11-2); visit scans come in through normal intake (D11-3). |
-| V1 | xAI Batch API accepts image input: accepted; a one-request probe was submitted 2026-11-17 (batch_2739cfc9) and the first G2 run confirms. |
+| V1 | CONFIRMED 2026-11-17: the xAI Batch API answers vision requests. One-request probe (Map IV, pipeline `BatchRequest` JSONL format, `grok-4.3`, 1.3 MB) completed in about 2.5 h with the right answer (`is_map: true`, the map's title, five places on it); the same request live took 3.7 s. |
 | V2 | NARA files are served from `catalog.archives.gov/medialz/` (checked with the catalog API v2). |
 | V3 | No live evidence either way; fix the `pending#enrich#` row lifecycle in G1 regardless. |
 

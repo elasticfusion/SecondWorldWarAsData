@@ -149,7 +149,40 @@ def default_model(config: Optional[Dict[str, Any]] = None) -> str:
         except Exception:  # noqa: BLE001 - no config (e.g. a bare Lambda): the default
             config = {}
     grok = (config.get("api") or {}).get("grok") or {}
-    return os.getenv("GROK_MODEL") or grok.get("model") or DEFAULT_MODEL
+    env_model = os.getenv("GROK_MODEL")
+    if env_model:
+        _warn_env_override(env_model, grok.get("model") or DEFAULT_MODEL)
+    return env_model or grok.get("model") or DEFAULT_MODEL
+
+
+# (GROK_MODEL, config model) pairs already reported in this process: default_model runs per
+# request, the warning must fire once
+_override_reported: Set[tuple] = set()
+
+
+def _warn_env_override(env_model: str, config_model: str) -> None:
+    """``GROK_MODEL`` replacing a different ``api.grok.model`` is easy to miss (a stale value in a
+    local ``.env`` asked a retired model, 2026-11-17): say so once per process. Never raises.
+    """
+    if env_model == config_model:
+        return
+    key = (env_model, config_model)
+    with _alert_lock:
+        if key in _override_reported:
+            return
+        _override_reported.add(key)
+    from src.utils.observe import observe_warn
+
+    observe_warn(
+        "grok",
+        "model_env_override",
+        note=(
+            "GROK_MODEL is set and replaces the model in config.yaml (api.grok.model); unset "
+            "GROK_MODEL (check .env) unless this run must use another model"
+        ),
+        env_model=env_model,
+        config_model=config_model,
+    )
 
 
 def configured_models(config: Optional[Dict[str, Any]] = None) -> Set[str]:
