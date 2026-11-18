@@ -240,6 +240,54 @@ AV_IMAGE="$ECR_REPO/wwii-clamav:latest"
 TEMPLATE_BUCKET="wwii-pipeline-deploy"
 ENV="dev"
 EMAIL="dchristian@cirrusnine.com"
+# >>> dedup-auth (task 0.5; tests/test_deploy_dedup_auth.py runs this block as-is)
+# The dedup review UI's login lives ONLY in Secrets Manager (${ENV}-wwii-pipeline/dedup-auth). There
+# is no fallback value: a missing or empty secret stops the deploy before anything is built, and the
+# value never appears on a command line (it reaches the Lambda through a 0600 temp file).
+DEDUP_AUTH_SECRET="${ENV}-wwii-pipeline/dedup-auth"
+read_dedup_auth() {  # prints the secret value; hard stop if it is missing or empty
+  local v err
+  err=$(umask 077 && mktemp)
+  v=$(aws secretsmanager get-secret-value --secret-id "$DEDUP_AUTH_SECRET" \
+        --query SecretString --output text --region "$REGION" 2>"$err") || v=""
+  if [ -z "$v" ] || [ "$v" = "None" ]; then
+    # the AWS error (never the value) says whether it is missing, denied or a credentials problem
+    [ -s "$err" ] && sed 's/^/    aws: /' "$err" | head -3 >&2
+    rm -f "$err"
+    echo "  ✗ Secrets Manager secret $DEDUP_AUTH_SECRET is missing or empty - create it" >&2
+    echo "    (aws secretsmanager create-secret --name $DEDUP_AUTH_SECRET --secret-string 'user:password')" >&2
+    echo "    then deploy again. Hard stop." >&2
+    exit 1
+  fi
+  rm -f "$err"
+  printf '%s' "$v"
+}
+require_dedup_auth() {
+  read_dedup_auth >/dev/null
+  echo "  ✓ dedup UI login found in Secrets Manager ($DEDUP_AUTH_SECRET)"
+}
+push_dedup_auth() {  # CloudFormation resolves the secret only when the function changes; push it
+  # NOTE: --environment REPLACES the function's whole environment. ${ENV}-wwii-dedup-auth has only
+  # AUTH_TOKEN (cloudformation/compute.yaml); a new variable there must be added here too.
+  local tmp v
+  v=$(read_dedup_auth) || exit 1
+  tmp=$(umask 077 && mktemp)
+  DEDUP_AUTH_TMP="$tmp"  # the temp holds the login: removed on Ctrl-C / kill / exit too
+  trap 'rm -f "${DEDUP_AUTH_TMP:-}"' EXIT
+  trap 'rm -f "${DEDUP_AUTH_TMP:-}"; exit 130' INT TERM HUP
+  printf '%s' "$v" | python3 -c 'import json,sys; print(json.dumps({"Variables": {"AUTH_TOKEN": sys.stdin.read()}}))' > "$tmp" \
+    || { rm -f "$tmp"; echo "  ✗ could not prepare the dedup UI login. Hard stop."; exit 1; }
+  aws lambda update-function-configuration --function-name "${ENV}-wwii-dedup-auth" \
+      --environment "file://$tmp" --region "$REGION" --no-cli-pager > /dev/null \
+    || { rm -f "$tmp"; echo "  ✗ updating ${ENV}-wwii-dedup-auth failed. Hard stop."; exit 1; }
+  rm -f "$tmp"
+  DEDUP_AUTH_TMP=""
+  trap - EXIT INT TERM HUP
+  echo "  Auth updated"
+}
+# <<< dedup-auth
+require_dedup_auth
+
 # Start-of-deploy epoch (minus a 120s skew margin) for the post-push image-freshness assertion —
 # the pipeline image MUST be pushed AFTER this, else a silent no-push left a stale image deployed.
 DEPLOY_START_EPOCH=$(( $(date +%s) - 120 ))
@@ -539,9 +587,7 @@ bash scripts/update_lambdas.sh \
 
 echo ""
 echo "=== 7. Fixing auth ==="
-AUTH_TOKEN=$(aws secretsmanager get-secret-value --secret-id ${ENV}-wwii-pipeline/dedup-auth --query SecretString --output text --region $REGION 2>/dev/null || echo "admin:ReviewPass2026")
-aws lambda update-function-configuration --function-name dev-wwii-dedup-auth --environment "Variables={AUTH_TOKEN=$AUTH_TOKEN}" --region $REGION --no-cli-pager > /dev/null
-echo "  Auth updated"
+push_dedup_auth
 
 echo ""
 echo "=== 8. Verification ==="

@@ -1263,6 +1263,7 @@ Resources:
       Code:
         ZipFile: |
           import base64
+          import hmac
           import os
           def _wildcard(method_arn):
               # Grant the WHOLE API/stage (all methods + paths). API Gateway token-CACHES the
@@ -1279,12 +1280,15 @@ Resources:
               token = event.get('authorizationToken', '')
               expected = os.environ.get('AUTH_TOKEN', '')
               arn = event.get('methodArn', '')
-              if token.startswith('Basic '):
+              # no configured login -> deny everything (never "empty matches empty"); constant-time
+              # compare; strict base64 (task 0.5, 2026-11-18)
+              if expected and token.startswith('Basic '):
                   try:
-                      decoded = base64.b64decode(token[6:]).decode()
+                      decoded = base64.b64decode(token[6:], validate=True).decode()
                   except Exception:
                       decoded = None
-                  if decoded is not None and decoded == expected:
+                  if decoded is not None and hmac.compare_digest(
+                          decoded.encode(), expected.encode()):
                       return {'principalId': 'user', 'policyDocument': {
                           'Version': '2012-10-17',
                           'Statement': [{'Action': 'execute-api:Invoke', 'Effect': 'Allow',
