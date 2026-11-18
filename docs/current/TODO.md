@@ -1,25 +1,129 @@
 # Pipeline Backlog
 
-**Last Updated:** 2026-11-17 (Phase 3 review started: first section; all-docs review: code defects it found, see the first section); 2026-11-16 (docs review: three items marked done/partly done, see 2026-11-16 notes); previously 2026-10-29 (Pattern-8 observability P1 remediation A-E shipped + deployed; Slack Chatbot fixed to us-east-1; P2/P3 sweep + 3 review follow-ups + GIT_SHA gap logged below).
+**Last Updated:** 2026-11-17 (Phase 3 open items reorganized into a dependency-ordered work order with test groups and owner decisions: first section; Phase 3 review started; all-docs review: code defects it found, see the first section); 2026-11-16 (docs review: three items marked done/partly done, see 2026-11-16 notes); previously 2026-10-29 (Pattern-8 observability P1 remediation A-E shipped + deployed; Slack Chatbot fixed to us-east-1; P2/P3 sweep + 3 review follow-ups + GIT_SHA gap logged below).
 
 ---
 
-## Phase 3 review (started 2026-11-17)
+## Phase 3 work order (dependency-grouped, 2026-11-17)
+
+The open Phase 3 items, ordered so related fixes can be tested together on the Phase 2 data. Rules:
+(1) dependency first: an item another needs comes before it, and a MED or LOW that a HIGH needs moves
+into that HIGH's group; (2) Phase 3 processing order next: groups 4-14 follow the step order, because each
+step consumes the previous one's output; (3) priority last, inside a group. Entries are moved verbatim;
+each keeps its original heading ("####") so its context travels with it.
+
+**Test cycle for every group:** `python3 scripts/phase_snapshot.py restore --name phase2-2026-11-17`;
+deploy the group's branch (owner approval); run Phase 3 for `USA-E-XChannel` (owner approval for Grok
+spend); run `scripts/validate_phase3.py` and `scripts/validate_provenance.py`; compare with the Group 0
+baseline (per-step counts, Grok requests and cost, alerts, S3 diff); restore before the next group. Cached
+Grok book results last 10 days after last access (D9), so a group tested later than that pays Grok again.
 
 Owner-led review of Phase 3, working down the flow chart in `docs/current/core/PHASE3_MAP.md` §1. Code
 flaws found are recorded here (no code is changed during the review); a major Phase 3 refactor is
 expected afterwards. Each entry: what is wrong, where (file:line at `main` cbd94d83), effect, how it
 was verified. *refactor* = only a redesign fixes it. `EP` = `ecs_entrypoint.py`.
 
-### Step: EP run_phase preflight (PHASE3_MAP §1 "ECS wrapper")
+### Owner decisions (2026-11-17)
 
-Order (`EP:962-1003`, `main` 6dafabcc): NAT lease -> `_ensure_nat_if_needed` (nat-manager, up to 6
-tries, abort if never ready) -> `_clear_title_cache_if_reprocess` -> `_load_secrets` (Grok key, NARA key)
--> `_preflight_credit_check` (1-token request; 402/403-credit or 401 aborts) and
-`grok_models.preflight` (every configured model listed and served as itself; a missing one aborts) ->
-`_preflight_notification_subscriptions` -> `_preflight_runtime_tables` -> `_patch_config` ->
-`_start_openserp_if_needed`.
+| # | Decision |
+|---|---|
+| D1 | Maps store appearance links only ("this unit, place and date appear on this map"); no placement or boundary model. |
+| D2 | Places get dated containment (`containedInPlace` with valid_from / valid_to). |
+| D3 | A missing region/country is created with the public `_find_or_create_place`. |
+| D4 | A pending URL find is held in the review queue only, written to no entity JSON until a human approves it. |
+| D5 | Unit/person Wikipedia/Grokipedia images: vision only on images the free Commons-metadata pre-check flags. |
+| D6 | Vision-undecided images go to a separate image-review queue; its UI is TBD. |
+| D7 | Equipment images: photographs only, but any photograph of the named model, whatever the setting or date. |
+| D8 | Grok unreachable at preflight: retry, then stop with an alert. |
+| D8b | No NARA key: leave the archive-path records unresolved for the next run, alert. |
+| D8c | OpenSERP unavailable at start or mid-run: the whole phase stops, stamps nothing, alerts (D8c-3). |
+| D8c-2 | While OpenSERP is down: exit and leave the book queued for the reconcile (retry cap + alert). |
+| D8d | Nominatim unreachable: skip geocoding for the run, stamp nothing, alert. |
+| D9 | No reprocess purge. Grok book results (`books/<book>/...` only, D9-2) expire 10 days after last access; no TTL refresh on snapshot restore (D9-3). |
+| D10 | Release the Phase 3 lock at once on failure. |
+| D11 | NARA not-online UI: two use cases (more human online searches; a College Park research visit). A human-found URL is approved directly (D11-2); visit scans come in through normal intake (D11-3). |
+| V1 | xAI Batch API accepts image input: accepted; a one-request probe was submitted 2026-11-17 (batch_2739cfc9) and the first G2 run confirms. |
+| V2 | NARA files are served from `catalog.archives.gov/medialz/` (checked with the catalog API v2). |
+| V3 | No live evidence either way; fix the `pending#enrich#` row lifecycle in G1 regardless. |
 
+### Group 0 - baseline and test harness
+
+Nothing else can be tested until the deployed code is current and measurable. Deploy current `main`
+(the running image is bc3ea342), make every build carry its git SHA, fix the local `.env`, then run
+Phase 3 once on the restored Phase 2 data as the baseline every later group is compared with.
+**Test:** the baseline run itself.
+
+#### Local environment: `.env` pins a retired Grok model (found 2026-11-17)
+
+- **LOW - local runs and tests ask for a retired model.** The local `.env` (gitignored) sets
+  `GROK_MODEL=grok-4.20-0309-reasoning`; `grok_models.default_model` gives `GROK_MODEL` priority over
+  `api.grok.model` (`src/utils/grok_models.py:142`), so a local `GrokClient` requests it (seen in the V1
+  live vision test, 2026-11-17). `config.yaml:23` records that xAI retired it (May 15 2026) and redirects
+  to `grok-4.3`. The tracked `.env.example` says `GROK_MODEL=grok-beta`, also stale. ECS is not affected
+  (no `GROK_MODEL` in the task definitions; the model comes from `config.yaml`). Fix: remove
+  `GROK_MODEL` from `.env.example` (and tell developers to drop it from `.env`), so `config.yaml` is the one
+  place the model is set; or have the preflight model check (`grok_models.preflight`) warn when
+  `GROK_MODEL` overrides `api.grok.model`.
+
+#### Older backlog - HIGH list
+- **[HIGH · data-quality] Wikipedia rate limits became "not found" for every entity type (FIXED 2026-11-06, not yet deployed).**
+  Seen in the XChannel-8 dev E2E: every Wikipedia bio lookup after the first got 429 / Retry-After 60. The shared
+  pooled session (fetch-provenance migration `5711c48d`, 2026-10-23) retried each 429 three times at the full
+  Retry-After (180 s per lookup), then raised; callers recorded a miss. People were stamped `not_found` (90-day
+  suppression), and groups, equipment and places stamped `wikipedia_checked_at` (never re-fetch). FIX: all 11
+  Wikimedia call sites go through `src/utils/wikimedia_client.py` (per-host back-off, polite short waits, TRANSIENT on
+  429/403/5xx, records left unstamped), guarded by `tests/test_wikimedia_client.py`. REMAINING:
+    - After deploy, re-queue this run's casualties: people with `enrichment_status=not_found` and
+      `last_enrichment_search=2026-11-06` whose fetch-provenance shows a Wikipedia `RetryError` (Eisenhower, Marshall,
+      Montgomery, Ramsay, Bedell Smith, Leigh-Mallory, Tedder, Bradley, Kirk, Dönitz, Rommel, ...).
+    - Grokipedia hit + Wikipedia rate limited stamps the person `enriched`, so Wikipedia is never tried again for them.
+    - A deterministic parse failure (malformed body, missing key) is now deferred every run instead of negative-cached:
+      add a deferral count or backstop. The same applies to a permanent 403.
+    - A Commons license fetch that fails transiently is stored and positive-cached as `license="unknown"`.
+    - `_extract_media_from_wikipedia` returns no media on TRANSIENT without deferring (pre-existing behaviour).
+    - `scripts/utils/debug_searches.py` calls en.wikipedia.org directly (diagnostic only; the guard scans `src/`).
+- **[HIGH · deploy/CICD] Merge-to-main does NOT rebuild/redeploy the pipeline image — stale `:latest` ran the E2E.**
+  Root-caused during the XChannel-8 E2E (2026-10-28): the run produced 0 of the page's ~11 maps + 0 of its 26
+  in-document photos (only 5 Wikipedia enrichment images) because the deployed `wwii-pipeline:latest` was
+  pushed 2026-10-27 08:59 EDT — HOURS BEFORE M1 (in-doc map links, #587 @14:04) and M2 (embedded images,
+  #588 @14:53) merged, so the running pipeline literally lacked the extraction code. The code was on `main`
+  but `main` was never rebuilt/pushed after the afternoon merges. THREE fixes (priority order):
+    1. **Deploy-on-merge:** a CI job (or documented post-merge step) that rebuilds + pushes the pipeline
+       image and re-registers the ECS phase task defs when `main` changes — close the merge≠deploy gap.
+       (CI currently runs lint+test on PRs only; it does NOT build/push the Docker image.)
+    2. **Pin task defs by image DIGEST, not the mutable `:latest`** (+ stamp the git SHA as an image tag/label)
+       so "which commit is live" is unambiguous/auditable (this bug was invisible because task defs point at
+       `:latest`).
+    3. **Emit the running git SHA in a startup OBSERV** (`OBSERV pipeline.version sha=<...>` at phase start)
+       so any run's logs self-identify the code version (no more reverse-engineering "did this run have M2?").
+  NOTE: my first diagnosis ("image from Oct 13") was WRONG — I misread the task-def registeredAt as the image
+  push time; the image is ~1 day old but predates the M1/M2 afternoon merges.
+
+#### Older backlog - LOW list
+- **[LOW · deploy-provenance] `scripts/deploy_all.sh` doesn't pass `--build-arg GIT_SHA`** so the pipeline image's
+  `GIT_SHA` env/label is `unknown` (cosmetic provenance gap; image content is still current main). Pass
+  `--build-arg GIT_SHA=$(git rev-parse HEAD)` in `build_scan_push`.
+
+### Group 1 - shared foundations (no new Grok features)
+
+What several HIGH items in later groups depend on; MED/LOW items are here when a HIGH needs them.
+1. one paginated `pending#` queue module (the next-book / reconcile readers; the task deletes its own
+   row only on success, keeps it on failure for the retry; owner D8c-2, V3);
+2. deletes reach S3 (one delete helper wired to `track_deletion`);
+3. the global content-hash dedup claims only after the object is in S3 (or releases on failure);
+4. non-search steps independent of `use_openserp`; `use_openserp: false` honoured on ECS;
+5. one alert path to `phase2-complete` (preflight aborts, crashed task, validation failure, reconcile
+   failure, unreachable OpenSERP, short bibliography download);
+6. per-request identity (`current_book`, BookID, RequestID) for Phase 3;
+7. public find-or-create entity writers (places, dates, people_groups) shared by Phase 2 and 3;
+8. config: `trusted_sources` (HyperWar html+pdf; NARA `catalog.archives.gov/id/` + `/medialz/`) and
+   `links.follow` (same_domain / external: max_hops 1, max_per_page 20), read in one place;
+9. every Phase 3 write stamps metadata (`entity=`), so change detection works.
+
+**Test:** restore, run with OpenSERP off: the non-search steps run; force each alert once; a relocated
+record disappears from S3; two queued books each run exactly once.
+
+#### Step: EP run_phase preflight (PHASE3_MAP §1 "ECS wrapper") (moved here from Group 4)
 - **MED - three of the four preflight aborts send no alert.** Credits depleted, invalid API key
   (`EP:820-829`) and NAT never ready (`EP:715-729`) are a `logger.error` and `sys.exit(1)`. No
   `observe`/`publish_alert`, no CloudWatch metric filter matches them (the filters in
@@ -29,50 +133,8 @@ tries, abort if never ready) -> `_clear_title_cache_if_reprocess` -> `_load_secr
   sends the trigger Lambda a `check_locks`, which clears the lock. A model that is gone is the only
   preflight failure that alerts (`grok_models.model_unavailable` -> `publish_alert`). Fix (DRY): route
   the other three through the same alert path (`phase2-complete`, both channels).
-- **LOW - "preflight unverified" proceeds even when Grok is unreachable.** Any exception other than the
-  ones above is `OBSERV preflight.unverified status=warn` and the phase goes on (`EP:844-852`). Live: Phase 2
-  logged it with a connection error to `api.x.ai` on 2026-11-12 and 2026-11-14, right after NAT reported
-  ready, so the phase started with no egress. Owner decision: retry the probe after a short wait and
-  abort with an alert if it still fails.
-- **LOW - OpenSERP start can hold the task up to 12 minutes before any work.** `_start_openserp_if_needed`
-  polls 72 x 10 s for the task IP (`EP:774`) before `_download_inputs`; NAT and the Fargate task are
-  billed meanwhile, and OpenSERP is not needed until step 6. Scale it up here and discover the IP just
-  before the OpenSERP group.
-- **LOW - two copies of the 1-token probe.** `_preflight_credit_check` posts its own request
-  (`EP:808`) and `grok_models.preflight` posts the same probe per model (`src/utils/grok_models.py:199`).
-  Fold the credit/key checks into `grok_models.preflight` (DRY).
-- **MED - `_clear_title_cache_if_reprocess` deletes nothing on ECS, so a reprocess reuses the old Grok
-  answers.** Purpose (`EP:546`): on a reprocess (`processing.force_reprocess`, a non-empty
-  `processing.reprocess_types`, or `REPROCESS_TITLE` = `BOOK_NAME`) clear this book's cached Grok event
-  answers, so a stale or bad cached answer does not fail every re-run. It runs for Phase 2, Phase 3 and
-  the OCR cross-check, and deletes the local directory `/app/cache/api/books/<book>/events/`. On ECS the
-  answers are not there: `_patch_config` sets `aws.enabled=true`, so `GrokClient` uses
-  `DynamoCacheBackend` (`src/grok_client.py:429`), with keys under `books/<book>/events` in
-  `dev-wwii-api-cache`; the local directory holds only batch JSONL and rejected answers (`EP:3539`
-  comment), and nothing downloads cached answers into it. Effect: the reprocess flag does not refresh the
-  event answers it is meant to refresh. Phase 3 also has no book-scoped cache to clear (it sets no
-  `current_book`, "was gap 26"). Fix (DRY): clear through the cache backend (`DynamoCacheBackend` already
-  has a prefix scan-and-delete, `clear`, `src/utils/cache_backend.py:155`), and skip Phase 3. Owner decision
-  before fixing: whether a reprocess should really drop paid answers (cost), or only the answers that
-  failed.
-  Value at stake (Phase 2 backup key list, 2026-11-17): `books/USA-E-XChannel/events` holds 53 paid
-  event-extraction answers (plus 2,310 other per-book answers: supplemental 745, weather 647, logistics
-  636, casualties 282). They let Phase 2 be re-run without paying Grok again; the local directory holds none.
-- Not checked at preflight: the NARA key (warning only when missing), OpenSERP (see "was gap 1"),
-  Nominatim. Owner decision whether any should block.
 
-### Step: EP post-sync steps, on success (PHASE3_MAP §1 "ECS wrapper")
-
-Order after the Phase 3 subprocess exits 0 (`EP:1083-1087`, `_post_process` `EP:2373`, Phase 3 branch
-from `EP:2493`): `BackgroundSync.stop()` (final flush) -> `_final_sync` -> `_remove_lock` ->
-`_phase3_durable_referential_fix` (`EP:2329`: `_post_sync_referential_enforce` repairs and re-audits
-dangling references directly on S3; `provenance_integrity.run_for_phase`; `_refresh_validation_corpus`
-re-downloads the corpus; `scripts/validate_phase3.run`) -> `_notify_url_review_pending` (email with the
-count of pending URL finds and the review UI link) -> `_provenance_gate("3")` (mode
-`provenance_validation.gate`, default `warn`; `block` holds the book for review) -> doc lifecycle to
-done (multi-doc only) -> `_get_next_pending_enrich` and trigger the next Phase 3 -> scale OpenSERP to 0
-if neither queue has work and `_openserp_demand_present` is false -> `_notify_complete` (email).
-
+#### Step: EP post-sync steps, on success (PHASE3_MAP §1 "ECS wrapper") (moved here from Group 14)
 - **HIGH - the "next book" lookups miss queued books.** `_get_next_pending_book` and
   `_get_next_pending_enrich` (`EP:2543`, `EP:2564`; `Limit=100` at `EP:2552`, `EP:2573`) `scan` with `Limit=100` and a `FilterExpression`. In
   DynamoDB `Limit` caps the items READ before the filter, and there is no pagination, so only the first
@@ -88,34 +150,8 @@ if neither queue has work and `_openserp_demand_present` is false -> `_notify_co
   (`scripts/validate_phase3.py:233-242`), and the caller logs the exit code at INFO (`EP:2367`). No
   `observe` / `publish_alert`, no metric filter. Alert through `phase2-complete` with the failure list
   (both channels).
-- **MED - the post-sync check downloads the whole corpus every run.** `_refresh_validation_corpus` is
-  called without a book (`EP:2362`), so it pulls all of `output/content/` and re-downloads every
-  `_MENTION_REPAIR_ENTITIES` dir with overwrite. Cost and time grow with the corpus, not the book. Pass
-  the book and download only the records the repair changed.
-- **LOW - the lock is released before the S3 repair.** `_remove_lock` runs first (`EP:2495`), so
-  another task can start and download S3 while `_post_sync_referential_enforce` is rewriting records.
-  Remove the lock after the repair and gate.
-- **LOW - the completion email lists the wrong steps** (covered by "was gap 21").
 
-### Step: EP failure path (PHASE3_MAP §1 "ECS wrapper")
-
-Four ways a Phase 3 task ends badly:
-1. **The Phase 3 script exits non-zero** (`EP:1047-1068`): `_notify_failure` (SNS to
-   `NOTIFICATION_TOPIC_ARN` = `dev-wwii-phase2-complete`, so email + Slack; "<phase> failed with exit
-   code N" and a log-tail command), `_final_sync_failed_phase` (uploads what changed; a sync error is
-   `observe_error`), NAT lease released, `sys.exit(code)`. The Phase 3 lock is kept
-   (`if "phase3" not in phase_script`); the ECS task-failure rule (`cloudformation/compute.yaml:735`)
-   sends `check_locks`, which deletes it because no task is running, else the 2 h TTL. OpenSERP stays
-   up until the teardown Lambdas find no demand.
-2. **A preflight or NAT abort** before the script starts: `sys.exit(1)`, no notification (preflight
-   entry above).
-3. **SIGTERM** (Spot interruption, ECS stop, the watchdog; `_handle_sigterm`, `EP:120`): within the
-   30 s `StopTimeout` (`compute.yaml:231`) it runs `_final_sync`, removes the lock, releases the NAT
-   lease, re-queues an interrupted batch resume, exits 143.
-4. **An exception in the wrapper itself** (e.g. inside `_download_inputs`): Python exits 1 with a
-   traceback; only the `atexit` NAT-lease release runs.
-
-Findings:
+#### Step: EP failure path (PHASE3_MAP §1 "ECS wrapper") (moved here from Group 14)
 - **MED - a stopped or crashed task sends no failure notice.** Paths 2, 3 and 4 never call
   `_notify_failure`: a Spot interruption of Phase 3 (path 3, apart from the watchdog, which notifies
   before it signals) or a wrapper exception (path 4) leaves the book unfinished with no alert (the
@@ -131,29 +167,8 @@ Findings:
   `_audit_failed_phase2`; Phase 3 has nothing), and no record says the book's Phase 3 is incomplete.
   Re-queue on failure (with a retry cap), run the post-sync audit as Phase 2 does, and stamp the book
   `phase3: failed`.
-- **LOW - the failure message is generic.** No book name, a fixed `--since 30m` and the `dev` log group
-  hard-coded (`_notify_failure`). The Slack formatter adds a log link; the email has none. Include the
-  book, the task ID and the log stream.
-- **LOW - the SIGTERM sync may not fit in 30 s.** `_final_sync` walks every entity dir; on a large
-  corpus it can exceed the `StopTimeout`, and the lock and NAT lease are released only after it. Release
-  the lock and lease first, or raise `StopTimeout` for Phase 3.
-- **LOW - why the Phase 3 lock is kept on failure is not stated.** The task-failure rule deletes it
-  at once, so keeping it changes nothing. Decide and document one behaviour.
 
-### Step: EP _download_inputs (PHASE3_MAP §1 "What EP _download_inputs does")
-
-- **LOW - remove the dead DynamoDB shortcut (owner request).** `_materialize_from_dynamo()`
-  (`EP:1290-1295`) is a deprecated stub that always returns False (the DynamoDB entity store was
-  removed; S3 is the only entity store). Callers: `_download_inputs` (`EP:1313`) and
-  `_download_dedup_data` (`EP:2849`) (trace_path). In `_download_inputs` the `config.yaml` read for
-  `processing.force_reprocess` (`EP:1311-1313`) exists only to skip the stub, so it goes too. Remove
-  the function, both calls and that read; the S3 download is then unconditional. Verified: function
-  body is `return False`.
-- **DONE 2026-11-17 (PR #756; was gap 27) - a single-book Phase 3 downloaded no map, image or
-  narrative-note records.** Fixed: per-book types read from the book manifest (now incl. images),
-  shared types downloaded in full, map binaries only when a vision retry needs them, changed-only
-  final sync; details in `PHASE3_MAP.md` §1 "What `EP _download_inputs` does", step 3. Runs before the
-  fix are not repaired: re-run Phase 3 for a book that ran scoped.
+#### Step: EP _download_inputs (PHASE3_MAP §1 "What EP _download_inputs does") (moved here from Group 4)
 - **MED - a failed bibliography reconcile is silent, and Phase 3 then runs on unmerged shards.**
   `_reconcile_bibliography_full_corpus` (dedup step at the end of Phase 2, `EP:2883`) catches every
   exception and only `logger.warning`s it (`EP:2935`): no OBSERV event, no SNS alert. It has already
@@ -163,247 +178,239 @@ Findings:
   mentioned by different tasks are not unioned. Fix: an actionable alert on the reconcile failure
   (publish to `phase2-complete`), and decide whether Phase 3 should hold instead of proceeding.
   Verified in code; no failure observed in live logs.
-- **LOW - the wait timeout equals the reconcile's own run time.** The last reconcile ran 300.1 s
-  (`_run.json` started 22:43:58 UTC, barrier `completed_at` 22:48:58 on 2026-11-16) for one book; the
-  default wait is 300 s. A Phase 3 that starts while a reconcile is running (concurrent books) will
-  time out and read a half-merged bibliography. The reconcile downloads the whole `output/bibliography/`
-  prefix, so its time grows with the corpus while the timeout does not.
-- **LOW - the per-book barrier is dead code.** Only the full-corpus `_all` barrier is ever published
-  (one caller, `EP:2926`). The wait still polls `manifests/reconcile_complete/<BOOK_NAME>.json`, its
-  docstring says "a per-book reconcile publishes the book key", and `_clear_reconcile_barrier`'s
-  default key is that book key: nothing writes it.
-- **LOW - the barrier body names a book.** The `_all` barrier records `"book": "USA-E-XChannel"`
-  (`EP:3093` writes `BOOK_NAME` of the dedup task) although it is the cross-book barrier.
-- **LOW - `canonical_count` is never compared.** The barrier records how many canonical files the
-  reconcile published (`_publish_reconcile_barrier`, "so it is comparable with Phase 3's download
-  coverage"), but `_observe_bibliography_download_coverage` (`EP:1629`) compares the S3 listing with
-  the local count and never reads it; it is only logged (`EP:1460-1466`).
-- **MED - records the merge folds into another stay in S3 as duplicates.** The reconcile's near-title
-  pass merges whole canonical records (`bib_<a>.json` into `bib_<b>.json`) and deletes the merged-away
-  file locally (`_persist_merged_bib`, `src/extraction/bibliography.py:1039`, unlinks every file of the
-  group except the one kept, line 1057). The S3 cleanup `_delete_orphaned_bibliography_shards` (`EP:3119`) only deletes names
-  containing `__` (shards, `EP:3131`), so a merged-away canonical record is never removed from S3. Found
-  2026-11-17: S3 holds 2,035 records; the 2026-11-16 reconcile kept 2,029 (barrier `canonical_count`
-  2,030 includes `review_queue.json`); re-running `reconcile_bibliography_dir` offline on a copy of the
-  S3 set folds 8 more, e.g. "V Corps G-3 Journal", "Seventh Army, KTB Anlagen 1.I.-30.VI.44", "AEAf
-  Overall Air Plan, 15 Apr 44" (list: `tmp/phase3-review/bib-reconcile-dryrun` vs
-  `tmp/phase3-review/bibliography`, not committed). Effect: Phase 3 resolves each duplicate separately
-  (paid NARA/OpenSERP/Grok lookups) and the site would show a citation twice, one copy without the
-  merged mentions. Fix: delete every S3 key in `output/bibliography/` whose basename the reconciled
-  local set no longer has (shards and merged-away records), and repair the 8 now.
-- **MED - schema stamping switches the whole pipeline's trigger off for a local-only job.**
-  `_stamp_schema_versions` (`EP:3690`, run by every Phase 3 task right after the download) sets the
-  trigger Lambda's reserved concurrency to 0 (`EP:3708`) while it rewrites files on the task's local
-  disk, and removes the limit in a `finally` (`EP:3756`). Stamping touches no S3 object (the files
-  reach S3 only at the later syncs), so the disable protects nothing. While it lasts, every pipeline
-  event (uploads, phase-complete messages) is throttled and depends on the sender's retries; if the
-  task is killed during stamping (OOM, SIGKILL) the `finally` never runs and the trigger stays off
-  with no alert, so the pipeline silently stops starting anything. Fix: drop the disable/re-enable.
-  Verified in code; for the current bibliography it rewrites nothing (all 2,035 records are already
-  at 2.29).
-- **LOW - stamping hides failures and bypasses the write guard.** `_stamp_file` (`EP:3664`) catches
-  every exception and returns 0 with no log, so an unreadable record is skipped silently, and it writes
-  with `os.replace` instead of `write_json_with_lock`, so a stamped record is not schema-checked.
-- **LOW - a short bibliography download is only a log line.** `_observe_bibliography_download_coverage`
-  logs a SHORTFALL warning (`EP:1679`, with a good cause analysis) but sends no alert, and a failure of
-  the check itself is logged at debug (`EP:1687`).
-- ***refactor* - the barrier exists only because bibliography is written as per-task shards that a
-  later corpus-wide pass must merge.** Merging at write time (conditional writes on the canonical
-  `bib_<hash>.json`) would remove the reconcile pass, the barrier, the run marker and the wait.
 
-### Step: places hierarchy and link_parent_places (PHASE3_MAP §4.2)
-
-How it works (`main` 2ddeffcc):
-- `enrich_all_places` (`src/extraction/enrich_places.py:576`): for each place without both `continent`
-  and `country` (`_needs_enrichment`, `:447`), one Grok request from model memory (`PROMPT`, `:62`:
-  continent, WWII-era country, region, historical names). `_merge_hierarchy` (`:406`) only fills empty
-  fields. A transient error is left unstamped and retried; a clean miss is stamped `not_found`.
-- `link_parent_place_ids` (`src/extraction/places.py:611`): builds a lowercase name -> PlaceID index
-  from every place's `current_name` and `aliases`, then for each place without
-  `hierarchy.parent_place_id` takes the first of `region`, `country`, `continent` whose name is in the
-  index (`_find_parent_id`, `:598`) and writes it.
-- Live data after Phase 2 (`output/places/`, 994 records, synced to `tmp/phase3-review/imgcheck/`):
-  `hierarchy.continent` on 154, `country` on 41, `region` on 0, `parent_place_id` on 0. Of the 31
-  countries named, 10 have a place record.
-
-Findings (nothing enforces the hierarchy beyond a name match):
-- **HIGH - a parent is chosen by name alone.** No geography-type check (a town can become the parent of
-  a region if it shares the region's name: Luxembourg city vs country, Georgia), no disambiguation, and
-  the index keeps the last record for a duplicated name or alias (`places.py:589-592`). No cycle check
-  beyond self. Fix: the parent must be a coarser `geography_type` (village/town/city < region < country
-  < continent), ambiguous names go to review, and a cycle is refused.
-- **MED - a missing level is skipped silently.** With no region record the town is linked straight to
-  its country, and with no country record to its continent; most parents do not exist as records (10
-  of 31 countries). Owner decision: create the missing region/country through
-  `places._find_or_create_place` (as `image_place_link` already does, DRY), or leave the gap and count it.
-- **MED - a parent is never corrected.** `if hierarchy.get("parent_place_id"): continue`
-  (`places.py:634`): once set, a better parent (a region record created later) is never used. Re-derive
-  each run, and record why it changed.
-- **MED - two representations of the same edge.** The schema has `containedInPlace` /
-  `containsPlace` with PlaceIDs (`src/schemas/places_output.py:111`) and no code writes them; the
-  link goes into the untyped `hierarchy` object (`"hierarchy": {"type": ["array","object","null"]}`,
-  `:100`), so `parent_place_id` is not validated as a ULID (fake ULIDs happened before:
-  `scripts/archive/fix_fake_place_ulids.py`). Pick one (schema.org `containedInPlace`), give it a
-  schema, and write the inverse `containsPlace` (DRY: one writer).
-- **MED - the hierarchy has no source.** Grok answers from model memory with no citation, and
-  `_merge_hierarchy` does not record which source filled each field (Phase 2 Wikipedia categories or
-  Phase 3 Grok). Same class as "was gap 16" (unit facts). Record the source and date per field.
-- **MED - one country for the whole war.** The prompt asks for "the WWII-era country"; borders changed
-  during the war (Alsace, annexed 1940; Sudetenland 1938; the Baltic states). A single value cannot hold
-  this. Ties to the owner decision on boundaries in the map entry: a dated containment
-  (`containedInPlace` with `valid_from` / `valid_to`).
-- **LOW - region is asked only once.** `_needs_enrichment` stops at continent + country, so a place
-  whose first answer lacked a region is never asked again.
+#### Step: places hierarchy and link_parent_places (PHASE3_MAP §4.2) (moved here from Group 6)
 - **LOW - the write does not stamp metadata.** `write_json_with_lock(pf, data)` (`places.py:639`) passes
   no `entity`, so `_last_updated` / `_schema_version` are not refreshed (the geocode writer does both);
   incremental change detection misses the change.
-- **LOW - the hierarchy-order sort does nothing.** The name index is built before the loop, so
-  processing countries before towns (`places.py:623-627`) changes nothing.
-- **LOW - observability.** One `OBSERV places.parent_link linked=<n>`; no count of places with a
-  hierarchy but no parent found, ambiguous names, or skipped levels.
 
-### Step: bibliography_resolve (PHASE3_MAP §4.3)
+#### Step: intra_corpus_links (PHASE3_MAP §1 step table) (moved here from Group 9)
+- **DECISION (owner 2026-11-17): HyperWar volumes and their PDFs are trusted sources.** A cited
+  HyperWar volume (HTML or its PDF) is queued for ingestion with no URL Grok check and no human URL
+  review; it is the one exception to the "every URL to review" rule. Trust is at the source level only:
+  its content goes through the normal pipeline, where Grok classifies everything inside it (events,
+  people, units, places, dates, equipment, casualties, maps vs images, charts, footnotes, bibliography),
+  and the links inside it to non-HyperWar sites follow the review rule. To do:
+  - Define "HyperWar" in config, not code: the `ibiblio.org/hyperwar/` path, not all of `ibiblio.org`
+    (`config/domain_blacklist.yaml` already lists `source_material_paths`; reuse it). The current
+    `link_relevancy_whitelist: ibiblio.org` is wider than the trust decision.
+- **DECISION (owner 2026-11-17): NARA records are trusted the same way, and the trusted list will grow.**
+  One config list of trusted sources replaces the per-feature lists (DRY), e.g.:
+  ```yaml
+  trusted_sources:            # skip URL Grok check + human URL review; content still Grok-classified
+    - {name: hyperwar, match: "ibiblio.org/hyperwar/", forms: [html, pdf]}
+    - {name: nara, match: ["catalog.archives.gov/id/", "catalog.archives.gov/medialz/"]}
+  ```
+  Adding a site is a config edit (no code change), logged at run start. NARA's digital objects are served
+  from the same host, `catalog.archives.gov/medialz/...` (verified 2026-11-17 with the catalog API v2:
+  `digitalObjects[].objectUrl`, HTTP 200, no redirect). Rules for every entry:
+  - Trust covers the source, not the match. A cited link to a trusted source is queued directly. A
+    trusted record found by a SEARCH (NARA catalog search in `bibliography_resolve`) still needs the
+    existing Grok check that it is the cited document (`BR` verified findings); once matched, its
+    online copy is queued for ingestion with no human URL review.
+  - Content is still classified by Grok in Phases 1-3; links inside it to untrusted sites follow the
+    review rule.
+  - The queued item and the book meta record `trust_basis: <name>`.
+  - `link_relevancy_whitelist`, `source_material_paths` and the hard-coded HyperWar recognizer read this
+    list instead of keeping their own.
+  - Recognize the PDF form as the same volume: `hyperwar_biblio._HYPERWAR_URL` matches the HTML page
+    URLs only; add the PDF URL pattern so a PDF and its HTML volume resolve to one volume key and one
+    slug (one ingestion, not two).
+  - Record `trust_basis: hyperwar` on the queued item and the resulting book meta, so the exception is
+    visible in provenance.
 
-`BR` = `src/enrichment/bibliography_resolver.py`.
+#### Cross-cutting: how Phase 3 results reach the S3 JSON
 
-- **MED - a NARA catalog match is recorded as "online" even when nothing is digitized.**
-  `_verify_nara_hits` (`BR:1772`) returns the catalog record page `catalog.archives.gov/id/<naId>`
-  for the first Grok-verified hit (`BR:1826`) whether or not NARA holds scans; the scan count
-  (`_nara_digital_object_count`) is only logged (`OBSERV nara.match online=0|1`). `_apply_resolved_url`
-  (`BR:325`) then sets `availability: "online"` and `search_status: "resolved"`. A record that NARA
-  only describes (paper at College Park) thus reads as available online. Fix: store the scan count /
-  an `online` flag on the finding, and set `availability: online` only when scans exist (else
-  `archive` + `reference_identified` with the catalog link as a finding aid).
-- **LOW - FIX (owner) - one physical address for every record group, and it overwrites a better one.** `_identify_record_group` (`BR:586`) writes
-  "National Archives and Records Administration (NARA), College Park, MD 20740, USA" for any record
-  group found. Some groups are held at other NARA buildings (believed, e.g., RG 45 at the National
-  Archives Building in Washington; per-group holdings not verified). Worse, when no online copy is
-  found it OVERWRITES a better address: `_enrich_from_biblio_note` first sets
-  `archive_physical_address` from the source volume's own Bibliographical Note (the authoritative
-  holding, `BR:261`), then `_apply_result` applies the record-group result with `entry.update(extra)`
-  (`BR:311`), replacing it with the generic College Park text. Fix: a holding location per record
-  group in the lookup table, never overwrite a holding taken from the note, and leave the address
-  empty when unknown.
-- ***refactor* - FIX IN PHASE 2 (owner) - a quarter of Phase 2's "bibliography" is not citations,
-  found only in Phase 3.**
-  Of the 2,035 records, 534 fail `_looks_like_citation` (narrative footnotes, e.g. "An American heavy
-  tank did not reach the theater until 1945") and are only moved to `output/narrative_notes/` by the
-  Phase 3 resolver (`_relocate_narrative_note`). The test is deterministic, so Phase 2 could route them
-  at write time; until then they pass through the dedup review and bibliography reconcile as citations.
-  Counted 2026-11-17 by running the resolver's routing functions offline on the downloaded set.
-- **LOW - owner - search order.** Archive path and generic path (`_search_online_sources`, `BR:606`) run
-  NARA, OpenSERP (`BR:630`), Archive.org, Gutenberg, then the Grok LLM search only if nothing was found.
-  Wanted (owner, 2026-11-17): record group, NARA, Archive.org, Gutenberg, OpenSERP, Grok. OpenSERP keeps
-  running even when an earlier source found a copy: a second location is wanted (no short-circuit).
-  All four keep every verified finding; the order decides which one is the primary URL.
-- **LOW - findings: several locations fit, but their kind is not recorded or checked.** Checked
-  2026-11-17: `resource_urls` is a list of URL strings and `source_metadata.findings` a list of
-  `{url, source}` (`_aggregate_findings`, `BR:676`), so any number of locations, several of one source
-  type included, fit the schema (`src/schemas/bibliography_output.py`). But `source_metadata` is
-  free-form (`additionalProperties: true`), so a finding's shape is not validated, and nothing says what
-  a URL is: a digitized copy, a catalog/finding-aid record (NARA without scans), or a bookseller listing.
-  The resolver also keeps only the first verified hit of NARA and of OpenSERP (Archive.org, Gutenberg:
-  up to 3). Fix: a schema-defined `findings[]` item `{url, source, kind, digital_objects, verified_by}`.
-- **MED - verification strength differs by source.** NARA hits are Grok-checked on the catalog title
-  and series context (`_verify_nara_match`); Archive.org, Gutenberg and OpenSERP hits on the archive
-  and generic paths are Grok-checked on the result title and URL only (`_verify_openserp_match`,
-  `BR:1077`, via `_collect_verified_candidates`, `BR:864`), and accepted UNVERIFIED when there is no
-  Grok client. Only the Grok LLM search and the book and article paths fetch the page and check its content
-  (`_verify_url_content`). A title-only check can accept a page that merely names the document (a
-  catalogue entry, a bookseller listing). Fix: content-verify every positive finding, as the LLM path
-  does.
-- **MED - owner - verify each citation's candidates in one Grok request.** Each candidate costs its own
-  Grok call today (NARA, Archive.org, Gutenberg, OpenSERP, each up to 3-5). Batch all candidates of one
-  citation into one verify prompt (one answer per candidate). `_verify_results_batch`
-  (`src/enrichment/openserp_enrichment.py`) already does this for OpenSERP enrichment but has no caller.
-- **MED - book path: Gutenberg and OpenSERP never return anything.** `_resolve_book_search`
-  (`BR:1833`) calls `search_gutenberg_openserp` and `search_openserp`, which POST to `/search`, a route
-  the OpenSERP server does not have (`openserp/core/server.go:207-235`; was gap 12; errors are swallowed
-  at debug level). Books are in practice searched on
-  Archive.org, then the Grok LLM search. (Where they do return, each hit is content-verified by
-  `_verify_match` -> `_verify_url_content`.) Fix with the batch-verify entry above: route books
-  through the same multi-source search as the archive path.
-- **LOW - owner - article path: add OpenSERP.** `_resolve_article_search` (`BR:1872`) searches
-  Archive.org only; many papers are on `.mil` and `.gov` / education sites that OpenSERP would find.
-- **LOW - a bookseller listing can be stored as an "online copy", and no book data is taken from it.**
-  Nothing in the resolver reads Amazon (or any bookseller) pages for ISBN, publisher or edition, and an
-  Amazon listing that passes the title-level Grok check is stored like a digitized copy. Owner
-  (2026-11-17): Amazon is wanted (affiliate links, below), so `amazon.com` was REMOVED from
-  `config/domain_blacklist.yaml` (that list drops links in link review, `src/extraction/link_relevancy.py`,
-  and blocks downloads in `src/enrichment/source_retrieval.py`; the bibliography resolver never read
-  it). Fix: record a bookseller listing as a `kind: bookseller` finding, never as an online copy, and
-  take ISBN/edition from an open source (Open Library's API is free; Amazon's terms forbid scraping
-  its pages). `_enrich_isbn` (`src/extraction/supplemental_advanced.py:282`) exists but `extract_isbn` is off by default (on in the
-  `review-all-data` and `performance-optimized` profiles).
-- **FEATURE - owner - an Amazon Associates (affiliate) link for books.** Construct the affiliate link
-  (ISBN/ASIN + the associate tag, kept in config, not code) for a book citation, for the site.
-- **FEATURE - owner - a BookFinder link for books.** Store a constructed
-  `https://www.bookfinder.com/` search link (title/author or ISBN) on book citations, so a reader can find
-  a copy to buy or borrow.
-- **LOW - docstring contradicts the code.** `_identify_record_group` says "Ask Grok to identify NARA
-  Record Group"; it calls `_identify_nara_record`, a deterministic table lookup (`BR:1398-1432`) that
-  never uses Grok.
+Every Phase 3 step writes its Grok-confirmed result into the local entity JSON through the one shared
+writer `write_json_with_lock` (schema guard + metadata). Examples: geocode `_apply_result` ->
+`_write_place` (`src/enrichment/places_grok_geocode.py:633-647`, `:903`: `coordinates`, `latitude`,
+`longitude`, `geocode_source`, `enrichment_status`); bibliography `save` (`supplemental_advanced.py:360`)
+and `bibliography_resolver.py:2142`; people_groups, equipment, places, source sections in
+`openserp_enrichment.py`; images, maps, events, weather. The background sync (`EP:399`, every 120 s, all
+of `output/` and `artifacts/` except `-parsed.json`, final flush in `stop()`) and `_final_sync`
+(`EP:3470`, entity dirs) then upload each changed file whole. Verified in code. Gaps:
 
-### Step: in_doc_map_links, image_map_vision (PHASE3_MAP §4.4)
+- Concurrency: whole-file PUTs mean last writer wins on shared records; covered by "was gap 28" below.
+  Latent today: `MULTI_DOC_ENABLED=false` on the live `dev-wwii-phase3-enrich` task definition, so Phase 3
+  runs one task at a time.
+- The map-as-source files in `contentrepository/` are outside `output/` and never uploaded; see the
+  map-vision step above.
 
-Code at `main` 17fe5296. Map vision (`prompts/map_vision.yaml`) returns a `depicted` block: `units[]`,
-`places[]`, `movements[]`, `front_line_or_sector`, `date_or_window`, `operation`, `description`,
-`legibility_confidence`. The only consumer is `map_source_adapter.recycle_map_as_source`
-(`src/extraction/map_source_adapter.py:263`), shared by the in-doc path and the OpenSERP maps path
-(`openserp_maps.py:607`). It flattens `depicted` to prose and writes `contentrepository/map-<id>/` (a
-meta.yaml + content.md pair) so the map re-enters Phase 1 -> 2 -> 3 as a new "book".
+- **HIGH - a file Phase 3 deletes locally is never deleted from S3.** `track_deletion` (`EP:209`) is the
+  only way to fill `_deleted_keys`, which `_final_sync` deletes from S3 (`EP:3550`), and it has no callers
+  (trace_path: 0). Phase 3 case: `bibliography_resolve` moves each `not_citation` record to
+  `output/narrative_notes/` and unlinks the bibliography file (`_relocate_narrative_note`,
+  `bibliography_resolver.py:2252`). The note is uploaded but the old `bib_<hash>.json` stays in
+  `output/bibliography/` on S3 (534 records on the current data), so the site would list narrative
+  footnotes as citations and every later Phase 3 downloads and re-classifies them. Same root cause as
+  the reconcile entry above ("records the merge folds into another stay in S3"). Fix (DRY): call
+  `track_deletion` from each unlink of a synced record (or one shared `delete_record` helper used by
+  both), so `_final_sync` removes the key.
 
-- **HIGH - the map-as-source files never reach S3, so all extracted map data is lost.** The write goes to
-  `/app/contentrepository` -> `WORKDIR/content` on the container. Neither the periodic sync (`EP:401`,
-  `output/` and `artifacts/` only) nor the Phase 3 final sync (`EP:3470`, entity dirs + artifacts) uploads
-  that directory, so the files vanish when the task exits and no Phase 1 run is ever triggered. The Grok
-  vision call is still paid. Verified in code; not observed live (Phase 3 has not run since the
-  recycle was enabled).
-- **HIGH - the dedup claim is taken before the write, so a lost map is never retried.** `_content_is_new`
-  (`map_link_source.py:219`, `:238`) puts `contenthash#<sha of URL>` in DynamoDB before
-  `_recycle_as_source` runs. With the files lost (above), or a failed write, every later run skips the map
-  as a duplicate. Fix with the upload: claim after the source is durably in S3, or release the claim on
-  failure.
-- **HIGH *refactor* - DECISION (owner 2026-11-17): write map vision results straight into the entity
-  JSON with the existing entity writers; stop recycling maps as prose sources.** Today `depicted` is
-  turned into sentences ("Units depicted on the map: ...") and Phase 2 re-extracts them with Grok: a
-  second paid request per map, and the unit-at-place-at-time link is lost. Nothing is stored on the Map
-  record, and nothing links the derived entities back to the `MapID` (no Phase 1/2 code reads the
-  meta's `source_type: map`, grep). The new flow, reusing what Phase 2 already uses:
-  - **Map**: store `depicted` on the Map record (with `vision` provenance: model, RequestID,
-    `map_vision_checked_at`) through `map_common.find_or_create_map_by_url` (`map_common.py:127`).
-  - **Places** (towns, rivers, hills, roads): `places._find_or_create_place` (`places.py:526`) and
-    `places._add_event_mention` (`places.py:686`). Geocoding then runs on them in the normal Phase 3
-    step.
-  - **Dates** (`date_or_window`): `dates._find_or_create_date` (`dates.py:233`) and
-    `dates._add_event_mention` (`dates.py:313`).
-  - **PeopleGroups** (units): `people_groups._save_group` (`people_groups.py:294`), which merges
-    into an existing group or creates a new one under the index lock.
-  - **The map as a citation**: `bibliography.store_bibliography_entry` (`bibliography.py:774`).
-  - **Mentions**: key them on a deterministic EventID for the map, `event_id("map-<id>", 1)`, so each
-    entity is linked to the map and its `verbatim_reference` is the vision `description`.
-  These writers are private and take Phase 2 shapes (a mention dict plus an index), so the refactor
-  makes each one a public find-or-create entry point. Phase 2 and the map path then call the same
-  function: no second writer. This removes `recycle_map_as_source`'s `contentrepository/map-<id>/` write,
-  and with it the two HIGH entries above (files never uploaded, dedup claim never released).
-- **MED - owner decision needed: a structured model for map observations.** The writers above cover
-  "this unit, this place, this date appear on this map". The vision answer has no field for what a map
-  adds: unit X at place Y at time T, unit sector boundaries, national borders and phase lines.
-  `front_line_or_sector` is one free-text string, `movements[]` are strings, and there is no geometry.
-  Decide on a placement record (PeopleGroupID, PlaceID, datetime, boundary/geometry, MapID) and extend
-  `prompts/map_vision.yaml` to return it.
-- **MED - provenance of the derived data is weak.** The recycled meta has `license: Unknown`, empty
-  author and copyright, and `source_url` = the image URL. The originating book, chapter and
-  `SourceSectionID` that linked the map are not recorded, so events from `map-<id>` cannot cite where the
-  map was found. Per the provenance rule, record the parent source on the meta and the Map.
+#### Carried over from PHASE3_MAP.md §6 (found by the 2026-11-17 documentation review) (moved here from Group 11)
+- **HIGH (was gap 1) - An unreachable OpenSERP is silent.** A start timeout or error only logs a
+  warning (`EP:781-783`), and every driver then fails the `/health` probe, logs one warning and returns
+  0 (`OE:1428-1436`). The steps report `status=ok enriched=0`, no `openserp.anomaly` fires (nothing was
+  eligible), and no SNS alert is sent. A run can finish with no OpenSERP enrichment and nobody is told.
+  Needs an actionable alert or a `skipped` status.
+- **HIGH (was gap 3) - Five non-search steps are gated by `use_openserp`.** `image_person_link`,
+  `link_asset_review`, `image_place_link`, `intra_corpus_links` and `event_provenance_stamp` sit inside
+  `_run_openserp_enrichment` (`P3:351-385`). Setting the flag false, or a failed import or
+  `reset_metrics` (`P3:285-292`, returns 0), also skips them and the SourceSectionID stamp. The comment
+  on `_run_document_media_steps` says document media must not depend on the OpenSERP flag.
+- **HIGH (was gap 4) - On ECS `use_openserp: false` has no effect when the service starts.** The
+  entrypoint starts the service (Fargate and NAT cost) whatever the flag says, and
+  `_patch_openserp_url` then forces the flag true (`EP:786-793`). The flag only holds when the start
+  fails.
+- **LOW (was gap 26)** - No per-request identity: Phase 3 sets no `current_book`, so no Phase 3 Grok
+  request is BookID/RequestID stamped (see [GROK_REQUESTS.md](core/GROK_REQUESTS.md) section 1).
+  Whether entity-level Phase 3 calls need an equivalent is an owner decision.
+
+#### 2.4 URL-sourced enrichment + dedup (from section 2)
+- **[HIGH · data-quality] Centralized JSON result de-duplication.** Add
+  `src/utils/result_dedup.py::dedup_entity(data, entity)` at the ONE central write path, driven by a
+  per-schema DEDUP_FIELDS declaration: URL arrays dedup on `url_hygiene.clean_url`, mentions on
+  MentionID, free-form on canonical hash. First-writer-wins, idempotent, behavior-only.
+
+---
+
+#### LOW: equipment find-or-create not index-locked (PR #707 deferral) (from the end of this file)
+
+equipment.py:2170/3443 find-or-create uses a per-event in-memory index under
+ThreadPoolExecutor(max_workers=3), so concurrent events creating the same new equipment can each
+mint a separate ULID file. NOT data loss — the downstream dedup pass merges the duplicates
+(data-preserving: write-primary-first + backup-before-delete). Converting to the shared
+locked_json(index) find-or-create (like places/people_groups) is the correct long-term fix but a
+larger change (equipment's index build differs); deferred. Lower value than the entity=/vision/
+whitelist fixes shipped in PR #707 since duplicates are recovered, not lost.
+
+### Group 2 - batching (owner rule: every Grok submission is batched)
+
+Every Grok-validation feature in G3 and later must be batched, so this comes before them. Reuse the
+existing batch code and the under-50 rule (`batch.min_requests`); Phase 2's multi-round hand-off; vision
+requests through the same queue (V1: accepted; the first run confirms).
+**Test:** restore, run `--batch`: same verdicts as the baseline, fewer live requests, under-50 answered
+live, rounds logged.
+
+#### Step: in_doc_map_links, image_map_vision (PHASE3_MAP §4.4) (moved here from Group 8)
 - **LOW - the map-as-source vision request is never batched.** `_vision_depicted` (`map_link_source.py:61`)
   makes one live `extract_json_with_image` call per map, up to `max_recycled_per_doc` (50) per document.
   `image_map_vision` and the tier-3 `maybe_vision_classify_map` are also one live request per image.
-- **LOW - stale entry.** The HIGH-list item "In-doc map recycle (map-as-source) stays OFF in prod" says the
-  gate is `external_maps.enabled`; the gate is `external_maps.recycle_in_doc_maps`, which is `true` in
-  `config.yaml:248`, so the recycle is ON.
 
-### Step: OpenSERP group (PHASE3_MAP §3)
+#### Step: link_asset_review (PHASE3_MAP §1 step table, §4.4) (moved here from Group 9)
+- **LOW - not batched** (`_grok_link_relevant` is one live request per link); covered by the batching
+  entry.
+
+#### Step: equipment_images (PHASE3_MAP §4.5) (moved here from Group 13)
+- Vision requests are one live call per image and are not batched (covered by the batching entry: vision
+  calls bypass `batch_mode`). Up to 20 downloads per record, until 3 are verified.
+
+#### Wikipedia / Grokipedia footnote links (owner question 2026-11-17) (moved here from Track P)
+- **Batching (owner rule): every Grok relevance request on these paths is batched.** The shared
+  helper collects candidates (URL, entity ULID, context) across the step and submits them through the
+  xAI Batch API path (`src/utils/batch_api.py` `BatchCollector`, as `GrokClient(batch_mode=True)`
+  does); results are applied on retrieve, and only positives are enqueued. Today none of these checks
+  is batched: `_verify_result` (OpenSERP, one live request per result; `_verify_results_batch`
+  `OE:532` puts several results in one prompt but is still a live call), `_grok_link_relevant`
+  (`link_relevancy.py:71`), `_validate_url_relevance` (`enrich_biographies.py:940`), and the
+  bibliography verifies (owner decision already recorded under bibliography_resolve). Already-cached
+  verdicts are filtered out before the batch, so a re-run submits only new pairs. Batch mode with
+  OpenSERP is broken today ("was gap 5"): fix that first, and reuse its retrieve path.
+
+#### Cross-cutting: batch every Phase 3 Grok request (owner 2026-11-17)
+
+- **What is and is not covered today with `--batch`** (PHASE3_MAP §5):
+  - Re-run against the batch answers: people_groups, places, `link_parent_place_ids`, bibliography,
+    bibliography_resolve, equipment_images (`P3:_run_batch_rerun`).
+  - Not re-run, so their queued answers are never applied: geocode's Grok fallback, the OpenSERP group
+    (and its verify is cached as `REJECT`, "was gap 5"), in_doc_map_links, image_map_vision,
+    image_place_link (`_grok_is_terrain`), link_asset_review (`_grok_link_relevant`).
+  - **Never batched at all: vision requests.** `extract_json_with_image` and
+    `extract_json_with_image_base64` (`src/grok_client.py:1790`, `:1857`) call `_call_api` directly and
+    never check `batch_mode`, so map vision, image map/not-map, equipment image vision and caption
+    vision stay live even with `--batch`. Fix: route both through the same cache-miss path as text
+    (`:1640-1652`) so they queue too, provided the xAI Batch API accepts image inputs (verify first).
+- Every step gets the same OBSERV lines Phase 2 has for batch (collected, submitted, answered live
+  under the threshold, rounds) and an actionable alert when `max_rounds` is reached.
+
+- **HIGH *refactor* - DECISION: Phase 3 Grok requests are batched by default, through the existing
+  batch machinery (DRY) and the existing small-batch rule.** Today `batch.phase3: false`
+  (`config.yaml:97`), so every Phase 3 request is live. Reuse, do not rebuild:
+  - **Collect:** `GrokClient(batch_mode=True)` queues a cache miss and raises `BatchModeCollecting`
+    (`src/grok_client.py:1649`, `:1710-1744`).
+  - **Submit and the under-50 rule:** `GrokClient.submit_batch` (`:750`) answers fewer than
+    `batch.min_requests` (50, `config.yaml:100`; env `BATCH_MIN_REQUESTS`; `batch_api.batch_min_requests`)
+    live through `_answer_small_batch_live` (`:1269`), so a small run is not held up to 24 h. No step may
+    add its own threshold.
+  - **Rounds:** reuse Phase 2's multi-round hand-off (`batch.max_rounds`, `in_task_wait_minutes`, the
+    poller Lambda; `docs/current/features/batch_processing/README.md`) instead of `_run_batch_rerun`'s
+    single re-run. Phase 3 has dependent chains (OpenSERP verify -> fetch + summarize -> enqueue; map
+    vision -> entity writes), so one round is not enough.
+  - **Cache first:** cached answers are filtered out before queueing, so a re-run submits
+    only new requests.
+
+#### Carried over from PHASE3_MAP.md §6 (found by the 2026-11-17 documentation review) (moved here from Group 11)
+- **HIGH (was gap 5) - Batch mode with OpenSERP is wrong.** In `--batch` the verify calls are queued,
+  read as NO, cached as `REJECT` for 90 days, and the entities are stamped searched. `_run_batch_rerun`
+  does not re-run OpenSERP or geocoding (PHASE3_MAP.md §5). Latent while `batch.phase3` is false.
+- **MED (was gap 18) - Per-result Grok verification is the cost driver.** One request per hit,
+  `_verify_results_batch` has no caller, and the insignia and patch queries run twice per group (once
+  as `images`, once for the patch) because search results are not cached.
+
+#### Older backlog - HIGH list
+- **[HIGH · data-loss · BATCH MODE] Batch places (and likely any entity) silently dropped by the positional result-mapping desync.**
+  Overnight batch run (XChannel-8 2026-10-30): places persisted 0 while SYNC mode got 96. EVIDENCE: the cached batch
+  places response is VALID JSON with 8 sub-events x 119 place objects (Grok extracted them fine); yet 0 persisted AND
+  there is NO `OBSERV xref.seid entity=places` line (dates/groups/people each show exact=8 and persisted) — so
+  `_process_batch_response` NEVER ran for places. ROOT CAUSE: xAI batch results carry NO echoed custom_id, so
+  grok_client.py:600 maps results to our cache keys PURELY BY POSITION (`zip(submitted, ordered)` + retrieve_results_ordered).
+  This run had MULTIPLE sub-batches + several empty `Response: 2 chars` ({}) results interleaved — the positional zip
+  desynced, so the places slot received an empty/wrong result while the real 119-place content sat in cache uncorrelated.
+  The observability HALF-caught it (`phase2.summary.zero scope=core entity_types=places — probable bug, verify`) but the
+  yield gate could NOT (places deterministic baseline=0). IMPACT: batch mode is NOT equivalent to sync — it can silently
+  drop an entire entity's extraction. FIX DIRECTIONS: (a) stop relying on position — embed our cache key in the request
+  (e.g. as a sentinel in the prompt/content the model echoes, or map via the xAI batch_request_id recorded at submit),
+  (b) assert len(ordered)==len(submitted) per sub-batch AND fail LOUD (OBSERV batch.result_unmapped status=error) when an
+  entity gets no result, (c) cross-check: every batched entity must emit an xref.seid line or raise. Consider forcing
+  places/equipment SYNC even under batch.phase2=true until fixed. Blocks trusting batch-mode output.
+
+#### [MED · robustness, owner 2026-11-10] Hand a long-waiting batch to the poller instead of holding a Spot task (from the end of this file)
+
+The Phase 2 task submits its Grok batch and then polls it IN-TASK (`batch_api.poll_batch`, up to
+24 h) on Fargate Spot. 2026-11-10: the Cross-Channel Attack chapter 8 re-run's 99-request batch
+(submitted 17:01 UTC) was still 65/99 after 4 h when Spot reclaimed the task (exit 143, 21:03). The
+task died mid-poll, before `_enqueue_from_metrics`, so the batch had NO `batch_job#` record and NO
+metrics file: orphaned (recovered by hand from `diagnostics/cache/<book>/batch_requests.jsonl` + the
+`cachekey.submit` log lines). Long waits are pure Spot exposure and idle compute.
+- **Hand-off:** past a 90-minute in-task budget (`BATCH_INTASK_MAX_MIN`, default 90 - owner
+  2026-11-10: batches often answer in ~61 min, and up/down churn is to be avoided), write the
+  metrics file (`submitted_request_ids` in order) and a `pending` `batch_job#`,
+  then exit cleanly; the batch-poller launches the `--retrieve-only` task on completion.
+- **Register at submit, not after polling:** write the metrics + `batch_job#` (status
+  `in_task`, ignored by the poller) right after `submit_batch`, flipped to `retrieved`/`pending` at
+  the end - so a task killed at any point leaves a recoverable batch; the poller adopts an `in_task`
+  job whose task is gone.
+- Done when: a test kills the poll mid-way and the poller recovers the batch with no hand work.
+
+#### [LOW · obs, owner 2026-11-10] Batch timing statistics from the results, not from polling (from the end of this file)
+
+`src/utils/batch_stats` (8449f2c3) records submit at submit time and progress on every change
+from the in-task poll and the poller. Simpler and more exact (owner suggestion): keep the submit
+write (xAI's batch record has only a DATE `create_time`, so the submit moment must be recorded
+live), drop the per-poll progress writes, and at retrieve compute first/last result and per-type
+durations from each result's own `created` timestamp (to the second). Live progress stays visible
+in the poller logs.
+
+### Group 3 - the shared URL path and the review queue
+
+Owner decisions 2026-11-17: Grok validates every link (pre-validate, then validate; batched) before a
+human sees it; a pending find is held in the queue only, written to no entity JSON until approved (D4);
+approval submits to Phase 0; trusted sources skip URL review. One judge-then-enqueue helper for every
+finder, verdicts keyed on (URL, entity), checksum re-check of approved URLs.
+**Test:** restore, run: the queue holds finds (not search calls); no duplicates on a second run; a
+rejected item stays rejected; an approved item starts Phase 0.
+
+#### Step: OpenSERP group (PHASE3_MAP §3)
 
 - **HIGH *refactor* - DECISION (owner 2026-11-17): a page OpenSERP finds and Grok confirms goes to the
   human URL-review queue; approval submits it to Phase 0.** Today `process_positive_url`
@@ -436,15 +443,18 @@ meta.yaml + content.md pair) so the map re-enters Phase 1 -> 2 -> 3 as a new "bo
     with `origin_SourceSectionID`, so the new source's events link back to that entity.
   - **The bibliography record comes from intake.** The approved page becomes a source with its own
     BookID; no OpenSERP-specific bibliography writer is needed.
-  - **Owner decision: what the entity keeps while a find is pending.** Options: nothing (the queue is
-    the only record) or a pending reference (URL + fetch_event_id, no summary shown as fact).
-  - **Stop the `military_awards` misuse.** `_apply_verified_web` (`OE:1247`) files every confirmed page
+  - **DECIDED (owner 2026-11-17): a pending find is held in the queue only and is not written into
+    any entity JSON until a human approves it.** The inline writes stop (`web_results[]`,
+    `primary_sources[]`, web-page `military_awards[]`, Grok `source_urls` -> `biography_sources[]`).
+    On approval the find goes to Phase 0; the entity link comes from the new source's events and the
+    origin entity ULID on the queue item.
+  - **Stop the `military_awards` misuse (was gap 7).** `_apply_verified_web` (`OE:1247`) files every confirmed page
     about a person (obituary, unit history, forum post) under `military_awards[]`. With the queue it
     is enqueued like every other find; `military_awards` is written only by an award extraction.
   - Queue volume: every confirmed hit becomes a review item. Keep the per-entity caps, and batch the
     Grok verify as decided for `bibliography_resolve`.
 
-### OpenSERP: keeping bad URLs out and re-checking good ones (owner question 2026-11-17)
+#### OpenSERP: keeping bad URLs out and re-checking good ones (owner question 2026-11-17)
 
 What exists (verified in code; no OpenSERP keys are in DynamoDB yet, Phase 3 has not run on this data):
 - Per-URL verdict, 90 days: `process_positive_url` (`OE:808`) checks `openserp_url_verdict` first
@@ -516,7 +526,682 @@ Findings:
   `submit_affirmed_batch`). The enqueue helper must check the queue for the (URL, entity) pair before
   adding it.
 
-### Step: link_asset_review (PHASE3_MAP §1 step table, §4.4)
+#### Step: link_asset_review (PHASE3_MAP §1 step table, §4.4) (moved here from Group 9)
+- **HIGH - every Phase 3 run queues the same links again.** Each enqueue is a new event with a new ULID
+  (`fetch_provenance.record_fetch_event`, key `fetchevent#<ulid>`); nothing checks for an existing
+  pending, approved or rejected event with the same `url_key`. So each run duplicates the queue, and a
+  link a human rejected comes back. Fix (DRY, with the shared enqueue helper): look up `url_key` (+
+  entity) before enqueueing; a rejected or submitted link is never re-queued.
+- **HIGH - links skip Grok or are queued "when in doubt".** `link_relevancy_whitelist` is `ibiblio.org`
+  (`config/domain_blacklist.yaml:87`), so every HyperWar link is queued with no Grok verdict; a missing
+  client, an error or an `UNKNOWN` answer also queues (`link_relevancy.py:71-92`, `:111`, `:121`).
+  Owner rule (2026-11-17): Grok validates every link before a human sees it (recorded in the footnote
+  entry; the fix goes into `should_enqueue_link`).
+
+#### Wikipedia / Grokipedia footnote links (owner question 2026-11-17) (moved here from Track P)
+- **Same rule for every URL finder** (OpenSERP, Archive.org, Gutenberg, Grok LLM
+  search, map URLs, footnote links): Grok judges relevance first, a positive verdict goes to the
+  URL-review queue, a human approves, approval submits to Phase 0. One shared helper does the
+  judge-then-enqueue step. **No link is ever shown to a human without a positive Grok verdict.**
+
+#### Cross-cutting: every URL a Phase 3 step finds goes to human review (owner 2026-11-17)
+
+- **HIGH *refactor* - DECISION: the URL-review queue applies to every find that has a URL, not only
+  OpenSERP.** That covers OpenSERP pages, Archive.org and Gutenberg copies found by `bibliography_resolve`,
+  Grok LLM-search URLs, and map URLs (NARA records and HyperWar volumes are trusted sources: see
+  `trusted_sources` under intra_corpus_links). Approval submits the find to
+  Phase 0 through `fetch_review.submit_affirmed_batch`. One shared enqueue helper (the OpenSERP entry
+  above) is called by every finder. Current behaviour, verified in code:
+  - **The queue gets search calls, not finds.** `recorded_fetch` (`src/utils/fetch_provenance.py:185`)
+    records each request with `outcome=HIT` for any 2xx status (`:256`), and `_initial_review_status`
+    (`:64`) makes that `pending` for `nara`, `archive-org`, `archive-solr`, `gutendex` and `wayback`. The
+    `endpoint` is the search API (`catalog.archives.gov/api/v2/records/search`, archive.org
+    advancedsearch, gutendex), so a reviewer sees one item per successful query, including queries that
+    matched nothing, with no link to the BibliographyID and no Grok relevance verdict.
+  - **The finds bypass review.** `bibliography_resolve` writes each verified Archive.org / Gutenberg /
+    NARA URL straight into the record's `resource_urls` and `source_metadata.findings`
+    (`BR:330-336`, `BR:677-682`); nothing is submitted to Phase 0.
+  - Fix: enqueue the found item URL (with BibliographyID or entity ULID, provider, query, Grok verdict),
+    stop `recorded_fetch` from enqueueing search calls (provenance only), and keep `resource_urls` for
+    approved finds (or mark the pending ones).
+
+#### Older backlog - LOW list
+- **[LOW · security-hardening · phase3 review follow-up 2026-11] `fetch_review._find_content_bytes` containment-root
+  check** — the read is now 25 MiB-capped (PR #712) and the stored `quarantine_path` is basename-normalized at the write
+  side (`source_retrieval.py` uses `Path(urlparse(url).path).name`), so traversal risk is LOW. Defense-in-depth: add a
+  `p.resolve()`-under-quarantine-dir assertion in case a future caller stores an unsanitized path into the event.
+
+#### 2.1 OpenSERP redesign (the measured CPU bottleneck — 98.7%) (from section 2)
+- **[TODO · owner 2026-11-04 · DESIGN] Web interface to SUBMIT and REVIEW sources - both what
+  Phase 3 finds AND new documents / sites (a PDF, a scan, a transcription site, an archive
+  collection) that a user or operator brings - the path for expanding the knowledge base WITH
+  provenance.** Goal: grow the corpus from Phase 3's discoveries (OpenSERP PDF/EPUB documents,
+  Grok-proposed HTML references, NARA/bibliography resolutions) and from directly submitted
+  documents and websites, all through ONE review gate, with every accepted item carrying its
+  provenance end to end (where found, by what query/resolver and version, who reviewed it and
+  when, the decision and reason, source URL + content hash, license/copyright status, and for a
+  second copy of an existing work its edition/printing - the newer printing is deferred to,
+  especially for people's names). Start from the human ADD / DISCARD(>=90-day) / NEVER gate in
+  `docs/current/design/OPENSERP_SCOPE_REDUCTION.md` and the dedup-UI pattern (§1.4); an accepted
+  document enters Phase 0 like any upload (scanned PDF -> Chandra; a transcription of a book we
+  already hold -> `scripts/crosscheck_pdf_html.py` against it); a submitted SITE needs a
+  site-level record too (owner, terms/license, crawl scope, which pages were taken and when).
+  Open questions: authentication for
+  submitters, static-site hosting vs API Gateway (Phase 2 of the architecture plan), and how
+  review decisions are stored (versioned, auditable).
+
+#### 2.2 NARA resolution redesign (correctness) (from section 2)
+- **[HIGH · feature] Acquire + process positively-verified source documents (NARA / archive.org /
+  OpenSERP).** Download the document, preserve the original under `source/` (existing Glacier-IR
+  lifecycle), convert via Phase 0, process via Phase 1→3; the record flips `held_unprocessed` →
+  resolved/local. Pluggable fetcher REGISTRY keyed by `search_source`; human-review gate scaled by
+  FORMAT+SIZE (NARA page-image sets ≥50 → review; PDFs → review by default; text → auto-process);
+  SEPARATE opt-in pass (config-gated); idempotent by naId/item-id; auto-acquire only `public_domain`.
+  S3-NATIVE (idempotency = presence of `source/<search_source>/<id>/`, no Dynamo). NARA budget = 10k
+  queries/MONTH (bumpable to 150k; downloads quota-free) → persist `digitalObjects` at RESOLVE time so
+  acquisition doesn't re-spend a query; add an OBSERV counter.
+
+#### 2.4 URL-sourced enrichment + dedup (from section 2)
+- **[HIGH · provenance] URL-sourced enrichment + 90-day URL registry — FINISH wiring.**
+  `url_hygiene.py` + `url_registry.py` DONE (SSRF-safe clean_url, DynamoDB `url#{sha256}` 90-day TTL),
+  and `enrich_places.py` is PARTIALLY wired (`should_fetch_content` + register). REMAINING: wire the
+  other callers (enrich_groups / openserp / grok-cited-wiki) to register/should_examine + require
+  Grok-cited URLs + fetch-then-evaluate relevance. OPEN: drop vs flag (`source: grok_unverified`)
+  facts with no cited URL.
+
+#### [MED·dedup] NEAR-duplicate content detection (MinHash/LSH) — same text across two domains, not byte-identical (from the end of this file)
+
+We now have (a) GLOBAL EXACT content dedup at submit time: `fetch_review._register_content_hash_if_new`
+claims `contenthash#<sha256>` across ALL sources/domains/titles, so byte-identical content submitted
+from two different domains (or re-submitted under a host-derived title) is caught and skipped
+(`deduped` count). What this does NOT catch: NEAR-identical pages — the common real case where the
+same article at domainA vs domainB differs only in boilerplate/ads/whitespace/tracking params, so the
+sha256 differs and both pass. The existing lexical tools (SequenceMatcher edit-distance, Jaccard
+token-overlap, Grok same/different classifier) run on short strings (names/titles), NOT on document
+bodies, and we have NO vector-embedding/cosine or MinHash path.
+
+FIX (b): add a MinHash + LSH near-duplicate gate over document SHINGLES at affirm/submit (and reuse
+for book submissions). Sketch: shingle the quarantined body (k-word or char n-grams) -> MinHash
+signature -> query an LSH index (keyed in the same DynamoDB cache table, e.g. `contentlsh#<band>`
+buckets) for an existing signature with Jaccard >= threshold (~0.8) -> on hit, skip/merge instead of
+ingesting a second near-copy; on miss, add the signature and proceed. Keep it FAIL-OPEN (a borderline
+score never blocks a legit submit) and pin `datasketch` at an exact version (MinHash/MinHashLSH). An
+optional later tier: sentence-embedding cosine for PARAPHRASE-level (semantically-equal but lexically
+different) dedup — heavier, only if paraphrase dup becomes a real problem. Ref: the user's text-similarity
+survey (Jaccard/Euclidean/Cosine + TF-IDF/Word2Vec/Sentence-Transformers); MinHash/LSH is the scalable
+near-dup tool for document bodies, which that survey does not emphasize but is the right fit here.
+Ties to: fetch_review.submit_affirmed_batch (where the exact (a) gate already lives).
+
+#### LOW: recorded_fetch redirect-bounce residual (Phase-2 security DiD) (from the end of this file)
+
+recorded_fetch now gates the endpoint host via clean_url (rejects private/metadata/loopback), but a
+trusted host that open-redirects could still bounce to an internal address. Flipping
+allow_redirects=False globally would break the many callers relying on the implicit True for
+legitimate redirects, so deferred: either re-validate each redirect hop's host, or set
+allow_redirects=False per-caller where redirects aren't needed.
+
+### Group 4 - Phase 3 wrapper, preflight, download (before step 1)
+
+**Test:** restore, run; barrier wait and stamping logged; preflight retries then stops when Grok is
+down (D8).
+
+#### Step: EP run_phase preflight (PHASE3_MAP §1 "ECS wrapper")
+
+Order (`EP:962-1003`, `main` 6dafabcc): NAT lease -> `_ensure_nat_if_needed` (nat-manager, up to 6
+tries, abort if never ready) -> `_clear_title_cache_if_reprocess` -> `_load_secrets` (Grok key, NARA key)
+-> `_preflight_credit_check` (1-token request; 402/403-credit or 401 aborts) and
+`grok_models.preflight` (every configured model listed and served as itself; a missing one aborts) ->
+`_preflight_notification_subscriptions` -> `_preflight_runtime_tables` -> `_patch_config` ->
+`_start_openserp_if_needed`.
+
+- Not checked at preflight: the NARA key (warning only when missing), OpenSERP (see "was gap 1"),
+  Nominatim. These are separate questions with different effects (owner decisions D8b-D8d, top of file): a missing NARA key
+  skips NARA for the archive-path records (DECIDED 2026-11-17: leave those records unresolved for the next
+  run instead of resolving them through other sources, and alert with the count); an unreachable OpenSERP stamps entities searched ("was gap
+  2"; DECIDED 2026-11-17: Phase 3 stops until OpenSERP is available, stamps nothing, alerts, and the
+  book stays queued: the task exits, keeps `pending#enrich#<book>`, and the reconcile retries it, with a
+  retry cap and an alert at the cap (needs the paginated queue reader first). The same applies when
+  OpenSERP fails mid-run (breaker opens): the whole phase stops, nothing is stamped for the entities in
+  flight, completed work is uploaded, and the re-run must skip work already done); an unreachable Nominatim sends every place to the paid Grok geocode fallback
+  (`places_grok_geocode.cascade_geocoder`, `:792`, tries each geocoder in turn) with no alert. DECIDED
+  2026-11-17: skip geocoding for that run (places stay un-geocoded, are not stamped as attempted, and are
+  retried next run) with one actionable alert; the Grok fallback is used only for places Nominatim answered
+  but could not locate.
+
+- **LOW - "preflight unverified" proceeds even when Grok is unreachable.** Any exception other than the
+  ones above is `OBSERV preflight.unverified status=warn` and the phase goes on (`EP:844-852`). Live: Phase 2
+  logged it with a connection error to `api.x.ai` on 2026-11-12 and 2026-11-14, right after NAT reported
+  ready, so the phase started with no egress. DECIDED (owner 2026-11-17): retry the probe after a short
+  wait and stop the phase with an alert if it still fails.
+- **LOW - OpenSERP start can hold the task up to 12 minutes before any work.** `_start_openserp_if_needed`
+  polls 72 x 10 s for the task IP (`EP:774`) before `_download_inputs`; NAT and the Fargate task are
+  billed meanwhile, and OpenSERP is not needed until step 6. Scale it up here and discover the IP just
+  before the OpenSERP group.
+- **LOW - two copies of the 1-token probe.** `_preflight_credit_check` posts its own request
+  (`EP:808`) and `grok_models.preflight` posts the same probe per model (`src/utils/grok_models.py:199`).
+  Fold the credit/key checks into `grok_models.preflight` (DRY).
+- **MED - `_clear_title_cache_if_reprocess` deletes nothing on ECS, so a reprocess reuses the old Grok
+  answers.** Purpose (`EP:546`): on a reprocess (`processing.force_reprocess`, a non-empty
+  `processing.reprocess_types`, or `REPROCESS_TITLE` = `BOOK_NAME`) clear this book's cached Grok event
+  answers, so a stale or bad cached answer does not fail every re-run. It runs for Phase 2, Phase 3 and
+  the OCR cross-check, and deletes the local directory `/app/cache/api/books/<book>/events/`. On ECS the
+  answers are not there: `_patch_config` sets `aws.enabled=true`, so `GrokClient` uses
+  `DynamoCacheBackend` (`src/grok_client.py:429`), with keys under `books/<book>/events` in
+  `dev-wwii-api-cache`; the local directory holds only batch JSONL and rejected answers (`EP:3539`
+  comment), and nothing downloads cached answers into it. Effect: the reprocess flag does not refresh the
+  event answers it is meant to refresh. Phase 3 also has no book-scoped cache to clear (it sets no
+  `current_book`, "was gap 26").
+  DECIDED (owner 2026-11-17): a book is normally not reprocessed, and when it is, it is soon after. So drop
+  the reprocess purge (remove `_clear_title_cache_if_reprocess`) and give the **Grok book results** -
+  the per-book answers under `books/<book>/<type>#...` (events, weather, logistics, casualties,
+  supplemental, equipment; `GrokClient.BOOK_CACHE_TYPES`, `src/grok_client.py:499`) - a sliding expiry:
+  stamp each entry's last access and delete it 10 days after that (today: `ttl` = created + 90 days,
+  `src/utils/cache_backend.py:119`). Refresh `ttl` on a hit at most once a day per key (a hit must not
+  become a write each time); preload reads do not count. Other cache rows (global Grok types, `search#`,
+  `openserp_url_verdict`, `url#`) keep their current lifetimes. A book re-run after 10 days re-requests
+  from Grok (accepted cost); `phase_snapshot.py restore` does not refresh TTLs (owner, D9-3). Rows written
+  before the change carry created + 90 days: bring them under the 10-day rule when first touched.
+  Value at stake (Phase 2 backup key list, 2026-11-17): `books/USA-E-XChannel/events` holds 53 paid
+  event-extraction answers (plus 2,310 other per-book answers: supplemental 745, weather 647, logistics
+  636, casualties 282). They let Phase 2 be re-run without paying Grok again; the local directory holds none.
+
+#### Step: EP _download_inputs (PHASE3_MAP §1 "What EP _download_inputs does")
+
+- **LOW - remove the dead DynamoDB shortcut (owner request).** `_materialize_from_dynamo()`
+  (`EP:1290-1295`) is a deprecated stub that always returns False (the DynamoDB entity store was
+  removed; S3 is the only entity store). Callers: `_download_inputs` (`EP:1313`) and
+  `_download_dedup_data` (`EP:2849`) (trace_path). In `_download_inputs` the `config.yaml` read for
+  `processing.force_reprocess` (`EP:1311-1313`) exists only to skip the stub, so it goes too. Remove
+  the function, both calls and that read; the S3 download is then unconditional. Verified: function
+  body is `return False`.
+- **DONE 2026-11-17 (PR #756; was gap 27) - a single-book Phase 3 downloaded no map, image or
+  narrative-note records.** Fixed: per-book types read from the book manifest (now incl. images),
+  shared types downloaded in full, map binaries only when a vision retry needs them, changed-only
+  final sync; details in `PHASE3_MAP.md` §1 "What `EP _download_inputs` does", step 3. Runs before the
+  fix are not repaired: re-run Phase 3 for a book that ran scoped.
+- **LOW - the wait timeout equals the reconcile's own run time.** The last reconcile ran 300.1 s
+  (`_run.json` started 22:43:58 UTC, barrier `completed_at` 22:48:58 on 2026-11-16) for one book; the
+  default wait is 300 s. A Phase 3 that starts while a reconcile is running (concurrent books) will
+  time out and read a half-merged bibliography. The reconcile downloads the whole `output/bibliography/`
+  prefix, so its time grows with the corpus while the timeout does not.
+- **LOW - the per-book barrier is dead code.** Only the full-corpus `_all` barrier is ever published
+  (one caller, `EP:2926`). The wait still polls `manifests/reconcile_complete/<BOOK_NAME>.json`, its
+  docstring says "a per-book reconcile publishes the book key", and `_clear_reconcile_barrier`'s
+  default key is that book key: nothing writes it.
+- **LOW - the barrier body names a book.** The `_all` barrier records `"book": "USA-E-XChannel"`
+  (`EP:3093` writes `BOOK_NAME` of the dedup task) although it is the cross-book barrier.
+- **LOW - `canonical_count` is never compared.** The barrier records how many canonical files the
+  reconcile published (`_publish_reconcile_barrier`, "so it is comparable with Phase 3's download
+  coverage"), but `_observe_bibliography_download_coverage` (`EP:1629`) compares the S3 listing with
+  the local count and never reads it; it is only logged (`EP:1460-1466`).
+- **MED - schema stamping switches the whole pipeline's trigger off for a local-only job.**
+  `_stamp_schema_versions` (`EP:3690`, run by every Phase 3 task right after the download) sets the
+  trigger Lambda's reserved concurrency to 0 (`EP:3708`) while it rewrites files on the task's local
+  disk, and removes the limit in a `finally` (`EP:3756`). Stamping touches no S3 object (the files
+  reach S3 only at the later syncs), so the disable protects nothing. While it lasts, every pipeline
+  event (uploads, phase-complete messages) is throttled and depends on the sender's retries; if the
+  task is killed during stamping (OOM, SIGKILL) the `finally` never runs and the trigger stays off
+  with no alert, so the pipeline silently stops starting anything. Fix: drop the disable/re-enable.
+  Verified in code; for the current bibliography it rewrites nothing (all 2,035 records are already
+  at 2.29).
+- **LOW - stamping hides failures and bypasses the write guard.** `_stamp_file` (`EP:3664`) catches
+  every exception and returns 0 with no log, so an unreadable record is skipped silently, and it writes
+  with `os.replace` instead of `write_json_with_lock`, so a stamped record is not schema-checked.
+- **LOW - a short bibliography download is only a log line.** `_observe_bibliography_download_coverage`
+  logs a SHORTFALL warning (`EP:1679`, with a good cause analysis) but sends no alert, and a failure of
+  the check itself is logged at debug (`EP:1687`).
+- ***refactor* - the barrier exists only because bibliography is written as per-task shards that a
+  later corpus-wide pass must merge.** Merging at write time (conditional writes on the canonical
+  `bib_<hash>.json`) would remove the reconcile pass, the barrier, the run marker and the wait.
+
+#### Carried over from PHASE3_MAP.md §6 (found by the 2026-11-17 documentation review) (moved here from Group 11)
+- **MED (was gap 6) - `_reset_openserp_searched` defeats the 90-day gate.** People and equipment with
+  no hit are searched again on every Phase 3 task (`EP:3583`). Grok verdicts are cached but the queries
+  are not, so each repeat pays the 5 s sleep per query. It also writes with `write_text`, outside
+  `write_json_with_lock` and its schema guard.
+
+#### Older backlog - HIGH list
+- **[LOW · verify] Phase-3 reconcile barrier fix (run-id marker) is unverified on AWS.**
+  Fixed in code (empty `BOOK_NAME` key; freshness by run_id marker `manifests/reconcile_complete/_run.json`). Confirm on the
+  next dev E2E: Phase 3 logs `reconcile.barrier_seen via=run_id` (no 300s `barrier_timeout`). Residual gap: a Phase 3
+  launched BEFORE the reconcile clears the previous marker+barrier sees a consistent old pair; fully closing it needs the
+  orchestrator (SFN/ECS overrides) to pass a run_id to both tasks.
+- **[LOW · cost] Phase 3 downloads/uploads `output/images/files/` bytes** now that `images` is a Phase 2/3 entity dir
+  (unscoped runs only; scoped runs pull manifested JSON). Consider syncing only `*.json` and fetching bytes by URL.
+- **[MED · design] The real "dedup complete" path launches Phase 3 for ALL books with NO `BOOK_NAME`** (`trigger_handler.py`
+  DEDUP_COMPLETE_TOPIC). Everything Phase 3 reads from the source documents (in-doc maps, image->person/place links, link review)
+  only worked for book-scoped runs until the unscoped branch started downloading `output/content/` (2026-11-07). Consider
+  whether the unscoped whole-corpus run should re-run paid Grok steps (image-person, link review) over every book each time.
+
+#### Older backlog - MED list
+- **[MED · observability-precision] download.file_missing cries wolf on expected-absent TRACKING files.** On every clean-slate/
+  first run, Phase-2 download lists then 404s on index.json / .processed_events.json / manifests/run_scope/<book>.json — all
+  TRACKING/index files that legitimately don't exist yet — and each fires OBSERV download.file_missing status=ERROR ->
+  Slack. Non-fatal (run proceeds, only the parsed+event files matter) but noisy + indistinguishable from the REAL signal
+  the OBSERV was built for: an ENTITY/PARSED file that vanished between list and get (true corpus-shortening data loss).
+  FIX (ecs_entrypoint._download_s3_file #15): classify the key — an expected-absent tracking file (basename in
+  {index.json, .processed_events.json, not_duplicates.json, not_related.json} or under manifests/run_scope/) -> status=info
+  (or debug), NOT error; reserve status=error (loud Slack) for *-parsed.json / *-event.json / entity record keys. Keeps the
+  real data-loss alert sharp and stops the clean-slate false alarms.
+- **[MED · phase3-race] Phase 3 proceeds past the reconcile barrier on timeout → late bibliography records missed.**
+  Found in the XChannel-8 E2E (2026-10-28). Phase 3 logged `OBSERV reconcile.barrier_timeout ... waited=300s —
+  proceeding (Phase 3 may snapshot before reconcile finished; a late bibliography record could be missed this
+  run)`, then the bibliography step ran with `No bibliography files found` / `bib.resolve in=0`. The supplemental
+  Phase-2 batch that would have written endnote/bibliography records was offloaded to the (disabled) batch-poller
+  and never completed, so Phase 3 timed out waiting and enriched an empty bibliography. FIX: the barrier-timeout
+  is currently a WARNING that proceeds silently-ish; make it a loud anomaly AND, when there are KNOWN outstanding
+  queued batches for this book, either (a) block/defer the bibliography step rather than snapshot an empty set,
+  or (b) mark the book "bibliography-incomplete, re-enrich pending" so a later poller-drained run fills it.
+  Ties to the disabled-batch-poller [HIGH] item — a disabled poller turns this race into a guaranteed miss.
+  ✅ DONE (PR #604): added canonical OBSERV phase0.converted/skipped/rejected/error + phase1.parsed/
+  skipped/summary (fail-safe, +4 tests). ORIGINAL FINDING: Investigated during the XChannel-8 E2E (2026-10-28). Unlike Phase 2/3 (rich `OBSERV <comp>.<event>` +
+  summaries), phase0_convert.py has 0 OBSERV lines and phase1_parse.py has 0 OBSERV lines — they rely
+  entirely on the generic `ecs_entrypoint` wrapper (`[step] ...` + a success-path `phase_complete` w/
+  duration) + (Phase 1 only) a single `OBSERV run_scope.record`. Gaps: (a) phase0 convert OUTCOME is a plain
+  `logger.info("Converted %s -> %s (%d chars)")` (line ~174), not `OBSERV phase0.converted`; (b) the convert
+  ERROR/abort paths (lines ~103/122 + the book-prefix abort) emit a plain logger.error with NO OBSERV and NO
+  phase_complete — so a Phase-0 FAILURE is not greppable as a canonical anomaly (this is exactly why the
+  book-derivation abort above was hard to see); (c) phase1 'Saved ...-parsed.json (N paragraphs)' / 'Phase 1
+  complete' are readable `root` logs, not `OBSERV phase1.parsed`. FIX: add canonical OBSERV domain events to
+  both phases (phase0.converted/skipped/error with book+chars; phase1.parsed with book+chapters+paragraphs)
+  + ensure the convert abort emits an observable anomaly line, mirroring Phase 2/3.
+
+#### [LOW·security-hardening] _download_s3_file has no path-traversal containment (ecs_entrypoint) (from the end of this file)
+
+Pre-existing (not introduced by the stale-tree validate fix). ecs_entrypoint._download_s3_file composes
+WORKDIR/obj["Key"] from the raw S3 key with no realpath containment check, so a crafted "../" key could
+escape /tmp/pipeline. Keys come from the pipeline's OWN trusted bucket (low risk), but defense-in-depth:
+assert the resolved local path is within WORKDIR before download_file. Flagged by the dual review of the
+phase3-durable-revalidate fix; out of scope there.
+
+
+# MULTIMODAL INGESTION GAPS — prioritized epic (from XChannel ch8 analysis, 2026-10-27)  ✅ COMPLETE (M1-M8 all merged, PRs #587-#594)
+
+Source analysis: https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-8.html — a richly
+multimodal HyperWar page used to stress-test every content type. Each item below is a concrete gap with
+its code location + page evidence. Ordered by VALUE × TRACTABILITY (do top-down). The map-as-source work
+(spec docs/current/design/MAP_AS_SOURCE_DOCUMENT.md, PRs #583/#584/#585) is the TEMPLATE: a non-text asset
+becomes a SOURCE, an event/entity is derived, everything flows through the normal pipeline.
+
+CROSS-CUTTING ROOT CAUSES (fixing these knocks out multiple M-items):
+  RC1. parser.extract_images matches only IMAGE markdown (`![alt](url)`), NOT links (`[text](url)`) and
+       NOT bare caption text. So linked maps/charts AND caption-only embedded photos are invisible.
+  RC2. No image->entity linkage model: captions name people/places but nothing records "image depicts
+       PersonID/PlaceID"; ImageCaptioner returns free-text + a coarse class, no structured entity list.
+  RC3. In-document asset links are never FOLLOWED as sources. map-as-source added WEB-SEARCH discovery,
+       but the author already curated the best maps/charts/MoH citations as direct links in the document.
+  RC4. org chart + MoH citation are unmodeled SOURCE TYPES (each a natural map-as-source analog).
+
+#### [LOW · ops/cost, owner 2026-11-10] Manage the Grok response cache long-term (from the end of this file)
+
+The cache-off validation default (`GrokCacheDisabled='1'`, #648) was reverted to `'0'` on 2026-11-10:
+the Cross-Channel Attack run re-paid ~2,700 sync calls + 21 batch event answers with nothing cached,
+and its bad chapter 8 events answer could not be inspected afterwards. Caching is now ON; manage it:
+- **No poisoned entries.** A cached answer that a later check rejects must be EVICTED, or every
+  re-run replays it. The events coverage check (chapter 8, 16% coverage) is the first case: the
+  low-coverage answer must be evicted when it is rejected, before the re-ask. Audit the other
+  validate-and-resubmit paths (`paragraph_range_invalid`, schema failures) for the same.
+- **One write path, one key scheme.** The `--retrieve-only` path (`ecs_entrypoint.py`, batch results
+  -> `grok_client._get_cache(...)[id] = ...`) ignores `GROK_CACHE_DISABLED` and never sets
+  `current_book`, so its entries land as bare `casualties#<h>` / `weather#<h>` instead of
+  `books/<book>/<type>#<h>` (seen 2026-11-10 13:29 from the duplicate retrieve task). Route it
+  through the same guarded, book-scoped write as the in-task path.
+- **Fresh runs on purpose.** A per-run / per-title "fresh" option (today only `REPROCESS_TITLE`
+  clears the local per-title events cache) instead of the stack-wide kill-switch; record in each
+  record's provenance whether the answer came from cache.
+- **Lifetime and size.** TTL is 90 days (`aws.cache_ttl_days`). DECIDED (owner 2026-11-17): the Grok book
+  results (`books/<book>/...`) expire 10 days after last access, sliding; other rows unchanged (see the
+  `_clear_title_cache_if_reprocess` entry in the Phase 3 review). `GrokClient` preloads the WHOLE table
+  with one Scan per task: watch its size/time as the corpus grows, and scope the preload to the book's
+  prefix.
+- **Observability.** Cache hit/miss and the Grok spend avoided per run in the run summary / Slack
+  completion message, so a silently-off cache is visible.
+
+### Group 5 - step 1, people_groups
+
+**Test:** restore, run; every Grok-filled unit field carries a source.
+
+#### Carried over from PHASE3_MAP.md §6 (found by the 2026-11-17 documentation review) (moved here from Group 11)
+- **MED (was gap 16) - Model-memory facts have no citable source.** Group `enrichment_data` carries
+  `_source: {type:"grok"}` and no URL; place hierarchy carries no stamp. Under the provenance rule
+  these are unsourced.
+
+#### Older backlog - HIGH list
+- **[HIGH · extraction/enrichment] Group records have NO `group_name`/`name` field — ALL group enrichment + OpenSERP skipped.**
+  Found in the synchronous XChannel-8 E2E (2026-10-28): Phase 2 wrote people_groups records whose ONLY keys are
+  `nationality`, `event_mentions`, `GroupID`, `_schema_version`, `_last_updated` — the unit name (e.g. "1st Division")
+  survives ONLY in the filename + `event_mentions[].Sub_event_Name`, never as a top-level field. Group enrichment gates on
+  `data.get("group_name")` → empty → `OBSERV groups.enrich_skip_no_name` for all 6 groups → `groups.summary needed=0
+  enriched=0 skipped=6` → OpenSERP never searches groups (`openserp_groups enriched=0`). FIX: Phase 2 must persist the
+  group name (populate `group_name`/`name` from the extracted unit), OR enrichment must derive it from the filename/mention.
+  Blocks all group web-enrichment. (Places were fine — satisfied by geocoder, `needed=0`. Link-review empty is correct:
+  the source HTML has 0 links/0 footnotes.)
+
+### Group 6 - step 2, places hierarchy, link_parent_places, geocode
+
+Owner: dated containment (D2), create missing region/country (D3), skip geocoding when Nominatim is down
+(D8d). Geocoding must run after every place-creating step.
+**Test:** restore, run; parents only to coarser types; counts of unresolved / ambiguous / created.
+
+#### Step: places hierarchy and link_parent_places (PHASE3_MAP §4.2)
+
+How it works (`main` 2ddeffcc):
+- `enrich_all_places` (`src/extraction/enrich_places.py:576`): for each place without both `continent`
+  and `country` (`_needs_enrichment`, `:447`), one Grok request from model memory (`PROMPT`, `:62`:
+  continent, WWII-era country, region, historical names). `_merge_hierarchy` (`:406`) only fills empty
+  fields. A transient error is left unstamped and retried; a clean miss is stamped `not_found`.
+- `link_parent_place_ids` (`src/extraction/places.py:611`): builds a lowercase name -> PlaceID index
+  from every place's `current_name` and `aliases`, then for each place without
+  `hierarchy.parent_place_id` takes the first of `region`, `country`, `continent` whose name is in the
+  index (`_find_parent_id`, `:598`) and writes it.
+- Live data after Phase 2 (`output/places/`, 994 records, synced to `tmp/phase3-review/imgcheck/`):
+  `hierarchy.continent` on 154, `country` on 41, `region` on 0, `parent_place_id` on 0. Of the 31
+  countries named, 10 have a place record.
+
+Findings (nothing enforces the hierarchy beyond a name match):
+- **HIGH - a parent is chosen by name alone.** No geography-type check (a town can become the parent of
+  a region if it shares the region's name: Luxembourg city vs country, Georgia), no disambiguation, and
+  the index keeps the last record for a duplicated name or alias (`places.py:589-592`). No cycle check
+  beyond self. Fix: the parent must be a coarser `geography_type` (village/town/city < region < country
+  < continent), ambiguous names go to review, and a cycle is refused.
+- **MED - a missing level is skipped silently.** With no region record the town is linked straight to
+  its country, and with no country record to its continent; most parents do not exist as records (10
+  of 31 countries). DECIDED (owner 2026-11-17): create the missing region/country through
+  `places._find_or_create_place` (as `image_place_link` already does, DRY), and count what was created.
+- **MED - a parent is never corrected.** `if hierarchy.get("parent_place_id"): continue`
+  (`places.py:634`): once set, a better parent (a region record created later) is never used. Re-derive
+  each run, and record why it changed.
+- **MED - two representations of the same edge.** The schema has `containedInPlace` /
+  `containsPlace` with PlaceIDs (`src/schemas/places_output.py:111`) and no code writes them; the
+  link goes into the untyped `hierarchy` object (`"hierarchy": {"type": ["array","object","null"]}`,
+  `:100`), so `parent_place_id` is not validated as a ULID (fake ULIDs happened before:
+  `scripts/archive/fix_fake_place_ulids.py`). Pick one (schema.org `containedInPlace`), give it a
+  schema, and write the inverse `containsPlace` (DRY: one writer).
+- **MED - the hierarchy has no source.** Grok answers from model memory with no citation, and
+  `_merge_hierarchy` does not record which source filled each field (Phase 2 Wikipedia categories or
+  Phase 3 Grok). Same class as "was gap 16" (unit facts). Record the source and date per field.
+- **MED - one country for the whole war.** The prompt asks for "the WWII-era country"; borders changed
+  during the war (Alsace, annexed 1940; Sudetenland 1938; the Baltic states). A single value cannot hold
+  this. The map boundary model is not needed (owner, 2026-11-17); DECIDED (owner
+  2026-11-17): dated containment (`containedInPlace` with `valid_from` / `valid_to`), done with the
+  `containedInPlace` item above in one schema bump.
+- **MED - places created after step 2 are not geocoded until the next run.** Geocoding runs at step 2
+  (`_enrich_places_and_geocode`), but places are also created later: `image_place_link` (step 6,
+  `_resolve_or_create_place`) today, and the map-vision entity writes and the missing region/country
+  creation (owner decisions D1/D3) after the refactor. Run geocoding after every place-creating step, or
+  geocode the places created in this run at the end.
+- **LOW - region is asked only once.** `_needs_enrichment` stops at continent + country, so a place
+  whose first answer lacked a region is never asked again.
+- **LOW - the hierarchy-order sort does nothing.** The name index is built before the loop, so
+  processing countries before towns (`places.py:623-627`) changes nothing.
+- **LOW - observability.** One `OBSERV places.parent_link linked=<n>`; no count of places with a
+  hierarchy but no parent found, ambiguous names, or skipped levels.
+
+#### 2.3 People / places enrichment (from section 2)
+- **[HIGH · geocoding] Phase-3 geocode MISS-RECOVERY.** On not-found: (a) native-language toponym
+  retry (Farm→Ferme/Hof, Castle→Château/Schloss + Grok translate) → re-query Nominatim; (b) OpenSERP
+  location-hint rescue — extract EXISTENCE+LOCATION from snippets (do NOT WWII-relevance-gate); (b2)
+  EXIF-GPS from a discovered photo (guard: social media strips EXIF; sanity-check vs country); (c)
+  persist the native name + region back with provenance. Bounded (~3% hard-miss, idempotent).
+
+### Group 7 - steps 3 and 4, bibliography and bibliography_resolve
+
+Owner: no NARA key -> leave archive-path records for the next run (D8b); NARA not-online data on the
+bibliography JSON; Archive.org / Gutenberg finds through G3.
+**Test:** restore, run; non-citations gone from S3; finds in the queue; NARA online copies trusted.
+
+#### Step: EP _download_inputs (PHASE3_MAP §1 "What EP _download_inputs does") (moved here from Group 4)
+- **MED - records the merge folds into another stay in S3 as duplicates.** The reconcile's near-title
+  pass merges whole canonical records (`bib_<a>.json` into `bib_<b>.json`) and deletes the merged-away
+  file locally (`_persist_merged_bib`, `src/extraction/bibliography.py:1039`, unlinks every file of the
+  group except the one kept, line 1057). The S3 cleanup `_delete_orphaned_bibliography_shards` (`EP:3119`) only deletes names
+  containing `__` (shards, `EP:3131`), so a merged-away canonical record is never removed from S3. Found
+  2026-11-17: S3 holds 2,035 records; the 2026-11-16 reconcile kept 2,029 (barrier `canonical_count`
+  2,030 includes `review_queue.json`); re-running `reconcile_bibliography_dir` offline on a copy of the
+  S3 set folds 8 more, e.g. "V Corps G-3 Journal", "Seventh Army, KTB Anlagen 1.I.-30.VI.44", "AEAf
+  Overall Air Plan, 15 Apr 44" (list: `tmp/phase3-review/bib-reconcile-dryrun` vs
+  `tmp/phase3-review/bibliography`, not committed). Effect: Phase 3 resolves each duplicate separately
+  (paid NARA/OpenSERP/Grok lookups) and the site would show a citation twice, one copy without the
+  merged mentions. Fix: delete every S3 key in `output/bibliography/` whose basename the reconciled
+  local set no longer has (shards and merged-away records), and repair the 8 now.
+
+#### Step: bibliography_resolve (PHASE3_MAP §4.3)
+
+`BR` = `src/enrichment/bibliography_resolver.py`.
+
+- **MED - a NARA catalog match is recorded as "online" even when nothing is digitized.**
+  `_verify_nara_hits` (`BR:1772`) returns the catalog record page `catalog.archives.gov/id/<naId>`
+  for the first Grok-verified hit (`BR:1826`) whether or not NARA holds scans; the scan count
+  (`_nara_digital_object_count`) is only logged (`OBSERV nara.match online=0|1`). `_apply_resolved_url`
+  (`BR:325`) then sets `availability: "online"` and `search_status: "resolved"`. A record that NARA
+  only describes (paper at College Park) thus reads as available online. Fix: store the scan count /
+  an `online` flag on the finding, and set `availability: online` only when scans exist (else
+  `archive` + `reference_identified` with the catalog link as a finding aid).
+- **LOW - FIX (owner) - one physical address for every record group, and it overwrites a better one.** `_identify_record_group` (`BR:586`) writes
+  "National Archives and Records Administration (NARA), College Park, MD 20740, USA" for any record
+  group found. Some groups are held at other NARA buildings (believed, e.g., RG 45 at the National
+  Archives Building in Washington; per-group holdings not verified). Worse, when no online copy is
+  found it OVERWRITES a better address: `_enrich_from_biblio_note` first sets
+  `archive_physical_address` from the source volume's own Bibliographical Note (the authoritative
+  holding, `BR:261`), then `_apply_result` applies the record-group result with `entry.update(extra)`
+  (`BR:311`), replacing it with the generic College Park text. Fix: a holding location per record
+  group in the lookup table, never overwrite a holding taken from the note, and leave the address
+  empty when unknown.
+- **LOW - owner - search order.** Archive path and generic path (`_search_online_sources`, `BR:606`) run
+  NARA, OpenSERP (`BR:630`), Archive.org, Gutenberg, then the Grok LLM search only if nothing was found.
+  Wanted (owner, 2026-11-17): record group, NARA, Archive.org, Gutenberg, OpenSERP, Grok. OpenSERP keeps
+  running even when an earlier source found a copy: a second location is wanted (no short-circuit).
+  All four keep every verified finding; the order decides which one is the primary URL.
+- **LOW - findings: several locations fit, but their kind is not recorded or checked.** Checked
+  2026-11-17: `resource_urls` is a list of URL strings and `source_metadata.findings` a list of
+  `{url, source}` (`_aggregate_findings`, `BR:676`), so any number of locations, several of one source
+  type included, fit the schema (`src/schemas/bibliography_output.py`). But `source_metadata` is
+  free-form (`additionalProperties: true`), so a finding's shape is not validated, and nothing says what
+  a URL is: a digitized copy, a catalog/finding-aid record (NARA without scans), or a bookseller listing.
+  The resolver also keeps only the first verified hit of NARA and of OpenSERP (Archive.org, Gutenberg:
+  up to 3). Fix: a schema-defined `findings[]` item `{url, source, kind, digital_objects, verified_by}`.
+- **MED - verification strength differs by source.** NARA hits are Grok-checked on the catalog title
+  and series context (`_verify_nara_match`); Archive.org, Gutenberg and OpenSERP hits on the archive
+  and generic paths are Grok-checked on the result title and URL only (`_verify_openserp_match`,
+  `BR:1077`, via `_collect_verified_candidates`, `BR:864`), and accepted UNVERIFIED when there is no
+  Grok client. Only the Grok LLM search and the book and article paths fetch the page and check its content
+  (`_verify_url_content`). A title-only check can accept a page that merely names the document (a
+  catalogue entry, a bookseller listing). Fix: content-verify every positive finding, as the LLM path
+  does.
+- **MED - owner - verify each citation's candidates in one Grok request.** Each candidate costs its own
+  Grok call today (NARA, Archive.org, Gutenberg, OpenSERP, each up to 3-5). Batch all candidates of one
+  citation into one verify prompt (one answer per candidate). `_verify_results_batch`
+  (`src/enrichment/openserp_enrichment.py`) already does this for OpenSERP enrichment but has no caller.
+- **MED - book path: Gutenberg and OpenSERP never return anything.** `_resolve_book_search`
+  (`BR:1833`) calls `search_gutenberg_openserp` and `search_openserp`, which POST to `/search`, a route
+  the OpenSERP server does not have (`openserp/core/server.go:207-235`; was gap 12; errors are swallowed
+  at debug level). Books are in practice searched on
+  Archive.org, then the Grok LLM search. (Where they do return, each hit is content-verified by
+  `_verify_match` -> `_verify_url_content`.) Fix with the batch-verify entry above: route books
+  through the same multi-source search as the archive path.
+- **LOW - owner - article path: add OpenSERP.** `_resolve_article_search` (`BR:1872`) searches
+  Archive.org only; many papers are on `.mil` and `.gov` / education sites that OpenSERP would find.
+- **LOW - a bookseller listing can be stored as an "online copy", and no book data is taken from it.**
+  Nothing in the resolver reads Amazon (or any bookseller) pages for ISBN, publisher or edition, and an
+  Amazon listing that passes the title-level Grok check is stored like a digitized copy. Owner
+  (2026-11-17): Amazon is wanted (affiliate links, below), so `amazon.com` was REMOVED from
+  `config/domain_blacklist.yaml` (that list drops links in link review, `src/extraction/link_relevancy.py`,
+  and blocks downloads in `src/enrichment/source_retrieval.py`; the bibliography resolver never read
+  it). Fix: record a bookseller listing as a `kind: bookseller` finding, never as an online copy, and
+  take ISBN/edition from an open source (Open Library's API is free; Amazon's terms forbid scraping
+  its pages). `_enrich_isbn` (`src/extraction/supplemental_advanced.py:282`) exists but `extract_isbn` is off by default (on in the
+  `review-all-data` and `performance-optimized` profiles).
+- **FEATURE - owner - an Amazon Associates (affiliate) link for books.** Construct the affiliate link
+  (ISBN/ASIN + the associate tag, kept in config, not code) for a book citation, for the site.
+- **FEATURE - owner - a BookFinder link for books.** Store a constructed
+  `https://www.bookfinder.com/` search link (title/author or ISBN) on book citations, so a reader can find
+  a copy to buy or borrow.
+- **LOW - docstring contradicts the code.** `_identify_record_group` says "Ask Grok to identify NARA
+  Record Group"; it calls `_identify_nara_record`, a deterministic table lookup (`BR:1398-1432`) that
+  never uses Grok.
+
+#### Cross-cutting: every URL a Phase 3 step finds goes to human review (owner 2026-11-17) (moved here from Group 3)
+- **DECISION: a NARA record with no online copy is not queued; its data is appended to the
+  bibliography JSON.** Record group, series, holding, physical address and NARA identifiers go on the
+  record (`archive_physical_address` etc., `BR:261`), with the source of each value. This is the current
+  behaviour apart from the overwrite fix already recorded ("one physical address for every record
+  group"); confirm nothing is enqueued for it once the queue change above lands.
+- **FEATURE - owner - a UI for sorting out NARA records with no online copy. Requirements (owner
+  2026-11-17): two use cases.**
+  1. *More human-driven online searches.* A list of bibliography records with a NARA reference but no
+     online copy, filterable by record group, series, book and search status. Each row shows the
+     verbatim citation, the deterministic record group and series, links that open the NARA catalog
+     already filtered to that group, and what was already tried (sources, queries, dates, verdicts) so a
+     person does not repeat it. The person can record a found URL (approved directly - no Grok checks, no URL-review queue -
+     recorded as human-found with who and when, then submitted to Phase 0; owner 2026-11-17), a corrected record group or
+     series, or "not online"; each edit is written to the bibliography JSON with who and when.
+  2. *A research visit to NARA in Maryland (College Park, Archives II).* A pull list of the records still
+     needed: grouped and sorted by record group, series, entry, container (box) and file unit, with the
+     citations each one serves and how many records cite it (to prioritise). Export for the visit (CSV
+     and a printable list). Status per item: needed -> requested -> pulled -> copied/scanned -> ingested,
+     or unobtainable, with notes. Scans come back in through the normal intake (owner 2026-11-17): uploaded to
+     `contentrepository/`, so Phase 0 (AV, OCR) and Phases 1-3 extract them like any source, with page-level
+     citations. The UI uploads against a pull-list item and names the file, so the slug (filename stem,
+     `src/ingestion/book_slug.py`; immutable) is set before upload, e.g. `NARA-RG407-<entry>-<box>-<folder>`.
+     The source is bound to the BibliographyID it fulfils, with provenance (NARA, RG/series/entry/box/file
+     unit, scan date, who), `archive_reference_number`, and public-domain license for US government
+     records.
+  Data this needs on each record (some exists, some is new): record group, series, entry, container, file
+  unit, NARA identifier (NAID) when known, physical holding (Archives II), and a search history.
+  Not yet decided: users (operator only, or contributors), and whether it is part of the URL-review /
+  dedup UIs or a separate app.
+
+#### Carried over from PHASE3_MAP.md §6 (found by the 2026-11-17 documentation review) (moved here from Group 11)
+- **MED (was gap 20) - Bibliography verifier is fail-open in one place.** `_verify_match` accepts on a
+  Grok error or without a client; every other verifier fails closed.
+
+#### Older backlog - MED list
+- **[MED · provenance/copyright] Copyright date rules have off-by-one and stale-cutoff errors (found 2026-11-06).**
+  Not verified by a lawyer; these are code-vs-stated-rule mismatches against `docs/current/core/copyright/`.
+    - `src/extraction/copyright_calculator.py`: for a US work with an unknown death date, only `pub_year < 1928` is
+      treated as public domain. That hardcoded cutoff has gone stale: works from 1928–1930 have since entered the public
+      domain, so they are now reported as `unknown`. Derive the cutoff from the current year instead.
+    - Both modules treat life+70 as expired when `current_year >= death_year + 70`. The term runs to the END of
+      that year, so a work enters the public domain on Jan 1 of `death_year + 71`. The code over-claims public
+      domain by one year, which is the harmful direction for a citation-ready dataset.
+    - `supplemental_advanced._determine_usa_copyright` has the same off-by-one for the 95-year term (`pub_year + 95`).
+    - Two implementations of one rule: consolidate into `copyright_calculator` and pin it with year-boundary tests.
+
+#### 2.2 NARA resolution redesign (correctness) (from section 2)
+- **[HIGH] STOP using Grok to determine Record Groups — deterministic RG lookup + structured query.**
+  Grok's RG determination is poor (fabricated RG/NAID; `archive_reference_number` even stored Grok's
+  prose). REDESIGN: (1) RG = deterministic lookup against NARA's Record Group Explorer (static
+  alias→RG map: unit records→RG 407, "MS #"/Foreign Military Studies→RG 549, Army operational→RG 338,
+  HQ ETO→RG 498, Allied HQ→RG 331, War Dept→RG 165, seized German→RG 242); (2) query via the catalog
+  API's STRUCTURED filters (`ancestorNaId=<RG>` + `levelOfDescription=series`) not verbatim-as-`q`;
+  (3) Grok SEMANTIC ONLY. Replace `_identify_record_group`/`_identify_nara_record`; parse
+  `archive_reference_number` to the bare RG.
+
+- **[HIGH] Phase-3 bibliography resolution: re-attempt + concurrency.** (1) The resolver SKIPS records
+  with a terminal `search_status` so an improved resolver never re-runs on `not_found` — treat
+  `not_found` as NON-terminal (re-attempt until genuinely resolved; consider a resolver-version
+  stamp). (2) Manual `aws ecs run-task` Phase-3 launches are NOT guarded by `lock#dev-wwii-phase3-
+  enrich`, so overlapping tasks clobber `output/bibliography/*.json` (observed resolved=9 clobbered by
+  stale resolved=2). Guard manual launches; run ONE Phase 3 at a time.
+
+- **[HIGH] alt_title expansion not running + duplicated + not schema-enforced.** (1) The expansion
+  rule (#421/#425) drives the Phase-2 supplemental BATCH (skipped/cached) and isn't clearly wired to
+  UPDATE deterministic records → add alt_title expansion as a direct per-record Grok call in Phase-3
+  `_enrich_bib_file` (idempotent). (2) `_build_bib_entry` keeps alt_title at top-level AND inside
+  `citation` → can drift; pick a canonical home. (3) `bibliography_output.py` allows both but doesn't
+  enforce they match → add a consistency check.
+
+- **[HIGH · schema] A document must support MULTIPLE DISTINCT SOURCE ENTRIES.** Replace
+  `resource_urls: [string]` with `sources: [object]`, each with url / source (nara|nara_physical|
+  archive_org|hathitrust|...) / format / license+copyright_status (per-copy) / access /
+  archive_reference_number / download_status. `source=nara` ONLY from a REAL catalog API hit (never a
+  Grok "RG…"). Precedence: local holding → online repos → physical NARA visit LAST (`nara_physical`,
+  `access=physical_only`, RG/series/box/folder — a resolved-with-location outcome). Additive + version
+  bump + fingerprint re-pin.
+
+### Group 8 - step 5, document media (in_doc_map_links, image_map_vision)
+
+Owner: maps store appearance links only (D1).
+**Test:** restore, run; Map records carry `depicted`; new places/units link to the MapID; a second run
+sends no map to Grok again.
+
+#### Step: in_doc_map_links, image_map_vision (PHASE3_MAP §4.4)
+
+Code at `main` 17fe5296. Map vision (`prompts/map_vision.yaml`) returns a `depicted` block: `units[]`,
+`places[]`, `movements[]`, `front_line_or_sector`, `date_or_window`, `operation`, `description`,
+`legibility_confidence`. The only consumer is `map_source_adapter.recycle_map_as_source`
+(`src/extraction/map_source_adapter.py:263`), shared by the in-doc path and the OpenSERP maps path
+(`openserp_maps.py:607`). It flattens `depicted` to prose and writes `contentrepository/map-<id>/` (a
+meta.yaml + content.md pair) so the map re-enters Phase 1 -> 2 -> 3 as a new "book".
+
+- **HIGH - the map-as-source files never reach S3, so all extracted map data is lost.** The write goes to
+  `/app/contentrepository` -> `WORKDIR/content` on the container. Neither the periodic sync (`EP:401`,
+  `output/` and `artifacts/` only) nor the Phase 3 final sync (`EP:3470`, entity dirs + artifacts) uploads
+  that directory, so the files vanish when the task exits and no Phase 1 run is ever triggered. The Grok
+  vision call is still paid. Verified in code; not observed live (Phase 3 has not run since the
+  recycle was enabled).
+- **HIGH - the dedup claim is taken before the write, so a lost map is never retried.** `_content_is_new`
+  (`map_link_source.py:219`, `:238`) puts `contenthash#<sha of URL>` in DynamoDB before
+  `_recycle_as_source` runs. With the files lost (above), or a failed write, every later run skips the map
+  as a duplicate. Fix with the upload: claim after the source is durably in S3, or release the claim on
+  failure.
+- **HIGH *refactor* - DECISION (owner 2026-11-17): write map vision results straight into the entity
+  JSON with the existing entity writers; stop recycling maps as prose sources.** Today `depicted` is
+  turned into sentences ("Units depicted on the map: ...") and Phase 2 re-extracts them with Grok: a
+  second paid request per map, and the unit-at-place-at-time link is lost. Nothing is stored on the Map
+  record, and nothing links the derived entities back to the `MapID` (no Phase 1/2 code reads the
+  meta's `source_type: map`, grep). The new flow, reusing what Phase 2 already uses:
+  - **Map**: store `depicted` on the Map record (with `vision` provenance: model, RequestID,
+    `map_vision_checked_at`) through `map_common.find_or_create_map_by_url` (`map_common.py:127`).
+  - **Places** (towns, rivers, hills, roads): `places._find_or_create_place` (`places.py:526`) and
+    `places._add_event_mention` (`places.py:686`). Geocoding then runs on them in the normal Phase 3
+    step.
+  - **Dates** (`date_or_window`): `dates._find_or_create_date` (`dates.py:233`) and
+    `dates._add_event_mention` (`dates.py:313`).
+  - **PeopleGroups** (units): `people_groups._save_group` (`people_groups.py:294`), which merges
+    into an existing group or creates a new one under the index lock.
+  - **The map as a citation**: `bibliography.store_bibliography_entry` (`bibliography.py:774`).
+  - **Mentions**: key them on a deterministic EventID for the map, `event_id("map-<id>", 1)`, so each
+    entity is linked to the map and its `verbatim_reference` is the vision `description`.
+  These writers are private and take Phase 2 shapes (a mention dict plus an index), so the refactor
+  makes each one a public find-or-create entry point. Phase 2 and the map path then call the same
+  function: no second writer. This removes `recycle_map_as_source`'s `contentrepository/map-<id>/` write,
+  and with it the two HIGH entries above (files never uploaded, dedup claim never released).
+- **DECIDED (owner 2026-11-17): no structured map-observation model.** "This unit, place and date appear
+  on this map" (the entity writers above) is sufficient; the rest of `depicted` stays on the Map record as
+  vision text with provenance. Original finding: The writers above cover
+  "this unit, this place, this date appear on this map". The vision answer has no field for what a map
+  adds: unit X at place Y at time T, unit sector boundaries, national borders and phase lines.
+  `front_line_or_sector` is one free-text string, `movements[]` are strings, and there is no geometry.
+  Decide on a placement record (PeopleGroupID, PlaceID, datetime, boundary/geometry, MapID) and extend
+  `prompts/map_vision.yaml` to return it.
+- **MED - provenance of the derived data is weak.** The recycled meta has `license: Unknown`, empty
+  author and copyright, and `source_url` = the image URL. The originating book, chapter and
+  `SourceSectionID` that linked the map are not recorded, so events from `map-<id>` cannot cite where the
+  map was found. Per the provenance rule, record the parent source on the meta and the Map.
+
+#### Carried over from PHASE3_MAP.md §6 (found by the 2026-11-17 documentation review) (moved here from Group 11)
+- **LOW (from PHASE3_ENRICHMENT.md) - `map_features` has no Phase 3 step.** The map-interior
+  extraction and reverse registration (`src/extraction/map_registration.py`) are prototype-level and
+  not wired into `phase3_enrich_data.py`.
+
+#### Validate maps are NOT continually resubmitted to Grok in Phase 3 (MED)
+
+With the tiered maps classifier adding a Grok-vision backstop ("is this an image of a map?") for
+questionable images, we MUST ensure Phase 3 (enrichment/geocode/re-runs) does NOT re-submit the same
+map image to Grok on every run. CHECK: (1) the vision verdict is PERSISTED on the record (e.g.
+is_map / map_vision_checked_at) and the backstop SKIPS already-classified images; (2) the classifier
+only runs on NEW/unclassified images (incremental, like enrichment_checked_at gating); (3) a Phase-3
+re-run over an already-processed book issues ZERO new maps-vision calls (assert via OBSERV count).
+A resubmission loop would silently burn cost + rate limit on every re-run. (Raised by owner 2026-11-02;
+tie to the tiered-classifier work + the deterministic-first/Grok-backstop design.)
+
+### Group 9 - step 6, document links (link_asset_review + intra_corpus_links merged)
+
+Owner: HyperWar volumes (html + pdf) are trusted: queued whole, once, under the volume slug.
+**Test:** restore, run; edges persisted; one queued volume; external links in the queue with their section.
+
+#### Step: link_asset_review (PHASE3_MAP §1 step table, §4.4)
 
 What it is (M4, PR #590): `_review_external_links` (`phase3_enrich_data.py:495`) loads every parsed
 document and calls `link_assets.enqueue_doc_links` (`src/extraction/link_assets.py:119`) on its text.
@@ -529,16 +1214,6 @@ human approves, and approval submits it to Phase 0. Gated by `links.review_exter
 today, by `use_openserp` ("was gap 3").
 
 Findings:
-- **HIGH - every Phase 3 run queues the same links again.** Each enqueue is a new event with a new ULID
-  (`fetch_provenance.record_fetch_event`, key `fetchevent#<ulid>`); nothing checks for an existing
-  pending, approved or rejected event with the same `url_key`. So each run duplicates the queue, and a
-  link a human rejected comes back. Fix (DRY, with the shared enqueue helper): look up `url_key` (+
-  entity) before enqueueing; a rejected or submitted link is never re-queued.
-- **HIGH - links skip Grok or are queued "when in doubt".** `link_relevancy_whitelist` is `ibiblio.org`
-  (`config/domain_blacklist.yaml:87`), so every HyperWar link is queued with no Grok verdict; a missing
-  client, an error or an `UNKNOWN` answer also queues (`link_relevancy.py:71-92`, `:111`, `:121`).
-  Owner rule (2026-11-17): Grok validates every link before a human sees it (recorded in the footnote
-  entry; the fix goes into `should_enqueue_link`).
 - **MED - the provenance points at the wrong section.** `_book_section_index` maps each book to ONE
   SourceSectionID, the first one found (`image_place_link._build_book_section_index`, `setdefault`,
   `:392`), so every link in the book is attributed to that section, not to the paragraph it came from.
@@ -549,10 +1224,8 @@ Findings:
 - **MED - overlap with `intra_corpus_links`.** Links to other ibiblio volumes are also handled by
   `intra_corpus_links` (`src/extraction/intra_corpus.py:102`, queued as another batch), so the same
   link can land in both queues. Owner decision: in-corpus links go only to `intra_corpus_links`.
-- **LOW - not batched** (`_grok_link_relevant` is one live request per link); covered by the batching
-  entry.
 
-### Step: intra_corpus_links (PHASE3_MAP §1 step table)
+#### Step: intra_corpus_links (PHASE3_MAP §1 step table)
 
 What it is (M8): `_process_intra_corpus_links` (`phase3_enrich_data.py:551`) loads every parsed
 document and calls `intra_corpus.process_doc_links` (`src/extraction/intra_corpus.py:102`). It
@@ -568,39 +1241,6 @@ which starts Phase 0 like an uploaded book. Gated by `links.intra_corpus` (defau
 ("was gap 3").
 
 Findings:
-- **DECISION (owner 2026-11-17): HyperWar volumes and their PDFs are trusted sources.** A cited
-  HyperWar volume (HTML or its PDF) is queued for ingestion with no URL Grok check and no human URL
-  review; it is the one exception to the "every URL to review" rule. Trust is at the source level only:
-  its content goes through the normal pipeline, where Grok classifies everything inside it (events,
-  people, units, places, dates, equipment, casualties, maps vs images, charts, footnotes, bibliography),
-  and the links inside it to non-HyperWar sites follow the review rule. To do:
-  - Define "HyperWar" in config, not code: the `ibiblio.org/hyperwar/` path, not all of `ibiblio.org`
-    (`config/domain_blacklist.yaml` already lists `source_material_paths`; reuse it). The current
-    `link_relevancy_whitelist: ibiblio.org` is wider than the trust decision.
-- **DECISION (owner 2026-11-17): NARA records are trusted the same way, and the trusted list will grow.**
-  One config list of trusted sources replaces the per-feature lists (DRY), e.g.:
-  ```yaml
-  trusted_sources:            # skip URL Grok check + human URL review; content still Grok-classified
-    - {name: hyperwar, match: "ibiblio.org/hyperwar/", forms: [html, pdf]}
-    - {name: nara, match: ["catalog.archives.gov/id/"]}   # plus the NARA download host, confirm
-  ```
-  Adding a site is a config edit (no code change), logged at run start. The NARA digital-object
-  download host is not in the code yet (only `catalog.archives.gov/id/` and the API); confirm it from a
-  real record before adding it. Rules for every entry:
-  - Trust covers the source, not the match. A cited link to a trusted source is queued directly. A
-    trusted record found by a SEARCH (NARA catalog search in `bibliography_resolve`) still needs the
-    existing Grok check that it is the cited document (`BR` verified findings); once matched, its
-    online copy is queued for ingestion with no human URL review.
-  - Content is still classified by Grok in Phases 1-3; links inside it to untrusted sites follow the
-    review rule.
-  - The queued item and the book meta record `trust_basis: <name>`.
-  - `link_relevancy_whitelist`, `source_material_paths` and the hard-coded HyperWar recognizer read this
-    list instead of keeping their own.
-  - Recognize the PDF form as the same volume: `hyperwar_biblio._HYPERWAR_URL` matches the HTML page
-    URLs only; add the PDF URL pattern so a PDF and its HTML volume resolve to one volume key and one
-    slug (one ingestion, not two).
-  - Record `trust_basis: hyperwar` on the queued item and the resulting book meta, so the exception is
-    visible in provenance.
 - **HIGH - it ingests one page, not the volume, under a hash slug.** The linked page (often one chapter)
   becomes its own book, slug `intracorpus-<volume>-<sha12>` (`book_slug` = filename stem). The slug is
   immutable, so a later proper ingestion of the whole volume under its real name duplicates it, and
@@ -615,7 +1255,7 @@ Findings:
 - **LOW - the fetch bypasses `url_fetch`** (registry, politeness, Wayback). DRY: use `url_fetch.fetch`.
 - Same wrong-section attribution as `link_asset_review` (one SourceSectionID per book).
 
-### Consolidate link_asset_review and intra_corpus_links into one document-links step (owner question 2026-11-17)
+#### Consolidate link_asset_review and intra_corpus_links into one document-links step (owner question 2026-11-17)
 
 - **MED *refactor* - they can and should be one step.** Both load the same parsed documents
   (`_load_parsed_docs`), build the same link text (`_doc_link_content`, paragraphs + footnotes), run the
@@ -638,76 +1278,11 @@ Findings:
   three link sources stop having three implementations. One config block (`links.review_external`,
   `links.intra_corpus`, `links.follow`), one OBSERV summary per run, independent of `use_openserp`.
 
-### Step: event_provenance_stamp (PHASE3_MAP §1 step table)
+### Group 10 - step 6, photos (image_person_link, image_place_link)
 
-What it is: `stamp_event_source_sections` (`src/extraction/event_provenance.py`) inverts the
-source_section records (each carries `SourceSectionID` + `EventID`) into an EventID -> SourceSectionID
-index and writes `SourceSectionID` onto each content event and every one of its sub-events, through
-`write_json_with_lock(entity="events")`. It closes the entity -> event -> section ID chain the
-referential-integrity check resolves. Deterministic, no Grok. Live data (`output/content/USA-E-XChannel/`,
-synced to `tmp/phase3-review/imgcheck/content/`): 31 source sections, one per event (21 chapter events +
-10 notes events), and no event or sub-event carries `SourceSectionID` yet.
+**Test:** restore, run; each linked Image record names its PersonID / PlaceID.
 
-- **MED - notes events are never stamped.** The walk skips `*-notes-event.json` (`event_provenance.py`,
-  `stamp_event_source_sections`), but those events have source sections too (10 of 31) and carry
-  sub-events (e.g. `chapter2full-notes-event.json`, 42 sub-events) from which entities are extracted
-  (`supplemental.py:1243`). Their entities' chain stops at the event. Stamp them as well, unless there
-  is a reason they are excluded (none in the code).
-- **MED - it runs in the wrong phase.** It needs only Phase 2 output, but runs in Phase 3 inside the
-  OpenSERP group ("was gap 3"), so after Phase 2 no event has a SourceSectionID and Phase 2's own
-  provenance validation cannot check the event -> section edge. Move it to Phase 2, right after the
-  source_section records are written; keep a Phase 3 re-check only if needed.
-- **LOW - one section per event is assumed.** `index.setdefault` keeps the first section for an EventID,
-  and every sub-event gets the event's section. True today (31 sections, 31 EventIDs); if a chapter is
-  ever split into several sections, sub-events would point at the wrong one. Stamp sub-events from their
-  own paragraph range when that happens.
-- **LOW - the stamped events reach S3 only through the background sync.** `output/content/` is not in
-  `_PHASE23_ENTITY_DIRS`, so `_final_sync` skips it; the background sync uploads it, but its final flush
-  skips files modified in the last 2 s (`EP:434`) and nothing covers those. Harmless at this step's
-  position in the run; a general gap for late writes under `output/content/`.
-
-### Step: equipment_images (PHASE3_MAP §4.5)
-
-What it is (`src/enrichment/equipment_images.py`, owner rules 2026-11-07): for every equipment record,
-- **Scope:** `record_scope` (Phase 2 stamp, else deterministic rule, else alias table, else the cached
-  Grok resolver). GENERIC records ("rifle", "trench") have their enrichment stripped (`images`,
-  `wikipedia_extract`, ... `_ENRICHMENT_FIELDS`); UNRESOLVED and unknown are left alone.
-- **Candidates (SPECIFIC only):** images already on the record (Phase 2 legacy, OpenSERP) are queued as
-  `vision_check: pending` unless a recorded vision check exists; plus up to 20 images from the record's
-  Wikipedia article (all article images, not only the lead; icon/logo filter; Commons license), but only
-  if the article text places the subject in WWII (`wikipedia_wwii_relevant` / `mentions_wwii`). Stamped
-  once (`image_candidates_checked_at`).
-- **Vision:** each pending image is downloaded (`url_hygiene.safe_get`, 10 MB cap, held in memory),
-  exact-duplicate checked by hash, then Grok vision (`prompts/equipment_vision.yaml`: a photograph, of
-  this specific model, WWII era or a preserved/museum example; "if unclear, reject"), until
-  `equipment.images_per_record` (3) are verified. Verdict, reason and UTC time are stamped on the image.
-  No verdict 3 times, or the download failing 5 runs, sets `needs_review`.
-- One OBSERV summary and an actionable alert per cause. Live data: 689 equipment records (613 generic,
-  61 specific, 15 unresolved), 22 specific records with a WWII-qualified article, no images yet.
-
-Findings:
-- **MED - `needs_review` has no review tool.** The alert says "open each and set vision_check to verified
-  or rejected", i.e. edit the JSON by hand. Owner decision: put these in the URL-review UI (same queue,
-  item type "image") or a separate image-review view.
-- **MED - OpenSERP image candidates are page URLs, so they fail.** `_queue_existing` queues OpenSERP
-  images, which are mostly HTML page URLs ("was gap 8"); the download returns HTML, counts as a fetch
-  failure, and after 5 runs lands in `needs_review`. Five wasted fetches each and noise for the reviewer.
-  Resolve the page to its image (og:image / Commons file) before queueing, or drop page URLs.
-- **LOW - a preparation failure is recorded as a vision rejection.** `_verify_media_with_vision` returns
-  `(False, problem)` when the image cannot be prepared (format, too many pixels), and `_record_verdict`
-  stamps `vision_check: rejected` and `vision_checked_at` although no vision request ran. Record it as
-  `unusable` with the reason, not as a verdict.
-- **LOW - rejected images stay on the record.** They are kept in `images[]` with `vision_check: rejected`
-  (good for provenance); the site and any export must filter on `verified`. Note in the site spec.
-- **Owner question - diagrams and manual drawings.** The prompt rejects anything that is not a
-  photograph; technical drawings from WWII manuals can be valuable for equipment. Keep the rule or allow a
-  labelled `illustration` class?
-- Vision requests are one live call per image and are not batched (covered by the batching entry: vision
-  calls bypass `batch_mode`). Up to 20 downloads per record, until 3 are verified.
-- Wikipedia/Grokipedia images on units and people should reuse this module (entry "Wikipedia /
-  Grokipedia images on people and units").
-
-### Step: photos from Phase 2 (image_map_vision, image_person_link, image_place_link)
+#### Step: photos from Phase 2 (image_map_vision, image_person_link, image_place_link)
 
 How Phase 3 handles document photos today (verified in code at `main` 96703bca):
 - `image_map_vision` (always runs): images Phase 2 marked `map_check=pending_vision` get a Grok vision
@@ -734,114 +1309,14 @@ Findings:
   returns `classification="unknown"`, `method="context-only"` (`image_captioner.py:114-123`), so the gate
   always passes. Fix (DRY): read the Phase 2 `vision_classification` already stored on the Image record,
   and drop the dead call.
-- **Owner question - do photo URLs found in Phase 2 go to the URL-review queue?** Photos from the source
-  document are part of an approved source, so they are not new finds. Wikipedia and Grokipedia images
-  that Phase 2 attaches to people, groups and equipment are web URLs; the 2026-11-17 decision says
-  every URL find goes to review. Decide whether those count.
 
-### Wikipedia / Grokipedia images on people and units (owner question 2026-11-17)
+### Group 11 - step 6, OpenSERP group
 
-Owner rule: Wikipedia and Grokipedia images are trusted as a rule (no URL-review queue). Open
-question: what happens when the image is not the person, or shows the unit in another war. Verified
-in code and on live S3 data (`output/people/`, 531 records; `output/people_groups/`, 1,116 records,
-synced to `tmp/phase3-review/imgcheck/`, not committed):
-- Only the article's lead image is taken (`prop=pageimages`), never images from the article body.
-  Grokipedia supplies no images (`src/enrichment/grokipedia.py`).
-- Nothing checks the image. Units: `_add_wikipedia_image` (`src/enrichment/groups_wikipedia.py:242`)
-  inserts the lead image as `images[0]`. The only gate is that the article text mentions WWII
-  (`_in_wwii`, `:56`); the image itself is never judged. Equipment is the exception: Phase 3
-  `equipment_images` confirms each image with Grok vision (pending/verified/rejected, attempt cap,
-  needs_review).
+Owner: OpenSERP down at start or mid-run stops the whole phase, stamps nothing, alerts, the book stays
+queued for the reconcile (D8c, D8c-2, D8c-3). Page links followed one hop, two Grok checks.
+**Test:** restore, run with OpenSERP on; queue items per entity; an outage stamps nothing.
 
-Findings:
-- **HIGH - unit images from the wrong era or the wrong subject are on live records.** Of 52 unit
-  images, examples: "IX Bomber Command" -> `KC-135A_refuels_B-52D_during_Vietnam_War.jpg` (the lookup
-  landed on the 19th Air Division article); "Tank Destroyer" -> an Italian Centauro at exercise
-  "Scorpion Legacy 2025"; "Ninth Air Force" -> `Emblem (Cold War).png`; "Germans" -> a Reichstag panorama;
-  "Rundstedt" (a person extracted as a unit) -> his portrait. Fix (DRY): generalize
-  `src/enrichment/equipment_images.py` into one entity-image verifier (same states, attempt cap,
-  needs_review and alert) used for equipment, units and people, with the prompt per entity type
-  (unit: insignia or the unit in 1939-1945; person: a photo of this person). Cost control first: a
-  deterministic pre-check on the Commons file metadata already fetched for the license
-  (`_wikipedia_common.fetch_commons_license`, `extmetadata`: `DateTimeOriginal`, file title words such
-  as "Vietnam", "Korea", "Cold War", a year after 1945), and vision only for what it cannot decide.
-  Owner decision: vision on every unit/person image, or only on the ones the pre-check flags.
-- **HIGH - a person's Wikipedia portrait never reaches the person JSON.** `_store_wikipedia_image`
-  (`src/extraction/enrich_biographies.py:450`) saves the photo under `person_photos/` (69 files in S3)
-  and an in-memory cache; the only reader, `search_wikipedia` (`:686`), assigns it to an unused
-  variable (`grok_info`). No live person record has `images` or a portrait link. When this is fixed, the
-  same verifier applies: a lead image can be a signature, a grave, a ship or a map, and a non-person
-  image must not be shown as the portrait.
-- **MED - the article match itself can be wrong.** "IX Bomber Command" matched the 19th Air Division
-  article and still passed `_in_wwii` because that article mentions WWII. A redirect to a different unit
-  should be detected (requested title vs resolved title) and the match sent to review.
-- **LOW - a person extracted as a unit.** "Rundstedt" is a `people_groups` record; belongs with the
-  Phase 2 entity-type checks.
-
-### Wikipedia / Grokipedia footnote links (owner question 2026-11-17)
-
-Are the citation (footnote) links of a Wikipedia or Grokipedia article followed and judged for WWII
-relevance? No. Verified in code:
-- Wikipedia: every lookup asks only for the lead section as plain text (`prop=extracts|pageimages`,
-  `exintro`, `explaintext`; people `enrich_biographies._build_wikipedia_request`, units
-  `groups_wikipedia._lookup_group`, equipment `equipment_wikipedia`). The reference list and its links
-  are never requested (no `extlinks`, `references` or `cite_note` use anywhere in `src/`).
-- Grokipedia: `_article_text_from_html` (`src/enrichment/grokipedia.py:259`) keeps the article text
-  and drops every `href`, so its citation links are lost.
-- People only: the biography prompt asks Grok for `source_urls` (`prompts/biography.yaml:45`), i.e.
-  URLs it reads in the text or proposes itself. `validate_source_urls` (`enrich_biographies.py:968`)
-  fetches each (`url_hygiene.fetch_text_safe`, Wayback fallback), asks Grok whether the page is about
-  "the WWII-era person" (`:940`), and writes the relevant ones straight into
-  `biography_sources[]`, with no human review. This fetch bypasses the central `url_fetch` / URL
-  registry, so the same URL is fetched again for each person and each run.
-- `references` in the same prompt are entity NAMES (units, people), followed by name lookups on
-  Grokipedia/Wikipedia (`search_references`, max 3), not links.
-
-- **MED *feature* - DECISION (owner 2026-11-17): follow the citation links of Wikipedia and Grokipedia
-  articles, judge their WWII relevance, and send the relevant ones to the URL-review queue for a human
-  to confirm.** Reuse, no new mechanism:
-  - Extract links with the M4 link extractor (`link_assets.extract_link_assets`: media type, relative
-    links, dedup) on the article HTML: Wikipedia `action=parse&prop=externallinks` (or the rendered
-    references section), Grokipedia's already-fetched HTML before `_article_text_from_html` strips it.
-  - **Same two Grok checks as the OpenSERP page links below (pre-validate from URL + footnote text
-    before fetching, then validate the fetched page).**
-  - **Order (owner 2026-11-17): Grok judges first; only a positive verdict reaches the human.** Grok
-    is asked whether the linked page is relevant to this entity in WWII (title, snippet, footnote text,
-    and the fetched page when available). Positive -> URL-review queue. Negative -> recorded (per
-    URL, entity) and not queued. Reuse `link_relevancy.should_enqueue_link`
-    (`src/extraction/link_relevancy.py:93`), batched, but it does not meet this rule today: a
-    whitelisted host is enqueued with no Grok verdict (`:109`), and no client or any error enqueues
-    "when in doubt" (`:111`, `:121`). For this path: blacklist still drops first; whitelist and errors
-    do not skip Grok; a Grok error or missing client leaves the link pending for the next run (with
-    an OBSERV count), never queued unjudged. **The in-document link review (M4, `link_asset_review`)
-    follows the same rule (owner 2026-11-17)**: change `should_enqueue_link` itself, so every caller
-    gets it.
-  - Enqueue through the shared enqueue helper (OpenSERP entry above) with the article URL, the entity
-    ULID and the footnote text as provenance; the human approves in the URL-review UI; approval submits
-    to Phase 0.
-  - Apply the (URL, entity) verdict keying and the checksum re-check from the OpenSERP section.
-  - The same `links.follow` settings (hops, per-page cap per scope, same-domain vs external) as the
-    OpenSERP page links below; an OBSERV line when a cap is hit.
-- **MED - Grok-proposed `source_urls` skip review and the central fetch.** Keep the existing Grok
-  relevance check (`_validate_url_relevance`), and send only the positive ones to the URL-review
-  queue instead of writing them to `biography_sources[]`; route the fetch through `url_fetch.fetch`.
-  Until a human approves, a URL is not written as a source.
-- **Same rule for every URL finder** (OpenSERP, Archive.org, Gutenberg, Grok LLM
-  search, map URLs, footnote links): Grok judges relevance first, a positive verdict goes to the
-  URL-review queue, a human approves, approval submits to Phase 0. One shared helper does the
-  judge-then-enqueue step. **No link is ever shown to a human without a positive Grok verdict.**
-- **Batching (owner rule): every Grok relevance request on these paths is batched.** The shared
-  helper collects candidates (URL, entity ULID, context) across the step and submits them through the
-  xAI Batch API path (`src/utils/batch_api.py` `BatchCollector`, as `GrokClient(batch_mode=True)`
-  does); results are applied on retrieve, and only positives are enqueued. Today none of these checks
-  is batched: `_verify_result` (OpenSERP, one live request per result; `_verify_results_batch`
-  `OE:532` puts several results in one prompt but is still a live call), `_grok_link_relevant`
-  (`link_relevancy.py:71`), `_validate_url_relevance` (`enrich_biographies.py:940`), and the
-  bibliography verifies (owner decision already recorded under bibliography_resolve). Already-cached
-  verdicts are filtered out before the batch, so a re-run submits only new pairs. Batch mode with
-  OpenSERP is broken today ("was gap 5"): fix that first, and reuse its retrieve path.
-
-### OpenSERP: links on a Grok-verified page (owner question 2026-11-17)
+#### OpenSERP: links on a Grok-verified page (owner question 2026-11-17)
 
 Are the links on a page OpenSERP found and Grok verified followed and judged for WWII relevance? No.
 `_summarize_url_page` (`OE:696`) fetches the page through `url_fetch.fetch`, and `_grok_summarize_html`
@@ -894,136 +1369,18 @@ characters for a summary. The links are discarded; nothing in `openserp_enrichme
   - The parent page itself goes to the queue as well (OpenSERP entry above), so the reviewer sees the
     page and its relevant links together.
 
-### Cross-cutting: every URL a Phase 3 step finds goes to human review (owner 2026-11-17)
-
-- **HIGH *refactor* - DECISION: the URL-review queue applies to every find that has a URL, not only
-  OpenSERP.** That covers OpenSERP pages, Archive.org and Gutenberg copies found by `bibliography_resolve`,
-  Grok LLM-search URLs, and map URLs (NARA records and HyperWar volumes are trusted sources: see
-  `trusted_sources` under intra_corpus_links). Approval submits the find to
-  Phase 0 through `fetch_review.submit_affirmed_batch`. One shared enqueue helper (the OpenSERP entry
-  above) is called by every finder. Current behaviour, verified in code:
-  - **The queue gets search calls, not finds.** `recorded_fetch` (`src/utils/fetch_provenance.py:185`)
-    records each request with `outcome=HIT` for any 2xx status (`:256`), and `_initial_review_status`
-    (`:64`) makes that `pending` for `nara`, `archive-org`, `archive-solr`, `gutendex` and `wayback`. The
-    `endpoint` is the search API (`catalog.archives.gov/api/v2/records/search`, archive.org
-    advancedsearch, gutendex), so a reviewer sees one item per successful query, including queries that
-    matched nothing, with no link to the BibliographyID and no Grok relevance verdict.
-  - **The finds bypass review.** `bibliography_resolve` writes each verified Archive.org / Gutenberg /
-    NARA URL straight into the record's `resource_urls` and `source_metadata.findings`
-    (`BR:330-336`, `BR:677-682`); nothing is submitted to Phase 0.
-  - Fix: enqueue the found item URL (with BibliographyID or entity ULID, provider, query, Grok verdict),
-    stop `recorded_fetch` from enqueueing search calls (provenance only), and keep `resource_urls` for
-    approved finds (or mark the pending ones).
-- **DECISION: a NARA record with no online copy is not queued; its data is appended to the
-  bibliography JSON.** Record group, series, holding, physical address and NARA identifiers go on the
-  record (`archive_physical_address` etc., `BR:261`), with the source of each value. This is the current
-  behaviour apart from the overwrite fix already recorded ("one physical address for every record
-  group"); confirm nothing is enqueued for it once the queue change above lands.
-- **FEATURE - owner - a UI for sorting out NARA records with no online copy. Requirements first.**
-  Not designed yet. Open questions to settle before building: who uses it (operator, contributor,
-  genealogist), what actions it offers (confirm the record group, correct the holding, request a scan,
-  mark it unobtainable), how it relates to the URL-review and dedup UIs (one app or three), and what it
-  writes back (the bibliography JSON, with provenance of the human edit).
-
-### Cross-cutting: batch every Phase 3 Grok request (owner 2026-11-17)
-
-- **HIGH *refactor* - DECISION: Phase 3 Grok requests are batched by default, through the existing
-  batch machinery (DRY) and the existing small-batch rule.** Today `batch.phase3: false`
-  (`config.yaml:97`), so every Phase 3 request is live. Reuse, do not rebuild:
-  - **Collect:** `GrokClient(batch_mode=True)` queues a cache miss and raises `BatchModeCollecting`
-    (`src/grok_client.py:1649`, `:1710-1744`).
-  - **Submit and the under-50 rule:** `GrokClient.submit_batch` (`:750`) answers fewer than
-    `batch.min_requests` (50, `config.yaml:100`; env `BATCH_MIN_REQUESTS`; `batch_api.batch_min_requests`)
-    live through `_answer_small_batch_live` (`:1269`), so a small run is not held up to 24 h. No step may
-    add its own threshold.
-  - **Rounds:** reuse Phase 2's multi-round hand-off (`batch.max_rounds`, `in_task_wait_minutes`, the
-    poller Lambda; `docs/current/features/batch_processing/README.md`) instead of `_run_batch_rerun`'s
-    single re-run. Phase 3 has dependent chains (OpenSERP verify -> fetch + summarize -> enqueue; map
-    vision -> entity writes), so one round is not enough.
-  - **Cache first:** cached answers are filtered out before queueing, so a re-run submits
-    only new requests.
-- **What is and is not covered today with `--batch`** (PHASE3_MAP §5):
-  - Re-run against the batch answers: people_groups, places, `link_parent_place_ids`, bibliography,
-    bibliography_resolve, equipment_images (`P3:_run_batch_rerun`).
-  - Not re-run, so their queued answers are never applied: geocode's Grok fallback, the OpenSERP group
-    (and its verify is cached as `REJECT`, "was gap 5"), in_doc_map_links, image_map_vision,
-    image_place_link (`_grok_is_terrain`), link_asset_review (`_grok_link_relevant`).
-  - **Never batched at all: vision requests.** `extract_json_with_image` and
-    `extract_json_with_image_base64` (`src/grok_client.py:1790`, `:1857`) call `_call_api` directly and
-    never check `batch_mode`, so map vision, image map/not-map, equipment image vision and caption
-    vision stay live even with `--batch`. Fix: route both through the same cache-miss path as text
-    (`:1640-1652`) so they queue too, provided the xAI Batch API accepts image inputs (verify first).
-- Every step gets the same OBSERV lines Phase 2 has for batch (collected, submitted, answered live
-  under the threshold, rounds) and an actionable alert when `max_rounds` is reached.
-
-### Cross-cutting: how Phase 3 results reach the S3 JSON
-
-Every Phase 3 step writes its Grok-confirmed result into the local entity JSON through the one shared
-writer `write_json_with_lock` (schema guard + metadata). Examples: geocode `_apply_result` ->
-`_write_place` (`src/enrichment/places_grok_geocode.py:633-647`, `:903`: `coordinates`, `latitude`,
-`longitude`, `geocode_source`, `enrichment_status`); bibliography `save` (`supplemental_advanced.py:360`)
-and `bibliography_resolver.py:2142`; people_groups, equipment, places, source sections in
-`openserp_enrichment.py`; images, maps, events, weather. The background sync (`EP:399`, every 120 s, all
-of `output/` and `artifacts/` except `-parsed.json`, final flush in `stop()`) and `_final_sync`
-(`EP:3470`, entity dirs) then upload each changed file whole. Verified in code. Gaps:
-
-- **HIGH - a file Phase 3 deletes locally is never deleted from S3.** `track_deletion` (`EP:209`) is the
-  only way to fill `_deleted_keys`, which `_final_sync` deletes from S3 (`EP:3550`), and it has no callers
-  (trace_path: 0). Phase 3 case: `bibliography_resolve` moves each `not_citation` record to
-  `output/narrative_notes/` and unlinks the bibliography file (`_relocate_narrative_note`,
-  `bibliography_resolver.py:2252`). The note is uploaded but the old `bib_<hash>.json` stays in
-  `output/bibliography/` on S3 (534 records on the current data), so the site would list narrative
-  footnotes as citations and every later Phase 3 downloads and re-classifies them. Same root cause as
-  the reconcile entry above ("records the merge folds into another stay in S3"). Fix (DRY): call
-  `track_deletion` from each unlink of a synced record (or one shared `delete_record` helper used by
-  both), so `_final_sync` removes the key.
-- **LOW - each changed file is uploaded twice.** `_final_sync` skips only files unchanged since download
-  (`_unchanged_downloads`, `EP:262`); it does not know that `BackgroundSync.stop()` (called at `EP:1045`
-  before `_final_sync` at `EP:1087`) has just uploaded the same file. One extra S3 PUT per changed
-  record. Fix: share the background sync's `_uploaded_mtimes` with `_final_sync`.
-- Concurrency: whole-file PUTs mean last writer wins on shared records; covered by "was gap 28" below.
-  Latent today: `MULTI_DOC_ENABLED=false` on the live `dev-wwii-phase3-enrich` task definition, so Phase 3
-  runs one task at a time.
-- The map-as-source files in `contentrepository/` are outside `output/` and never uploaded; see the
-  map-vision step above.
-
-### Carried over from PHASE3_MAP.md §6 (found by the 2026-11-17 documentation review)
+#### Carried over from PHASE3_MAP.md §6 (found by the 2026-11-17 documentation review)
 
 Not yet re-reviewed step by step; each keeps its old number ("was gap N"), which `PHASE3_MAP.md`
 still uses in its text. `EP` = `ecs_entrypoint.py`, `OE` = `src/enrichment/openserp_enrichment.py`,
 `P3` = `phase3_enrich_data.py`.
 
-- **HIGH (was gap 1) - An unreachable OpenSERP is silent.** A start timeout or error only logs a
-  warning (`EP:781-783`), and every driver then fails the `/health` probe, logs one warning and returns
-  0 (`OE:1428-1436`). The steps report `status=ok enriched=0`, no `openserp.anomaly` fires (nothing was
-  eligible), and no SNS alert is sent. A run can finish with no OpenSERP enrichment and nobody is told.
-  Needs an actionable alert or a `skipped` status.
 - **HIGH (was gap 2) - An outage or open breaker marks entities as searched for 90 days.** Every driver
   stamps the entity after trying, even when every query returned `[]` (`OE:1418`, called
   unconditionally). Only people and equipment without results are rescued, by the reset in the entry that was gap 6.
   Groups, places and source sections lose their window. The SQS worker is worse: it never resets its
   breaker (`openserp_worker.py`), so after five failures it marks every later entity searched without
   searching, until it exits.
-- **HIGH (was gap 3) - Five non-search steps are gated by `use_openserp`.** `image_person_link`,
-  `link_asset_review`, `image_place_link`, `intra_corpus_links` and `event_provenance_stamp` sit inside
-  `_run_openserp_enrichment` (`P3:351-385`). Setting the flag false, or a failed import or
-  `reset_metrics` (`P3:285-292`, returns 0), also skips them and the SourceSectionID stamp. The comment
-  on `_run_document_media_steps` says document media must not depend on the OpenSERP flag.
-- **HIGH (was gap 4) - On ECS `use_openserp: false` has no effect when the service starts.** The
-  entrypoint starts the service (Fargate and NAT cost) whatever the flag says, and
-  `_patch_openserp_url` then forces the flag true (`EP:786-793`). The flag only holds when the start
-  fails.
-- **HIGH (was gap 5) - Batch mode with OpenSERP is wrong.** In `--batch` the verify calls are queued,
-  read as NO, cached as `REJECT` for 90 days, and the entities are stamped searched. `_run_batch_rerun`
-  does not re-run OpenSERP or geocoding (PHASE3_MAP.md §5). Latent while `batch.phase3` is false.
-- **MED (was gap 6) - `_reset_openserp_searched` defeats the 90-day gate.** People and equipment with
-  no hit are searched again on every Phase 3 task (`EP:3583`). Grok verdicts are cached but the queries
-  are not, so each repeat pays the 5 s sleep per query. It also writes with `write_text`, outside
-  `write_json_with_lock` and its schema guard.
-- **MED (was gap 7) - People web pages are stored as `military_awards[]`.** Hits of any kind land in
-  that field with a `summary` (`OE:1247-1282`). It is shared with Phase 2 award citations, it
-  suppresses further people web searches (`if not data.get("military_awards")`), and the reset treats
-  it as "had results".
 - **MED (was gap 8) - Image results are page URLs.** `images[]` items are search-result pages, not
   images, and nothing resolves them (no `og:image`, no Wikimedia File resolution). Later downloads fail
   with `OBSERV vision.image_blocked reason=not_an_image` (`images.py:77`). Yield for groups and places
@@ -1048,21 +1405,199 @@ still uses in its text. `EP` = `ecs_entrypoint.py`, `OE` = `src/enrichment/opens
 - **MED (was gap 15) - Places OpenSERP is under-instrumented and uncapped.** No `_record_eligible`, no
   name gate, no result cap, once per name variant, and image hits are not counted in `items_added`.
   `openserp.results_per_query` is unused (limit fixed at 5).
-- **MED (was gap 16) - Model-memory facts have no citable source.** Group `enrichment_data` carries
-  `_source: {type:"grok"}` and no URL; place hierarchy carries no stamp. Under the provenance rule
-  these are unsourced.
+- **MED (was gap 19) - OpenSERP image items lack provenance beyond the URL.** No query, engine or
+  verdict, no link to the fetch event; the verdict cache key is truncated and people image verdicts
+  omit snippet and URL (PHASE3_MAP.md §3.6).
+
+#### Older backlog - HIGH list
+- **[MED · quality] Phase 3 degradation seen 2026-11-07:** OpenSERP circuit breaker opened 4x (5 consecutive empty/failed
+  searches) so bibliography resolve had `backend_down=2`; 88/264 places have no coordinates (`geo_missing_coords` 33%). Check the
+  OpenSERP service health on the Phase 3 NAT path and the geocoder fallbacks.
+
+#### Older backlog - LOW list
+- **[LOW · investigate] Is `config/domain_blacklist.yaml` blacklist still HONORED by OpenSERP?**
+- **[LOW · observability · phase3 review follow-up 2026-11] people/people_groups/places OpenSERP write-paths
+  count-iff-persisted but emit NO `write_failed` OBSERV on a failed write** (silent non-count). PR #711 added the loud
+  `write_failed`=error + `records_unreadable` metrics to equipment + source_section only; extend the same
+  loud-on-failed-write treatment to the people/people_groups/places paths for full write-loss observability parity.
+
+#### 2.1 OpenSERP redesign (the measured CPU bottleneck — 98.7%) (from section 2)
+- **[DESIGN · operator-directed] OpenSERP scope reduction — PDF/EPUB source discovery + HTML
+  references via Grok + human-gated acquisition.** DOC:
+  `docs/current/design/OPENSERP_SCOPE_REDUCTION.md`. OpenSERP finds acquirable PDF/EPUB **documents**;
+  Grok proposes authoritative **HTML reference** links; both flow into a human **ADD /
+  DISCARD(≥90-day) / NEVER(permanent url/host block)** gate (UI renders a clickable link; no
+  snapshot). KEY FIX: `_openserp_fetcher` must RESOLVE item/landing pages to the document
+  (archive.org/HathiTrust item pages), not reject on a bare-suffix rule. Reuses Grok-verify, SSRF
+  guard (#453), dedup-UI pattern, acquisition fetchers. Open Q: are place/person IMAGES user-facing
+  today? measure before dropping image search. (Supersedes the A00 "Grok-proposes + liveness + human
+  audit" framing — same intent, now fully specced in the doc.)
+
+#### [LOW·yield] OpenSERP group-image search returns HTML page URLs, not direct images (clean rerun 96c86bef) (evidence for "was gap 8"; from the end of this file)
+
+During Phase-3 OpenSERP group enrichment, 28 image candidate URLs were vision.image_blocked
+(reason=ssrf_or_invalid) and 0 images added — because OpenSERP returned SEARCH-RESULT PAGE URLs
+(wikipedia.org/wiki/..., commons/wiki/Category:..., army.mil/*.aspx, ebay/itm, militaria product
+pages), NOT direct image files. The image-fetch guard CORRECTLY rejects non-image content (not a bug —
+SSRF/content-type guard working). But group-image yield is ~0. Follow-up (quality, not correctness):
+tune the group image-search query templates / result parsing to prefer direct image URLs (e.g. target
+commons File: / upload.wikimedia.org thumb URLs, or add an image-extraction step that resolves a page
+URL to its og:image). Low priority.
+
+### Group 12 - step 6, event_provenance_stamp
+
+**Test:** restore, run; every event and sub-event, notes events included, carries SourceSectionID.
+
+#### Step: event_provenance_stamp (PHASE3_MAP §1 step table)
+
+What it is: `stamp_event_source_sections` (`src/extraction/event_provenance.py`) inverts the
+source_section records (each carries `SourceSectionID` + `EventID`) into an EventID -> SourceSectionID
+index and writes `SourceSectionID` onto each content event and every one of its sub-events, through
+`write_json_with_lock(entity="events")`. It closes the entity -> event -> section ID chain the
+referential-integrity check resolves. Deterministic, no Grok. Live data (`output/content/USA-E-XChannel/`,
+synced to `tmp/phase3-review/imgcheck/content/`): 31 source sections, one per event (21 chapter events +
+10 notes events), and no event or sub-event carries `SourceSectionID` yet.
+
+- **MED - notes events are never stamped.** The walk skips `*-notes-event.json` (`event_provenance.py`,
+  `stamp_event_source_sections`), but those events have source sections too (10 of 31) and carry
+  sub-events (e.g. `chapter2full-notes-event.json`, 42 sub-events) from which entities are extracted
+  (`supplemental.py:1243`). Their entities' chain stops at the event. Stamp them as well, unless there
+  is a reason they are excluded (none in the code).
+- **LOW - one section per event is assumed.** `index.setdefault` keeps the first section for an EventID,
+  and every sub-event gets the event's section. True today (31 sections, 31 EventIDs); if a chapter is
+  ever split into several sections, sub-events would point at the wrong one. Stamp sub-events from their
+  own paragraph range when that happens.
+- **LOW - the stamped events reach S3 only through the background sync.** `output/content/` is not in
+  `_PHASE23_ENTITY_DIRS`, so `_final_sync` skips it; the background sync uploads it, but its final flush
+  skips files modified in the last 2 s (`EP:434`) and nothing covers those. Harmless at this step's
+  position in the run; a general gap for late writes under `output/content/`.
+
+#### Older backlog - HIGH list
+- **[HIGH · provenance] event_provenance stamp read the WRONG source_section path (fix STAGED, pending PR).**
+  Found same E2E: `OBSERV event_provenance.stamp resolved=0 reason=no_source_sections` even though 2 source_section records
+  existed — they live at `content/<book>/source_section/*.json`, but `_build_event_section_index` read top-level
+  `output/source_section/`. Fixed locally to glob BOTH (nested + top-level) + a regression test; verified against the real
+  run data (index resolves, event + 6 sub-events stamped). Needs gate→PR→review→merge→redeploy.
+
+### Group 13 - step 7, equipment_images
+
+Owner: undecided images go to a separate image-review queue, UI TBD (D6); photographs only, any
+photograph of the named model (D7).
+**Test:** restore, run; verdict counts at least the baseline; no page URLs fetched.
+
+#### Step: equipment_images (PHASE3_MAP §4.5)
+
+What it is (`src/enrichment/equipment_images.py`, owner rules 2026-11-07): for every equipment record,
+- **Scope:** `record_scope` (Phase 2 stamp, else deterministic rule, else alias table, else the cached
+  Grok resolver). GENERIC records ("rifle", "trench") have their enrichment stripped (`images`,
+  `wikipedia_extract`, ... `_ENRICHMENT_FIELDS`); UNRESOLVED and unknown are left alone.
+- **Candidates (SPECIFIC only):** images already on the record (Phase 2 legacy, OpenSERP) are queued as
+  `vision_check: pending` unless a recorded vision check exists; plus up to 20 images from the record's
+  Wikipedia article (all article images, not only the lead; icon/logo filter; Commons license), but only
+  if the article text places the subject in WWII (`wikipedia_wwii_relevant` / `mentions_wwii`). Stamped
+  once (`image_candidates_checked_at`).
+- **Vision:** each pending image is downloaded (`url_hygiene.safe_get`, 10 MB cap, held in memory),
+  exact-duplicate checked by hash, then Grok vision (`prompts/equipment_vision.yaml`: a photograph, of
+  this specific model, WWII era or a preserved/museum example; "if unclear, reject"), until
+  `equipment.images_per_record` (3) are verified. Verdict, reason and UTC time are stamped on the image.
+  No verdict 3 times, or the download failing 5 runs, sets `needs_review`.
+- One OBSERV summary and an actionable alert per cause. Live data: 689 equipment records (613 generic,
+  61 specific, 15 unresolved), 22 specific records with a WWII-qualified article, no images yet.
+
+Findings:
+- **MED - `needs_review` has no review tool.** The alert says "open each and set vision_check to verified
+  or rejected", i.e. edit the JSON by hand. DECIDED (owner 2026-11-17): a separate image-review queue,
+  not the URL-review queue; its UI is to be designed. Reuse the review-status pattern of
+  `fetch_provenance` (pending / approved / rejected) for the queue (DRY). Applies to every vision-undecided
+  image (equipment, unit and person images, image map-or-not).
+- **MED - OpenSERP image candidates are page URLs, so they fail.** `_queue_existing` queues OpenSERP
+  images, which are mostly HTML page URLs ("was gap 8"); the download returns HTML, counts as a fetch
+  failure, and after 5 runs lands in `needs_review`. Five wasted fetches each and noise for the reviewer.
+  Resolve the page to its image (og:image / Commons file) before queueing, or drop page URLs.
+- **LOW - a preparation failure is recorded as a vision rejection.** `_verify_media_with_vision` returns
+  `(False, problem)` when the image cannot be prepared (format, too many pixels), and `_record_verdict`
+  stamps `vision_check: rejected` and `vision_checked_at` although no vision request ran. Record it as
+  `unusable` with the reason, not as a verdict.
+- **LOW - rejected images stay on the record.** They are kept in `images[]` with `vision_check: rejected`
+  (good for provenance); the site and any export must filter on `verified`. Note in the site spec.
+- **DECIDED (owner 2026-11-17) - photographs only, but any photograph of the named model.** No drawings or
+  illustrations. A photograph counts whatever its setting or date, as long as it shows the specific model
+  (e.g. a Sherman sitting in a field). Today's prompt (`prompts/equipment_vision.yaml`) asks for "the WWII
+  era or a preserved/museum example" and says "if unclear, err on the side of rejection", which can reject
+  such a photo. Change: rule 3 becomes "any photograph of this model (wartime, preserved, museum, monument,
+  derelict, in a field)"; "if unclear, reject" applies only to doubt about the model's identity. Re-run
+  the vision check on records rejected for setting or era (`vision_reason`).
+
+#### Cross-cutting: every URL a Phase 3 step finds goes to human review (owner 2026-11-17) (moved here from Group 3)
+- **FEATURE - owner - an image-review UI for the separate image-review queue (2026-11-17). Design TBD.**
+
+### Group 14 - step 8 to the end: NOAA, post-sync, failure path, cleanup
+
+Owner: release the Phase 3 lock at once on failure (D10).
+**Test:** restore, run; kill the task once (SIGTERM) and fail a step once: both alert, the book is
+re-queued once, the partial output is audited.
+
+#### Step: EP post-sync steps, on success (PHASE3_MAP §1 "ECS wrapper")
+
+Order after the Phase 3 subprocess exits 0 (`EP:1083-1087`, `_post_process` `EP:2373`, Phase 3 branch
+from `EP:2493`): `BackgroundSync.stop()` (final flush) -> `_final_sync` -> `_remove_lock` ->
+`_phase3_durable_referential_fix` (`EP:2329`: `_post_sync_referential_enforce` repairs and re-audits
+dangling references directly on S3; `provenance_integrity.run_for_phase`; `_refresh_validation_corpus`
+re-downloads the corpus; `scripts/validate_phase3.run`) -> `_notify_url_review_pending` (email with the
+count of pending URL finds and the review UI link) -> `_provenance_gate("3")` (mode
+`provenance_validation.gate`, default `warn`; `block` holds the book for review) -> doc lifecycle to
+done (multi-doc only) -> `_get_next_pending_enrich` and trigger the next Phase 3 -> scale OpenSERP to 0
+if neither queue has work and `_openserp_demand_present` is false -> `_notify_complete` (email).
+
+- **MED - the post-sync check downloads the whole corpus every run.** `_refresh_validation_corpus` is
+  called without a book (`EP:2362`), so it pulls all of `output/content/` and re-downloads every
+  `_MENTION_REPAIR_ENTITIES` dir with overwrite. Cost and time grow with the corpus, not the book. Pass
+  the book and download only the records the repair changed.
+- **LOW - the lock is released before the S3 repair.** `_remove_lock` runs first (`EP:2495`), so
+  another task can start and download S3 while `_post_sync_referential_enforce` is rewriting records.
+  Remove the lock after the repair and gate.
+
+#### Step: EP failure path (PHASE3_MAP §1 "ECS wrapper")
+
+Four ways a Phase 3 task ends badly:
+1. **The Phase 3 script exits non-zero** (`EP:1047-1068`): `_notify_failure` (SNS to
+   `NOTIFICATION_TOPIC_ARN` = `dev-wwii-phase2-complete`, so email + Slack; "<phase> failed with exit
+   code N" and a log-tail command), `_final_sync_failed_phase` (uploads what changed; a sync error is
+   `observe_error`), NAT lease released, `sys.exit(code)`. The Phase 3 lock is kept
+   (`if "phase3" not in phase_script`); the ECS task-failure rule (`cloudformation/compute.yaml:735`)
+   sends `check_locks`, which deletes it because no task is running, else the 2 h TTL. OpenSERP stays
+   up until the teardown Lambdas find no demand.
+2. **A preflight or NAT abort** before the script starts: `sys.exit(1)`, no notification (preflight
+   entry above).
+3. **SIGTERM** (Spot interruption, ECS stop, the watchdog; `_handle_sigterm`, `EP:120`): within the
+   30 s `StopTimeout` (`compute.yaml:231`) it runs `_final_sync`, removes the lock, releases the NAT
+   lease, re-queues an interrupted batch resume, exits 143.
+4. **An exception in the wrapper itself** (e.g. inside `_download_inputs`): Python exits 1 with a
+   traceback; only the `atexit` NAT-lease release runs.
+
+Findings:
+- **LOW - the failure message is generic.** No book name, a fixed `--since 30m` and the `dev` log group
+  hard-coded (`_notify_failure`). The Slack formatter adds a log link; the email has none. Include the
+  book, the task ID and the log stream.
+- **LOW - the SIGTERM sync may not fit in 30 s.** `_final_sync` walks every entity dir; on a large
+  corpus it can exceed the `StopTimeout`, and the lock and NAT lease are released only after it. Release
+  the lock and lease first, or raise `StopTimeout` for Phase 3.
+- **LOW - DECIDED (owner 2026-11-17): release the Phase 3 lock at once on failure.** The task-failure rule
+  deletes it at once anyway, so keeping it changes nothing. Remove the `if "phase3" not in phase_script`
+  exception (`EP:1065`, there since the first commit f13984bc with no stated reason) and document it;
+  retries go through the reconcile with the retry cap and alert (D8c-2).
+
+#### Cross-cutting: how Phase 3 results reach the S3 JSON (moved here from Group 1)
+- **LOW - each changed file is uploaded twice.** `_final_sync` skips only files unchanged since download
+  (`_unchanged_downloads`, `EP:262`); it does not know that `BackgroundSync.stop()` (called at `EP:1045`
+  before `_final_sync` at `EP:1087`) has just uploaded the same file. One extra S3 PUT per changed
+  record. Fix: share the background sync's `_uploaded_mtimes` with `_final_sync`.
+
+#### Carried over from PHASE3_MAP.md §6 (found by the 2026-11-17 documentation review) (moved here from Group 11)
 - **MED (was gap 17) - NOAA never runs and its validation warning is benign.** The token is empty and
   nothing supplies it, yet `validate_phase3` warns on every run. Weather records created before their
   place was geocoded may never get coordinates, so they would get neither Open-Meteo nor NOAA data
   (UNVERIFIED: no Phase 3 step backfills weather coordinates, but the creation order was not traced).
-- **MED (was gap 18) - Per-result Grok verification is the cost driver.** One request per hit,
-  `_verify_results_batch` has no caller, and the insignia and patch queries run twice per group (once
-  as `images`, once for the patch) because search results are not cached.
-- **MED (was gap 19) - OpenSERP image items lack provenance beyond the URL.** No query, engine or
-  verdict, no link to the fetch event; the verdict cache key is truncated and people image verdicts
-  omit snippet and URL (PHASE3_MAP.md §3.6).
-- **MED (was gap 20) - Bibliography verifier is fail-open in one place.** `_verify_match` accepts on a
-  Grok error or without a client; every other verifier fails closed.
 - **MED (was gap 28) - Concurrent Phase 3 tasks can overwrite each other's change to a shared record.**
   Each task edits its local copy of a shared map, bibliography or supplemental record and uploads the
   whole file, so when two book tasks change the same record, the later upload wins and the earlier
@@ -1085,68 +1620,172 @@ still uses in its text. `EP` = `ecs_entrypoint.py`, `OE` = `src/enrichment/opens
   `openserp_manager`'s docstring mentions an ALB, but no load balancer exists. `_get_openserp_alb_dns`
   returns an IP.
 - **LOW (was gap 25)** - `.phase_results.json` does not embed the OpenSERP metrics snapshot.
-- **LOW (was gap 26)** - No per-request identity: Phase 3 sets no `current_book`, so no Phase 3 Grok
-  request is BookID/RequestID stamped (see [GROK_REQUESTS.md](core/GROK_REQUESTS.md) section 1).
-  Whether entity-level Phase 3 calls need an equivalent is an owner decision.
 - **DOC** - `search_queries/*.yaml` format and the query-sharpening rules (`_person_query_terms`,
   `_equipment_query_terms`) are described only here and in code.
-- **LOW (from PHASE3_ENRICHMENT.md) - `map_features` has no Phase 3 step.** The map-interior
-  extraction and reverse registration (`src/extraction/map_registration.py`) are prototype-level and
-  not wired into `phase3_enrich_data.py`.
 
-### Code defects found by the 2026-11-17 documentation review (each verified in code)
-Phase 3 defects (OpenSERP service, 90-day marker, breaker, batch mode, external maps, NOAA, ...)
-are listed once, in the "Phase 3 review" section above; not repeated here. The rest:
+#### Older backlog - HIGH list
+- **[MED · test] Simulated Spot-instance-loss test (automated recovery verification).** The XChannel-8 2026-10-29 Spot
+  interruption was a real-world test that EXPOSED the recovery gaps (grace-vs-liveness skip + disabled stale-lock sweep).
+  Build a repeatable test that INJECTS a Spot interruption and asserts the pipeline self-heals: (a) unit/integration —
+  simulate the ECS Task State Change STOPPED event ('stoppedReason: Your Spot Task was interrupted') into the trigger
+  handler and assert _handle_task_stopped_event -> reconciliation relaunches the phase (PR #630); (b) optional live/staging —
+  stop-task a running Spot phase mid-run and assert a replacement task launches within the stale-lock-check window and the
+  phase resumes from pending# without data loss or double-launch. Covers both the event-driven fast path and the 15-min
+  sweep backstop. Guards against the recovery logic silently regressing.
+  **SEQUENCING (owner 2026-10-29): do this AFTER the entity-level resume-manifest design (§3) is implemented** — only then
+  can the test assert TRUE mid-event resume (picks up the remaining entities, no re-work, no duplicates). Until the manifest
+  exists, a simulated-loss test could only verify lock reclaim + whole-event restart, not the resume behavior we want to lock in.
 
-HIGH
-- **A parse-track upload with no safe slug runs Phase 1 over ALL books.** When no pending key
-  yields a slug, `_resolve_pending_launch_book` returns `""` (`trigger_handler.py:2433-2437`), which
-  means "all books"; the `unnamed-upload` off-ramp covers only OCR, convert and video uploads. Breaks
-  the slug rule (an unnamed upload must go to `needs-review/unnamed-upload/`). Fix: route `.md`/`.txt`
-  keys with no slug through `_unnamed_upload`, and never launch on an all-unsafe set.
-- **Phase 1 resets the dedup review status for the whole corpus.** `_prepare_phase1`
-  (`ecs_entrypoint.py:1092-1103`) writes `{"complete": false}` to `dedup/review_status.json` on every
-  Phase 1 task, so parsing one new book discards a pending or finished review of the others.
-- **Monitoring that can never fire.** The `{env}-wwii-pipeline` dashboard, the `phase2-duration`
-  alarm and the `dlq-messages` alarm (`cloudformation/events.yaml`) watch Lambdas and queues no
-  template creates (`phase1-parse`, `phase2-extract`, `phase1-dlq`, `phase2-dlq`). Delete or repoint.
+#### LOW: referential_integrity residual observability (PR #696 follow-up) (from the end of this file)
 
-MED
-- **Skipped people groups come back.** The people detector never reads `reviewed#` rows; only
-  Exclude is permanent for people (places, groups, equipment honour Skip). `docs/current/core/DEDUP_REVIEW_GATE.md`.
-- **Dedup Undo restores the snapshot files only**: not the reference rebase, `index.json` or the
-  report group (`dedup_ui_handler` undo path).
-- **The ECS dedup detection passes no Grok client**, so ambiguous people matches get no Grok check.
-- **`doc#` rows can be stuck**: the dispatcher's `DocFailed` state leaves a failed doc at `running`;
-  `needs-review` has no exit (`human_gate` is deployed but never invoked). `docs/current/core/DOC_LIFECYCLE.md`.
-- **`_seed_docs`** uses `parts[1]` as the book (the namespace for `_system`/`user-` uploads) and is a
-  no-op on chapter-parsed events (`output/content/` keys).
+Two non-blocking gaps noted during PR #696 review, out of its scope (swallow sites + audit result):
+- U1: _repaired_record_is_writable fails OPEN (returns True on guard error); a repair write that
+  the guard then blocks is not counted/OBSERV'd. Count non-persisted repairs + emit
+  OBSERV referential.subevent_repair_write_failed status=warn.
+- U3: _alert send failure logs a plain warning, not a canonical OBSERV — a failed operator alert on
+  a dangling corpus is a silent escalation gap. Emit OBSERV referential.alert_send_failed status=warn.
+
+#### LOW: supplemental_info_pipeline chain is dead/unwired (PR #704 finding) (from the end of this file)
+
+extract_from_supplemental_info / process_supplemental_information / _route_entity_extraction /
+_create_pseudo_event have ZERO production callers (only each other + 2 tests). The temp *-event.json
+it materializes writes NO -parsed.json sibling, so the PR-704 people_groups fail-loud WOULD raise on
+that path IF it ran — but it doesn't (dead code). Also it never carried book/author/series (same
+Unknown-provenance gap, pre-existing). Decide: wire it (thread book metadata + write the sibling) or
+retire it. Not a live regression (dead path).
+
+### Track P - Phase 2 changes (needs a new Phase 2 run and a new snapshot)
+
+These change Phase 2's output, so they cannot be tested against `phase2-2026-11-17`. After the Phase 3
+groups: run Phase 2 once, take a new snapshot (`scripts/phase_snapshot.py backup`), re-run Phase 3 on
+it. Owner: unit/person images checked by the Commons pre-check, vision on flagged ones (D5). The rest of
+Phase 2's open work stays in "1. PHASE 2 - OPEN" below.
+
+#### Step: bibliography_resolve (PHASE3_MAP §4.3) (moved here from Group 7)
+- ***refactor* - FIX IN PHASE 2 (owner) - a quarter of Phase 2's "bibliography" is not citations,
+  found only in Phase 3.**
+  Of the 2,035 records, 534 fail `_looks_like_citation` (narrative footnotes, e.g. "An American heavy
+  tank did not reach the theater until 1945") and are only moved to `output/narrative_notes/` by the
+  Phase 3 resolver (`_relocate_narrative_note`). The test is deterministic, so Phase 2 could route them
+  at write time; until then they pass through the dedup review and bibliography reconcile as citations.
+  Counted 2026-11-17 by running the resolver's routing functions offline on the downloaded set.
+
+#### Step: event_provenance_stamp (PHASE3_MAP §1 step table) (moved here from Group 12)
+- **MED - it runs in the wrong phase.** It needs only Phase 2 output, but runs in Phase 3 inside the
+  OpenSERP group ("was gap 3"), so after Phase 2 no event has a SourceSectionID and Phase 2's own
+  provenance validation cannot check the event -> section edge. Move it to Phase 2, right after the
+  source_section records are written; keep a Phase 3 re-check only if needed.
+
+#### Step: equipment_images (PHASE3_MAP §4.5) (moved here from Group 13)
+- Wikipedia/Grokipedia images on units and people should reuse this module (entry "Wikipedia /
+  Grokipedia images on people and units").
+
+#### Step: photos from Phase 2 (image_map_vision, image_person_link, image_place_link) (moved here from Group 10)
+- **Owner question - do photo URLs found in Phase 2 go to the URL-review queue?** Photos from the source
+  document are part of an approved source, so they are not new finds. Wikipedia and Grokipedia images
+  that Phase 2 attaches to people, groups and equipment are web URLs; the 2026-11-17 decision says
+  every URL find goes to review. Decide whether those count.
+
+#### Wikipedia / Grokipedia images on people and units (owner question 2026-11-17)
+
+Owner rule: Wikipedia and Grokipedia images are trusted as a rule (no URL-review queue). Open
+question: what happens when the image is not the person, or shows the unit in another war. Verified
+in code and on live S3 data (`output/people/`, 531 records; `output/people_groups/`, 1,116 records,
+synced to `tmp/phase3-review/imgcheck/`, not committed):
+- Only the article's lead image is taken (`prop=pageimages`), never images from the article body.
+  Grokipedia supplies no images (`src/enrichment/grokipedia.py`).
+- Nothing checks the image. Units: `_add_wikipedia_image` (`src/enrichment/groups_wikipedia.py:242`)
+  inserts the lead image as `images[0]`. The only gate is that the article text mentions WWII
+  (`_in_wwii`, `:56`); the image itself is never judged. Equipment is the exception: Phase 3
+  `equipment_images` confirms each image with Grok vision (pending/verified/rejected, attempt cap,
+  needs_review).
+
+Findings:
+- **HIGH - unit images from the wrong era or the wrong subject are on live records.** Of 52 unit
+  images, examples: "IX Bomber Command" -> `KC-135A_refuels_B-52D_during_Vietnam_War.jpg` (the lookup
+  landed on the 19th Air Division article); "Tank Destroyer" -> an Italian Centauro at exercise
+  "Scorpion Legacy 2025"; "Ninth Air Force" -> `Emblem (Cold War).png`; "Germans" -> a Reichstag panorama;
+  "Rundstedt" (a person extracted as a unit) -> his portrait. Fix (DRY): generalize
+  `src/enrichment/equipment_images.py` into one entity-image verifier (same states, attempt cap,
+  needs_review and alert) used for equipment, units and people, with the prompt per entity type
+  (unit: insignia or the unit in 1939-1945; person: a photo of this person). Cost control first: a
+  deterministic pre-check on the Commons file metadata already fetched for the license
+  (`_wikipedia_common.fetch_commons_license`, `extmetadata`: `DateTimeOriginal`, file title words such
+  as "Vietnam", "Korea", "Cold War", a year after 1945), and vision only for what it cannot decide.
+  DECIDED (owner 2026-11-17): vision only on the images the pre-check flags; switch to every image if
+  the pre-check misses cases (count what it passes and spot-check).
+- **HIGH - a person's Wikipedia portrait never reaches the person JSON.** `_store_wikipedia_image`
+  (`src/extraction/enrich_biographies.py:450`) saves the photo under `person_photos/` (69 files in S3)
+  and an in-memory cache; the only reader, `search_wikipedia` (`:686`), assigns it to an unused
+  variable (`grok_info`). No live person record has `images` or a portrait link. When this is fixed, the
+  same verifier applies: a lead image can be a signature, a grave, a ship or a map, and a non-person
+  image must not be shown as the portrait.
+- **MED - the article match itself can be wrong.** "IX Bomber Command" matched the 19th Air Division
+  article and still passed `_in_wwii` because that article mentions WWII. A redirect to a different unit
+  should be detected (requested title vs resolved title) and the match sent to review.
+- **LOW - a person extracted as a unit.** "Rundstedt" is a `people_groups` record; belongs with the
+  Phase 2 entity-type checks.
+
+#### Wikipedia / Grokipedia footnote links (owner question 2026-11-17)
+
+Are the citation (footnote) links of a Wikipedia or Grokipedia article followed and judged for WWII
+relevance? No. Verified in code:
+- Wikipedia: every lookup asks only for the lead section as plain text (`prop=extracts|pageimages`,
+  `exintro`, `explaintext`; people `enrich_biographies._build_wikipedia_request`, units
+  `groups_wikipedia._lookup_group`, equipment `equipment_wikipedia`). The reference list and its links
+  are never requested (no `extlinks`, `references` or `cite_note` use anywhere in `src/`).
+- Grokipedia: `_article_text_from_html` (`src/enrichment/grokipedia.py:259`) keeps the article text
+  and drops every `href`, so its citation links are lost.
+- People only: the biography prompt asks Grok for `source_urls` (`prompts/biography.yaml:45`), i.e.
+  URLs it reads in the text or proposes itself. `validate_source_urls` (`enrich_biographies.py:968`)
+  fetches each (`url_hygiene.fetch_text_safe`, Wayback fallback), asks Grok whether the page is about
+  "the WWII-era person" (`:940`), and writes the relevant ones straight into
+  `biography_sources[]`, with no human review. This fetch bypasses the central `url_fetch` / URL
+  registry, so the same URL is fetched again for each person and each run.
+- `references` in the same prompt are entity NAMES (units, people), followed by name lookups on
+  Grokipedia/Wikipedia (`search_references`, max 3), not links.
+
+- **MED *feature* - DECISION (owner 2026-11-17): follow the citation links of Wikipedia and Grokipedia
+  articles, judge their WWII relevance, and send the relevant ones to the URL-review queue for a human
+  to confirm.** Reuse, no new mechanism:
+  - Extract links with the M4 link extractor (`link_assets.extract_link_assets`: media type, relative
+    links, dedup) on the article HTML: Wikipedia `action=parse&prop=externallinks` (or the rendered
+    references section), Grokipedia's already-fetched HTML before `_article_text_from_html` strips it.
+  - **Same two Grok checks as the OpenSERP page links below (pre-validate from URL + footnote text
+    before fetching, then validate the fetched page).**
+  - **Order (owner 2026-11-17): Grok judges first; only a positive verdict reaches the human.** Grok
+    is asked whether the linked page is relevant to this entity in WWII (title, snippet, footnote text,
+    and the fetched page when available). Positive -> URL-review queue. Negative -> recorded (per
+    URL, entity) and not queued. Reuse `link_relevancy.should_enqueue_link`
+    (`src/extraction/link_relevancy.py:93`), batched, but it does not meet this rule today: a
+    whitelisted host is enqueued with no Grok verdict (`:109`), and no client or any error enqueues
+    "when in doubt" (`:111`, `:121`). For this path: blacklist still drops first; whitelist and errors
+    do not skip Grok; a Grok error or missing client leaves the link pending for the next run (with
+    an OBSERV count), never queued unjudged. **The in-document link review (M4, `link_asset_review`)
+    follows the same rule (owner 2026-11-17)**: change `should_enqueue_link` itself, so every caller
+    gets it.
+  - Enqueue through the shared enqueue helper (OpenSERP entry above) with the article URL, the entity
+    ULID and the footnote text as provenance; the human approves in the URL-review UI; approval submits
+    to Phase 0.
+  - Apply the (URL, entity) verdict keying and the checksum re-check from the OpenSERP section.
+  - The same `links.follow` settings (hops, per-page cap per scope, same-domain vs external) as the
+    OpenSERP page links below; an OBSERV line when a cap is hit.
+- **MED - Grok-proposed `source_urls` skip review and the central fetch.** Keep the existing Grok
+  relevance check (`_validate_url_relevance`), and send only the positive ones to the URL-review
+  queue instead of writing them to `biography_sources[]`; route the fetch through `url_fetch.fetch`.
+  Until a human approves, a URL is not written as a source.
+
+#### Code defects found by the 2026-11-17 documentation review (each verified in code)
 - **Person -> group membership is not wired**: nothing in Phase 2 or 3 fills `members[]`
   (`_link_person_to_groups` is reachable only from the CLI/test `enrich_all_people`). Owner decision.
-- **Intake suffix mismatch**: `.htm`, `.xhtml`, `.webp`, `.bmp` are in the track suffix sets but not
-  in `_CONTENT_SUFFIXES` (`trigger_handler.py:687`), so they are rejected as `unrecognized-type`.
-- **8-character ULID filename suffixes** (`batch_parallel.py:322`, `people_groups.py:47`): the first
-  10 ULID characters are the timestamp, so 8 characters separate ids only ~1 s apart - two same-named
-  records minted in the same second would collide. Use 12 like `people.py`.
-- **Dead config**: `api.grok.timeout` (60) and `api.grok.max_retries` are not read (the client uses a
-  600 s read timeout and 5 attempts, `grok_client.py:479,1477`); also `maps.*`, several
-  `external_maps.*`, `aws.*`, `weather.*` and `processing.*` keys. List: `docs/current/core/CONFIGURATION.md`.
-- **"VII Corps" and "7th Corps" are never surfaced as duplicates**: `derive_unit_key` unifies them
-  but `_numbers_match` (`find_duplicate_groups.py:262-289`) keeps `r7` and `7` apart.
 - **`validate_phase2` does not trace `source_section` or `images` mentions** (`_MENTION_ENTITIES`,
   `validate_phase2.py:112-119`).
 
 LOW
-- Unwired code: `src/utils/failure_taxonomy.py`, `src/utils/url_content_verdict.py`,
-  `ecs_entrypoint._acquire_lock` / `_clear_all_locks`, `dedup_gate_handler` (deployed, never invoked),
-  `consolidate_people`, `ingest_affirmed_chart`, `generate_date_summary`; the standalone
-  `python -m src.extraction.external_maps` CLI is broken (`main()` passes `events_dir`).
 - Award sources: only the `hall_of_valor` adapter is built; the other registry rows are skipped.
-- Stale text in templates: `compute.yaml:1553` says "Internal ALB" (none exists); the Phase 3
-  completion email still lists "People" enrichment (moved to Phase 2).
 
+#### People: surname-only names are enriched from a Wikipedia disambiguation page (HIGH)
 
-### People: surname-only names are enriched from a Wikipedia disambiguation page (HIGH)
 Found 2026-11-16 (USA-E-XChannel, owner report; Grok request cache key
 `19bc247c3421978c86fdd8a007251c8d65453cc9c94ef2176d2a10368fb8709b`, type `api`). The book names
 "Maj. Gen. Eugene M. Landrum" once (record `eugene m landrum.json`, enriched correctly 2026-11-15)
@@ -1174,8 +1813,8 @@ ACTION (deterministic first, cost first):
    require the answer to echo which article it used, so a wrong-person answer is detectable.
 4. Count it: OBSERV `enrich.disambiguation_page` / `enrich.surname_only_skipped`.
 
+#### Phase 2 re-runs: image / map / source-section records de-duplicate against LOCAL disk (MED)
 
-### Phase 2 re-runs: image / map / source-section records de-duplicate against LOCAL disk (MED)
 Found 2026-11-16 with the weather/casualty duplicates (fixed: `ecs_entrypoint.REHYDRATED_ENTITY_DIRS`
 now restores weather, logistics and casualties). Still exposed when a fresh container re-runs them:
 `images.extract_images` (local `images/index.json` + `_load_existing_urls`),
@@ -1184,127 +1823,7 @@ dirs). Each runs once per normal run today, so a first run is clean; a later Pha
 write duplicates. ACTION: rehydrate their RECORD files (not `images/files/` binaries) or dedup
 against S3, with a test like `tests/unit/test_phase2_resume_rehydrate.py`.
 
-
-### Tooling: widen ruff beyond `--select B` (LOW/MED)
-`scripts/gate.sh` runs `ruff check src/ lambda_handlers/ --select B` (flake8-bugbear ONLY); there is
-NO `[tool.ruff]` config in pyproject. Running ruff with DEFAULT rules reports ~83 findings (55 auto-
-fixable — unused imports, etc.) the gate never sees. ruff "never fails" because the rule set is too
-narrow, NOT because the code is clean. ACTION: widen `--select` incrementally (start `B,F` → undefined
-names/unused; then `I` import-order), clear the resulting backlog per family, pin a `[tool.ruff.lint]`
-config. Do it family-by-family so the gate doesn't drown. (Raised 2026-11-01.)
-
-
-### Refactor: evaluate running entity extractors in PARALLEL (MED)
-Observed 2026-11-01 (chapter-8 sync run): biography/Wikipedia enrichment ran SERIALLY and stalled the
-whole Phase-2 for 10+ minutes (per-person live Wikipedia/Grokipedia calls — Jodl, von Rundstedt),
-blocking equipment extraction (which runs AFTER core/optional entities) from even starting. The
-entity extractors (people/groups/places/dates/equipment/casualties/logistics + enrichment) are
-largely INDEPENDENT per chapter. ACTION: evaluate fanning them out concurrently (async/thread/process
-pool, or at least decoupling slow network-bound enrichment from the critical extraction path so a
-hung Wikipedia lookup can't block equipment/casualties). Consider: bounded concurrency, per-entity
-timeouts, enrichment as a deferred/parallel stage. Must preserve ordering invariants (places persist
-before equipment resolves place_name->PlaceID) + never-drop/observability. (Raised by owner.)
-
-
-### Validate maps are NOT continually resubmitted to Grok in Phase 3 (MED)
-With the tiered maps classifier adding a Grok-vision backstop ("is this an image of a map?") for
-questionable images, we MUST ensure Phase 3 (enrichment/geocode/re-runs) does NOT re-submit the same
-map image to Grok on every run. CHECK: (1) the vision verdict is PERSISTED on the record (e.g.
-is_map / map_vision_checked_at) and the backstop SKIPS already-classified images; (2) the classifier
-only runs on NEW/unclassified images (incremental, like enrichment_checked_at gating); (3) a Phase-3
-re-run over an already-processed book issues ZERO new maps-vision calls (assert via OBSERV count).
-A resubmission loop would silently burn cost + rate limit on every re-run. (Raised by owner 2026-11-02;
-tie to the tiered-classifier work + the deterministic-first/Grok-backstop design.)
-
-
-
-### HIGH
-- **[HIGH · observability] Silent "fall back to empty" loaders hide omissions (root cause of the config/ + data/ gap).**
-  FIXED 2026-11-06 (branch `refactor/pr1-dedup-into-src`, not yet deployed): the ECS image had no `config/` or
-  `data/` for weeks (the deployed 2026-11-03 `wwii-pipeline:latest` loaded 0 of 97 equipment aliases, 0 of 6 surname
-  priors, no domain blacklist). 14 days of `/ecs/dev-wwii-pipeline` logs held no warning about any of it.
-  The Dockerfile now COPYs both dirs. `src/utils/runtime_tables.check_runtime_tables` runs at every phase start
-  and emits `OBSERV runtime.tables status=error tables=...` (Slack + email) when a required table is missing or
-  empty. `tests/test_dockerfile_runtime_files.py` fails if code reads a table that is unregistered or not copied.
-  WHY IT WAS MISSED: observability here is event-driven, and an absent file produces no event. Each loader treats
-  "missing" as a legitimate empty table (`except Exception: return {}`, `if not p.is_file(): return {}`), so
-  an omission looks exactly like an empty table. No metric tracked how many aliases or priors a run actually used.
-  REMAINING:
-    - Audit every `return {}` / `return []` fallback in `src/` loaders and make each one say whether the input was
-      absent, unreadable or genuinely empty (`observe_warn`). Same class as PATTERN-8, applied to inputs.
-    - Consider a per-run "inputs used" rollup (alias count, prior count, blacklist size) so a sudden zero is visible
-      even when a file is present but wrong.
-    - Learned equipment aliases written in ECS are lost when the task ends (pre-existing; now dockerignored).
-- **[HIGH · data-quality] Wikipedia rate limits became "not found" for every entity type (FIXED 2026-11-06, not yet deployed).**
-  Seen in the XChannel-8 dev E2E: every Wikipedia bio lookup after the first got 429 / Retry-After 60. The shared
-  pooled session (fetch-provenance migration `5711c48d`, 2026-10-23) retried each 429 three times at the full
-  Retry-After (180 s per lookup), then raised; callers recorded a miss. People were stamped `not_found` (90-day
-  suppression), and groups, equipment and places stamped `wikipedia_checked_at` (never re-fetch). FIX: all 11
-  Wikimedia call sites go through `src/utils/wikimedia_client.py` (per-host back-off, polite short waits, TRANSIENT on
-  429/403/5xx, records left unstamped), guarded by `tests/test_wikimedia_client.py`. REMAINING:
-    - After deploy, re-queue this run's casualties: people with `enrichment_status=not_found` and
-      `last_enrichment_search=2026-11-06` whose fetch-provenance shows a Wikipedia `RetryError` (Eisenhower, Marshall,
-      Montgomery, Ramsay, Bedell Smith, Leigh-Mallory, Tedder, Bradley, Kirk, Dönitz, Rommel, ...).
-    - Grokipedia hit + Wikipedia rate limited stamps the person `enriched`, so Wikipedia is never tried again for them.
-    - A deterministic parse failure (malformed body, missing key) is now deferred every run instead of negative-cached:
-      add a deferral count or backstop. The same applies to a permanent 403.
-    - A Commons license fetch that fails transiently is stored and positive-cached as `license="unknown"`.
-    - `_extract_media_from_wikipedia` returns no media on TRANSIENT without deferring (pre-existing behaviour).
-    - `scripts/utils/debug_searches.py` calls en.wikipedia.org directly (diagnostic only; the guard scans `src/`).
-- **[MED · data-quality] Follow-ups from the schema-stamp and basedpyright reviews (2026-11-06).**
-    - Writes into an UNREGISTERED directory skip schema validation (fail-safe allow) and get the minimum-version stamp.
-      Emit one counted, actionable warning when a record is written to a directory that is not a registered entity
-      (catches typos and LLM-derived directory names). Callers: 13 of `_resolve_entity_type`, e.g. `batch_parallel`.
-    - `locked_json` logs a failed schema stamp at DEBUG only: raise it to a counted warning (alerts must be actionable).
-    - Existing `index.json` files written before the fix carry `_schema_version`/`_last_updated` entries. Dev was reset;
-      before any prod run, either clean them once or make the index loaders skip keys starting with `_`.
-    - basedpyright baseline (`.basedpyright/baseline.json`, 147 findings) was generated on Python 3.14 with
-      `pythonVersion = "3.12"`. If the first CI run (3.12 + resolved deps) differs, regenerate it from a 3.12 env.
-      Shrink it by fixing findings (77 `reportAttributeAccessIssue`, 37 `reportArgumentType`), never to hide a new one.
-    - `grok_client._log_api_response`: the debug "Log preview" block is indented inside the model-deprecation branch, so
-      it logs only on a redirect. It was probably meant to sit under the `choices` branch.
-    - `nodejs-wheel-binaries` (transitive, unpinned range) comes with basedpyright in CI only; pin it or use hashes.
-- **[LOW · verify] Phase-3 reconcile barrier fix (run-id marker) is unverified on AWS.**
-  Fixed in code (empty `BOOK_NAME` key; freshness by run_id marker `manifests/reconcile_complete/_run.json`). Confirm on the
-  next dev E2E: Phase 3 logs `reconcile.barrier_seen via=run_id` (no 300s `barrier_timeout`). Residual gap: a Phase 3
-  launched BEFORE the reconcile clears the previous marker+barrier sees a consistent old pair; fully closing it needs the
-  orchestrator (SFN/ECS overrides) to pass a run_id to both tasks.
-- **[MED · provenance] Stop shipping HTML/EPUB/DOCX/video books with EMPTY metadata (P2-C1 "slug+meta half"; found 2026-11-06).**
-  `phase0_convert` / `phase0_video` / `ocr_merge_handler` write `chapter1-meta.yaml` with `author`, `series`, `chapter_title`,
-  `license`, `copyright_date` all `''` and `source_url: "converted from <key>"` (not a URL). The pipeline continues, so every
-  record cites an empty author and copyright status is unknown. (Until 2026-11-07 weather also lost EVERY record to it -
-  `Missing required book metadata`; fixed: an empty author now alerts once per book and extraction continues.)
-  The alert is now actionable (names the fields, the consequence and the S3 file to edit), but an alert on EVERY upload is still
-  manual toil. Derive what is deterministic: HTML `<title>` (e.g. "HyperWar: US Army in WWII: Cross Channel Invasion [Chapter 8]"
-  gives series + chapter), the upload's `x-amz-meta-source-url` (set by the operator) for `source_url`, and the known licence of
-  the source host (ibiblio HyperWar = US Army CMH public domain). Leave `author` empty ONLY when it cannot be derived, and alert
-  only for what is still missing.
-  (The images/maps=0 consequence is FIXED in code: real `source_url` from S3 metadata / HyperWar derivation, parser
-  guard, shared map-vs-image classifier, Phase 3 map vision; verify on the next dev E2E. This item now covers only the
-  remaining empty author/series/license/copyright fields.)
-- **[MED · cost/owner decision] In-doc map recycle (map-as-source) stays OFF in prod.** Map ENTITIES are now always
-  persisted, but `ingest_in_doc_map_links` (a paid Grok place-relevance vision call + re-ingestion per map) still runs
-  only when `external_maps.enabled` (false in config.yaml). Decide whether in-doc ibiblio maps should be recycled.
-- **[LOW · cost] Phase 3 downloads/uploads `output/images/files/` bytes** now that `images` is a Phase 2/3 entity dir
-  (unscoped runs only; scoped runs pull manifested JSON). Consider syncing only `*.json` and fetching bytes by URL.
-- **[MED · cost/IAM] Task role cannot tag consumed sources for cold archive (found 2026-11-07 E2E).**
-  Every Phase 0 logs `archive_tag.degraded ... AccessDenied PutObjectTagging`: `cloudformation/iam.yaml` ECSTaskRole
-  `S3Access` allows Get/Put/List/Delete but not `s3:PutObjectTagging`, so no source ever gets `archive=cold` and all
-  stay on STANDARD. Add `s3:PutObjectTagging` (and Get) to that statement, deploy the IAM stack, confirm the next
-  Phase 0 logs `Tagged source ... (cold archive)`.
-- **[MED · latency] Phase 1 waits ~9 min for the scheduled backstop after Phase 0 (found 2026-11-07 E2E).**
-  Trigger logged `Pipeline busy (phase0-convert active), Phase 1 will run after completion` at 02:38:44; Phase 0 sent its
-  completion notification at 02:38:59 while its ECS task was still stopping (stopped 02:39:22), so the trigger still saw
-  it active and parked again; only `reconcile-scheduled-backstop` launched Phase 1 at 02:47:39. Fix: the trigger should
-  not count the notifying phase's own task as busy on a `phase-complete` event (or the task should notify after it
-  has exited / the trigger should retry shortly).
-- **[MED · data-loss class] More readers still hard-code `output/source_section/` (found 2026-11-07 E2E; the main bug is FIXED).**
-  The event pass writes `output/content/<book>/source_section/`. Phase 2 step 4b, Phase 3 OpenSERP source-section enrichment,
-  image->place links, intra-corpus dedup and event provenance now share `src/utils/source_sections.py`. STILL on the old path:
-  `phase3_enqueue_openserp.py:42` (`list_files("source_section")` -> enqueues 0) and `openserp_worker._safe_entity_path`
-  (accepts only `source_section/...`); and the schema registry `output_glob` consumers `scripts/validate_phase2.py`,
-  `src/utils/provenance_integrity.py:236`, `src/utils/referential_integrity.py:130`. Route them through the helper (the
-  worker needs a strict `content/<safe-book>/source_section/<ulid>.json` allowance) and add a test per reader.
+#### Older backlog - HIGH list
 - **[MED · data loss] A schema-blocked weather mention leaves an empty shell record, and the event is marked processed (2026-11-07).**
   `weather_central._find_or_create_weather` writes the new record (`extracted_data: null`, `event_mentions: []`) BEFORE
   `_add_event_mention` merges the statement; if that merge is refused by the write guard (`locked_json.blocked_schema_invalid`),
@@ -1327,27 +1846,9 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   `canonical_name` (the `equipment.vessel_unresolved` alert says so). Add a Phase 3 pass that re-runs
   `equipment_identity.resolve_vessel` on transient ones and, when resolved, merges the record into the ship's record
   (dedup gate) - with a test that two years' mentions resolve to their two ships.
-- **[MED · quality] Other `resp.text` reads may mojibake UTF-8 pages served without a charset (2026-11-07).**
-  `requests` decodes such `text/*` responses as ISO-8859-1; Grokipedia did, so no accented name matched (fixed with
-  `src/utils/http_text.response_text`). Confirm each site's server charset behaviour, then adopt `response_text`:
-  `src/utils/url_hygiene.py` (`fetch_html_text`), `src/enrichment/wayback.py`, `src/extraction/openserp_maps.py`,
-  `src/extraction/search_external_maps.py`, `src/url_extractor.py`, `src/enrichment/award_polite_source.py`.
-- **[MED · provenance] Carry Phase 1 note provenance into the entity records (schema bumps, do together; 2026-11-07).**
-  Phase 1 (src/notes.py) now records each note's `kind` + citing `paragraph_number`, and `Image.note_number` for an image
-  linked only from a note (XChannel-8 note 23 "naval command chart"). Downstream drops them: (a) bibliography mentions need
-  `paragraph_number` (+ `reference_type` from `kind` in the Grok supplemental path) - bibliography schema bump; (b) the image
-  entity needs a `note_number`/cited-in-note field (`src/extraction/images.py`, `images_output.py` is
-  `additionalProperties: False`) - images schema bump. Each bump: history snapshot, fingerprint pin, SCHEMA_VERSIONING entry.
 - **[MED · provenance] People marked `enriched` with no source link (P3-A5, 4 people: J. M. Stagg, M. D. Taylor, G. C. Marshall,
   D. D. Eisenhower; found 2026-11-07).** `validate_phase3` FAIL: `enrichment_status=enriched but no source link
   (top-level/biographical_profile/external_data)`. Find which enrichment path sets `enriched` without writing a source URL.
-- **[MED · quality] Phase 3 degradation seen 2026-11-07:** OpenSERP circuit breaker opened 4x (5 consecutive empty/failed
-  searches) so bibliography resolve had `backend_down=2`; 88/264 places have no coordinates (`geo_missing_coords` 33%). Check the
-  OpenSERP service health on the Phase 3 NAT path and the geocoder fallbacks.
-- **[MED · design] The real "dedup complete" path launches Phase 3 for ALL books with NO `BOOK_NAME`** (`trigger_handler.py`
-  DEDUP_COMPLETE_TOPIC). Everything Phase 3 reads from the source documents (in-doc maps, image->person/place links, link review)
-  only worked for book-scoped runs until the unscoped branch started downloading `output/content/` (2026-11-07). Consider
-  whether the unscoped whole-corpus run should re-run paid Grok steps (image-person, link review) over every book each time.
 - **[LOW · observability] `enrich.summary` label `skipped_already` is misleading** (`src/extraction/people.py:893`). The
   `skipped` counter also counts "attempted, not enriched" (e.g. Wikipedia rate-limit deferral), so 59 of 62 people read as
   "already enriched" when they were deferred. Split into `skipped_already` vs `deferred`.
@@ -1355,27 +1856,6 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   166 `backoff_active`), people enriched 3/62; Phase 3 does not retry, so records stay unstamped until Phase 2 is re-run.
   Repeated same-day dev runs share one NAT egress IP, which likely kept it rate-limited. Decide: scheduled re-enrich pass for
   records with no `wikipedia_checked_at`, or accept and document.
-- **[MED · security] Scanner baseline (security-scanner MCP + CLI, 2026-11-06). Nothing found in this branch's changes.**
-  Branch vs `origin/main` by Checkov CLI: 141 -> 138 failed, 0 new (fixed: both `CKV_AWS_111` scoped-IAM findings and
-  `CKV_AWS_79` IMDSv1). Bandit `src/` 73 LOW (B110/B112 swallowed exceptions) + 8 in `lambda_handlers/`, 0 MEDIUM/HIGH. ASH on
-  `src/`: 8 HIGH, all false positives (word list flagged as "secret", `secrets.choice` alphabet, SHA-1 with
-  `usedforsecurity=False`, static-registry `import_module`, `http://` adapter mount prefix, "token" in log text).
-  OPEN, all pre-existing:
-    - Grype: the Go tool binaries `tools/search_maps` and `tools/search_media` (tracked in git, built with go1.26.0) carry 3
-      Critical / ~40 High stdlib CVEs. They are not copied by any Dockerfile, so local-only; rebuild with a patched Go or stop
-      tracking binaries. The `openserp` submodule's Go modules (`brotli` Critical, `x/net`, `klauspost/compress` High) ship in the
-      OpenSERP image: bump the submodule (`scripts/check_component_versions.sh`).
-    - ~73 swallowed exceptions (B110/B112) conflict with the actionable-alerts rule; fold into the PATTERN-8 audit.
-    - cdk-nag/Checkov CloudFormation baseline (~138): Lambda DLQ / VPC / concurrency / env-var KMS, DynamoDB PITR + CMK, SNS/SQS
-      encryption, log-group KMS, API Gateway logging/tracing/authorization (`AwsSolutions-APIG4`).
-    - Semgrep standalone is not installed on the dev machine (the MCP `scan_directory_with_semgrep` fails); the MCP Checkov scan
-      returned a STALE copy of `ocr.yaml`. Use the Checkov CLI as the source of truth.
-- **[HIGH · release] Push the local commits and open PR 1 (owner decision pending, 2026-11-06).**
-  `main` has 6 unpushed local commits (`12ee5159`..`7e45750b`: pre-deploy fixes, scripts/ reorg, steering, aws/ and
-  agent-history removal, endnote doc, separation plan). Branch `refactor/pr1-dedup-into-src` has 4 more on top
-  (`f8db5a56` golden test, `9f9e6703` scripts/utils root fix, `27f3fd18` dedup move, `7ac6593d` reclassify fixes).
-  Decide: push `main` first and open PR 1 against it (smaller PR diff), or open one PR carrying all 10. Then let CI run
-  (it has not run on any of these), and after deploying do the end-to-end check in SRC_SCRIPTS_SEPARATION.md §6.
 - **[HIGH · provenance/design] Stop trusting Grok to TRANSCRIBE paragraph numbers — resolve fulltext DETERMINISTICALLY (owner 2026-10-30).**
   Today the events extractor feeds Grok `Paragraph_1..Paragraph_N` and asks it to echo back the paragraph_numbers per
   sub-event; we then LOOK UP fulltext by those numbers. Asking an LLM to copy identifiers we already own is a mechanical
@@ -1386,30 +1866,6 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   quote back to paragraph absolute_numbers deterministically (substring match against parsed text). The LLM never owns a
   provenance key. Eliminates the starvation class entirely (not just detects it). INTERIM (shipped): _validate_paragraph_range
   rejects+resubmits an events response whose paragraph_numbers are mostly out of [1..N] (band-aid; keep as defense-in-depth).
-- **[POLICY · provenance] Provenance-completeness stays NON-FATAL (owner 2026-10-30): escalate LOUD to Slack, do NOT
-  fail_stop.** Rationale: many provenance misses are NON-DETERMINISTIC (LLM ULID variance) and a RE-RUN fixes them; a
-  fail_stop would halt a book a retry would heal. Reserve hard failure for DETERMINISTIC causes (prompt/code bugs like the
-  one above). Action: provenance_integrity enforcement -> wire the SNS/Slack alert (provenance.alert already emits; ensure
-  it reaches the notify topic) + a runbook: on a provenance alert, first RE-RUN; if it persists across runs, it's
-  deterministic -> hunt the prompt/code bug.
-  **STATUS 2026-10-30: Slack escalation is ALREADY LIVE** — provenance_integrity._alert publishes to
-  NOTIFICATION_TOPIC_ARN; verified forwarded ('Forwarded to Slack: :warning: DATA QUALITY — provenance anomalies' at
-  22:51/23:24/00:19/08:05). Non-fatal confirmed. Remaining: write the operator runbook doc.
-- **[HIGH · data-loss · BATCH MODE] Batch places (and likely any entity) silently dropped by the positional result-mapping desync.**
-  Overnight batch run (XChannel-8 2026-10-30): places persisted 0 while SYNC mode got 96. EVIDENCE: the cached batch
-  places response is VALID JSON with 8 sub-events x 119 place objects (Grok extracted them fine); yet 0 persisted AND
-  there is NO `OBSERV xref.seid entity=places` line (dates/groups/people each show exact=8 and persisted) — so
-  `_process_batch_response` NEVER ran for places. ROOT CAUSE: xAI batch results carry NO echoed custom_id, so
-  grok_client.py:600 maps results to our cache keys PURELY BY POSITION (`zip(submitted, ordered)` + retrieve_results_ordered).
-  This run had MULTIPLE sub-batches + several empty `Response: 2 chars` ({}) results interleaved — the positional zip
-  desynced, so the places slot received an empty/wrong result while the real 119-place content sat in cache uncorrelated.
-  The observability HALF-caught it (`phase2.summary.zero scope=core entity_types=places — probable bug, verify`) but the
-  yield gate could NOT (places deterministic baseline=0). IMPACT: batch mode is NOT equivalent to sync — it can silently
-  drop an entire entity's extraction. FIX DIRECTIONS: (a) stop relying on position — embed our cache key in the request
-  (e.g. as a sentinel in the prompt/content the model echoes, or map via the xAI batch_request_id recorded at submit),
-  (b) assert len(ordered)==len(submitted) per sub-batch AND fail LOUD (OBSERV batch.result_unmapped status=error) when an
-  entity gets no result, (c) cross-check: every batched entity must emit an xref.seid line or raise. Consider forcing
-  places/equipment SYNC even under batch.phase2=true until fixed. Blocks trusting batch-mode output.
 - **[HIGH · data-loss] OPTIONAL-entity persistence bugs — DIFFERENTIATED root causes (XChannel-8 overnight 2026-10-30).**
   Investigation split the earlier conflated 'count->persist=0' into distinct bugs (places is SEPARATE — see the batch
   positional-mapping bug above):
@@ -1427,158 +1883,8 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   people serially ('Searching Wikipedia...' ~3 min each). FIX candidates: (a) parallelize/bound per-person enrichment, (b)
   move bio enrichment OUT of the synchronous Phase-2 critical path (it's enrichment, not extraction), (c) a hard per-person
   wall-clock. Batch mode hides this (defers); synchronous mode exposed it.
-- **[MED · test] Simulated Spot-instance-loss test (automated recovery verification).** The XChannel-8 2026-10-29 Spot
-  interruption was a real-world test that EXPOSED the recovery gaps (grace-vs-liveness skip + disabled stale-lock sweep).
-  Build a repeatable test that INJECTS a Spot interruption and asserts the pipeline self-heals: (a) unit/integration —
-  simulate the ECS Task State Change STOPPED event ('stoppedReason: Your Spot Task was interrupted') into the trigger
-  handler and assert _handle_task_stopped_event -> reconciliation relaunches the phase (PR #630); (b) optional live/staging —
-  stop-task a running Spot phase mid-run and assert a replacement task launches within the stale-lock-check window and the
-  phase resumes from pending# without data loss or double-launch. Covers both the event-driven fast path and the 15-min
-  sweep backstop. Guards against the recovery logic silently regressing.
-  **SEQUENCING (owner 2026-10-29): do this AFTER the entity-level resume-manifest design (§3) is implemented** — only then
-  can the test assert TRUE mid-event resume (picks up the remaining entities, no re-work, no duplicates). Until the manifest
-  exists, a simulated-loss test could only verify lock reclaim + whole-event restart, not the resume behavior we want to lock in.
-- **[MED · observability] Long-running phase has NO mid-phase progress notification to Slack.** Phase-2/3 only notify
-  at start + complete/fail (_notify_complete/_notify_failure). During the ~2.5h serial bio-enrichment window NOTHING
-  reaches Slack (the heartbeat monitor only logs locally, src/utils/heartbeat.py:54 — no SNS/Slack path), so a
-  legitimately-slow phase is indistinguishable from a hung one in the operator's inbox (observed XChannel-8 2026-10-29,
-  'last Slack msg was extract-started'). FIX: emit a periodic progress notification (e.g. enrich N/total every K min, or
-  route the heartbeat through observe()/NOTIFICATION_TOPIC_ARN). Pairs with the heartbeat-false-alarm fix below.
-- **[MED · observability] Phase-2 heartbeat FALSE-ALARM.** 'no progress for N minutes' counts up to 99 min while the
-  per-person enrichment loop IS progressing — the heartbeat only resets on Step-level progress, not per-entity. Fix: reset
-  the heartbeat on per-person enrich.persisted (or any OBSERV progress), so a real stall is distinguishable from slow work.
-- **[P1 Phase-0 security DONE (PR #618)]** AV default-on+non-dev hard-fail, docx/epub ZIP spoof detection, convert_key crash off-ramp, prestage decompression-bomb cap, book_slug key validation+safe_dump meta, book-derivation convergence. FOLLOW-UPS: (a) av_scan.py:131 still has its own _book_from_key copy — converge onto book_slug; (b) epub non-canonical-mimetype soft-accept (intentional, revisit if strict). Remaining Phase-0 Tier-1 P2 (PHASE0_REVIEW_consolidated.md): real author/title/series extraction (P2-C1 big half), fitz pixmap/page cap (P2-S1), pandoc output-size/memory cap (P2-S2), AV scan-tag binding on convert/video path (P2-S3/P2-S2.3), S3 download size cap + ffmpeg -t (P2-S4), Grok-fallback payload cap (P2-S5), translation chunk cap (P2-S6), uuid4 AV run_id (P2-S7), reject-marker per-source-hash key (P2-C2), _patch_config setdefault aws (P2-C3).
-- **[HIGH · data-quality] Deterministic-vs-Grok YIELD-RATIO quality signal (design, owner-aligned 2026-10-28).** Cumulative,
-  self-calibrating data-quality assessment: a DETERMINISTIC high-recall scan of the source text produces an expected-yield
-  FLOOR per entity type; Grok's extracted count is measured against it; `ratio = produced / deterministic`. grok≈det (25 vs
-  25-28) = good; grok≪det (25 vs 0-5) = data-quality ALARM (the starvation signature). SEVERITY LADDER (owner 2026-10-28 — a
-  deterministic shortfall may JEOPARDIZE AN ENTIRE BOOK, so worst case must STOP THE JOB until root cause is determined):
-    • ratio≈1 -> INFO, proceed (healthy).
-    • one entity moderately low (ratio ~0.3-0.5, modest baseline) -> WARN + recall-gap review, proceed (isolated dip).
-    • BOOK-JEOPARDIZING signature -> **FAIL-STOP**: produced==0 while deterministic>=floor on a single entity, OR shortfall
-      across >=2 entity types simultaneously (the paragraph_numbers fingerprint: upstream fault starves ALL passes). Emit loud
-      `OBSERV yield.fail_stop` + `raise SystemExit(nonzero)` at END of Phase 2 so ecs_entrypoint (subprocess returncode!=0 ->
-      _notify_failure + sys.exit, lines 816-841) HALTS the chain (Phase 3 never triggers), fires a failure notification, and
-      PRESERVES partial output for diagnosis. Check runs per-event/early so a 20-chapter book aborts at chapter 1, not after
-      burning spend on a corrupt corpus. Threshold (floor, min-baseline, single-vs-multi-entity) tunable in config.
-  (no hand-maintained golden list); ratios accrue over many books into a WEIGHTED assessment. Reuses existing assets:
-  people_group_aliases/equipment_aliases/place_aliases.yaml, data/unit_nicknames.yaml, military_equipment.yaml, unit-designator
-  regex (`N(st|d|th) Division/Corps/Army`, `Force [A-Z]`, RAF, OB WEST). Alarm only when baseline >= min (e.g. 5) & ratio <
-  floor (e.g. 0.5), tunable in config. Append each (book,chapter,entity,deterministic,produced,ratio) to
-  output/metrics/yield_quality.json. Wire into observe_yield (PR-A).
-  **PEOPLE need special handling (owner):** count DISTINCT person-CLUSTERS, not mentions — "General Cota"/"Norman Cota"/"Cota"
-  = 1 (reuse batch_parallel._strip_rank + caption_names detect + src/dedup/surname_report distinct-people clustering + its
-  rare→very_common frequency bands). TWO signals, not one ratio:
-    (A) QUALITY RATIO on the HIGH-CONFIDENCE band only (rank+distinctive surname, or First Last, or repeated First M. Last) — can alarm.
-    (B) RECALL-GAP REVIEW for the AMBIGUOUS band ("Private Smith" = low-rank + common surname): deterministically detected but
-        NOT resolved to an extracted person -> emit a HUMAN FOLLOW-UP item (new `recall-gap` review category, reuse the
-        needs-review path), NEVER silently dropped and NEVER fails the run. RATIONALE (owner): "Private Smith may be a Medal of
-        Honor awardee" — ambiguity != unimportance; the asymmetric cost means ambiguous-and-unextracted must err toward
-        SURFACING for verification. GENERALIZES to all entities: any deterministic-found-but-extraction-missed item -> recall-gap
-        follow-up (unit the regex caught but Grok dropped, gazetteer place Grok missed). Over time, how often recall-gap items
-        prove real/notable also feeds the weighted assessment.
 
-- **[HIGH · observability] Observability SWALLOWS ITS OWN ALERTS — systemic, ~40 sites across 7 patterns** (audit 2026-10-28,
-  full report `OBSERVABILITY_SWALLOWED_ALERTS_consolidated.md`). The `paragraph_numbers` fulltext bug (fixed PR #608) was ONE
-  instance; the CLASS is open. Patterns: (1) silent except/except-pass (~15 sites); (2) anomaly logged at DEBUG (~10) — incl
-  the EXACT same empty-fulltext-skip still live at **places.py:239, people.py:569, dates.py:139, weather_central.py:683**
-  (#608 only fixed events.py); (3) zero/empty yield logged status=ok (~8: equipment.py:3027, places.py:415, people.py:1296,
-  dates.py:536, phase2 optional extractors); (4) degraded fallback w/o warning (~5: openserp breaker elif, reconcile barrier,
-  referential_integrity timeout reads clean); (5) NO expected-yield baseline (~6: openserp searched 1-of-14 unflagged,
-  skip-no-name, validation count>=10 gate misses small batches); (6) NO cross-metric correlation (~5: rich sub_events vs 0
-  entities never correlated); (7) size-masks-empty-content (events fallback FIXED). ROOT: no `observe_yield(entity, sub_events,
-  fulltext_nonempty, produced)` helper — produced=0 is indistinguishable from eligible=0. FIX PLAN (5 PRs): PR-A observe_yield
-  helper+baseline (enabler, would have caught the original by design); PR-B extraction starvation (#1,2,8,9,10); PR-C
-  enrichment starvation (#4,5,6); PR-D integrity gates (#3,7 + provenance SNS parity + Phase-3 reconcile gate); PR-E
-  debug→warn sweep + untraced-except counters. TOP-10 P1 list in the report.
-  - **TEST-SUITE MIRROR GAP:** the existing OBSERV tests (test_phase3_comprehensive_observability, test_enrichment_observability)
-    DO assert anomaly correctness (groups.anomaly 0-of-N, openserp 0-of-4, places.anomaly), not mere presence — but ONLY for
-    the ENRICHMENT layer where an anomaly signal existed. The EXTRACTION layer had no anomaly concept, so there was nothing to
-    test (can't test an alarm that doesn't exist); and NO test asserts the cross-stage contradiction (rich sub_events + 0
-    downstream entities). Worse, the gates the tests validate ask the wrong question (groups.anomaly keys on `needed`, which was
-    itself corrupted upstream — test passes, gate fires correctly, bug still ships). FIX: every observability PR must add the
-    cross-stage yield-correlation test alongside the signal. PR-A (observe_yield) adds the first such test
-    (sub_events>0 & fulltext_nonempty=0 -> starvation) — the one that would have caught the original incident.
-
-- **[HIGH · extraction/enrichment] Group records have NO `group_name`/`name` field — ALL group enrichment + OpenSERP skipped.**
-  Found in the synchronous XChannel-8 E2E (2026-10-28): Phase 2 wrote people_groups records whose ONLY keys are
-  `nationality`, `event_mentions`, `GroupID`, `_schema_version`, `_last_updated` — the unit name (e.g. "1st Division")
-  survives ONLY in the filename + `event_mentions[].Sub_event_Name`, never as a top-level field. Group enrichment gates on
-  `data.get("group_name")` → empty → `OBSERV groups.enrich_skip_no_name` for all 6 groups → `groups.summary needed=0
-  enriched=0 skipped=6` → OpenSERP never searches groups (`openserp_groups enriched=0`). FIX: Phase 2 must persist the
-  group name (populate `group_name`/`name` from the extracted unit), OR enrichment must derive it from the filename/mention.
-  Blocks all group web-enrichment. (Places were fine — satisfied by geocoder, `needed=0`. Link-review empty is correct:
-  the source HTML has 0 links/0 footnotes.)
-- **[HIGH · provenance] event_provenance stamp read the WRONG source_section path (fix STAGED, pending PR).**
-  Found same E2E: `OBSERV event_provenance.stamp resolved=0 reason=no_source_sections` even though 2 source_section records
-  existed — they live at `content/<book>/source_section/*.json`, but `_build_event_section_index` read top-level
-  `output/source_section/`. Fixed locally to glob BOTH (nested + top-level) + a regression test; verified against the real
-  run data (index resolves, event + 6 sub-events stamped). Needs gate→PR→review→merge→redeploy.
-
-- **[HIGH · schema-design] schema.org entity enhancements** — ✅ LARGELY DONE (2026-10-27/28).
-  Proposal `docs/current/design/SCHEMA_ORG_REVIEW.md`; ADOPTED + POPULATED: places 2.30 (sameAs/
-  containedInPlace/containsPlace/geo/additionalProperty/elevation_m, PR #596) + images 2.27 (14 ImageObject
-  fields, #597); Tier-1 deterministic population (image dims/encodingFormat #598; images.contentLocation +
-  places.sameAs from wiki/grok urls #599); Tier-2 (Wikidata QID #600; OSM/Wikidata via Nominatim #601;
-  opt-in elevation_m from DEM #602). REMAINING (backlog, owner-decide): sameAs+identifier rollout to
-  people/people_groups/bibliography; people_groups time-bounded `org_attachments[]` (OOB, M6-populated);
-  GeoNames gazetteer id (needs a free username); a prompt/schema subset-consistency guard (§11); source-only
-  image fields (licensing/dateCreated/caption) via prompt IF wanted. See SCHEMA_ORG_TIER2_SCOPE.md.
-- **[HIGH · ingestion-bug] Book-name derivation mismatch: title-folder vs filename-stem aborts Phase 0.**
-  Found in the XChannel-8 cloud E2E (2026-10-28). Uploading `contentrepository/{TITLE}/{file}.html` where
-  TITLE != the file stem fails Phase 0 convert: `trigger_handler._book_from_key` derives the book from the
-  TITLE FOLDER (e.g. `USA-E-XChannel`), but the launched phase0-convert task used the FILENAME STEM
-  (`USA-E-XChannel-8`) as the book-scoped download prefix -> `contentrepository/USA-E-XChannel-8/` had 0
-  files -> ERROR "Book-scoped Phase 1 downloaded 0 files ... aborting (would parse an empty book)". The two
-  code paths (Lambda trigger book-derivation vs the convert task's BOOK_NAME/prefix) DISAGREE. Workaround
-  used: upload with folder==stem (`contentrepository/USA-E-XChannel-8/USA-E-XChannel-8.html`). FIX: make the
-  convert/phase task derive its book-scoped prefix from the SAME `_book_from_key`/title the trigger computed
-  (pass the derived book to the task, or have the task reuse the identical derivation), + a test for the
-  TITLE!=stem shape. Evidence: ECS log `/ecs/dev-wwii-pipeline` ~2026-10-28T12:52:46Z.
-- **[HIGH · deploy/CICD] Merge-to-main does NOT rebuild/redeploy the pipeline image — stale `:latest` ran the E2E.**
-  Root-caused during the XChannel-8 E2E (2026-10-28): the run produced 0 of the page's ~11 maps + 0 of its 26
-  in-document photos (only 5 Wikipedia enrichment images) because the deployed `wwii-pipeline:latest` was
-  pushed 2026-10-27 08:59 EDT — HOURS BEFORE M1 (in-doc map links, #587 @14:04) and M2 (embedded images,
-  #588 @14:53) merged, so the running pipeline literally lacked the extraction code. The code was on `main`
-  but `main` was never rebuilt/pushed after the afternoon merges. THREE fixes (priority order):
-    1. **Deploy-on-merge:** a CI job (or documented post-merge step) that rebuilds + pushes the pipeline
-       image and re-registers the ECS phase task defs when `main` changes — close the merge≠deploy gap.
-       (CI currently runs lint+test on PRs only; it does NOT build/push the Docker image.)
-    2. **Pin task defs by image DIGEST, not the mutable `:latest`** (+ stamp the git SHA as an image tag/label)
-       so "which commit is live" is unambiguous/auditable (this bug was invisible because task defs point at
-       `:latest`).
-    3. **Emit the running git SHA in a startup OBSERV** (`OBSERV pipeline.version sha=<...>` at phase start)
-       so any run's logs self-identify the code version (no more reverse-engineering "did this run have M2?").
-  NOTE: my first diagnosis ("image from Oct 13") was WRONG — I misread the task-def registeredAt as the image
-  push time; the image is ~1 day old but predates the M1/M2 afternoon merges.
-
-### MED
-- **[MED · owner 2026-11-11] Books submitted together are processed as separate books.** When more than
-  one book is uploaded at the same time, each one gets its own runs (its own Phase 0-3 tasks, Grok
-  batches, locks, stats and alerts). Runs are never combined across books. One book's failure, retry,
-  purge or rerun must not hold up or touch another book. Check where runs are grouped today (the
-  trigger's per-wave key batching, the multi-doc task pool, Grok batch submission) and split them
-  per book.
-- **[MED · owner 2026-11-11] Provenance validation run for a book - Phase 2 + Phase 3 DONE.**
-  `scripts/validate_provenance.py` (matcher: `src/utils/quote_match.py`) runs per book at the end of
-  Phase 2 (`ecs_entrypoint._provenance_gate`): quotes in the cited paragraphs / sub-event, sub-event
-  links, paragraph locators, note quotes. At the end of Phase 3 - after every merge (dedup
-  auto-merge, bibliography reconcile, Dedup Review UI) - it re-runs those and adds P3-B1 (no stub
-  bibliography entries), P3-R1 (license / copyright_status / NARA archive reference), P3-A1
-  (enriched records name their source) and P3-C1 (every cited note has a bibliography entry).
-  Gate mode `provenance_validation.gate` / `PROVENANCE_GATE`: `warn` now; `block` holds Phase 3
-  (end of Phase 2) or keeps the book from "done" (end of Phase 3, multi-doc: needs-review).
-  Switch to `block` once the extraction defects below are fixed. LIMIT: in serial mode a held
-  Phase-3 book is alerted only (there is no doc lifecycle to hold). A Dedup Review UI merge made
-  after the book's Phase 3 is validated only by the book's next Phase-3 run.
-  Merge review (2026-11-11, fixed): all merges now union mentions by ONE rule
-  (`entity_records.merge_mentions`: one mention per sub-event); bibliography no longer collapses
-  unnumbered notes (`citation_identity`); the UI merge writes the primary before deleting.
-  Still open: the UI people merge repoints only event sub-event refs, not PersonID/PlaceID/GroupID
-  held in other records (referential_integrity catches it); a dropped same-sub-event mention's
-  alternate quote is not kept, and its MentionID is not redirected (only `maps.PeopleGroupMentionID`
-  references a mention id; dates keep their own key `(Sub_eventID, original_text)` with a
-  `DateMentionID` redirect in `scripts/merge_dates.py`).
+#### Older backlog - MED list
 - **[HIGH · data quality · 2026-11-11] Extraction defects found by the provenance validation
   (USA-E-XChannel, 20 chapters; report `output/reports/provenance/USA-E-XChannel-phase2.json`).**
   **PARTLY ✅ DONE (code check 2026-11-16):** (b) mention-in-wrong-sub-event and (a)/(d) paragraph numbers: all discovery now runs over 3-paragraph raw windows and each item is settled against the window text and attributed to the sub-event holding its quote, with its paragraphs taken from where the quote is (`windows.settle_item` / `attribute_found`; `_PARAGRAPH_KEYS` = `paragraph_numbers`, `paragraphs`). (c) an unsupported quote is repaired to the source sentence or the item is dropped (`quote_unsupported`). (e) bibliography note locators: `supplemental.locate_notes` sets `reference_number` / `verbatim_reference` deterministically. Re-validate on the next E2E before closing.
@@ -1689,6 +1995,389 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   OPEN (pre-existing, review 2026-11-12): person enrichment (Grokipedia/Wikipedia fetches) runs
   synchronously inside the people index lock (`_batch_extract` -> `enrich_record`), so it blocks
   the event loop and serializes sub-events / chapters. Move it after the index write.
+- **[MED · entity-resolution] Resolve `people_groups` against the ETO Order of Battle (the authoritative unit spine).**
+  Moved from the steering "known gaps" list (2026-11-04). Name-level resolution exists (`find_duplicate_groups`,
+  `src/dedup/unit_key.py`, `data/unit_nicknames.yaml`), but nothing resolves groups TO the OOB: the OOB crosswalk
+  (`src/ingestion/oob_markdown/crosswalk.py`, `entity_emit.emit_crosswalk_to_people`) links command staff -> people only.
+  Open: map each per-mention group to an OOB unit, and add the time-bounded `org_attachments[]` on `people_groups`
+  (see the schema.org item under HIGH).
+- **[MED · provenance] Derive endnote vs footnote `reference_type` from the SOURCE, not Grok.**
+  From the retired `messages/TODO_fetch_endnote_content.md`. Endnote text is now fetched and passed to the supplemental
+  prompt, but `reference_type` is still the model's call: `supplemental._build_ref_context` only adds a type hint when NO
+  text was found, and `_separate_by_type` routes on whatever the model returned. Symptom seen before: Breakout and Pursuit
+  (endnote-only) produced `*-footnotes.json`. Fix: set the type deterministically from the source structure (marker style /
+  where the definition lives) during parse, carry it in the parsed `footnotes` entries, and override the model's value.
+  See `docs/current/features/supplemental/ENDNOTE_HANDLING.md`.
+
+#### Older backlog - LOW list
+- **[LOW · observability · DRY review follow-up 2026-11] `src/extraction/logistics.py:390` swallows a whole-chunk
+  loss.** `except Exception: logger.error("Batch logistics extraction failed: %s"); return {}` drops the entire
+  chunk's logistics on any error with only a bare `logger.error` (no canonical OBSERV, so it never escalates). Convert
+  to `observe_error("logistics", "batch_failed", ...)` (anti-swallow; surfaced during P1.4 but out of that PR's scope).
+- **[LOW · data-hygiene · DRY review follow-up 2026-11] wikipedia image-URL query-strip inconsistency.**
+  `equipment_wikipedia._extract_equipment_page` strips `?query`/`#fragment` from the image URL before the Commons
+  license lookup; `groups_wikipedia._extract_group_page` does NOT, so a group image URL with tracking params yields a
+  dirty `File:` title and a missed/incorrect license. Make groups strip the same way (surfaced during P1.9).
+
+#### 2.2 NARA resolution redesign (correctness) (from section 2)
+- **[HIGH] Back-reference / multi-document citation — two sub-items remain.** Within-chapter DONE.
+  OPEN: (a) MULTI-DOC NOTE ("A; B; C" stored as ONE record — LLM overlay's semantic job); (b)
+  CROSS-CHAPTER DOCUMENT IDENTITY (ch3 "Irwin Diary" == ch5 — dedup's job).
+
+- **[HIGH] 3 footnote CLASSES — hybrid SPLIT is the gap.** CITATIONAL → bibliography, PROSE →
+  ✅ DONE (code check 2026-11-16): `content_class` already carries citation / prose / hybrid with a per-entry `prose_content` (`src/json_schemas.py` supplemental schema; `supplemental._route_one_material` routes hybrid to BOTH). The "OPEN" text below is the original gap.
+  notes-event, HYBRID → BOTH. The 3-way split is the Phase-2 supplemental LLM's job. OPEN: add
+  per-entry `prose_content` + widen `content_class` to {citation, prose, hybrid}; prompt the LLM to
+  SEPARATE prose from citation(s); route prose → `{chapter}-notes-event.json`, each citation →
+  `store_bibliography_entry`; regex detector becomes a non-decisional backstop.
+
+- **[HIGH] Capture the actual Bibliography section + abbreviations decoder.** CMH green books have a
+  "Bibliographical Note" (full citations) + an "Abbreviations" list (decodes footnote shorthand). Add
+  a parser back-matter detector; emit `*-bibliography.json`/`*-abbreviations.json`; prefer
+  bibliography-section entries + apply the abbreviations map to footnote verbatims before NARA.
+
+#### 2.3 People / places enrichment (from section 2)
+- **[HIGH] People `biographical_profile` (bio TEXT) — confirm Phase configuration.** 0/59 on the
+  Phase-2 clean run; likely EXPECTED (bio enrichment moved out of the standard Phase-2 path). Verify
+  whether/where it is intended to populate; `enrich.persisted entity=person enriched_now/has_bio/
+  sources` (#465) will show the truth on a re-run.
+
+- **[FOLLOW-UP] People bio + group enrichment attribution + back-fill.** Group `_source` stamped
+  (#462). Remaining: (a) verify/stamp people `biographical_profile` attribution once bios repopulate;
+  (b) pre-fix 0/74 unsourced group records only back-fill on a forced re-enrich — add a one-time
+  backfill if needed.
+
+- **[HIGH] Phase 2 should capture place HISTORICAL NAMES / ALIASES from Grokipedia/Wikipedia.**
+  `enrich_place_from_wikipedia` writes only url+image+hierarchy; pull infobox/native/former names
+  (Wikidata P1448/P1705) + Grokipedia body into `historical_names[]` tagged by source. Feeds Phase-3
+  name-variant geocoding.
+
+- **[HIGH] Capture CO-REFERENCED place aliases from surrounding text.** `PlaceMention.historical_name`
+  is SINGULAR → Grok keeps one. "Bogeyman Hill (Hill 697, the Schwarzer Mann)" names one place three
+  ways; we keep the ungeocodable nickname. Change the extraction model to an ALIAS ARRAY (+ prompt)
+  tagged by type+language. Geocode recovery (cheapest tier): on a miss, re-read the place's own
+  `original_text` for aliases before web/translate tiers.
+
+- **[HIGH] Wire SourceRechecker into People enrichment** (source-first gap-fill of `nationality` etc.
+  in `enrich_person_biography`, mirroring people_groups). Minor residuals: Grokipedia fetch real
+  `/page/<slug>` not search-results HTML; OpenSERP stamps `openserp_searched` on empty search;
+  `time.sleep(1)` on cache hits; HallOfValor name-match recall.
+
+#### [MED] source_section derive failed for 2 sections (clean rerun e4b22d9) (from the end of this file)
+
+"[phase2 step 1/5] Core extraction complete: 4 processed, 2 failed" + source_section.enrich errors=2:
+"source_section derive failed for 0GDW2A077AXSFWX53MGV5VTT6G: <hash>" and 7EQS9MD8QY861A2VB8B0NZEYKX.
+The error payload is an opaque hash (looks like a cache key / exception fingerprint, not a message) —
+investigate what source_section derive raises for those 2 sections. Also benign: "Status server
+failed to bind 10.0.22.19:8077 (Address already in use) — continuing" (port reuse, non-fatal).
+
+#### [MED·dedup-false-positive] place dedup is string-only at the Phase-2 gate (no coords) — Roscheid/Schmidt (deferred fix #2) (from the end of this file)
+
+Clean RoerDams rerun flagged Roscheid vs Schmidt as a duplicate ("name similarity 67%") and gated
+Phase 3 on it. It is NOT a duplicate — difflib.SequenceMatcher("roscheid","schmidt")=0.667 clears the
+>=0.65 threshold by over-crediting scattered shared runs (sch, d). INHERENTLY string-ambiguous: the
+SAME 0.667 is scored by the REAL variant pair "St. Vith"/"Saint Vith" (and St Lô/Saint-Lô is a real
+dup at 0.43) — so NO string threshold/metric separates the false positive from real variants
+(verified: bigram-Jaccard veto and threshold-raise each kill real dups too). ROOT CAUSE: the one
+disambiguating signal — COORDINATES (Roscheid and Schmidt are ~40km apart; St.Vith/Saint-Vith are the
+same point) — does not exist at the Phase-2 dedup gate because geocoding runs in Phase 3 (13/18 places
+had geo_missing_coords). DURABLE FIX OPTIONS (pick when we tackle it): (a) run/augment place dedup
+AFTER Phase-3 geocoding so the haversine distance check can confirm/veto; (b) add an LLM adjudication
+step for name-only matches that lack coordinates (ask Grok "same place?", mirroring the group
+enrichment disambiguation); (c) partial cheap: raise threshold to ~0.72 + add 'st./saint' to the
+geo-prefix strip (still misses St Lô/Saint-Lô). Interim (done 2026-10-26): rejected in the dedup UI as
+not-a-duplicate to unblock Phase 3. Two prior heuristic attempts were REVERTED (each introduced false
+negatives) — do NOT re-attempt a string-only fix; use coords or LLM.
+
+#### MED: same-code consolidation (Phase-2 review, deferred to own PR) (from the end of this file)
+
+- Grokipedia resolution forked 3x: shared src/enrichment/grokipedia.resolve_grokipedia_url exists
+  (equipment uses it), but enrich_biographies._grokipedia_query_scan + enrich_places._search_grokipedia_place
+  roll their own grokipedia.com/search scrape. Wikipedia API call likewise reimplemented in
+  enrich_biographies (x3) + enrich_places. Route all through the shared lib (triples maintenance +
+  SSRF surface + drifts behavior, e.g. transient-vs-negative cache conflation enrich_places:329).
+- Conservative place-name matcher (exact -> whole-word-longest -> SequenceMatcher>=0.88)
+  reimplemented in weather_central._match_place_id, equipment._resolve_place_id, and places. Extract
+  one shared helper.
+Larger refactor with semantic-diff risk; own PR, not bundled with the PR6 correctness/security fixes.
+
+---
+
+## Other open items (moved out of the Phase 3 review section; not in a Phase 3 test group)
+
+### Code defects found by the 2026-11-17 documentation review (each verified in code)
+Phase 3 defects (OpenSERP service, 90-day marker, breaker, batch mode, external maps, NOAA, ...)
+are listed once, in the "Phase 3 review" section above; not repeated here. The rest:
+
+HIGH
+- **A parse-track upload with no safe slug runs Phase 1 over ALL books.** When no pending key
+  yields a slug, `_resolve_pending_launch_book` returns `""` (`trigger_handler.py:2433-2437`), which
+  means "all books"; the `unnamed-upload` off-ramp covers only OCR, convert and video uploads. Breaks
+  the slug rule (an unnamed upload must go to `needs-review/unnamed-upload/`). Fix: route `.md`/`.txt`
+  keys with no slug through `_unnamed_upload`, and never launch on an all-unsafe set.
+- **Phase 1 resets the dedup review status for the whole corpus.** `_prepare_phase1`
+  (`ecs_entrypoint.py:1092-1103`) writes `{"complete": false}` to `dedup/review_status.json` on every
+  Phase 1 task, so parsing one new book discards a pending or finished review of the others.
+- **Monitoring that can never fire.** The `{env}-wwii-pipeline` dashboard, the `phase2-duration`
+  alarm and the `dlq-messages` alarm (`cloudformation/events.yaml`) watch Lambdas and queues no
+  template creates (`phase1-parse`, `phase2-extract`, `phase1-dlq`, `phase2-dlq`). Delete or repoint.
+
+MED
+- **Skipped people groups come back.** The people detector never reads `reviewed#` rows; only
+  Exclude is permanent for people (places, groups, equipment honour Skip). `docs/current/core/DEDUP_REVIEW_GATE.md`.
+- **Dedup Undo restores the snapshot files only**: not the reference rebase, `index.json` or the
+  report group (`dedup_ui_handler` undo path).
+- **The ECS dedup detection passes no Grok client**, so ambiguous people matches get no Grok check.
+- **`doc#` rows can be stuck**: the dispatcher's `DocFailed` state leaves a failed doc at `running`;
+  `needs-review` has no exit (`human_gate` is deployed but never invoked). `docs/current/core/DOC_LIFECYCLE.md`.
+- **`_seed_docs`** uses `parts[1]` as the book (the namespace for `_system`/`user-` uploads) and is a
+  no-op on chapter-parsed events (`output/content/` keys).
+- **Intake suffix mismatch**: `.htm`, `.xhtml`, `.webp`, `.bmp` are in the track suffix sets but not
+  in `_CONTENT_SUFFIXES` (`trigger_handler.py:687`), so they are rejected as `unrecognized-type`.
+- **8-character ULID filename suffixes** (`batch_parallel.py:322`, `people_groups.py:47`): the first
+  10 ULID characters are the timestamp, so 8 characters separate ids only ~1 s apart - two same-named
+  records minted in the same second would collide. Use 12 like `people.py`.
+- **Dead config**: `api.grok.timeout` (60) and `api.grok.max_retries` are not read (the client uses a
+  600 s read timeout and 5 attempts, `grok_client.py:479,1477`); also `maps.*`, several
+  `external_maps.*`, `aws.*`, `weather.*` and `processing.*` keys. List: `docs/current/core/CONFIGURATION.md`.
+- **"VII Corps" and "7th Corps" are never surfaced as duplicates**: `derive_unit_key` unifies them
+  but `_numbers_match` (`find_duplicate_groups.py:262-289`) keeps `r7` and `7` apart.
+- Unwired code: `src/utils/failure_taxonomy.py`, `src/utils/url_content_verdict.py`,
+  `ecs_entrypoint._acquire_lock` / `_clear_all_locks`, `dedup_gate_handler` (deployed, never invoked),
+  `consolidate_people`, `ingest_affirmed_chart`, `generate_date_summary`; the standalone
+  `python -m src.extraction.external_maps` CLI is broken (`main()` passes `events_dir`).
+
+### Tooling: widen ruff beyond `--select B` (LOW/MED)
+`scripts/gate.sh` runs `ruff check src/ lambda_handlers/ --select B` (flake8-bugbear ONLY); there is
+NO `[tool.ruff]` config in pyproject. Running ruff with DEFAULT rules reports ~83 findings (55 auto-
+fixable — unused imports, etc.) the gate never sees. ruff "never fails" because the rule set is too
+narrow, NOT because the code is clean. ACTION: widen `--select` incrementally (start `B,F` → undefined
+names/unused; then `I` import-order), clear the resulting backlog per family, pin a `[tool.ruff.lint]`
+config. Do it family-by-family so the gate doesn't drown. (Raised 2026-11-01.)
+
+### Refactor: evaluate running entity extractors in PARALLEL (MED)
+Observed 2026-11-01 (chapter-8 sync run): biography/Wikipedia enrichment ran SERIALLY and stalled the
+whole Phase-2 for 10+ minutes (per-person live Wikipedia/Grokipedia calls — Jodl, von Rundstedt),
+blocking equipment extraction (which runs AFTER core/optional entities) from even starting. The
+entity extractors (people/groups/places/dates/equipment/casualties/logistics + enrichment) are
+largely INDEPENDENT per chapter. ACTION: evaluate fanning them out concurrently (async/thread/process
+pool, or at least decoupling slow network-bound enrichment from the critical extraction path so a
+hung Wikipedia lookup can't block equipment/casualties). Consider: bounded concurrency, per-entity
+timeouts, enrichment as a deferred/parallel stage. Must preserve ordering invariants (places persist
+before equipment resolves place_name->PlaceID) + never-drop/observability. (Raised by owner.)
+
+### Older backlog - HIGH list
+- **[HIGH · observability] Silent "fall back to empty" loaders hide omissions (root cause of the config/ + data/ gap).**
+  FIXED 2026-11-06 (branch `refactor/pr1-dedup-into-src`, not yet deployed): the ECS image had no `config/` or
+  `data/` for weeks (the deployed 2026-11-03 `wwii-pipeline:latest` loaded 0 of 97 equipment aliases, 0 of 6 surname
+  priors, no domain blacklist). 14 days of `/ecs/dev-wwii-pipeline` logs held no warning about any of it.
+  The Dockerfile now COPYs both dirs. `src/utils/runtime_tables.check_runtime_tables` runs at every phase start
+  and emits `OBSERV runtime.tables status=error tables=...` (Slack + email) when a required table is missing or
+  empty. `tests/test_dockerfile_runtime_files.py` fails if code reads a table that is unregistered or not copied.
+  WHY IT WAS MISSED: observability here is event-driven, and an absent file produces no event. Each loader treats
+  "missing" as a legitimate empty table (`except Exception: return {}`, `if not p.is_file(): return {}`), so
+  an omission looks exactly like an empty table. No metric tracked how many aliases or priors a run actually used.
+  REMAINING:
+    - Audit every `return {}` / `return []` fallback in `src/` loaders and make each one say whether the input was
+      absent, unreadable or genuinely empty (`observe_warn`). Same class as PATTERN-8, applied to inputs.
+    - Consider a per-run "inputs used" rollup (alias count, prior count, blacklist size) so a sudden zero is visible
+      even when a file is present but wrong.
+    - Learned equipment aliases written in ECS are lost when the task ends (pre-existing; now dockerignored).
+- **[MED · data-quality] Follow-ups from the schema-stamp and basedpyright reviews (2026-11-06).**
+    - Writes into an UNREGISTERED directory skip schema validation (fail-safe allow) and get the minimum-version stamp.
+      Emit one counted, actionable warning when a record is written to a directory that is not a registered entity
+      (catches typos and LLM-derived directory names). Callers: 13 of `_resolve_entity_type`, e.g. `batch_parallel`.
+    - `locked_json` logs a failed schema stamp at DEBUG only: raise it to a counted warning (alerts must be actionable).
+    - Existing `index.json` files written before the fix carry `_schema_version`/`_last_updated` entries. Dev was reset;
+      before any prod run, either clean them once or make the index loaders skip keys starting with `_`.
+    - basedpyright baseline (`.basedpyright/baseline.json`, 147 findings) was generated on Python 3.14 with
+      `pythonVersion = "3.12"`. If the first CI run (3.12 + resolved deps) differs, regenerate it from a 3.12 env.
+      Shrink it by fixing findings (77 `reportAttributeAccessIssue`, 37 `reportArgumentType`), never to hide a new one.
+    - `grok_client._log_api_response`: the debug "Log preview" block is indented inside the model-deprecation branch, so
+      it logs only on a redirect. It was probably meant to sit under the `choices` branch.
+    - `nodejs-wheel-binaries` (transitive, unpinned range) comes with basedpyright in CI only; pin it or use hashes.
+- **[MED · provenance] Stop shipping HTML/EPUB/DOCX/video books with EMPTY metadata (P2-C1 "slug+meta half"; found 2026-11-06).**
+  `phase0_convert` / `phase0_video` / `ocr_merge_handler` write `chapter1-meta.yaml` with `author`, `series`, `chapter_title`,
+  `license`, `copyright_date` all `''` and `source_url: "converted from <key>"` (not a URL). The pipeline continues, so every
+  record cites an empty author and copyright status is unknown. (Until 2026-11-07 weather also lost EVERY record to it -
+  `Missing required book metadata`; fixed: an empty author now alerts once per book and extraction continues.)
+  The alert is now actionable (names the fields, the consequence and the S3 file to edit), but an alert on EVERY upload is still
+  manual toil. Derive what is deterministic: HTML `<title>` (e.g. "HyperWar: US Army in WWII: Cross Channel Invasion [Chapter 8]"
+  gives series + chapter), the upload's `x-amz-meta-source-url` (set by the operator) for `source_url`, and the known licence of
+  the source host (ibiblio HyperWar = US Army CMH public domain). Leave `author` empty ONLY when it cannot be derived, and alert
+  only for what is still missing.
+  (The images/maps=0 consequence is FIXED in code: real `source_url` from S3 metadata / HyperWar derivation, parser
+  guard, shared map-vs-image classifier, Phase 3 map vision; verify on the next dev E2E. This item now covers only the
+  remaining empty author/series/license/copyright fields.)
+- **[MED · cost/IAM] Task role cannot tag consumed sources for cold archive (found 2026-11-07 E2E).**
+  Every Phase 0 logs `archive_tag.degraded ... AccessDenied PutObjectTagging`: `cloudformation/iam.yaml` ECSTaskRole
+  `S3Access` allows Get/Put/List/Delete but not `s3:PutObjectTagging`, so no source ever gets `archive=cold` and all
+  stay on STANDARD. Add `s3:PutObjectTagging` (and Get) to that statement, deploy the IAM stack, confirm the next
+  Phase 0 logs `Tagged source ... (cold archive)`.
+- **[MED · latency] Phase 1 waits ~9 min for the scheduled backstop after Phase 0 (found 2026-11-07 E2E).**
+  Trigger logged `Pipeline busy (phase0-convert active), Phase 1 will run after completion` at 02:38:44; Phase 0 sent its
+  completion notification at 02:38:59 while its ECS task was still stopping (stopped 02:39:22), so the trigger still saw
+  it active and parked again; only `reconcile-scheduled-backstop` launched Phase 1 at 02:47:39. Fix: the trigger should
+  not count the notifying phase's own task as busy on a `phase-complete` event (or the task should notify after it
+  has exited / the trigger should retry shortly).
+- **[MED · data-loss class] More readers still hard-code `output/source_section/` (found 2026-11-07 E2E; the main bug is FIXED).**
+  The event pass writes `output/content/<book>/source_section/`. Phase 2 step 4b, Phase 3 OpenSERP source-section enrichment,
+  image->place links, intra-corpus dedup and event provenance now share `src/utils/source_sections.py`. STILL on the old path:
+  `phase3_enqueue_openserp.py:42` (`list_files("source_section")` -> enqueues 0) and `openserp_worker._safe_entity_path`
+  (accepts only `source_section/...`); and the schema registry `output_glob` consumers `scripts/validate_phase2.py`,
+  `src/utils/provenance_integrity.py:236`, `src/utils/referential_integrity.py:130`. Route them through the helper (the
+  worker needs a strict `content/<safe-book>/source_section/<ulid>.json` allowance) and add a test per reader.
+- **[MED · quality] Other `resp.text` reads may mojibake UTF-8 pages served without a charset (2026-11-07).**
+  `requests` decodes such `text/*` responses as ISO-8859-1; Grokipedia did, so no accented name matched (fixed with
+  `src/utils/http_text.response_text`). Confirm each site's server charset behaviour, then adopt `response_text`:
+  `src/utils/url_hygiene.py` (`fetch_html_text`), `src/enrichment/wayback.py`, `src/extraction/openserp_maps.py`,
+  `src/extraction/search_external_maps.py`, `src/url_extractor.py`, `src/enrichment/award_polite_source.py`.
+- **[MED · provenance] Carry Phase 1 note provenance into the entity records (schema bumps, do together; 2026-11-07).**
+  Phase 1 (src/notes.py) now records each note's `kind` + citing `paragraph_number`, and `Image.note_number` for an image
+  linked only from a note (XChannel-8 note 23 "naval command chart"). Downstream drops them: (a) bibliography mentions need
+  `paragraph_number` (+ `reference_type` from `kind` in the Grok supplemental path) - bibliography schema bump; (b) the image
+  entity needs a `note_number`/cited-in-note field (`src/extraction/images.py`, `images_output.py` is
+  `additionalProperties: False`) - images schema bump. Each bump: history snapshot, fingerprint pin, SCHEMA_VERSIONING entry.
+- **[MED · security] Scanner baseline (security-scanner MCP + CLI, 2026-11-06). Nothing found in this branch's changes.**
+  Branch vs `origin/main` by Checkov CLI: 141 -> 138 failed, 0 new (fixed: both `CKV_AWS_111` scoped-IAM findings and
+  `CKV_AWS_79` IMDSv1). Bandit `src/` 73 LOW (B110/B112 swallowed exceptions) + 8 in `lambda_handlers/`, 0 MEDIUM/HIGH. ASH on
+  `src/`: 8 HIGH, all false positives (word list flagged as "secret", `secrets.choice` alphabet, SHA-1 with
+  `usedforsecurity=False`, static-registry `import_module`, `http://` adapter mount prefix, "token" in log text).
+  OPEN, all pre-existing:
+    - Grype: the Go tool binaries `tools/search_maps` and `tools/search_media` (tracked in git, built with go1.26.0) carry 3
+      Critical / ~40 High stdlib CVEs. They are not copied by any Dockerfile, so local-only; rebuild with a patched Go or stop
+      tracking binaries. The `openserp` submodule's Go modules (`brotli` Critical, `x/net`, `klauspost/compress` High) ship in the
+      OpenSERP image: bump the submodule (`scripts/check_component_versions.sh`).
+    - ~73 swallowed exceptions (B110/B112) conflict with the actionable-alerts rule; fold into the PATTERN-8 audit.
+    - cdk-nag/Checkov CloudFormation baseline (~138): Lambda DLQ / VPC / concurrency / env-var KMS, DynamoDB PITR + CMK, SNS/SQS
+      encryption, log-group KMS, API Gateway logging/tracing/authorization (`AwsSolutions-APIG4`).
+    - Semgrep standalone is not installed on the dev machine (the MCP `scan_directory_with_semgrep` fails); the MCP Checkov scan
+      returned a STALE copy of `ocr.yaml`. Use the Checkov CLI as the source of truth.
+- **[HIGH · release] Push the local commits and open PR 1 (owner decision pending, 2026-11-06).**
+  `main` has 6 unpushed local commits (`12ee5159`..`7e45750b`: pre-deploy fixes, scripts/ reorg, steering, aws/ and
+  agent-history removal, endnote doc, separation plan). Branch `refactor/pr1-dedup-into-src` has 4 more on top
+  (`f8db5a56` golden test, `9f9e6703` scripts/utils root fix, `27f3fd18` dedup move, `7ac6593d` reclassify fixes).
+  Decide: push `main` first and open PR 1 against it (smaller PR diff), or open one PR carrying all 10. Then let CI run
+  (it has not run on any of these), and after deploying do the end-to-end check in SRC_SCRIPTS_SEPARATION.md §6.
+- **[POLICY · provenance] Provenance-completeness stays NON-FATAL (owner 2026-10-30): escalate LOUD to Slack, do NOT
+  fail_stop.** Rationale: many provenance misses are NON-DETERMINISTIC (LLM ULID variance) and a RE-RUN fixes them; a
+  fail_stop would halt a book a retry would heal. Reserve hard failure for DETERMINISTIC causes (prompt/code bugs like the
+  one above). Action: provenance_integrity enforcement -> wire the SNS/Slack alert (provenance.alert already emits; ensure
+  it reaches the notify topic) + a runbook: on a provenance alert, first RE-RUN; if it persists across runs, it's
+  deterministic -> hunt the prompt/code bug.
+  **STATUS 2026-10-30: Slack escalation is ALREADY LIVE** — provenance_integrity._alert publishes to
+  NOTIFICATION_TOPIC_ARN; verified forwarded ('Forwarded to Slack: :warning: DATA QUALITY — provenance anomalies' at
+  22:51/23:24/00:19/08:05). Non-fatal confirmed. Remaining: write the operator runbook doc.
+- **[MED · observability] Long-running phase has NO mid-phase progress notification to Slack.** Phase-2/3 only notify
+  at start + complete/fail (_notify_complete/_notify_failure). During the ~2.5h serial bio-enrichment window NOTHING
+  reaches Slack (the heartbeat monitor only logs locally, src/utils/heartbeat.py:54 — no SNS/Slack path), so a
+  legitimately-slow phase is indistinguishable from a hung one in the operator's inbox (observed XChannel-8 2026-10-29,
+  'last Slack msg was extract-started'). FIX: emit a periodic progress notification (e.g. enrich N/total every K min, or
+  route the heartbeat through observe()/NOTIFICATION_TOPIC_ARN). Pairs with the heartbeat-false-alarm fix below.
+- **[MED · observability] Phase-2 heartbeat FALSE-ALARM.** 'no progress for N minutes' counts up to 99 min while the
+  per-person enrichment loop IS progressing — the heartbeat only resets on Step-level progress, not per-entity. Fix: reset
+  the heartbeat on per-person enrich.persisted (or any OBSERV progress), so a real stall is distinguishable from slow work.
+- **[P1 Phase-0 security DONE (PR #618)]** AV default-on+non-dev hard-fail, docx/epub ZIP spoof detection, convert_key crash off-ramp, prestage decompression-bomb cap, book_slug key validation+safe_dump meta, book-derivation convergence. FOLLOW-UPS: (a) av_scan.py:131 still has its own _book_from_key copy — converge onto book_slug; (b) epub non-canonical-mimetype soft-accept (intentional, revisit if strict). Remaining Phase-0 Tier-1 P2 (PHASE0_REVIEW_consolidated.md): real author/title/series extraction (P2-C1 big half), fitz pixmap/page cap (P2-S1), pandoc output-size/memory cap (P2-S2), AV scan-tag binding on convert/video path (P2-S3/P2-S2.3), S3 download size cap + ffmpeg -t (P2-S4), Grok-fallback payload cap (P2-S5), translation chunk cap (P2-S6), uuid4 AV run_id (P2-S7), reject-marker per-source-hash key (P2-C2), _patch_config setdefault aws (P2-C3).
+- **[HIGH · data-quality] Deterministic-vs-Grok YIELD-RATIO quality signal (design, owner-aligned 2026-10-28).** Cumulative,
+  self-calibrating data-quality assessment: a DETERMINISTIC high-recall scan of the source text produces an expected-yield
+  FLOOR per entity type; Grok's extracted count is measured against it; `ratio = produced / deterministic`. grok≈det (25 vs
+  25-28) = good; grok≪det (25 vs 0-5) = data-quality ALARM (the starvation signature). SEVERITY LADDER (owner 2026-10-28 — a
+  deterministic shortfall may JEOPARDIZE AN ENTIRE BOOK, so worst case must STOP THE JOB until root cause is determined):
+    • ratio≈1 -> INFO, proceed (healthy).
+    • one entity moderately low (ratio ~0.3-0.5, modest baseline) -> WARN + recall-gap review, proceed (isolated dip).
+    • BOOK-JEOPARDIZING signature -> **FAIL-STOP**: produced==0 while deterministic>=floor on a single entity, OR shortfall
+      across >=2 entity types simultaneously (the paragraph_numbers fingerprint: upstream fault starves ALL passes). Emit loud
+      `OBSERV yield.fail_stop` + `raise SystemExit(nonzero)` at END of Phase 2 so ecs_entrypoint (subprocess returncode!=0 ->
+      _notify_failure + sys.exit, lines 816-841) HALTS the chain (Phase 3 never triggers), fires a failure notification, and
+      PRESERVES partial output for diagnosis. Check runs per-event/early so a 20-chapter book aborts at chapter 1, not after
+      burning spend on a corrupt corpus. Threshold (floor, min-baseline, single-vs-multi-entity) tunable in config.
+  (no hand-maintained golden list); ratios accrue over many books into a WEIGHTED assessment. Reuses existing assets:
+  people_group_aliases/equipment_aliases/place_aliases.yaml, data/unit_nicknames.yaml, military_equipment.yaml, unit-designator
+  regex (`N(st|d|th) Division/Corps/Army`, `Force [A-Z]`, RAF, OB WEST). Alarm only when baseline >= min (e.g. 5) & ratio <
+  floor (e.g. 0.5), tunable in config. Append each (book,chapter,entity,deterministic,produced,ratio) to
+  output/metrics/yield_quality.json. Wire into observe_yield (PR-A).
+  **PEOPLE need special handling (owner):** count DISTINCT person-CLUSTERS, not mentions — "General Cota"/"Norman Cota"/"Cota"
+  = 1 (reuse batch_parallel._strip_rank + caption_names detect + src/dedup/surname_report distinct-people clustering + its
+  rare→very_common frequency bands). TWO signals, not one ratio:
+    (A) QUALITY RATIO on the HIGH-CONFIDENCE band only (rank+distinctive surname, or First Last, or repeated First M. Last) — can alarm.
+    (B) RECALL-GAP REVIEW for the AMBIGUOUS band ("Private Smith" = low-rank + common surname): deterministically detected but
+        NOT resolved to an extracted person -> emit a HUMAN FOLLOW-UP item (new `recall-gap` review category, reuse the
+        needs-review path), NEVER silently dropped and NEVER fails the run. RATIONALE (owner): "Private Smith may be a Medal of
+        Honor awardee" — ambiguity != unimportance; the asymmetric cost means ambiguous-and-unextracted must err toward
+        SURFACING for verification. GENERALIZES to all entities: any deterministic-found-but-extraction-missed item -> recall-gap
+        follow-up (unit the regex caught but Grok dropped, gazetteer place Grok missed). Over time, how often recall-gap items
+        prove real/notable also feeds the weighted assessment.
+
+- **[HIGH · observability] Observability SWALLOWS ITS OWN ALERTS — systemic, ~40 sites across 7 patterns** (audit 2026-10-28,
+  full report `OBSERVABILITY_SWALLOWED_ALERTS_consolidated.md`). The `paragraph_numbers` fulltext bug (fixed PR #608) was ONE
+  instance; the CLASS is open. Patterns: (1) silent except/except-pass (~15 sites); (2) anomaly logged at DEBUG (~10) — incl
+  the EXACT same empty-fulltext-skip still live at **places.py:239, people.py:569, dates.py:139, weather_central.py:683**
+  (#608 only fixed events.py); (3) zero/empty yield logged status=ok (~8: equipment.py:3027, places.py:415, people.py:1296,
+  dates.py:536, phase2 optional extractors); (4) degraded fallback w/o warning (~5: openserp breaker elif, reconcile barrier,
+  referential_integrity timeout reads clean); (5) NO expected-yield baseline (~6: openserp searched 1-of-14 unflagged,
+  skip-no-name, validation count>=10 gate misses small batches); (6) NO cross-metric correlation (~5: rich sub_events vs 0
+  entities never correlated); (7) size-masks-empty-content (events fallback FIXED). ROOT: no `observe_yield(entity, sub_events,
+  fulltext_nonempty, produced)` helper — produced=0 is indistinguishable from eligible=0. FIX PLAN (5 PRs): PR-A observe_yield
+  helper+baseline (enabler, would have caught the original by design); PR-B extraction starvation (#1,2,8,9,10); PR-C
+  enrichment starvation (#4,5,6); PR-D integrity gates (#3,7 + provenance SNS parity + Phase-3 reconcile gate); PR-E
+  debug→warn sweep + untraced-except counters. TOP-10 P1 list in the report.
+  - **TEST-SUITE MIRROR GAP:** the existing OBSERV tests (test_phase3_comprehensive_observability, test_enrichment_observability)
+    DO assert anomaly correctness (groups.anomaly 0-of-N, openserp 0-of-4, places.anomaly), not mere presence — but ONLY for
+    the ENRICHMENT layer where an anomaly signal existed. The EXTRACTION layer had no anomaly concept, so there was nothing to
+    test (can't test an alarm that doesn't exist); and NO test asserts the cross-stage contradiction (rich sub_events + 0
+    downstream entities). Worse, the gates the tests validate ask the wrong question (groups.anomaly keys on `needed`, which was
+    itself corrupted upstream — test passes, gate fires correctly, bug still ships). FIX: every observability PR must add the
+    cross-stage yield-correlation test alongside the signal. PR-A (observe_yield) adds the first such test
+    (sub_events>0 & fulltext_nonempty=0 -> starvation) — the one that would have caught the original incident.
+
+- **[HIGH · schema-design] schema.org entity enhancements** — ✅ LARGELY DONE (2026-10-27/28).
+  Proposal `docs/current/design/SCHEMA_ORG_REVIEW.md`; ADOPTED + POPULATED: places 2.30 (sameAs/
+  containedInPlace/containsPlace/geo/additionalProperty/elevation_m, PR #596) + images 2.27 (14 ImageObject
+  fields, #597); Tier-1 deterministic population (image dims/encodingFormat #598; images.contentLocation +
+  places.sameAs from wiki/grok urls #599); Tier-2 (Wikidata QID #600; OSM/Wikidata via Nominatim #601;
+  opt-in elevation_m from DEM #602). REMAINING (backlog, owner-decide): sameAs+identifier rollout to
+  people/people_groups/bibliography; people_groups time-bounded `org_attachments[]` (OOB, M6-populated);
+  GeoNames gazetteer id (needs a free username); a prompt/schema subset-consistency guard (§11); source-only
+  image fields (licensing/dateCreated/caption) via prompt IF wanted. See SCHEMA_ORG_TIER2_SCOPE.md.
+- **[HIGH · ingestion-bug] Book-name derivation mismatch: title-folder vs filename-stem aborts Phase 0.**
+  Found in the XChannel-8 cloud E2E (2026-10-28). Uploading `contentrepository/{TITLE}/{file}.html` where
+  TITLE != the file stem fails Phase 0 convert: `trigger_handler._book_from_key` derives the book from the
+  TITLE FOLDER (e.g. `USA-E-XChannel`), but the launched phase0-convert task used the FILENAME STEM
+  (`USA-E-XChannel-8`) as the book-scoped download prefix -> `contentrepository/USA-E-XChannel-8/` had 0
+  files -> ERROR "Book-scoped Phase 1 downloaded 0 files ... aborting (would parse an empty book)". The two
+  code paths (Lambda trigger book-derivation vs the convert task's BOOK_NAME/prefix) DISAGREE. Workaround
+  used: upload with folder==stem (`contentrepository/USA-E-XChannel-8/USA-E-XChannel-8.html`). FIX: make the
+  convert/phase task derive its book-scoped prefix from the SAME `_book_from_key`/title the trigger computed
+  (pass the derived book to the task, or have the task reuse the identical derivation), + a test for the
+  TITLE!=stem shape. Evidence: ECS log `/ecs/dev-wwii-pipeline` ~2026-10-28T12:52:46Z.
+
+### Older backlog - MED list
+- **[MED · owner 2026-11-11] Books submitted together are processed as separate books.** When more than
+  one book is uploaded at the same time, each one gets its own runs (its own Phase 0-3 tasks, Grok
+  batches, locks, stats and alerts). Runs are never combined across books. One book's failure, retry,
+  purge or rerun must not hold up or touch another book. Check where runs are grouped today (the
+  trigger's per-wave key batching, the multi-doc task pool, Grok batch submission) and split them
+  per book.
+- **[MED · owner 2026-11-11] Provenance validation run for a book - Phase 2 + Phase 3 DONE.**
+  `scripts/validate_provenance.py` (matcher: `src/utils/quote_match.py`) runs per book at the end of
+  Phase 2 (`ecs_entrypoint._provenance_gate`): quotes in the cited paragraphs / sub-event, sub-event
+  links, paragraph locators, note quotes. At the end of Phase 3 - after every merge (dedup
+  auto-merge, bibliography reconcile, Dedup Review UI) - it re-runs those and adds P3-B1 (no stub
+  bibliography entries), P3-R1 (license / copyright_status / NARA archive reference), P3-A1
+  (enriched records name their source) and P3-C1 (every cited note has a bibliography entry).
+  Gate mode `provenance_validation.gate` / `PROVENANCE_GATE`: `warn` now; `block` holds Phase 3
+  (end of Phase 2) or keeps the book from "done" (end of Phase 3, multi-doc: needs-review).
+  Switch to `block` once the extraction defects below are fixed. LIMIT: in serial mode a held
+  Phase-3 book is alerted only (there is no doc lifecycle to hold). A Dedup Review UI merge made
+  after the book's Phase 3 is validated only by the book's next Phase-3 run.
+  Merge review (2026-11-11, fixed): all merges now union mentions by ONE rule
+  (`entity_records.merge_mentions`: one mention per sub-event); bibliography no longer collapses
+  unnumbered notes (`citation_identity`); the UI merge writes the primary before deleting.
+  Still open: the UI people merge repoints only event sub-event refs, not PersonID/PlaceID/GroupID
+  held in other records (referential_integrity catches it); a dropped same-sub-event mention's
+  alternate quote is not kept, and its MentionID is not redirected (only `maps.PeopleGroupMentionID`
+  references a mention id; dates keep their own key `(Sub_eventID, original_text)` with a
+  `DateMentionID` redirect in `scripts/merge_dates.py`).
 - **[MED · DESIGN · owner 2026-11-08] Book naming: a WORK key + an EDITION key, so duplicate
   titles and editions of one work are told apart.** CONSTRAINT (owner 2026-11-11): slugs are
   IMMUTABLE (`.kiro/steering/architecture-decisions.md`, "Book identity") - this scheme applies to
@@ -1779,16 +2468,6 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   Attack full-book cross-check). FIX: take the output prefix from the container command (the
   second `s3://` argument); if it is not under `ocr-output/`, log `OBSERV ocr_merge.skip
   reason=output_outside_ocr_output` and return without merging or alerting; test both paths.
-- **[MED · provenance/copyright] Copyright date rules have off-by-one and stale-cutoff errors (found 2026-11-06).**
-  Not verified by a lawyer; these are code-vs-stated-rule mismatches against `docs/current/core/copyright/`.
-    - `src/extraction/copyright_calculator.py`: for a US work with an unknown death date, only `pub_year < 1928` is
-      treated as public domain. That hardcoded cutoff has gone stale: works from 1928–1930 have since entered the public
-      domain, so they are now reported as `unknown`. Derive the cutoff from the current year instead.
-    - Both modules treat life+70 as expired when `current_year >= death_year + 70`. The term runs to the END of
-      that year, so a work enters the public domain on Jan 1 of `death_year + 71`. The code over-claims public
-      domain by one year, which is the harmful direction for a citation-ready dataset.
-    - `supplemental_advanced._determine_usa_copyright` has the same off-by-one for the 95-year term (`pub_year + 95`).
-    - Two implementations of one rule: consolidate into `copyright_calculator` and pin it with year-boundary tests.
 - **[MED · architecture/gate-coverage] Move pipeline code out of `scripts/` into `src/` (plan: `design/SRC_SCRIPTS_SEPARATION.md`).**
   The pipeline imports 11 modules from `scripts/` (dedup detectors, validators, metadata completion, the metrics Lambda
   handler), and two `src/dedup` modules import `scripts/` themselves. The gate lints only `src/` and `lambda_handlers/`,
@@ -1810,12 +2489,6 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
       Walter Bedell Smith; bare "Marshall" grouped with George Marshall; Panzer Lehr clustered with 2nd Panzer.
     - PR 2: the `metrics` Lambda handler is `scripts.view_metrics.handler`, but `scripts/update_lambdas.sh` never
       packaged `scripts/view_metrics.py` (CI's deploy.yml copies all of `scripts/`, so it works only after a CI deploy).
-- **[MED · entity-resolution] Resolve `people_groups` against the ETO Order of Battle (the authoritative unit spine).**
-  Moved from the steering "known gaps" list (2026-11-04). Name-level resolution exists (`find_duplicate_groups`,
-  `src/dedup/unit_key.py`, `data/unit_nicknames.yaml`), but nothing resolves groups TO the OOB: the OOB crosswalk
-  (`src/ingestion/oob_markdown/crosswalk.py`, `entity_emit.emit_crosswalk_to_people`) links command staff -> people only.
-  Open: map each per-mention group to an OOB unit, and add the time-bounded `org_attachments[]` on `people_groups`
-  (see the schema.org item under HIGH).
 - **[MED · verify-on-next-run] Confirm four former "known data-quality gaps" are closed in the DATA, not just the code.**
   Code now covers each, but the dev environment was empty on 2026-11-04 (data bucket had 0 objects; the entity
   DynamoDB tables are empty by design), so none could be checked against real records. After the next full run verify:
@@ -1825,13 +2498,6 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
     - Bibliography: no stub records (`ibid`, bare numbers like `1`/`26`) persisted (`bibliography._is_stub_citation` skips them
       at extraction; it does not clean records already stored).
   Then refresh `DATA_QUALITY_STATUS.md` (dated 2026-10-05; still lists "Places missing coordinates" as open).
-- **[MED · provenance] Derive endnote vs footnote `reference_type` from the SOURCE, not Grok.**
-  From the retired `messages/TODO_fetch_endnote_content.md`. Endnote text is now fetched and passed to the supplemental
-  prompt, but `reference_type` is still the model's call: `supplemental._build_ref_context` only adds a type hint when NO
-  text was found, and `_separate_by_type` routes on whatever the model returned. Symptom seen before: Breakout and Pursuit
-  (endnote-only) produced `*-footnotes.json`. Fix: set the type deterministically from the source structure (marker style /
-  where the definition lives) during parse, carry it in the parsed `footnotes` entries, and override the model's value.
-  See `docs/current/features/supplemental/ENDNOTE_HANDLING.md`.
 - **[MED · storage/cache] Move the external search-result cache from DynamoDB to S3.**
   Owner direction (2026-11-04): DynamoDB is for queues only; caching is fine but belongs in S3. `src/utils/search_cache.py`
   (`_DynamoBackend`, keys `search#<source>#<hash>`) is the target, written from 17 live sites across 14 sources (nara,
@@ -1851,15 +2517,6 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
       `scripts/README.md`), so a "clean" dev run can see stale `NOT_FOUND` results.
     - Not in this item: `fetch_provenance` (`fetchevent#`) and `url_registry` (`url#`, `excludedomain#`) were judged acceptable
       in DynamoDB but can give unpredictable results in Dev; revisit with the reset behaviour above.
-- **[MED · observability-precision] download.file_missing cries wolf on expected-absent TRACKING files.** On every clean-slate/
-  first run, Phase-2 download lists then 404s on index.json / .processed_events.json / manifests/run_scope/<book>.json — all
-  TRACKING/index files that legitimately don't exist yet — and each fires OBSERV download.file_missing status=ERROR ->
-  Slack. Non-fatal (run proceeds, only the parsed+event files matter) but noisy + indistinguishable from the REAL signal
-  the OBSERV was built for: an ENTITY/PARSED file that vanished between list and get (true corpus-shortening data loss).
-  FIX (ecs_entrypoint._download_s3_file #15): classify the key — an expected-absent tracking file (basename in
-  {index.json, .processed_events.json, not_duplicates.json, not_related.json} or under manifests/run_scope/) -> status=info
-  (or debug), NOT error; reserve status=error (loud Slack) for *-parsed.json / *-event.json / entity record keys. Keeps the
-  real data-loss alert sharp and stops the clean-slate false alarms.
 - **[MED · notification] Dedup "notify on zero duplicates" reaches no inbox — silent on a clean run.**
   Found in the XChannel-8 E2E (2026-10-28). `_notify_dedup_gate` (ecs_entrypoint) ALREADY notifies on BOTH
   outcomes — subject "dedup auto-proceed" for zero-dup clean runs, "dedup review needed" when blocked — and
@@ -1870,33 +2527,6 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   (and the sibling `_notify_url_review_pending`) emit a greppable OBSERV with the outcome + whether the topic
   has a confirmed subscriber (so a no-inbox publish is visible, not a silent success). FIX (operational, not
   code): set `aws.notification_email` / subscribe the operator email to `NOTIFICATION_TOPIC_ARN`.
-- **[MED · phase3-race] Phase 3 proceeds past the reconcile barrier on timeout → late bibliography records missed.**
-  Found in the XChannel-8 E2E (2026-10-28). Phase 3 logged `OBSERV reconcile.barrier_timeout ... waited=300s —
-  proceeding (Phase 3 may snapshot before reconcile finished; a late bibliography record could be missed this
-  run)`, then the bibliography step ran with `No bibliography files found` / `bib.resolve in=0`. The supplemental
-  Phase-2 batch that would have written endnote/bibliography records was offloaded to the (disabled) batch-poller
-  and never completed, so Phase 3 timed out waiting and enriched an empty bibliography. FIX: the barrier-timeout
-  is currently a WARNING that proceeds silently-ish; make it a loud anomaly AND, when there are KNOWN outstanding
-  queued batches for this book, either (a) block/defer the bibliography step rather than snapshot an empty set,
-  or (b) mark the book "bibliography-incomplete, re-enrich pending" so a later poller-drained run fills it.
-  Ties to the disabled-batch-poller [HIGH] item — a disabled poller turns this race into a guaranteed miss.
-  ✅ DONE (PR #604): added canonical OBSERV phase0.converted/skipped/rejected/error + phase1.parsed/
-  skipped/summary (fail-safe, +4 tests). ORIGINAL FINDING: Investigated during the XChannel-8 E2E (2026-10-28). Unlike Phase 2/3 (rich `OBSERV <comp>.<event>` +
-  summaries), phase0_convert.py has 0 OBSERV lines and phase1_parse.py has 0 OBSERV lines — they rely
-  entirely on the generic `ecs_entrypoint` wrapper (`[step] ...` + a success-path `phase_complete` w/
-  duration) + (Phase 1 only) a single `OBSERV run_scope.record`. Gaps: (a) phase0 convert OUTCOME is a plain
-  `logger.info("Converted %s -> %s (%d chars)")` (line ~174), not `OBSERV phase0.converted`; (b) the convert
-  ERROR/abort paths (lines ~103/122 + the book-prefix abort) emit a plain logger.error with NO OBSERV and NO
-  phase_complete — so a Phase-0 FAILURE is not greppable as a canonical anomaly (this is exactly why the
-  book-derivation abort above was hard to see); (c) phase1 'Saved ...-parsed.json (N paragraphs)' / 'Phase 1
-  complete' are readable `root` logs, not `OBSERV phase1.parsed`. FIX: add canonical OBSERV domain events to
-  both phases (phase0.converted/skipped/error with book+chars; phase1.parsed with book+chapters+paragraphs)
-  + ensure the convert abort emits an observable anomaly line, mirroring Phase 2/3.
-- **[MED] source_section derive failed for 2 sections** (clean rerun e4b22d9).
-- **[MED · dedup-false-positive] place dedup is string-only at the Phase-2 gate (no coords)** — Roscheid/
-  Schmidt (deferred fix #2).
-- **[MED · dedup] NEAR-duplicate content detection (MinHash/LSH)** — same text across two domains, not
-  byte-identical.
 - Phase-2 re-review follow-ups (WARNING/NIT) still open in **§1.0d/§1.0c**: ocr_merge_handler run_task
   guard, ecs retrieve-path count-mismatch, search_cache transient-miss, wayback DNS-rebind pin-gap,
   credit-reservation leak, non-idempotent OCR resubmit, ingestion/Phase-0 zip-bomb/AV-bypass, + the NIT batch.
@@ -1913,7 +2543,7 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   any `return None/[]/{}`/`except: pass`/`continue` in a failure branch must carry an `OBSERV ... status=error|warn`
   within N lines or an explicit `# OBSERV-EXEMPT: <reason>`.
 
-### LOW
+### Older backlog - LOW list
 - **[LOW · test-hygiene] Tests write into the tracked `logs/processing_summary.json` (found 2026-11-06).**
   `src/extraction/events._write_processing_summary` appends to the cwd-relative `logs/processing_summary.json`, and
   event-extraction tests (for example `tests/test_events_paragraph_range.py`) run it from the repo root, adding
@@ -1924,28 +2554,6 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
   under STRICT_TRIVY_VERSION=1); remaining action = bump the installed binary on the deploy host.
 - **[LOW · sec-hygiene] pylint CVE-2026-114608: FIXED by bumping requirements-ci.txt pylint 4.0.5 -> 4.0.9** (the only
   waived CVE; CI-tooling-only, NOT in the runtime image — Trivy on the image = 0 findings). Clears the pip-audit waiver.
-- **[LOW · investigate] Is `config/domain_blacklist.yaml` blacklist still HONORED by OpenSERP?**
-- **[LOW · dep-advisory] pylint 4.0.5 → 4.0.9** (CVE-2026-114608); pip-audit — not run in CI.
-- **[LOW · security-hardening] `_download_s3_file` path-traversal containment** (ecs_entrypoint).
-- **[LOW · observability · DRY review follow-up 2026-11] `src/extraction/logistics.py:390` swallows a whole-chunk
-  loss.** `except Exception: logger.error("Batch logistics extraction failed: %s"); return {}` drops the entire
-  chunk's logistics on any error with only a bare `logger.error` (no canonical OBSERV, so it never escalates). Convert
-  to `observe_error("logistics", "batch_failed", ...)` (anti-swallow; surfaced during P1.4 but out of that PR's scope).
-- **[LOW · data-hygiene · DRY review follow-up 2026-11] wikipedia image-URL query-strip inconsistency.**
-  `equipment_wikipedia._extract_equipment_page` strips `?query`/`#fragment` from the image URL before the Commons
-  license lookup; `groups_wikipedia._extract_group_page` does NOT, so a group image URL with tracking params yields a
-  dirty `File:` title and a missed/incorrect license. Make groups strip the same way (surfaced during P1.9).
-- **[LOW · observability · phase3 review follow-up 2026-11] people/people_groups/places OpenSERP write-paths
-  count-iff-persisted but emit NO `write_failed` OBSERV on a failed write** (silent non-count). PR #711 added the loud
-  `write_failed`=error + `records_unreadable` metrics to equipment + source_section only; extend the same
-  loud-on-failed-write treatment to the people/people_groups/places paths for full write-loss observability parity.
-- **[LOW · security-hardening · phase3 review follow-up 2026-11] `fetch_review._find_content_bytes` containment-root
-  check** — the read is now 25 MiB-capped (PR #712) and the stored `quarantine_path` is basename-normalized at the write
-  side (`source_retrieval.py` uses `Path(urlparse(url).path).name`), so traversal risk is LOW. Defense-in-depth: add a
-  `p.resolve()`-under-quarantine-dir assertion in case a future caller stores an unsanitized path into the event.
-- **[LOW · data-hygiene] people index/duplicate_report count drift** (overlapping-rerun artifact).
-- **[LOW · ci-flake] test_validation_performance wall-clock thresholds.**
-- **[LOW · yield] OpenSERP group-image search returns HTML page URLs, not direct images.**
 - **[LOW · observability PR-D-L3] Lambda handlers' PRE-EXISTING inline `logger.error` lines interpolate book/key/batch_id**
   (latent log-forgery vector, not widened by PR-D) — route those diagnostics through the `observe()` sink (sanitized) or
   newline-strip. (From the PR-D security review 2026-10-29.)
@@ -1956,9 +2564,6 @@ tie to the tiered-classifier work + the deterministic-first/Grok-backstop design
 - **[LOW · observability PR-E-L2] `dedup_ui_handler` `add_by_name` returns HTTP 200 "excluded" even when the pair was NOT
   persisted** (curated-file read-fail path). Operator truth is the Slack/OBSERV alert; UX gap only — surface the non-persist
   in the HTTP response.
-- **[LOW · deploy-provenance] `scripts/deploy_all.sh` doesn't pass `--build-arg GIT_SHA`** so the pipeline image's
-  `GIT_SHA` env/label is `unknown` (cosmetic provenance gap; image content is still current main). Pass
-  `--build-arg GIT_SHA=$(git rev-parse HEAD)` in `build_scan_push`.
 
 ### ✅ Recently CLOSED (headline)
 - **MULTIMODAL epic M1–M8 COMPLETE** (PRs #587–#594): in-doc maps, embedded/caption images, image→Person,
@@ -2007,8 +2612,6 @@ Full contract:
    forwards them to Grok vision. Route downloaded binary bytes through quarantine->scan->alert
    before persist/forward.
 
-
-
 ### TEST: simulate a virus file end-to-end through the AV gate (EICAR) (MED)
 Validate the download-path AV flow with the STANDARD EICAR test string (the safe, industry-standard
 68-byte test "virus" that every AV incl. ClamAV flags as Eicar-Test-Signature, harmless). Stage an
@@ -2018,6 +2621,8 @@ unscanned/); (3) reject_to_review + freeze fire; (4) OBSERV av.verdict result=in
 av.phase3_drain quarantined>=1. Also a clean image -> promoted to prod, and (ideally) a truncated/
 unscannable -> stays unscanned. Proves the three zones + alert work against a real detection, not
 just mocks. (Owner 2026-11-02.)
+
+---
 
 ## 1. PHASE 2 — OPEN (current priority)
 
@@ -2214,36 +2819,10 @@ priority order; fix each via branch→gate→concurrent code+security reviews (b
 
 ## 2. PHASE 3 / ENRICHMENT — OPEN
 
+Phase 3 items of this section moved into the "Phase 3 work order" at the top (2026-11-17);
+what is left here is not part of a Phase 3 test group.
+
 ### 2.1 OpenSERP redesign (the measured CPU bottleneck — 98.7%)
-
-- **[DESIGN · operator-directed] OpenSERP scope reduction — PDF/EPUB source discovery + HTML
-  references via Grok + human-gated acquisition.** DOC:
-  `docs/current/design/OPENSERP_SCOPE_REDUCTION.md`. OpenSERP finds acquirable PDF/EPUB **documents**;
-  Grok proposes authoritative **HTML reference** links; both flow into a human **ADD /
-  DISCARD(≥90-day) / NEVER(permanent url/host block)** gate (UI renders a clickable link; no
-  snapshot). KEY FIX: `_openserp_fetcher` must RESOLVE item/landing pages to the document
-  (archive.org/HathiTrust item pages), not reject on a bare-suffix rule. Reuses Grok-verify, SSRF
-  guard (#453), dedup-UI pattern, acquisition fetchers. Open Q: are place/person IMAGES user-facing
-  today? measure before dropping image search. (Supersedes the A00 "Grok-proposes + liveness + human
-  audit" framing — same intent, now fully specced in the doc.)
-
-- **[TODO · owner 2026-11-04 · DESIGN] Web interface to SUBMIT and REVIEW sources - both what
-  Phase 3 finds AND new documents / sites (a PDF, a scan, a transcription site, an archive
-  collection) that a user or operator brings - the path for expanding the knowledge base WITH
-  provenance.** Goal: grow the corpus from Phase 3's discoveries (OpenSERP PDF/EPUB documents,
-  Grok-proposed HTML references, NARA/bibliography resolutions) and from directly submitted
-  documents and websites, all through ONE review gate, with every accepted item carrying its
-  provenance end to end (where found, by what query/resolver and version, who reviewed it and
-  when, the decision and reason, source URL + content hash, license/copyright status, and for a
-  second copy of an existing work its edition/printing - the newer printing is deferred to,
-  especially for people's names). Start from the human ADD / DISCARD(>=90-day) / NEVER gate in
-  `docs/current/design/OPENSERP_SCOPE_REDUCTION.md` and the dedup-UI pattern (§1.4); an accepted
-  document enters Phase 0 like any upload (scanned PDF -> Chandra; a transcription of a book we
-  already hold -> `scripts/crosscheck_pdf_html.py` against it); a submitted SITE needs a
-  site-level record too (owner, terms/license, crawl scope, which pages were taken and when).
-  Open questions: authentication for
-  submitters, static-site hosting vs API Gateway (Phase 2 of the architecture plan), and how
-  review decisions are stored (versioned, auditable).
 
 - **[TODO · UI · owner 2026-11-08] What the site may SHOW depends on the source's copyright
   status (the UI has not been started - remember this when it is).** Copyrighted material will
@@ -2288,112 +2867,16 @@ priority order; fix each via branch→gate→concurrent code+security reviews (b
 
 ### 2.2 NARA resolution redesign (correctness)
 
-- **[HIGH] STOP using Grok to determine Record Groups — deterministic RG lookup + structured query.**
-  Grok's RG determination is poor (fabricated RG/NAID; `archive_reference_number` even stored Grok's
-  prose). REDESIGN: (1) RG = deterministic lookup against NARA's Record Group Explorer (static
-  alias→RG map: unit records→RG 407, "MS #"/Foreign Military Studies→RG 549, Army operational→RG 338,
-  HQ ETO→RG 498, Allied HQ→RG 331, War Dept→RG 165, seized German→RG 242); (2) query via the catalog
-  API's STRUCTURED filters (`ancestorNaId=<RG>` + `levelOfDescription=series`) not verbatim-as-`q`;
-  (3) Grok SEMANTIC ONLY. Replace `_identify_record_group`/`_identify_nara_record`; parse
-  `archive_reference_number` to the bare RG.
-
-- **[HIGH] Phase-3 bibliography resolution: re-attempt + concurrency.** (1) The resolver SKIPS records
-  with a terminal `search_status` so an improved resolver never re-runs on `not_found` — treat
-  `not_found` as NON-terminal (re-attempt until genuinely resolved; consider a resolver-version
-  stamp). (2) Manual `aws ecs run-task` Phase-3 launches are NOT guarded by `lock#dev-wwii-phase3-
-  enrich`, so overlapping tasks clobber `output/bibliography/*.json` (observed resolved=9 clobbered by
-  stale resolved=2). Guard manual launches; run ONE Phase 3 at a time.
-
-- **[HIGH] Back-reference / multi-document citation — two sub-items remain.** Within-chapter DONE.
-  OPEN: (a) MULTI-DOC NOTE ("A; B; C" stored as ONE record — LLM overlay's semantic job); (b)
-  CROSS-CHAPTER DOCUMENT IDENTITY (ch3 "Irwin Diary" == ch5 — dedup's job).
-
-- **[HIGH] 3 footnote CLASSES — hybrid SPLIT is the gap.** CITATIONAL → bibliography, PROSE →
-  ✅ DONE (code check 2026-11-16): `content_class` already carries citation / prose / hybrid with a per-entry `prose_content` (`src/json_schemas.py` supplemental schema; `supplemental._route_one_material` routes hybrid to BOTH). The "OPEN" text below is the original gap.
-  notes-event, HYBRID → BOTH. The 3-way split is the Phase-2 supplemental LLM's job. OPEN: add
-  per-entry `prose_content` + widen `content_class` to {citation, prose, hybrid}; prompt the LLM to
-  SEPARATE prose from citation(s); route prose → `{chapter}-notes-event.json`, each citation →
-  `store_bibliography_entry`; regex detector becomes a non-decisional backstop.
-
-- **[HIGH] alt_title expansion not running + duplicated + not schema-enforced.** (1) The expansion
-  rule (#421/#425) drives the Phase-2 supplemental BATCH (skipped/cached) and isn't clearly wired to
-  UPDATE deterministic records → add alt_title expansion as a direct per-record Grok call in Phase-3
-  `_enrich_bib_file` (idempotent). (2) `_build_bib_entry` keeps alt_title at top-level AND inside
-  `citation` → can drift; pick a canonical home. (3) `bibliography_output.py` allows both but doesn't
-  enforce they match → add a consistency check.
-
-- **[HIGH · feature] Acquire + process positively-verified source documents (NARA / archive.org /
-  OpenSERP).** Download the document, preserve the original under `source/` (existing Glacier-IR
-  lifecycle), convert via Phase 0, process via Phase 1→3; the record flips `held_unprocessed` →
-  resolved/local. Pluggable fetcher REGISTRY keyed by `search_source`; human-review gate scaled by
-  FORMAT+SIZE (NARA page-image sets ≥50 → review; PDFs → review by default; text → auto-process);
-  SEPARATE opt-in pass (config-gated); idempotent by naId/item-id; auto-acquire only `public_domain`.
-  S3-NATIVE (idempotency = presence of `source/<search_source>/<id>/`, no Dynamo). NARA budget = 10k
-  queries/MONTH (bumpable to 150k; downloads quota-free) → persist `digitalObjects` at RESOLVE time so
-  acquisition doesn't re-spend a query; add an OBSERV counter.
-
-- **[HIGH · schema] A document must support MULTIPLE DISTINCT SOURCE ENTRIES.** Replace
-  `resource_urls: [string]` with `sources: [object]`, each with url / source (nara|nara_physical|
-  archive_org|hathitrust|...) / format / license+copyright_status (per-copy) / access /
-  archive_reference_number / download_status. `source=nara` ONLY from a REAL catalog API hit (never a
-  Grok "RG…"). Precedence: local holding → online repos → physical NARA visit LAST (`nara_physical`,
-  `access=physical_only`, RG/series/box/folder — a resolved-with-location outcome). Additive + version
-  bump + fingerprint re-pin.
-
-- **[HIGH] Capture the actual Bibliography section + abbreviations decoder.** CMH green books have a
-  "Bibliographical Note" (full citations) + an "Abbreviations" list (decodes footnote shorthand). Add
-  a parser back-matter detector; emit `*-bibliography.json`/`*-abbreviations.json`; prefer
-  bibliography-section entries + apply the abbreviations map to footnote verbatims before NARA.
+(All items moved into the Phase 3 work order at the top, 2026-11-17.)
 
 ### 2.3 People / places enrichment
 
-- **[HIGH] People `biographical_profile` (bio TEXT) — confirm Phase configuration.** 0/59 on the
-  Phase-2 clean run; likely EXPECTED (bio enrichment moved out of the standard Phase-2 path). Verify
-  whether/where it is intended to populate; `enrich.persisted entity=person enriched_now/has_bio/
-  sources` (#465) will show the truth on a re-run.
-
-- **[FOLLOW-UP] People bio + group enrichment attribution + back-fill.** Group `_source` stamped
-  (#462). Remaining: (a) verify/stamp people `biographical_profile` attribution once bios repopulate;
-  (b) pre-fix 0/74 unsourced group records only back-fill on a forced re-enrich — add a one-time
-  backfill if needed.
-
-- **[HIGH] Phase 2 should capture place HISTORICAL NAMES / ALIASES from Grokipedia/Wikipedia.**
-  `enrich_place_from_wikipedia` writes only url+image+hierarchy; pull infobox/native/former names
-  (Wikidata P1448/P1705) + Grokipedia body into `historical_names[]` tagged by source. Feeds Phase-3
-  name-variant geocoding.
-
-- **[HIGH] Capture CO-REFERENCED place aliases from surrounding text.** `PlaceMention.historical_name`
-  is SINGULAR → Grok keeps one. "Bogeyman Hill (Hill 697, the Schwarzer Mann)" names one place three
-  ways; we keep the ungeocodable nickname. Change the extraction model to an ALIAS ARRAY (+ prompt)
-  tagged by type+language. Geocode recovery (cheapest tier): on a miss, re-read the place's own
-  `original_text` for aliases before web/translate tiers.
-
-- **[HIGH · geocoding] Phase-3 geocode MISS-RECOVERY.** On not-found: (a) native-language toponym
-  retry (Farm→Ferme/Hof, Castle→Château/Schloss + Grok translate) → re-query Nominatim; (b) OpenSERP
-  location-hint rescue — extract EXISTENCE+LOCATION from snippets (do NOT WWII-relevance-gate); (b2)
-  EXIF-GPS from a discovered photo (guard: social media strips EXIF; sanity-check vs country); (c)
-  persist the native name + region back with provenance. Bounded (~3% hard-miss, idempotent).
-
-- **[HIGH] Wire SourceRechecker into People enrichment** (source-first gap-fill of `nationality` etc.
-  in `enrich_person_biography`, mirroring people_groups). Minor residuals: Grokipedia fetch real
-  `/page/<slug>` not search-results HTML; OpenSERP stamps `openserp_searched` on empty search;
-  `time.sleep(1)` on cache hits; HallOfValor name-match recall.
+(All items moved into the Phase 3 work order at the top, 2026-11-17.)
 
 ### 2.4 URL-sourced enrichment + dedup
 
-- **[HIGH · provenance] URL-sourced enrichment + 90-day URL registry — FINISH wiring.**
-  `url_hygiene.py` + `url_registry.py` DONE (SSRF-safe clean_url, DynamoDB `url#{sha256}` 90-day TTL),
-  and `enrich_places.py` is PARTIALLY wired (`should_fetch_content` + register). REMAINING: wire the
-  other callers (enrich_groups / openserp / grok-cited-wiki) to register/should_examine + require
-  Grok-cited URLs + fetch-then-evaluate relevance. OPEN: drop vs flag (`source: grok_unverified`)
-  facts with no cited URL.
+(All items moved into the Phase 3 work order at the top, 2026-11-17.)
 
-- **[HIGH · data-quality] Centralized JSON result de-duplication.** Add
-  `src/utils/result_dedup.py::dedup_entity(data, entity)` at the ONE central write path, driven by a
-  per-schema DEDUP_FIELDS declaration: URL arrays dedup on `url_hygiene.clean_url`, mentions on
-  MentionID, free-form on canonical hash. First-writer-wins, idempotent, behavior-only.
-
----
 
 ## 3. ARCHITECTURE & DESIGN
 
@@ -3143,88 +3626,6 @@ asserts RELATIVE (vs a measured baseline, like test_hook_overhead_batch's `batch
 or mark them @pytest.mark.perf / skip-in-CI, so CI isn't red on timing noise. Several asserts in
 that file share the pattern (lines ~201, plus the elapsed-based ones).
 
-## [MED] source_section derive failed for 2 sections (clean rerun e4b22d9)
-"[phase2 step 1/5] Core extraction complete: 4 processed, 2 failed" + source_section.enrich errors=2:
-"source_section derive failed for 0GDW2A077AXSFWX53MGV5VTT6G: <hash>" and 7EQS9MD8QY861A2VB8B0NZEYKX.
-The error payload is an opaque hash (looks like a cache key / exception fingerprint, not a message) —
-investigate what source_section derive raises for those 2 sections. Also benign: "Status server
-failed to bind 10.0.22.19:8077 (Address already in use) — continuing" (port reuse, non-fatal).
-
-## [MED·dedup-false-positive] place dedup is string-only at the Phase-2 gate (no coords) — Roscheid/Schmidt (deferred fix #2)
-Clean RoerDams rerun flagged Roscheid vs Schmidt as a duplicate ("name similarity 67%") and gated
-Phase 3 on it. It is NOT a duplicate — difflib.SequenceMatcher("roscheid","schmidt")=0.667 clears the
->=0.65 threshold by over-crediting scattered shared runs (sch, d). INHERENTLY string-ambiguous: the
-SAME 0.667 is scored by the REAL variant pair "St. Vith"/"Saint Vith" (and St Lô/Saint-Lô is a real
-dup at 0.43) — so NO string threshold/metric separates the false positive from real variants
-(verified: bigram-Jaccard veto and threshold-raise each kill real dups too). ROOT CAUSE: the one
-disambiguating signal — COORDINATES (Roscheid and Schmidt are ~40km apart; St.Vith/Saint-Vith are the
-same point) — does not exist at the Phase-2 dedup gate because geocoding runs in Phase 3 (13/18 places
-had geo_missing_coords). DURABLE FIX OPTIONS (pick when we tackle it): (a) run/augment place dedup
-AFTER Phase-3 geocoding so the haversine distance check can confirm/veto; (b) add an LLM adjudication
-step for name-only matches that lack coordinates (ask Grok "same place?", mirroring the group
-enrichment disambiguation); (c) partial cheap: raise threshold to ~0.72 + add 'st./saint' to the
-geo-prefix strip (still misses St Lô/Saint-Lô). Interim (done 2026-10-26): rejected in the dedup UI as
-not-a-duplicate to unblock Phase 3. Two prior heuristic attempts were REVERTED (each introduced false
-negatives) — do NOT re-attempt a string-only fix; use coords or LLM.
-
-## [LOW·yield] OpenSERP group-image search returns HTML page URLs, not direct images (clean rerun 96c86bef)
-During Phase-3 OpenSERP group enrichment, 28 image candidate URLs were vision.image_blocked
-(reason=ssrf_or_invalid) and 0 images added — because OpenSERP returned SEARCH-RESULT PAGE URLs
-(wikipedia.org/wiki/..., commons/wiki/Category:..., army.mil/*.aspx, ebay/itm, militaria product
-pages), NOT direct image files. The image-fetch guard CORRECTLY rejects non-image content (not a bug —
-SSRF/content-type guard working). But group-image yield is ~0. Follow-up (quality, not correctness):
-tune the group image-search query templates / result parsing to prefer direct image URLs (e.g. target
-commons File: / upload.wikimedia.org thumb URLs, or add an image-extraction step that resolves a page
-URL to its og:image). Low priority.
-
-## [MED·dedup] NEAR-duplicate content detection (MinHash/LSH) — same text across two domains, not byte-identical
-We now have (a) GLOBAL EXACT content dedup at submit time: `fetch_review._register_content_hash_if_new`
-claims `contenthash#<sha256>` across ALL sources/domains/titles, so byte-identical content submitted
-from two different domains (or re-submitted under a host-derived title) is caught and skipped
-(`deduped` count). What this does NOT catch: NEAR-identical pages — the common real case where the
-same article at domainA vs domainB differs only in boilerplate/ads/whitespace/tracking params, so the
-sha256 differs and both pass. The existing lexical tools (SequenceMatcher edit-distance, Jaccard
-token-overlap, Grok same/different classifier) run on short strings (names/titles), NOT on document
-bodies, and we have NO vector-embedding/cosine or MinHash path.
-
-FIX (b): add a MinHash + LSH near-duplicate gate over document SHINGLES at affirm/submit (and reuse
-for book submissions). Sketch: shingle the quarantined body (k-word or char n-grams) -> MinHash
-signature -> query an LSH index (keyed in the same DynamoDB cache table, e.g. `contentlsh#<band>`
-buckets) for an existing signature with Jaccard >= threshold (~0.8) -> on hit, skip/merge instead of
-ingesting a second near-copy; on miss, add the signature and proceed. Keep it FAIL-OPEN (a borderline
-score never blocks a legit submit) and pin `datasketch` at an exact version (MinHash/MinHashLSH). An
-optional later tier: sentence-embedding cosine for PARAPHRASE-level (semantically-equal but lexically
-different) dedup — heavier, only if paraphrase dup becomes a real problem. Ref: the user's text-similarity
-survey (Jaccard/Euclidean/Cosine + TF-IDF/Word2Vec/Sentence-Transformers); MinHash/LSH is the scalable
-near-dup tool for document bodies, which that survey does not emphasize but is the right fit here.
-Ties to: fetch_review.submit_affirmed_batch (where the exact (a) gate already lives).
-
-
-## [LOW·security-hardening] _download_s3_file has no path-traversal containment (ecs_entrypoint)
-Pre-existing (not introduced by the stale-tree validate fix). ecs_entrypoint._download_s3_file composes
-WORKDIR/obj["Key"] from the raw S3 key with no realpath containment check, so a crafted "../" key could
-escape /tmp/pipeline. Keys come from the pipeline's OWN trusted bucket (low risk), but defense-in-depth:
-assert the resolved local path is within WORKDIR before download_file. Flagged by the dual review of the
-phase3-durable-revalidate fix; out of scope there.
-
-
-# MULTIMODAL INGESTION GAPS — prioritized epic (from XChannel ch8 analysis, 2026-10-27)  ✅ COMPLETE (M1-M8 all merged, PRs #587-#594)
-
-Source analysis: https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-8.html — a richly
-multimodal HyperWar page used to stress-test every content type. Each item below is a concrete gap with
-its code location + page evidence. Ordered by VALUE × TRACTABILITY (do top-down). The map-as-source work
-(spec docs/current/design/MAP_AS_SOURCE_DOCUMENT.md, PRs #583/#584/#585) is the TEMPLATE: a non-text asset
-becomes a SOURCE, an event/entity is derived, everything flows through the normal pipeline.
-
-CROSS-CUTTING ROOT CAUSES (fixing these knocks out multiple M-items):
-  RC1. parser.extract_images matches only IMAGE markdown (`![alt](url)`), NOT links (`[text](url)`) and
-       NOT bare caption text. So linked maps/charts AND caption-only embedded photos are invisible.
-  RC2. No image->entity linkage model: captions name people/places but nothing records "image depicts
-       PersonID/PlaceID"; ImageCaptioner returns free-text + a coarse class, no structured entity list.
-  RC3. In-document asset links are never FOLLOWED as sources. map-as-source added WEB-SEARCH discovery,
-       but the author already curated the best maps/charts/MoH citations as direct links in the document.
-  RC4. org chart + MoH citation are unmodeled SOURCE TYPES (each a natural map-as-source analog).
-
 ## [M1 · HIGH · in-doc-asset-links] ✅ DONE (PR #587) — Follow in-document map LINKS -> map-as-source  (did FIRST)
 Evidence: `[Map VII]..[Map XIV]` in the narrative link directly to `maps/USA-E-XChannel-*.jpg` (author-
 curated, highest-quality maps on the page). GAP: extract_images matches `![]()` not `[]()`, and nothing
@@ -3406,53 +3807,6 @@ it's not blocking merges; the LOCAL gate.sh pip-audit trips on it. Fix: bump req
 pylint==4.0.9 as a standalone dep-maintenance change (not bundled into a feature PR). Unrelated to the
 map-as-source work that surfaced it.
 
-## [MED · robustness, owner 2026-11-10] Hand a long-waiting batch to the poller instead of holding a Spot task
-The Phase 2 task submits its Grok batch and then polls it IN-TASK (`batch_api.poll_batch`, up to
-24 h) on Fargate Spot. 2026-11-10: the Cross-Channel Attack chapter 8 re-run's 99-request batch
-(submitted 17:01 UTC) was still 65/99 after 4 h when Spot reclaimed the task (exit 143, 21:03). The
-task died mid-poll, before `_enqueue_from_metrics`, so the batch had NO `batch_job#` record and NO
-metrics file: orphaned (recovered by hand from `diagnostics/cache/<book>/batch_requests.jsonl` + the
-`cachekey.submit` log lines). Long waits are pure Spot exposure and idle compute.
-- **Hand-off:** past a 90-minute in-task budget (`BATCH_INTASK_MAX_MIN`, default 90 - owner
-  2026-11-10: batches often answer in ~61 min, and up/down churn is to be avoided), write the
-  metrics file (`submitted_request_ids` in order) and a `pending` `batch_job#`,
-  then exit cleanly; the batch-poller launches the `--retrieve-only` task on completion.
-- **Register at submit, not after polling:** write the metrics + `batch_job#` (status
-  `in_task`, ignored by the poller) right after `submit_batch`, flipped to `retrieved`/`pending` at
-  the end - so a task killed at any point leaves a recoverable batch; the poller adopts an `in_task`
-  job whose task is gone.
-- Done when: a test kills the poll mid-way and the poller recovers the batch with no hand work.
-
-## [LOW · obs, owner 2026-11-10] Batch timing statistics from the results, not from polling
-`src/utils/batch_stats` (8449f2c3) records submit at submit time and progress on every change
-from the in-task poll and the poller. Simpler and more exact (owner suggestion): keep the submit
-write (xAI's batch record has only a DATE `create_time`, so the submit moment must be recorded
-live), drop the per-poll progress writes, and at retrieve compute first/last result and per-type
-durations from each result's own `created` timestamp (to the second). Live progress stays visible
-in the poller logs.
-
-## [LOW · ops/cost, owner 2026-11-10] Manage the Grok response cache long-term
-The cache-off validation default (`GrokCacheDisabled='1'`, #648) was reverted to `'0'` on 2026-11-10:
-the Cross-Channel Attack run re-paid ~2,700 sync calls + 21 batch event answers with nothing cached,
-and its bad chapter 8 events answer could not be inspected afterwards. Caching is now ON; manage it:
-- **No poisoned entries.** A cached answer that a later check rejects must be EVICTED, or every
-  re-run replays it. The events coverage check (chapter 8, 16% coverage) is the first case: the
-  low-coverage answer must be evicted when it is rejected, before the re-ask. Audit the other
-  validate-and-resubmit paths (`paragraph_range_invalid`, schema failures) for the same.
-- **One write path, one key scheme.** The `--retrieve-only` path (`ecs_entrypoint.py`, batch results
-  -> `grok_client._get_cache(...)[id] = ...`) ignores `GROK_CACHE_DISABLED` and never sets
-  `current_book`, so its entries land as bare `casualties#<h>` / `weather#<h>` instead of
-  `books/<book>/<type>#<h>` (seen 2026-11-10 13:29 from the duplicate retrieve task). Route it
-  through the same guarded, book-scoped write as the in-task path.
-- **Fresh runs on purpose.** A per-run / per-title "fresh" option (today only `REPROCESS_TITLE`
-  clears the local per-title events cache) instead of the stack-wide kill-switch; record in each
-  record's provenance whether the answer came from cache.
-- **Lifetime and size.** TTL is 90 days (`aws.cache_ttl_days`); decide whether book extraction
-  answers should outlive it. `GrokClient` preloads the WHOLE table with one Scan per task: watch its
-  size/time as the corpus grows, and scope the preload to the book's prefix.
-- **Observability.** Cache hit/miss and the Grok spend avoided per run in the run summary / Slack
-  completion message, so a silently-off cache is visible.
-
 ## LOW: gate.sh pytest step flakes (64 errors) — pre-existing, env-only
 `scripts/gate.sh`'s pytest step reports `1 failed, 64 errors` (tests/unit RuntimeError
 cascade) that is NOT reproducible running the identical command directly
@@ -3468,46 +3822,3 @@ passing a safe final path segment (e.g. discovery's [a-z]+ section_id capture) r
 containment at the sink. Traversal is not currently reachable anywhere, but a future caller deriving
 a path segment from untrusted input would escape silently. Harden: assert the resolved target is
 under its intended root inside the guard (pipeline-wide, not one site).
-
-## LOW: referential_integrity residual observability (PR #696 follow-up)
-Two non-blocking gaps noted during PR #696 review, out of its scope (swallow sites + audit result):
-- U1: _repaired_record_is_writable fails OPEN (returns True on guard error); a repair write that
-  the guard then blocks is not counted/OBSERV'd. Count non-persisted repairs + emit
-  OBSERV referential.subevent_repair_write_failed status=warn.
-- U3: _alert send failure logs a plain warning, not a canonical OBSERV — a failed operator alert on
-  a dangling corpus is a silent escalation gap. Emit OBSERV referential.alert_send_failed status=warn.
-
-## LOW: supplemental_info_pipeline chain is dead/unwired (PR #704 finding)
-extract_from_supplemental_info / process_supplemental_information / _route_entity_extraction /
-_create_pseudo_event have ZERO production callers (only each other + 2 tests). The temp *-event.json
-it materializes writes NO -parsed.json sibling, so the PR-704 people_groups fail-loud WOULD raise on
-that path IF it ran — but it doesn't (dead code). Also it never carried book/author/series (same
-Unknown-provenance gap, pre-existing). Decide: wire it (thread book metadata + write the sibling) or
-retire it. Not a live regression (dead path).
-
-## LOW: equipment find-or-create not index-locked (PR #707 deferral)
-equipment.py:2170/3443 find-or-create uses a per-event in-memory index under
-ThreadPoolExecutor(max_workers=3), so concurrent events creating the same new equipment can each
-mint a separate ULID file. NOT data loss — the downstream dedup pass merges the duplicates
-(data-preserving: write-primary-first + backup-before-delete). Converting to the shared
-locked_json(index) find-or-create (like places/people_groups) is the correct long-term fix but a
-larger change (equipment's index build differs); deferred. Lower value than the entity=/vision/
-whitelist fixes shipped in PR #707 since duplicates are recovered, not lost.
-
-## MED: same-code consolidation (Phase-2 review, deferred to own PR)
-- Grokipedia resolution forked 3x: shared src/enrichment/grokipedia.resolve_grokipedia_url exists
-  (equipment uses it), but enrich_biographies._grokipedia_query_scan + enrich_places._search_grokipedia_place
-  roll their own grokipedia.com/search scrape. Wikipedia API call likewise reimplemented in
-  enrich_biographies (x3) + enrich_places. Route all through the shared lib (triples maintenance +
-  SSRF surface + drifts behavior, e.g. transient-vs-negative cache conflation enrich_places:329).
-- Conservative place-name matcher (exact -> whole-word-longest -> SequenceMatcher>=0.88)
-  reimplemented in weather_central._match_place_id, equipment._resolve_place_id, and places. Extract
-  one shared helper.
-Larger refactor with semantic-diff risk; own PR, not bundled with the PR6 correctness/security fixes.
-
-## LOW: recorded_fetch redirect-bounce residual (Phase-2 security DiD)
-recorded_fetch now gates the endpoint host via clean_url (rejects private/metadata/loopback), but a
-trusted host that open-redirects could still bounce to an internal address. Flipping
-allow_redirects=False globally would break the many callers relying on the implicit True for
-legitimate redirects, so deferred: either re-validate each redirect hop's host, or set
-allow_redirects=False per-caller where redirects aren't needed.
