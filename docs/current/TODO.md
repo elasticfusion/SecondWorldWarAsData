@@ -146,11 +146,15 @@ continues from where it stopped. Order: 1.2b, 1.1b, 1.2c, 1.2e, 1.2d, 1.2f, 1.1c
 - **1.2c - the NAT does not fail over.** A NAT gateway is zonal by default; `nat_manager` always
   creates it in `PUBLIC_SUBNET_ID` (PublicSubnet1, `lambda_handlers/nat_manager.py:528`) and both
   private subnets route through it. If that AZ fails, both AZs lose egress and the re-create fails in
-  the same subnet. Fix: either an AWS regional NAT gateway (`--availability-mode regional`, expands
-  across AZs on its own, no public subnet;
-  https://docs.aws.amazon.com/vpc/latest/userguide/nat-gateways-regional.html) or a zonal fallback
-  to PublicSubnet2. Check regional NAT hourly pricing (per AZ?) on the VPC pricing page first. Alert
-  on a failover.
+  the same subnet. Owner decision (a), 2026-11-18: keep ONE zonal NAT ($0.045/h) and fail over to
+  PublicSubnet2; a regional NAT bills per AZ (~$0.09/h for our 2 AZs, VPC pricing page) for a rare
+  event. Built in 1.2c: a subnet is marked bad (60 min) when its NAT cannot be created, fails,
+  stays pending or never becomes available, or when a task finds no internet through a "ready" NAT
+  (two probe hosts; one failover request per task, at most one failover per 10 min); the failover
+  is alerted; the primary is used again for the next NAT created after the window (a running NAT
+  is not moved back). Only AZ-attributable create errors mark a subnet bad; any other error, or no
+  NAT in any AZ, alerts "Networking FAILED". Accepted risk: a task whose own egress is broken can
+  trigger one failover (both probe hosts unreachable), at most once per 10 minutes.
 - **1.2d - the resume point.** Phase 3 skips already-enriched records, but work since the last S3
   sync (`SYNC_INTERVAL` 120 s) is redone, and `_reset_openserp_searched` runs at every Phase 3 start,
   clearing "searched" on every person/equipment record with no images and no awards, so each resume

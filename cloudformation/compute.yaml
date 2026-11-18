@@ -51,6 +51,10 @@ Parameters:
     Type: String
   PublicSubnet1Id:
     Type: String
+  # the NAT's failover AZ (task 1.2c); empty keeps the NAT in PublicSubnet1 only
+  PublicSubnet2Id:
+    Type: String
+    Default: ''
   LambdaSGId:
     Type: String
   OpenSerpSGId:
@@ -906,6 +910,8 @@ Resources:
         Variables:
           ENV_NAME: !Ref EnvironmentName
           PUBLIC_SUBNET_ID: !Ref PublicSubnet1Id
+          # NAT placement in AZ order: the primary, then the failover AZ (task 1.2c)
+          PUBLIC_SUBNET_IDS: !Sub "${PublicSubnet1Id},${PublicSubnet2Id}"
           PRIVATE_SUBNET_IDS: !Sub "${PrivateSubnet1Id},${PrivateSubnet2Id}"
           VPC_ID: !Ref VpcId
           SECURITY_GROUP_ID: !Ref LambdaSGId

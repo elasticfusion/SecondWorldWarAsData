@@ -818,6 +818,30 @@ def _scope_args(phase_script: str, args: list) -> list:
     return scoped
 
 
+EGRESS_PROBES = (
+    "https://checkip.amazonaws.com",
+    "https://www.cloudflare.com/cdn-cgi/trace",
+)
+
+
+def _egress_ok(rounds: int = 3) -> bool:
+    """True if the public internet is reachable: either probe answers, in any of ``rounds``
+    tries 5 s apart (two unrelated hosts, so one site's outage is not taken for ours).
+    """
+    import requests as _req
+
+    for n in range(rounds):
+        for url in EGRESS_PROBES:
+            try:
+                if _req.get(url, timeout=5).status_code < 500:
+                    return True
+            except Exception:  # noqa: BLE001 - unreachable: try the next probe
+                continue
+        if n + 1 < rounds:
+            time.sleep(5)
+    return False
+
+
 def _ensure_nat_if_needed(phase_script: str) -> None:
     """Bring the NAT gateway up for any phase that needs the public internet.
 
@@ -856,12 +880,14 @@ def _ensure_nat_if_needed(phase_script: str) -> None:
         1 if optional else int(os.environ.get("NAT_READY_MAX_ATTEMPTS", "6"))
     )  # ~6 x ~2min
     env = os.environ.get("ENV_NAME", "dev")
+    request = {"action": "create"}
+    failed_over = False
     for attempt in range(1, max_attempts + 1):
         try:
             resp = boto3.client("lambda", region_name=REGION).invoke(
                 FunctionName=f"{env}-wwii-nat-manager",
                 InvocationType="RequestResponse",
-                Payload=b'{"action": "create"}',
+                Payload=json.dumps(request).encode(),
             )
             if resp.get("FunctionError"):
                 body = resp.get("Payload").read().decode("utf-8", "replace")[:500]
@@ -880,9 +906,26 @@ def _ensure_nat_if_needed(phase_script: str) -> None:
             except Exception:  # noqa: BLE001 - defensive parse
                 payload = {}
             status = payload.get("status")
-            if status == "ready":
+            if payload.get("failover") or request["action"] == "create":
+                request = {
+                    "action": "create"
+                }  # acted on (or none asked): back to create
+            if status == "ready" and (optional or _egress_ok()):
                 logger.info("NAT ready for %s (attempt %d)", stem, attempt)
                 return
+            if status == "ready" and not failed_over:
+                # "ready" but no internet: the NAT's AZ may be down (task 1.2c). Ask once for
+                # a NAT in the other AZ; the next attempt waits for it.
+                failed_over = True
+                request = {"action": "failover", "nat_id": payload.get("nat", "")}
+                logger.error(
+                    "OBSERV nat.no_egress status=error phase=%s nat=%s - NAT reported ready "
+                    "but the internet is unreachable; asking nat-manager to fail over to the "
+                    "other AZ",
+                    stem,
+                    payload.get("nat", ""),
+                )
+                continue
             logger.warning(
                 "NAT NOT READY for %s (status=%s, missing=%s) — retrying "
                 "(attempt %d/%d)",
