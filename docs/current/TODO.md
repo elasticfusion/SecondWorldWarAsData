@@ -61,6 +61,85 @@ tries, abort if never ready) -> `_clear_title_cache_if_reprocess` -> `_load_secr
 - Not checked at preflight: the NARA key (warning only when missing), OpenSERP (see "was gap 1"),
   Nominatim. Owner decision whether any should block.
 
+### Step: EP post-sync steps, on success (PHASE3_MAP §1 "ECS wrapper")
+
+Order after the Phase 3 subprocess exits 0 (`EP:1083-1087`, `_post_process` `EP:2373`, Phase 3 branch
+from `EP:2493`): `BackgroundSync.stop()` (final flush) -> `_final_sync` -> `_remove_lock` ->
+`_phase3_durable_referential_fix` (`EP:2329`: `_post_sync_referential_enforce` repairs and re-audits
+dangling references directly on S3; `provenance_integrity.run_for_phase`; `_refresh_validation_corpus`
+re-downloads the corpus; `scripts/validate_phase3.run`) -> `_notify_url_review_pending` (email with the
+count of pending URL finds and the review UI link) -> `_provenance_gate("3")` (mode
+`provenance_validation.gate`, default `warn`; `block` holds the book for review) -> doc lifecycle to
+done (multi-doc only) -> `_get_next_pending_enrich` and trigger the next Phase 3 -> scale OpenSERP to 0
+if neither queue has work and `_openserp_demand_present` is false -> `_notify_complete` (email).
+
+- **HIGH - the "next book" lookups miss queued books.** `_get_next_pending_book` and
+  `_get_next_pending_enrich` (`EP:2543`, `EP:2564`; `Limit=100` at `EP:2552`, `EP:2573`) `scan` with `Limit=100` and a `FilterExpression`. In
+  DynamoDB `Limit` caps the items READ before the filter, and there is no pagination, so only the first
+  100 of ~33,500 items in `dev-wwii-api-cache` are examined. A queued `pending#enrich#<book>` is found
+  only by chance. Effect: the next book is not triggered (it waits for the hourly reconcile), and
+  OpenSERP can be scaled down while books are queued. Fix (DRY): one queue reader with a `begins_with`
+  Query on a key designed for it (or paginate), reused by both and by the trigger Lambda. The trigger
+  Lambda has the same flaw: `_get_pending_books_for_enrich` (`lambda_handlers/trigger_handler.py:2546`,
+  `Limit=100`) and `_get_pending_books` (`:2479`, `Limit=1000`, also unpaginated), so the hourly
+  reconcile can miss the same books and a queued book may never run.
+- **MED - a Phase 3 validation failure sends no alert.** `validate_phase3.run` only prints
+  `OBSERV phase3.validation result=FAIL` / `=== PHASE3 VALIDATION FAIL ===`
+  (`scripts/validate_phase3.py:233-242`), and the caller logs the exit code at INFO (`EP:2367`). No
+  `observe` / `publish_alert`, no metric filter. Alert through `phase2-complete` with the failure list
+  (both channels).
+- **MED - the post-sync check downloads the whole corpus every run.** `_refresh_validation_corpus` is
+  called without a book (`EP:2362`), so it pulls all of `output/content/` and re-downloads every
+  `_MENTION_REPAIR_ENTITIES` dir with overwrite. Cost and time grow with the corpus, not the book. Pass
+  the book and download only the records the repair changed.
+- **LOW - the lock is released before the S3 repair.** `_remove_lock` runs first (`EP:2495`), so
+  another task can start and download S3 while `_post_sync_referential_enforce` is rewriting records.
+  Remove the lock after the repair and gate.
+- **LOW - the completion email lists the wrong steps** (covered by "was gap 21").
+
+### Step: EP failure path (PHASE3_MAP §1 "ECS wrapper")
+
+Four ways a Phase 3 task ends badly:
+1. **The Phase 3 script exits non-zero** (`EP:1047-1068`): `_notify_failure` (SNS to
+   `NOTIFICATION_TOPIC_ARN` = `dev-wwii-phase2-complete`, so email + Slack; "<phase> failed with exit
+   code N" and a log-tail command), `_final_sync_failed_phase` (uploads what changed; a sync error is
+   `observe_error`), NAT lease released, `sys.exit(code)`. The Phase 3 lock is kept
+   (`if "phase3" not in phase_script`); the ECS task-failure rule (`cloudformation/compute.yaml:735`)
+   sends `check_locks`, which deletes it because no task is running, else the 2 h TTL. OpenSERP stays
+   up until the teardown Lambdas find no demand.
+2. **A preflight or NAT abort** before the script starts: `sys.exit(1)`, no notification (preflight
+   entry above).
+3. **SIGTERM** (Spot interruption, ECS stop, the watchdog; `_handle_sigterm`, `EP:120`): within the
+   30 s `StopTimeout` (`compute.yaml:231`) it runs `_final_sync`, removes the lock, releases the NAT
+   lease, re-queues an interrupted batch resume, exits 143.
+4. **An exception in the wrapper itself** (e.g. inside `_download_inputs`): Python exits 1 with a
+   traceback; only the `atexit` NAT-lease release runs.
+
+Findings:
+- **MED - a stopped or crashed task sends no failure notice.** Paths 2, 3 and 4 never call
+  `_notify_failure`: a Spot interruption of Phase 3 (path 3, apart from the watchdog, which notifies
+  before it signals) or a wrapper exception (path 4) leaves the book unfinished with no alert (the
+  task-failure rule only clears locks). Fix (DRY): the task-failure rule, or one `finally` in `run_phase`,
+  publishes one actionable alert (book, phase, exit code / stop reason, log link) to `phase2-complete`.
+- **MED - a failed Phase 3 is not retried and its partial output is not audited.** The only code that
+  deletes a `pending#enrich#<book>` entry is `_consume_pending_enrich` (`EP:2585`), called for the NEXT
+  book after a successful Phase 3 triggers it (grep: no other delete). So a book launched that way has
+  no entry left when it fails (nothing re-queues it; the operator must re-trigger), while a book
+  launched by the trigger's reconcile (`_reconcile_phase3`) keeps its entry, so after success it can be
+  picked as its own "next book" and run again. Verify against live logs before fixing. The partial writes are uploaded, but
+  the post-sync referential repair, provenance check and validation run only on success (Phase 2 has
+  `_audit_failed_phase2`; Phase 3 has nothing), and no record says the book's Phase 3 is incomplete.
+  Re-queue on failure (with a retry cap), run the post-sync audit as Phase 2 does, and stamp the book
+  `phase3: failed`.
+- **LOW - the failure message is generic.** No book name, a fixed `--since 30m` and the `dev` log group
+  hard-coded (`_notify_failure`). The Slack formatter adds a log link; the email has none. Include the
+  book, the task ID and the log stream.
+- **LOW - the SIGTERM sync may not fit in 30 s.** `_final_sync` walks every entity dir; on a large
+  corpus it can exceed the `StopTimeout`, and the lock and NAT lease are released only after it. Release
+  the lock and lease first, or raise `StopTimeout` for Phase 3.
+- **LOW - why the Phase 3 lock is kept on failure is not stated.** The task-failure rule deletes it
+  at once, so keeping it changes nothing. Decide and document one behaviour.
+
 ### Step: EP _download_inputs (PHASE3_MAP §1 "What EP _download_inputs does")
 
 - **LOW - remove the dead DynamoDB shortcut (owner request).** `_materialize_from_dynamo()`
@@ -131,6 +210,57 @@ tries, abort if never ready) -> `_clear_title_cache_if_reprocess` -> `_load_secr
 - ***refactor* - the barrier exists only because bibliography is written as per-task shards that a
   later corpus-wide pass must merge.** Merging at write time (conditional writes on the canonical
   `bib_<hash>.json`) would remove the reconcile pass, the barrier, the run marker and the wait.
+
+### Step: places hierarchy and link_parent_places (PHASE3_MAP §4.2)
+
+How it works (`main` 2ddeffcc):
+- `enrich_all_places` (`src/extraction/enrich_places.py:576`): for each place without both `continent`
+  and `country` (`_needs_enrichment`, `:447`), one Grok request from model memory (`PROMPT`, `:62`:
+  continent, WWII-era country, region, historical names). `_merge_hierarchy` (`:406`) only fills empty
+  fields. A transient error is left unstamped and retried; a clean miss is stamped `not_found`.
+- `link_parent_place_ids` (`src/extraction/places.py:611`): builds a lowercase name -> PlaceID index
+  from every place's `current_name` and `aliases`, then for each place without
+  `hierarchy.parent_place_id` takes the first of `region`, `country`, `continent` whose name is in the
+  index (`_find_parent_id`, `:598`) and writes it.
+- Live data after Phase 2 (`output/places/`, 994 records, synced to `tmp/phase3-review/imgcheck/`):
+  `hierarchy.continent` on 154, `country` on 41, `region` on 0, `parent_place_id` on 0. Of the 31
+  countries named, 10 have a place record.
+
+Findings (nothing enforces the hierarchy beyond a name match):
+- **HIGH - a parent is chosen by name alone.** No geography-type check (a town can become the parent of
+  a region if it shares the region's name: Luxembourg city vs country, Georgia), no disambiguation, and
+  the index keeps the last record for a duplicated name or alias (`places.py:589-592`). No cycle check
+  beyond self. Fix: the parent must be a coarser `geography_type` (village/town/city < region < country
+  < continent), ambiguous names go to review, and a cycle is refused.
+- **MED - a missing level is skipped silently.** With no region record the town is linked straight to
+  its country, and with no country record to its continent; most parents do not exist as records (10
+  of 31 countries). Owner decision: create the missing region/country through
+  `places._find_or_create_place` (as `image_place_link` already does, DRY), or leave the gap and count it.
+- **MED - a parent is never corrected.** `if hierarchy.get("parent_place_id"): continue`
+  (`places.py:634`): once set, a better parent (a region record created later) is never used. Re-derive
+  each run, and record why it changed.
+- **MED - two representations of the same edge.** The schema has `containedInPlace` /
+  `containsPlace` with PlaceIDs (`src/schemas/places_output.py:111`) and no code writes them; the
+  link goes into the untyped `hierarchy` object (`"hierarchy": {"type": ["array","object","null"]}`,
+  `:100`), so `parent_place_id` is not validated as a ULID (fake ULIDs happened before:
+  `scripts/archive/fix_fake_place_ulids.py`). Pick one (schema.org `containedInPlace`), give it a
+  schema, and write the inverse `containsPlace` (DRY: one writer).
+- **MED - the hierarchy has no source.** Grok answers from model memory with no citation, and
+  `_merge_hierarchy` does not record which source filled each field (Phase 2 Wikipedia categories or
+  Phase 3 Grok). Same class as "was gap 16" (unit facts). Record the source and date per field.
+- **MED - one country for the whole war.** The prompt asks for "the WWII-era country"; borders changed
+  during the war (Alsace, annexed 1940; Sudetenland 1938; the Baltic states). A single value cannot hold
+  this. Ties to the owner decision on boundaries in the map entry: a dated containment
+  (`containedInPlace` with `valid_from` / `valid_to`).
+- **LOW - region is asked only once.** `_needs_enrichment` stops at continent + country, so a place
+  whose first answer lacked a region is never asked again.
+- **LOW - the write does not stamp metadata.** `write_json_with_lock(pf, data)` (`places.py:639`) passes
+  no `entity`, so `_last_updated` / `_schema_version` are not refreshed (the geocode writer does both);
+  incremental change detection misses the change.
+- **LOW - the hierarchy-order sort does nothing.** The name index is built before the loop, so
+  processing countries before towns (`places.py:623-627`) changes nothing.
+- **LOW - observability.** One `OBSERV places.parent_link linked=<n>`; no count of places with a
+  hierarchy but no parent found, ambiguous names, or skipped levels.
 
 ### Step: bibliography_resolve (PHASE3_MAP §4.3)
 
@@ -314,6 +444,269 @@ meta.yaml + content.md pair) so the map re-enters Phase 1 -> 2 -> 3 as a new "bo
   - Queue volume: every confirmed hit becomes a review item. Keep the per-entity caps, and batch the
     Grok verify as decided for `bibliography_resolve`.
 
+### OpenSERP: keeping bad URLs out and re-checking good ones (owner question 2026-11-17)
+
+What exists (verified in code; no OpenSERP keys are in DynamoDB yet, Phase 3 has not run on this data):
+- Per-URL verdict, 90 days: `process_positive_url` (`OE:808`) checks `openserp_url_verdict` first
+  (`_url_verdict_cached`, `OE:763`). `REJECT` (Grok said not relevant, or the page could not be
+  fetched/summarized) returns at once; a cached summary is reused without a new request.
+- Grok relevance answer cache: `_verify_result` (`OE:417`) caches YES/NO under `openserp_verify`.
+- Central URL registry (`src/utils/url_registry.py`): `searched` (90-day TTL), `dead` (never re-fetched,
+  after repeated DNS failures and no Wayback copy), per-domain politeness; consulted through
+  `url_fetch.fetch` in `_summarize_url_page`.
+- Domain filters: `config/domain_blacklist.yaml` (§3.5) and human-excluded domains
+  (`url_registry.exclude_domain`, `excludedomain#`, set from the URL-review UI).
+- Per entity: `openserp_searched_at` skips the whole search for 90 days (`OE:1407`), but
+  `_reset_openserp_searched` clears it every run for entities with no result ("was gap 6").
+- OpenSERP search responses themselves are not cached; a re-searched entity sends every query again.
+
+Findings:
+- **HIGH - a page approved for one entity is attached to other entities without being checked.** Both
+  verdicts are keyed on the URL alone, but relevance is per (URL, entity): the registry's own design says
+  so (`url_registry.py` header, "the relevance verdict is keyed on (url, entity) so one entity's verdict
+  is never reused for another"). A cached summary short-circuits before `_verify_result` (`OE:827-836`), so
+  any later entity whose search returns the same URL gets it. People and groups have only a title/name
+  check first (`_name_initial_matches`, `_group_name_matches`); places (`OE:2117`) and source sections
+  (`OE:1180`) have none.
+- **MED - a page rejected for one entity is skipped for every entity for 90 days.** Same cause: `REJECT`
+  is URL-global, so a page irrelevant to unit A is never considered for unit B. Fix for both: key the
+  relevance verdict on (URL, entity ULID); keep fetch state and the page summary URL-global (reuse the
+  page, re-ask only relevance).
+- **MED - the two caches disagree.** The `openserp_verify` key truncates the URL to 60 characters
+  (`OE:434`, `OE:492`: context[:50] | title[:50] | url[:60]), so different URLs with a common prefix share an
+  answer; and it uses `search_cache` TTLs (30 days, `src/utils/search_cache.py:17`) while the URL verdict
+  uses 90. Use the full URL hash and one retention constant.
+- **MED - the 90-day re-check of a good URL changes nothing.** When the summary expires the page is
+  fetched and summarized again (a paid Grok request), but every caller skips a URL already on the record
+  (`existing_award_urls`, `existing_src_urls`, `seen`), so the new summary is discarded. The record keeps
+  the old summary, gets no last-checked date, and a page that has since died stays linked. A cache hit
+  also stamps `fetched_at` with the current time (`OE:835`), so the record claims a fetch that did not
+  happen. Owner decision: what a re-check should do (liveness check only, cheap; or re-summarize and
+  replace), and record `last_checked_at` / `status` on the entry.
+- **FIX (owner 2026-11-17) - key relevance on (URL, entity); keep page state per URL.**
+  - Store the Grok relevance verdict under (full-URL hash, entity ULID), in one cache, with one
+    retention constant (drop the 60-character URL key and the 30-day `search_cache` TTL for it).
+  - Keep fetch state, page checksum and summary per URL (registry + `openserp_url_verdict`), so a page
+    is fetched and summarized once and only the relevance question is asked again for a new entity.
+  - Reuse `_verify_results_batch` (`OE:532`) for the relevance questions, so the per-entity verdicts
+    batch (cost).
+  - Stop stamping `fetched_at` on a cache hit; carry the real fetch time from the cached entry.
+  - Cache OpenSERP search responses per query for the same window, so a re-searched entity does not
+    resend every query.
+- **FIX - DECISION (owner 2026-11-17): a good URL is re-checked by checksum, and changed pages are
+  updated.** At the re-check date:
+  - Fetch the page through `url_fetch.fetch` (registry, politeness, SSRF checks, Wayback fallback) and
+    hash the content (reuse `fetch_review._content_sha256`, `src/enrichment/fetch_review.py:464`; one
+    helper, DRY).
+  - Same checksum: no Grok request; stamp `last_checked_at` and keep the summary.
+  - Different checksum: store the new checksum and `content_changed_at`, re-summarize, and update the
+    entry on every entity that holds the URL (replace, not append), keeping the previous summary and
+    checksum in a `history` list for provenance. Once the URL-review queue is in place, a changed page is
+    re-queued for human review instead of being applied directly.
+  - Dead or blocked: `url_registry.record_dns_failure` as today; mark the entry `status: dead` with the
+    date, and keep the Wayback copy if there is one; never delete the citation silently.
+  - Each entry gets `content_sha256`, `last_checked_at`, `status` (`live` | `changed` | `dead`). Normalize
+    the HTML before hashing (strip scripts, ads, timestamps) so a page that only rotates its boilerplate
+    does not count as changed.
+  - OBSERV per run: `checked`, `unchanged`, `changed`, `dead`; an actionable alert only for a
+    `changed` page that is cited by a published record.
+- **With the URL-review queue decision:** the review status becomes the durable record. A
+  human-rejected URL is never re-enqueued (`fetch_review.reject_fetch_find`; `exclude_fetch_find` can
+  exclude the whole domain); an approved one is submitted once (global content-hash dedup in
+  `submit_affirmed_batch`). The enqueue helper must check the queue for the (URL, entity) pair before
+  adding it.
+
+### Step: link_asset_review (PHASE3_MAP §1 step table, §4.4)
+
+What it is (M4, PR #590): `_review_external_links` (`phase3_enrich_data.py:495`) loads every parsed
+document and calls `link_assets.enqueue_doc_links` (`src/extraction/link_assets.py:119`) on its text.
+That extracts every markdown and HTML link (`extract_link_assets`; images excluded, relative links
+resolved against the document's `_source_url`, media type from the extension, no network), skips
+same-page `#anchor` links, drops blacklisted hosts, and asks `link_relevancy.should_enqueue_link`
+whether to queue it. A kept link becomes a `fetch_provenance` event with `provider=link-asset`,
+`review_status=pending` (`_enqueue_one`, `:187`), which the URL-review UI lists; nothing is fetched until a
+human approves, and approval submits it to Phase 0. Gated by `links.review_external` (default on) and,
+today, by `use_openserp` ("was gap 3").
+
+Findings:
+- **HIGH - every Phase 3 run queues the same links again.** Each enqueue is a new event with a new ULID
+  (`fetch_provenance.record_fetch_event`, key `fetchevent#<ulid>`); nothing checks for an existing
+  pending, approved or rejected event with the same `url_key`. So each run duplicates the queue, and a
+  link a human rejected comes back. Fix (DRY, with the shared enqueue helper): look up `url_key` (+
+  entity) before enqueueing; a rejected or submitted link is never re-queued.
+- **HIGH - links skip Grok or are queued "when in doubt".** `link_relevancy_whitelist` is `ibiblio.org`
+  (`config/domain_blacklist.yaml:87`), so every HyperWar link is queued with no Grok verdict; a missing
+  client, an error or an `UNKNOWN` answer also queues (`link_relevancy.py:71-92`, `:111`, `:121`).
+  Owner rule (2026-11-17): Grok validates every link before a human sees it (recorded in the footnote
+  entry; the fix goes into `should_enqueue_link`).
+- **MED - the provenance points at the wrong section.** `_book_section_index` maps each book to ONE
+  SourceSectionID, the first one found (`image_place_link._build_book_section_index`, `setdefault`,
+  `:392`), so every link in the book is attributed to that section, not to the paragraph it came from.
+  Record the section (and paragraph) the link was extracted from.
+- **MED - Grok gets almost no context.** `context=book` (`link_assets.py:154`): the relevance question
+  sees the link text, the URL and the book slug, not the sentence or footnote around the link. Pass the
+  surrounding text (the pre-validate check in the footnote entry).
+- **MED - overlap with `intra_corpus_links`.** Links to other ibiblio volumes are also handled by
+  `intra_corpus_links` (`src/extraction/intra_corpus.py:102`, queued as another batch), so the same
+  link can land in both queues. Owner decision: in-corpus links go only to `intra_corpus_links`.
+- **LOW - not batched** (`_grok_link_relevant` is one live request per link); covered by the batching
+  entry.
+
+### Step: intra_corpus_links (PHASE3_MAP §1 step table)
+
+What it is (M8): `_process_intra_corpus_links` (`phase3_enrich_data.py:551`) loads every parsed
+document and calls `intra_corpus.process_doc_links` (`src/extraction/intra_corpus.py:102`). It
+extracts every link with the same `extract_link_assets` and classifies each against the document's
+`_source_url` with the HyperWar volume recognizer (`hyperwar_biblio._parse_volume`):
+`same_volume_anchor` (a `#page329` or another page of the same volume), `in_corpus_doc` (a different
+HyperWar volume, e.g. "Utah Beach to Cherbourg"), or `external` (ignored). For each non-external link it
+builds a corpus-graph edge `{from_SourceSectionID, to_url, to_volume, kind}`. For an `in_corpus_doc`
+whose volume is not yet in the corpus (`_corpus_volumes_present`, from the source_section records) and
+not queued this run, it fetches the linked page (`url_hygiene.fetch_text_safe`) and uploads it to
+`contentrepository/_system/<volume>/intracorpus-<volume>-<sha12>.html` (`_upload_batch_item`, `:192`),
+which starts Phase 0 like an uploaded book. Gated by `links.intra_corpus` (default on) and `use_openserp`
+("was gap 3").
+
+Findings:
+- **DECISION (owner 2026-11-17): HyperWar volumes and their PDFs are trusted sources.** A cited
+  HyperWar volume (HTML or its PDF) is queued for ingestion with no URL Grok check and no human URL
+  review; it is the one exception to the "every URL to review" rule. Trust is at the source level only:
+  its content goes through the normal pipeline, where Grok classifies everything inside it (events,
+  people, units, places, dates, equipment, casualties, maps vs images, charts, footnotes, bibliography),
+  and the links inside it to non-HyperWar sites follow the review rule. To do:
+  - Define "HyperWar" in config, not code: the `ibiblio.org/hyperwar/` path, not all of `ibiblio.org`
+    (`config/domain_blacklist.yaml` already lists `source_material_paths`; reuse it). The current
+    `link_relevancy_whitelist: ibiblio.org` is wider than the trust decision.
+- **DECISION (owner 2026-11-17): NARA records are trusted the same way, and the trusted list will grow.**
+  One config list of trusted sources replaces the per-feature lists (DRY), e.g.:
+  ```yaml
+  trusted_sources:            # skip URL Grok check + human URL review; content still Grok-classified
+    - {name: hyperwar, match: "ibiblio.org/hyperwar/", forms: [html, pdf]}
+    - {name: nara, match: ["catalog.archives.gov/id/"]}   # plus the NARA download host, confirm
+  ```
+  Adding a site is a config edit (no code change), logged at run start. The NARA digital-object
+  download host is not in the code yet (only `catalog.archives.gov/id/` and the API); confirm it from a
+  real record before adding it. Rules for every entry:
+  - Trust covers the source, not the match. A cited link to a trusted source is queued directly. A
+    trusted record found by a SEARCH (NARA catalog search in `bibliography_resolve`) still needs the
+    existing Grok check that it is the cited document (`BR` verified findings); once matched, its
+    online copy is queued for ingestion with no human URL review.
+  - Content is still classified by Grok in Phases 1-3; links inside it to untrusted sites follow the
+    review rule.
+  - The queued item and the book meta record `trust_basis: <name>`.
+  - `link_relevancy_whitelist`, `source_material_paths` and the hard-coded HyperWar recognizer read this
+    list instead of keeping their own.
+  - Recognize the PDF form as the same volume: `hyperwar_biblio._HYPERWAR_URL` matches the HTML page
+    URLs only; add the PDF URL pattern so a PDF and its HTML volume resolve to one volume key and one
+    slug (one ingestion, not two).
+  - Record `trust_basis: hyperwar` on the queued item and the resulting book meta, so the exception is
+    visible in provenance.
+- **HIGH - it ingests one page, not the volume, under a hash slug.** The linked page (often one chapter)
+  becomes its own book, slug `intracorpus-<volume>-<sha12>` (`book_slug` = filename stem). The slug is
+  immutable, so a later proper ingestion of the whole volume under its real name duplicates it, and
+  each other cited page of the same volume becomes another one-page book. `_should_queue` dedups by
+  volume within a run only (`:168`). Queue the volume (its table of contents) once, under its volume
+  slug.
+- **MED - the corpus-graph edges are thrown away.** `process_doc_links` returns them and the caller only
+  counts them (`phase3_enrich_data.py:579`); nothing writes them. Persist them on the source section
+  (or a link record), with the citing paragraph.
+- **MED - the dedup claim is taken before the upload.** `_register_content_hash_if_new` runs before
+  `put_object` (`:212`, `:222`); a failed upload is never retried (same flaw as the map-as-source entry).
+- **LOW - the fetch bypasses `url_fetch`** (registry, politeness, Wayback). DRY: use `url_fetch.fetch`.
+- Same wrong-section attribution as `link_asset_review` (one SourceSectionID per book).
+
+### Consolidate link_asset_review and intra_corpus_links into one document-links step (owner question 2026-11-17)
+
+- **MED *refactor* - they can and should be one step.** Both load the same parsed documents
+  (`_load_parsed_docs`), build the same link text (`_doc_link_content`, paragraphs + footnotes), run the
+  same extractor (`extract_link_assets`), use the same book -> SourceSectionID index, and run back to back
+  in `_run_openserp_enrichment`. They differ only in what they do per link, and they overlap: an ibiblio
+  link to another HyperWar volume is queued for human review by `link_asset_review` (ibiblio is on
+  `link_relevancy_whitelist`) and ingested directly by `intra_corpus_links`. Proposed single step:
+  1. Extract each document's links once, recording the section and paragraph each came from.
+  2. Classify each link once: `same_volume_anchor` | `in_corpus_doc` | `external`, and same domain vs
+     external (the `links.follow` decision), with `link_scope` recorded.
+  3. `same_volume_anchor`: persist the corpus-graph edge; no review, no fetch.
+  4. `in_corpus_doc` (HyperWar volume, HTML or PDF): persist the edge; if the volume is not in the
+     corpus, queue it for ingestion directly (trusted, owner decision above; no URL review), once,
+     under its volume slug. Its content is then classified by Grok in Phases 1-3 like any book.
+  5. `external`: the shared path: Grok pre-validate (URL + link text + surrounding sentence), fetch
+     through `url_fetch.fetch`, Grok validate (batched, under-50 rule, cache first), positive -> the
+     shared enqueue helper (dedup by `url_key` + entity; a rejected link is never re-queued) -> human
+     approval -> Phase 0.
+  The same shared path also serves OpenSERP page links and Wikipedia/Grokipedia footnote links, so the
+  three link sources stop having three implementations. One config block (`links.review_external`,
+  `links.intra_corpus`, `links.follow`), one OBSERV summary per run, independent of `use_openserp`.
+
+### Step: event_provenance_stamp (PHASE3_MAP §1 step table)
+
+What it is: `stamp_event_source_sections` (`src/extraction/event_provenance.py`) inverts the
+source_section records (each carries `SourceSectionID` + `EventID`) into an EventID -> SourceSectionID
+index and writes `SourceSectionID` onto each content event and every one of its sub-events, through
+`write_json_with_lock(entity="events")`. It closes the entity -> event -> section ID chain the
+referential-integrity check resolves. Deterministic, no Grok. Live data (`output/content/USA-E-XChannel/`,
+synced to `tmp/phase3-review/imgcheck/content/`): 31 source sections, one per event (21 chapter events +
+10 notes events), and no event or sub-event carries `SourceSectionID` yet.
+
+- **MED - notes events are never stamped.** The walk skips `*-notes-event.json` (`event_provenance.py`,
+  `stamp_event_source_sections`), but those events have source sections too (10 of 31) and carry
+  sub-events (e.g. `chapter2full-notes-event.json`, 42 sub-events) from which entities are extracted
+  (`supplemental.py:1243`). Their entities' chain stops at the event. Stamp them as well, unless there
+  is a reason they are excluded (none in the code).
+- **MED - it runs in the wrong phase.** It needs only Phase 2 output, but runs in Phase 3 inside the
+  OpenSERP group ("was gap 3"), so after Phase 2 no event has a SourceSectionID and Phase 2's own
+  provenance validation cannot check the event -> section edge. Move it to Phase 2, right after the
+  source_section records are written; keep a Phase 3 re-check only if needed.
+- **LOW - one section per event is assumed.** `index.setdefault` keeps the first section for an EventID,
+  and every sub-event gets the event's section. True today (31 sections, 31 EventIDs); if a chapter is
+  ever split into several sections, sub-events would point at the wrong one. Stamp sub-events from their
+  own paragraph range when that happens.
+- **LOW - the stamped events reach S3 only through the background sync.** `output/content/` is not in
+  `_PHASE23_ENTITY_DIRS`, so `_final_sync` skips it; the background sync uploads it, but its final flush
+  skips files modified in the last 2 s (`EP:434`) and nothing covers those. Harmless at this step's
+  position in the run; a general gap for late writes under `output/content/`.
+
+### Step: equipment_images (PHASE3_MAP §4.5)
+
+What it is (`src/enrichment/equipment_images.py`, owner rules 2026-11-07): for every equipment record,
+- **Scope:** `record_scope` (Phase 2 stamp, else deterministic rule, else alias table, else the cached
+  Grok resolver). GENERIC records ("rifle", "trench") have their enrichment stripped (`images`,
+  `wikipedia_extract`, ... `_ENRICHMENT_FIELDS`); UNRESOLVED and unknown are left alone.
+- **Candidates (SPECIFIC only):** images already on the record (Phase 2 legacy, OpenSERP) are queued as
+  `vision_check: pending` unless a recorded vision check exists; plus up to 20 images from the record's
+  Wikipedia article (all article images, not only the lead; icon/logo filter; Commons license), but only
+  if the article text places the subject in WWII (`wikipedia_wwii_relevant` / `mentions_wwii`). Stamped
+  once (`image_candidates_checked_at`).
+- **Vision:** each pending image is downloaded (`url_hygiene.safe_get`, 10 MB cap, held in memory),
+  exact-duplicate checked by hash, then Grok vision (`prompts/equipment_vision.yaml`: a photograph, of
+  this specific model, WWII era or a preserved/museum example; "if unclear, reject"), until
+  `equipment.images_per_record` (3) are verified. Verdict, reason and UTC time are stamped on the image.
+  No verdict 3 times, or the download failing 5 runs, sets `needs_review`.
+- One OBSERV summary and an actionable alert per cause. Live data: 689 equipment records (613 generic,
+  61 specific, 15 unresolved), 22 specific records with a WWII-qualified article, no images yet.
+
+Findings:
+- **MED - `needs_review` has no review tool.** The alert says "open each and set vision_check to verified
+  or rejected", i.e. edit the JSON by hand. Owner decision: put these in the URL-review UI (same queue,
+  item type "image") or a separate image-review view.
+- **MED - OpenSERP image candidates are page URLs, so they fail.** `_queue_existing` queues OpenSERP
+  images, which are mostly HTML page URLs ("was gap 8"); the download returns HTML, counts as a fetch
+  failure, and after 5 runs lands in `needs_review`. Five wasted fetches each and noise for the reviewer.
+  Resolve the page to its image (og:image / Commons file) before queueing, or drop page URLs.
+- **LOW - a preparation failure is recorded as a vision rejection.** `_verify_media_with_vision` returns
+  `(False, problem)` when the image cannot be prepared (format, too many pixels), and `_record_verdict`
+  stamps `vision_check: rejected` and `vision_checked_at` although no vision request ran. Record it as
+  `unusable` with the reason, not as a verdict.
+- **LOW - rejected images stay on the record.** They are kept in `images[]` with `vision_check: rejected`
+  (good for provenance); the site and any export must filter on `verified`. Note in the site spec.
+- **Owner question - diagrams and manual drawings.** The prompt rejects anything that is not a
+  photograph; technical drawings from WWII manuals can be valuable for equipment. Keep the rule or allow a
+  labelled `illustration` class?
+- Vision requests are one live call per image and are not batched (covered by the batching entry: vision
+  calls bypass `batch_mode`). Up to 20 downloads per record, until 3 are verified.
+- Wikipedia/Grokipedia images on units and people should reuse this module (entry "Wikipedia /
+  Grokipedia images on people and units").
+
 ### Step: photos from Phase 2 (image_map_vision, image_person_link, image_place_link)
 
 How Phase 3 handles document photos today (verified in code at `main` 96703bca):
@@ -385,11 +778,128 @@ Findings:
 - **LOW - a person extracted as a unit.** "Rundstedt" is a `people_groups` record; belongs with the
   Phase 2 entity-type checks.
 
+### Wikipedia / Grokipedia footnote links (owner question 2026-11-17)
+
+Are the citation (footnote) links of a Wikipedia or Grokipedia article followed and judged for WWII
+relevance? No. Verified in code:
+- Wikipedia: every lookup asks only for the lead section as plain text (`prop=extracts|pageimages`,
+  `exintro`, `explaintext`; people `enrich_biographies._build_wikipedia_request`, units
+  `groups_wikipedia._lookup_group`, equipment `equipment_wikipedia`). The reference list and its links
+  are never requested (no `extlinks`, `references` or `cite_note` use anywhere in `src/`).
+- Grokipedia: `_article_text_from_html` (`src/enrichment/grokipedia.py:259`) keeps the article text
+  and drops every `href`, so its citation links are lost.
+- People only: the biography prompt asks Grok for `source_urls` (`prompts/biography.yaml:45`), i.e.
+  URLs it reads in the text or proposes itself. `validate_source_urls` (`enrich_biographies.py:968`)
+  fetches each (`url_hygiene.fetch_text_safe`, Wayback fallback), asks Grok whether the page is about
+  "the WWII-era person" (`:940`), and writes the relevant ones straight into
+  `biography_sources[]`, with no human review. This fetch bypasses the central `url_fetch` / URL
+  registry, so the same URL is fetched again for each person and each run.
+- `references` in the same prompt are entity NAMES (units, people), followed by name lookups on
+  Grokipedia/Wikipedia (`search_references`, max 3), not links.
+
+- **MED *feature* - DECISION (owner 2026-11-17): follow the citation links of Wikipedia and Grokipedia
+  articles, judge their WWII relevance, and send the relevant ones to the URL-review queue for a human
+  to confirm.** Reuse, no new mechanism:
+  - Extract links with the M4 link extractor (`link_assets.extract_link_assets`: media type, relative
+    links, dedup) on the article HTML: Wikipedia `action=parse&prop=externallinks` (or the rendered
+    references section), Grokipedia's already-fetched HTML before `_article_text_from_html` strips it.
+  - **Same two Grok checks as the OpenSERP page links below (pre-validate from URL + footnote text
+    before fetching, then validate the fetched page).**
+  - **Order (owner 2026-11-17): Grok judges first; only a positive verdict reaches the human.** Grok
+    is asked whether the linked page is relevant to this entity in WWII (title, snippet, footnote text,
+    and the fetched page when available). Positive -> URL-review queue. Negative -> recorded (per
+    URL, entity) and not queued. Reuse `link_relevancy.should_enqueue_link`
+    (`src/extraction/link_relevancy.py:93`), batched, but it does not meet this rule today: a
+    whitelisted host is enqueued with no Grok verdict (`:109`), and no client or any error enqueues
+    "when in doubt" (`:111`, `:121`). For this path: blacklist still drops first; whitelist and errors
+    do not skip Grok; a Grok error or missing client leaves the link pending for the next run (with
+    an OBSERV count), never queued unjudged. **The in-document link review (M4, `link_asset_review`)
+    follows the same rule (owner 2026-11-17)**: change `should_enqueue_link` itself, so every caller
+    gets it.
+  - Enqueue through the shared enqueue helper (OpenSERP entry above) with the article URL, the entity
+    ULID and the footnote text as provenance; the human approves in the URL-review UI; approval submits
+    to Phase 0.
+  - Apply the (URL, entity) verdict keying and the checksum re-check from the OpenSERP section.
+  - The same `links.follow` settings (hops, per-page cap per scope, same-domain vs external) as the
+    OpenSERP page links below; an OBSERV line when a cap is hit.
+- **MED - Grok-proposed `source_urls` skip review and the central fetch.** Keep the existing Grok
+  relevance check (`_validate_url_relevance`), and send only the positive ones to the URL-review
+  queue instead of writing them to `biography_sources[]`; route the fetch through `url_fetch.fetch`.
+  Until a human approves, a URL is not written as a source.
+- **Same rule for every URL finder** (OpenSERP, Archive.org, Gutenberg, Grok LLM
+  search, map URLs, footnote links): Grok judges relevance first, a positive verdict goes to the
+  URL-review queue, a human approves, approval submits to Phase 0. One shared helper does the
+  judge-then-enqueue step. **No link is ever shown to a human without a positive Grok verdict.**
+- **Batching (owner rule): every Grok relevance request on these paths is batched.** The shared
+  helper collects candidates (URL, entity ULID, context) across the step and submits them through the
+  xAI Batch API path (`src/utils/batch_api.py` `BatchCollector`, as `GrokClient(batch_mode=True)`
+  does); results are applied on retrieve, and only positives are enqueued. Today none of these checks
+  is batched: `_verify_result` (OpenSERP, one live request per result; `_verify_results_batch`
+  `OE:532` puts several results in one prompt but is still a live call), `_grok_link_relevant`
+  (`link_relevancy.py:71`), `_validate_url_relevance` (`enrich_biographies.py:940`), and the
+  bibliography verifies (owner decision already recorded under bibliography_resolve). Already-cached
+  verdicts are filtered out before the batch, so a re-run submits only new pairs. Batch mode with
+  OpenSERP is broken today ("was gap 5"): fix that first, and reuse its retrieve path.
+
+### OpenSERP: links on a Grok-verified page (owner question 2026-11-17)
+
+Are the links on a page OpenSERP found and Grok verified followed and judged for WWII relevance? No.
+`_summarize_url_page` (`OE:696`) fetches the page through `url_fetch.fetch`, and `_grok_summarize_html`
+strips every tag with a regex (`OE:675`, `re.sub(r"<[^>]+>", " ", html)`) and sends the first 6,000
+characters for a summary. The links are discarded; nothing in `openserp_enrichment.py` extracts them.
+
+- **MED *feature* - DECISION (owner 2026-11-17): follow the links of a Grok-verified OpenSERP page,
+  have Grok judge each for WWII relevance to the entity, and send the positives to the URL-review UI
+  for a human to confirm.** Same mechanism as the footnote links above (DRY):
+  - Extract the links from the HTML already fetched (`result.content`), before the tags are stripped,
+    with `link_assets.extract_link_assets` (relative links resolved against the page URL, media type,
+    dedup). Drop navigation, same-page anchors, ads and social links (blacklist), and links already
+    judged for this entity.
+  - **Two Grok checks (owner 2026-11-17): pre-validate, then validate.**
+    1. *Pre-validate, before any fetch:* Grok judges the link from the URL, its anchor text and the
+       surrounding sentence, against the entity in WWII. Negative -> recorded for (URL, entity), not
+       fetched. This is the same step OpenSERP already does for search results (`_verify_result` on
+       title + snippet + URL before `_summarize_url_page`), so reuse it.
+    2. *Validate, after the fetch:* Grok judges the fetched page content (the summarize step already
+       reads it). Negative -> recorded, not queued.
+    Both checks are batched (under-50 rule, cache first). Only a link that passes both is enqueued, with
+    provenance: parent page URL, the anchor text, the entity ULID, the original search query, and both
+    verdicts.
+  - **Loop guard: one hop for now, configurable (owner 2026-11-17).** A followed link's own links are
+    not followed (like the map-source loop guard `book.startswith("map-")`). The hop count is a config
+    item, default 1, read in one place and shared by the OpenSERP-page and footnote-link paths:
+    ```yaml
+    links:
+      follow:
+        same_domain: {max_hops: 1, max_per_page: 20}
+        external:    {max_hops: 1, max_per_page: 20}
+    ```
+    Defaults (owner 2026-11-17): 1 hop and 20 links per page for each scope, all four values set in
+    `config.yaml` (no code change to adjust them), and logged at the start of each run.
+  - **Same domain vs different domain (owner 2026-11-17): classify every link and treat the two
+    separately.** Compare the link's host with the parent page's host (reuse `url_registry._host_of`,
+    which strips `www.`; a subdomain of the parent's host counts as the same domain, as in
+    `link_relevancy._host_matches`).
+    - *Same domain:* mostly site navigation, other pages of the same archive or collection. Drop
+      navigation (menus, headers, footers, pagination, search, login) before Grok sees them; the parent
+      page's provenance and license carry over as a starting point; fetches share the parent's
+      per-domain politeness window.
+    - *External:* a different publisher. Apply the domain blacklist and human domain exclusions first;
+      license and provenance are judged on their own; the URL registry checks run as for any new URL.
+    - Each scope has its own hop count and per-page cap (above), its own OBSERV counts (found, judged,
+      positive, enqueued), and every queued item records `link_scope: same_domain | external` so the
+      reviewer can filter on it.
+    - Both scopes get both Grok checks; neither skips review.
+  - Cost cap per page per scope (`max_per_page` above), with an OBSERV line when hit.
+  - The parent page itself goes to the queue as well (OpenSERP entry above), so the reviewer sees the
+    page and its relevant links together.
+
 ### Cross-cutting: every URL a Phase 3 step finds goes to human review (owner 2026-11-17)
 
 - **HIGH *refactor* - DECISION: the URL-review queue applies to every find that has a URL, not only
   OpenSERP.** That covers OpenSERP pages, Archive.org and Gutenberg copies found by `bibliography_resolve`,
-  NARA records with an online copy, Grok LLM-search URLs, and map URLs. Approval submits the find to
+  Grok LLM-search URLs, and map URLs (NARA records and HyperWar volumes are trusted sources: see
+  `trusted_sources` under intra_corpus_links). Approval submits the find to
   Phase 0 through `fetch_review.submit_affirmed_batch`. One shared enqueue helper (the OpenSERP entry
   above) is called by every finder. Current behaviour, verified in code:
   - **The queue gets search calls, not finds.** `recorded_fetch` (`src/utils/fetch_provenance.py:185`)
@@ -414,6 +924,37 @@ Findings:
   genealogist), what actions it offers (confirm the record group, correct the holding, request a scan,
   mark it unobtainable), how it relates to the URL-review and dedup UIs (one app or three), and what it
   writes back (the bibliography JSON, with provenance of the human edit).
+
+### Cross-cutting: batch every Phase 3 Grok request (owner 2026-11-17)
+
+- **HIGH *refactor* - DECISION: Phase 3 Grok requests are batched by default, through the existing
+  batch machinery (DRY) and the existing small-batch rule.** Today `batch.phase3: false`
+  (`config.yaml:97`), so every Phase 3 request is live. Reuse, do not rebuild:
+  - **Collect:** `GrokClient(batch_mode=True)` queues a cache miss and raises `BatchModeCollecting`
+    (`src/grok_client.py:1649`, `:1710-1744`).
+  - **Submit and the under-50 rule:** `GrokClient.submit_batch` (`:750`) answers fewer than
+    `batch.min_requests` (50, `config.yaml:100`; env `BATCH_MIN_REQUESTS`; `batch_api.batch_min_requests`)
+    live through `_answer_small_batch_live` (`:1269`), so a small run is not held up to 24 h. No step may
+    add its own threshold.
+  - **Rounds:** reuse Phase 2's multi-round hand-off (`batch.max_rounds`, `in_task_wait_minutes`, the
+    poller Lambda; `docs/current/features/batch_processing/README.md`) instead of `_run_batch_rerun`'s
+    single re-run. Phase 3 has dependent chains (OpenSERP verify -> fetch + summarize -> enqueue; map
+    vision -> entity writes), so one round is not enough.
+  - **Cache first:** cached answers are filtered out before queueing, so a re-run submits
+    only new requests.
+- **What is and is not covered today with `--batch`** (PHASE3_MAP §5):
+  - Re-run against the batch answers: people_groups, places, `link_parent_place_ids`, bibliography,
+    bibliography_resolve, equipment_images (`P3:_run_batch_rerun`).
+  - Not re-run, so their queued answers are never applied: geocode's Grok fallback, the OpenSERP group
+    (and its verify is cached as `REJECT`, "was gap 5"), in_doc_map_links, image_map_vision,
+    image_place_link (`_grok_is_terrain`), link_asset_review (`_grok_link_relevant`).
+  - **Never batched at all: vision requests.** `extract_json_with_image` and
+    `extract_json_with_image_base64` (`src/grok_client.py:1790`, `:1857`) call `_call_api` directly and
+    never check `batch_mode`, so map vision, image map/not-map, equipment image vision and caption
+    vision stay live even with `--batch`. Fix: route both through the same cache-miss path as text
+    (`:1640-1652`) so they queue too, provided the xAI Batch API accepts image inputs (verify first).
+- Every step gets the same OBSERV lines Phase 2 has for batch (collected, submitted, answered live
+  under the threshold, rounds) and an actionable alert when `max_rounds` is reached.
 
 ### Cross-cutting: how Phase 3 results reach the S3 JSON
 
