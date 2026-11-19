@@ -41,7 +41,9 @@ run "mypy"     python -m mypy $SCOPE --ignore-missing-imports --no-strict-option
 # .basedpyright/baseline.json so only NEW errors fail (a ratchet, like radon / raw-writes). Fix
 # findings and re-run `python -m basedpyright --writebaseline` to shrink the baseline — never to
 # silence a regression.
-run "basedpyright" python -m basedpyright
+# --baselinemode=lock, as in CI: a fixed finding must also be removed from the baseline (the
+# local default "auto" rewrote it silently, so the gate passed and CI failed, 2026-11-18)
+run "basedpyright" python -m basedpyright --baselinemode=lock
 run "bandit"   python -m bandit -r src/ lambda_handlers/ -ll -q
 # Ruff: high-value bug-pattern rules (flake8-bugbear 'B') only — e.g. raise-without-from,
 # loop-var-closure, mutable-default. Deliberately NOT the logging/style groups (the project uses

@@ -132,14 +132,6 @@
                     "endColumn": 63,
                     "lineCount": 1
                 }
-            },
-            {
-                "code": "reportAttributeAccessIssue",
-                "range": {
-                    "startColumn": 59,
-                    "endColumn": 64,
-                    "lineCount": 1
-                }
             }
         ],
         "./lambda_handlers/nat_teardown.py": [
