@@ -303,16 +303,12 @@ def _load_enrichable_weather(f):
 
     Mirrors the original skip conditions exactly: parse-fail, already-noaa, zero-coords,
     pre-1940/missing date -> skip (None)."""
-    try:
-        data = json.loads(f.read_text(encoding="utf-8"))
-    except (
-        Exception
-    ) as exc:  # noqa: BLE001 - corrupt weather file is a loss, surface it
-        logger.warning(
-            "OBSERV noaa.file_unreadable file=%s err=%s status=warn",
-            getattr(f, "name", f),
-            type(exc).__name__,
-        )
+    from src.utils.entity_records import load_record
+
+    data = load_record(
+        f, "noaa_weather"
+    )  # corrupt: alerted, the book is held at the end
+    if data is None:
         return None
     if data.get("noaa_observed"):  # already has NOAA data
         return None

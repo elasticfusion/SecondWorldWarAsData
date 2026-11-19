@@ -1731,15 +1731,16 @@ def _iter_loadable_records(directory: Path):
 
 
 def _iter_loadable_files(files):
-    """(file, parsed_data) for each non-SKIP file in ``files`` that parses as JSON."""
+    """(file, record) for each non-SKIP file in ``files`` that is a readable record (a corrupt
+    one is alerted and holds the book: entity_records.load_record)."""
+    from src.utils.entity_records import load_record
+
     for f in files:
         if f.name in SKIP_FILES:
             continue
-        try:
-            data = json.loads(f.read_text(encoding="utf-8"))
-        except Exception:
-            continue
-        yield f, data
+        data = load_record(f, "openserp")
+        if data is not None:
+            yield f, data
 
 
 def enrich_people_with_openserp(
@@ -1801,15 +1802,16 @@ def _collect_people_candidates(
     """The people to search this run, as {file, data, name}: the index, recently searched and
     nameless ones skipped. No search happens here (the driver searches one person at a time).
     """
+    from src.utils.entity_records import load_record
+
     people: List[Dict] = []
     for f in sorted(people_dir.glob("*.json")):
         if f.name in SKIP_FILES:
             continue
         if max_items and len(people) >= max_items:
             break
-        try:
-            data = json.loads(f.read_text(encoding="utf-8"))
-        except Exception:
+        data = load_record(f, "openserp_people")  # corrupt: alerted, the book is held
+        if data is None:
             continue
 
         if _openserp_recently_searched(data):
@@ -1847,17 +1849,14 @@ def enrich_equipment_with_openserp(
 
 
 def _load_equipment_record(f) -> Optional[dict]:
-    """Load one equipment record; a corrupt file is a LOSS (loud OBSERV), not a silent skip."""
-    try:
-        return json.loads(f.read_text(encoding="utf-8"))
-    except Exception as exc:  # noqa: BLE001
+    """Load one equipment record; a corrupt file is alerted and holds the book
+    (entity_records.load_record), never a silent skip."""
+    from src.utils.entity_records import load_record
+
+    data = load_record(f, "openserp_equipment")
+    if data is None:
         _metric("records_unreadable")
-        logger.warning(
-            "OBSERV openserp.equipment_unreadable file=%s err=%s status=warn",
-            f.name,
-            type(exc).__name__,
-        )
-        return None
+    return data
 
 
 def _process_equipment_file(f, openserp_url: str, grok_client: Any) -> bool:

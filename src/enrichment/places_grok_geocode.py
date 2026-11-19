@@ -872,24 +872,13 @@ def _geocode_one_file(
     person_names: Optional[set] = None,
 ) -> None:
     """Geocode a single place file, updating ``report`` (and file if ``write``)."""
-    try:
-        place = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        # A corrupt/unreadable place file is a real loss (that place never gets geocoded), not a
-        # benign skip — surface it loudly so a batch of corruption is actionable, not invisible.
+    from src.utils.entity_records import load_record
+
+    # A corrupt place file is a real loss (that place never gets geocoded): load_record alerts
+    # it and Phase 3 holds the book at the end (task 1.2f PART 2)
+    place = load_record(path, "geocode")
+    if place is None:
         report.unreadable += 1
-        logger.warning(
-            "OBSERV geocode.file_unreadable path=%s err=%s status=warn",
-            path.name,
-            type(exc).__name__,
-        )
-        return
-    if not isinstance(place, dict):
-        report.unreadable += 1
-        logger.warning(
-            "OBSERV geocode.file_unreadable path=%s err=not_a_dict status=warn",
-            path.name,
-        )
         return
 
     name = _place_name(place, stem=path.stem, person_names=person_names)

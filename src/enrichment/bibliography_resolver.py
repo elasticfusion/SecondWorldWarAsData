@@ -2107,7 +2107,22 @@ def _process_bib_file(
 ) -> Optional[Tuple[str, bool, str]]:
     """Resolve one bibliography file in place. Returns (status, was_deduped) or
     None if the file should be skipped/errored (caller records the stat)."""
-    data = json.loads(f.read_text(encoding="utf-8"))
+    from src.utils.entity_records import load_record
+
+    data = load_record(f, "bibliography_resolve")  # corrupt: alerted, the book is held
+    if data is None:
+        return None
+    return _process_bib_record(f, data, grok_client, config, resolved_by_key)
+
+
+def _process_bib_record(
+    f: Path,
+    data: Dict[str, Any],
+    grok_client: Any,
+    config: Optional[Dict],
+    resolved_by_key: Dict[str, Dict[str, Any]],
+) -> Optional[Tuple[str, bool, str]]:
+    """Resolve one loaded bibliography record (``data``, from ``f``) in place."""
     # Skip only records with an actual online copy (resource_urls). A record marked
     # "resolved" by a prior RG-IDENTIFY pass but with ZERO resource_urls has no digitized
     # copy yet — re-process it so the online sources (NARA catalog / OpenSERP / archive.org /
@@ -2354,11 +2369,11 @@ def _resolve_one_bib_file(
     """
     try:
         result = _process_bib_file(f, grok_client, config, resolved_by_key)
-    except (json.JSONDecodeError, OSError):
-        stats["errors"] += 1
-        return
     except Exception as e:  # resolver failure — count, keep going
         logger.warning("Failed to resolve %s: %s", f.name, e)
+        stats["errors"] += 1
+        return
+    if result is None:  # unreadable record (load_record alerted it)
         stats["errors"] += 1
         return
 

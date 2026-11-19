@@ -6,8 +6,12 @@ completeness audit (``src/utils/provenance_integrity``)."""
 from __future__ import annotations
 
 import json
+import logging
+import threading
 from pathlib import Path
 from typing import Any, Dict, List
+
+logger = logging.getLogger(__name__)
 
 # Sidecars that live in entity dirs and are not schema records (indexes, reports, curated lists).
 SKIP_NAMES = frozenset(
@@ -24,6 +28,7 @@ SKIP_NAMES = frozenset(
         "not_related.json",
         "not_citation.json",
         "not_equipment.json",
+        "coords.json",  # places/coords.json: the regenerable map coordinates cache
     }
 )
 # A mention's sub-event reference: entities spell it two ways.
@@ -62,8 +67,91 @@ def read_record(f: Path) -> Any:
     raw = Path(f).read_bytes()
     try:
         return json.loads(raw.decode("utf-8"))
-    except (UnicodeDecodeError, ValueError) as e:
+    except (
+        UnicodeDecodeError,
+        ValueError,
+        RecursionError,
+    ) as e:  # too deeply nested too
         raise RecordCorrupt(f, type(e).__name__) from e
+
+
+# The stored records this process found corrupt (task 1.2f PART 2, owner 2026-11-18): each step
+# goes on with its other records, and Phase 3 then exits EXIT_DATA_CORRUPT so the book is held for
+# the operator (a retry cannot repair a record).
+_corrupt: Dict[str, None] = (
+    {}
+)  # path -> None, in the order found (a set that keeps order)
+_corrupt_lock = threading.Lock()
+
+
+def load_record(f: Path, scope: str, expect: type = dict) -> Any:
+    """A stored record for a step to work on, or None to skip it. The ONE loader for records a
+    step reads (DRY):
+
+    * not a record file (an index, report, curated list, lock or dotfile state file:
+      ``is_record_file``): None, nothing reported - those are not records and some are lists;
+    * corrupt (not text, not JSON, or not a ``expect``): a loud ``record.corrupt`` alert naming
+      the file (once per file per run, however many steps read it), remembered in
+      ``corrupt_records()`` (Phase 3 holds the book at the end of the run), None - the step goes
+      on with its other records;
+    * gone (merged away mid-run): None, debug only; unreadable from disk (another OSError): an
+      OBSERV warning, None. Neither is corruption.
+    """
+    from src.utils.observe import observe_error
+    from src.utils.stop_cause import RecordCorrupt
+
+    if not is_record_file(Path(f)):
+        return None
+    try:
+        data = read_record(f)
+        if not isinstance(data, expect):
+            raise RecordCorrupt(f, f"not a {expect.__name__}")
+    except RecordCorrupt as e:
+        with _corrupt_lock:
+            first = str(f) not in _corrupt
+            _corrupt[str(f)] = None
+        if not first:
+            return None
+        observe_error(
+            "record",
+            "corrupt",
+            note=(
+                "A stored record cannot be read, so it was skipped and the book is held at the "
+                "end of the run. Repair or delete the file (and its S3 copy), then resume the "
+                "book"
+            ),
+            file=Path(f).name,
+            entity=Path(f).parent.name,
+            step=scope,
+            reason=str(e).rsplit(": ", 1)[-1][:60],
+        )
+        return None
+    except FileNotFoundError:
+        # merged away or relocated mid-run (dedup): expected, the next run sees the corpus as is
+        logger.debug("record %s gone before %s read it", Path(f).name, scope)
+        return None
+    except OSError as e:
+        logger.warning(
+            "OBSERV record.unreadable step=%s file=%s err=%s status=warn - skipped this run; "
+            "check the disk / S3 sync if this repeats",
+            scope,
+            Path(f).name,
+            type(e).__name__,
+        )
+        return None
+    return data
+
+
+def corrupt_records() -> List[str]:
+    """The corrupt stored records found by ``load_record`` in this process (each once, in
+    order)."""
+    with _corrupt_lock:
+        return list(_corrupt)
+
+
+def reset_corrupt_records() -> None:
+    with _corrupt_lock:
+        _corrupt.clear()
 
 
 def iter_mentions(rec: Dict[str, Any]) -> List[Dict[str, Any]]:

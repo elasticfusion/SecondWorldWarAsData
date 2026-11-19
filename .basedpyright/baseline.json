@@ -372,14 +372,6 @@
                     "endColumn": 81,
                     "lineCount": 1
                 }
-            },
-            {
-                "code": "reportGeneralTypeIssues",
-                "range": {
-                    "startColumn": 37,
-                    "endColumn": 43,
-                    "lineCount": 1
-                }
             }
         ],
         "./src/enrichment/equipment_wikipedia.py": [

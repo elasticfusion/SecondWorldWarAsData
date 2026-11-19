@@ -227,8 +227,11 @@ def _rebase_event_file(f: Path, old_id: str, new_id: str, ref_key: str) -> int:
                 refs[idx] = new_id
                 changed += 1
     if changed:
-        with open(f, "w", encoding="utf-8") as fh:
-            json.dump(d, fh, indent=2, ensure_ascii=False)
+        from src.utils.file_lock import _atomic_write_json
+
+        # crash-atomic: a kill mid-write must not leave a truncated record, which Phase 3 would
+        # take for corruption and hold the book (task 1.2f)
+        _atomic_write_json(f, d)
     return changed
 
 

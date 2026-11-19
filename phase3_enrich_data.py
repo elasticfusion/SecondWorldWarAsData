@@ -411,18 +411,15 @@ def _load_parsed_docs(out) -> list:
     docs = []
     unreadable = 0
     try:
+        from src.utils.entity_records import load_record
+
         for pf in (out / "content").rglob("*-parsed.json"):
-            try:
-                docs.append(json.loads(pf.read_text(encoding="utf-8")))
-            except (
-                Exception
-            ) as exc:  # noqa: BLE001 - a corrupt parsed doc is a loss, not silent
+            # a corrupt parsed doc is alerted and holds the book (entity_records.load_record)
+            doc = load_record(pf, "parsed_docs")
+            if doc is None:
                 unreadable += 1
-                log.warning(
-                    "OBSERV phase3.parsed_doc_unreadable file=%s err=%s status=warn",
-                    pf.name,
-                    type(exc).__name__,
-                )
+            else:
+                docs.append(doc)
     except Exception as exc:  # noqa: BLE001
         log.warning(
             "OBSERV phase3.parsed_docs_scan_failed err=%s status=error",
@@ -791,6 +788,9 @@ def main():
     from src.utils.validation_stats import reset_stats as _reset_val_stats
 
     _reset_val_stats()
+    from src.utils.entity_records import reset_corrupt_records
+
+    reset_corrupt_records()  # task 1.2f PART 2: corrupt records found this run hold the book
 
     # Notify: enrichment is starting (downloads complete, real work beginning)
     _notify_enrichment_started()
@@ -1005,6 +1005,9 @@ def main():
                 # the operator via the completion notification (email + Slack).
                 "source_stats": source_stats,
                 "errored_sources": errored_sources,
+                # stored records found corrupt this run (entity_records.load_record): the
+                # book is held for the operator (EXIT_DATA_CORRUPT)
+                "corrupt_records": _corrupt_record_names(),
             }
         ),
         encoding="utf-8",
@@ -1093,6 +1096,18 @@ def run_enrichment_step(source_stats: dict, name: str, fn) -> int:
         return 0
 
 
+def _corrupt_record_names(limit: int = 50) -> list:
+    """The corrupt records found this run, as ``<entity>/<file>`` (at most ``limit``; then an
+    "... and N more" entry so the list never looks complete when it is not)."""
+    from src.utils.entity_records import corrupt_records
+
+    found = corrupt_records()
+    names = ["/".join(Path(p).parts[-2:]) for p in found[:limit]]
+    if len(found) > limit:
+        names.append(f"... and {len(found) - limit} more")
+    return names
+
+
 def _exit_for_steps(source_stats: dict) -> int:
     """0 when every step finished. A step that raised means part of its work was never
     attempted, so the book must not be marked finished (owner 2026-11-18): EXIT_STEP_FAILED (the
@@ -1100,12 +1115,16 @@ def _exit_for_steps(source_stats: dict) -> int:
     for the operator: a retry cannot fix it)."""
     from src.utils import stop_cause
 
+    from src.utils.entity_records import corrupt_records
+
     failed = [s for s in source_stats.values() if s.get("status") == "error"]
-    if not failed:
-        return 0
-    if any(s.get("corrupt") for s in failed):
+    # a step that skipped a corrupt record went on with the rest, but the book is not done: a
+    # retry cannot repair the record (task 1.2f PART 2)
+    if corrupt_records() or any(s.get("corrupt") for s in failed):
         return stop_cause.EXIT_DATA_CORRUPT
-    return stop_cause.EXIT_STEP_FAILED
+    if failed:
+        return stop_cause.EXIT_STEP_FAILED
+    return 0
 
 
 if __name__ == "__main__":

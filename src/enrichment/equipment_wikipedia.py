@@ -200,9 +200,10 @@ def _enrich_one_equipment_file(f: Path) -> tuple[bool, bool]:
     `did_lookup` is True only when the file passed all gates and a Wikipedia lookup ran
     (the point at which the original applies its 1s rate-limit sleep). Preserves skip
     conditions (parse-fail, already-checked, missing/short name)."""
-    try:
-        data = json.loads(f.read_text(encoding="utf-8"))
-    except Exception:
+    from src.utils.entity_records import load_record
+
+    data = load_record(f, "equipment_wikipedia")  # corrupt: alerted, the book is held
+    if data is None:
         return False, False
 
     # Gate: skip if already enriched (has a wikipedia_url) OR checked recently. Avoids

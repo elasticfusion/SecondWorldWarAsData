@@ -517,18 +517,15 @@ def resolve_equipment_images(
 
 
 def _load_record(f: Path, counts: Dict[str, int]) -> Optional[Dict[str, Any]]:
-    """The equipment record in ``f``, or None (unreadable -> counted + logged; non-record skipped)."""
-    try:
-        rec = json.loads(f.read_text(encoding="utf-8"))
-    except (OSError, ValueError) as e:
-        logger.warning(
-            "OBSERV equipment.image_record_unreadable file=%s err=%s status=warn",
-            f.name,
-            type(e).__name__,
-        )
+    """The equipment record in ``f``, or None (a corrupt one is counted, alerted and holds the
+    book: entity_records.load_record; a non-equipment record is skipped)."""
+    from src.utils.entity_records import load_record
+
+    rec = load_record(f, "equipment_images")
+    if rec is None:
         counts["unreadable"] += 1
         return None
-    return rec if isinstance(rec, dict) and "EquipmentID" in rec else None
+    return rec if "EquipmentID" in rec else None
 
 
 def _process_file(

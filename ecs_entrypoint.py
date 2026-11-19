@@ -3316,14 +3316,24 @@ def _alert_data_corruption() -> str:
     """Alert loudly that the book's own stored data stopped Phase 3 (exit 83): name only the
     corrupt step(s) and their (truncated) error, so the operator can find the record. Returns
     the queue reason."""
-    stats = _phase_results().get("source_stats") or {}
+    results = _phase_results()
+    stats = results.get("source_stats") or {}
     bad = {
         n: str(s.get("error", ""))[:120]
         for n, s in stats.items()
         if isinstance(s, dict) and s.get("corrupt")
     }
-    steps = ", ".join(bad) or "unknown"
-    detail = "; ".join(f"{n}: {err}" for n, err in bad.items())[:400]
+    found = [str(r) for r in (results.get("corrupt_records") or [])]
+    records = found[:10] + (
+        [f"... {len(found) - 10} more in .phase_results.json"]
+        if len(found) > 10
+        else []
+    )
+    steps = ", ".join(bad) or ("skipped records" if records else "unknown")
+    detail = "; ".join(
+        [f"{n}: {err}" for n, err in bad.items()]
+        + ([f"records: {', '.join(records)}"] if records else [])
+    )[:400]
     observe_error(
         "phase",
         "data_corrupt",

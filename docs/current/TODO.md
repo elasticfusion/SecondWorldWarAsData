@@ -270,13 +270,16 @@ continues from where it stopped. Order: 1.2b, 1.1b, 1.2c, 1.2e, 1.2d, 1.2f, 1.1c
     `entity_records.read_record` for the book's own stored records; a parse/schema error on a
     service answer (HTML error page, Grok reply, write guard) is a step failure (82), so
     untrusted content can never hold a book. A held book's corpus stays unrepaired until resumed.
-    GAP: today's Phase 3 record loaders (`places_geo._load_place`, `noaa_weather`, openserp
-    `_iter`/people/equipment, `groups_wikipedia`, `equipment_wikipedia`, `equipment_images`,
-    `places_grok_geocode`, `bibliography_resolver`, `_load_parsed_docs`) still skip a corrupt
-    file with a warning (some silently) instead of calling `read_record`, so exit 83 has no
-    producer yet: move them to `read_record` in PART 2. Follow-ups: keep the failed step names
-    on the queue row (`last_failed_steps`) so the attempt-cap alert names them, and say "last
-    attempt" on the final retry.
+    DONE (1.2f slice 2, 2026-11-18): every Phase 3 record loader (`places_geo._load_place`,
+    `noaa_weather`, openserp `_iter`/people/equipment, `groups_wikipedia`, `equipment_wikipedia`,
+    `equipment_images`, `places_grok_geocode`, `bibliography_resolver`, `_load_parsed_docs`) now
+    reads through `entity_records.load_record`: a corrupt record (not text, not JSON, not an
+    object) raises a loud `record.corrupt` alert naming the file, is skipped so the step goes on
+    with its other records, and Phase 3 exits 83 at the end (book held; `.phase_results.json`
+    `corrupt_records` names the files in the hold alert). A missing file is an OBSERV warning,
+    not corruption. Follow-ups: keep the failed step names on the queue row
+    (`last_failed_steps`) so the attempt-cap alert names them, and say "last attempt" on the
+    final retry.
   - PART 2 (owner rule 2026-11-18), in each step's group: catch errors PER RECORD so one bad
     record does not stop the step and block every record after it. A record that fails on DATA
     CORRUPTION (unparseable / schema-invalid): error out loudly (alert, set aside for review).
