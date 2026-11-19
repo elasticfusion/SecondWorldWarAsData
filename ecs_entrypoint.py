@@ -1403,7 +1403,7 @@ def _preflight_credit_check() -> None:
                 "Top up the xAI account. " % resp.status_code
                 + _queue_followup("funding", "xAI reports no credits at preflight"),
             )
-            sys.exit(1)
+            _exit_before_work()
         if resp.status_code == 401:
             logger.error("PREFLIGHT FAILED: Invalid API key. Aborting.")
             _alert_phase_stopped(
@@ -1412,7 +1412,7 @@ def _preflight_credit_check() -> None:
                 "Fix the Secrets Manager secret named by SECRETS_ID. "
                 + _queue_followup("config", "xAI rejected the API key (HTTP 401)"),
             )
-            sys.exit(1)
+            _exit_before_work()
         resp.raise_for_status()
         logger.info("Preflight OK: Grok API credits available")
         # every configured model is served AS ITSELF (a retired one is redirected silently);
@@ -1434,7 +1434,7 @@ def _preflight_credit_check() -> None:
             f"Grok stopped the preflight ({type(e).__name__}). "
             + _queue_followup(cause, f"preflight: {type(e).__name__}"),
         )
-        sys.exit(1)
+        _exit_before_work()
     except _grok_models.GrokModelUnavailable:
         logger.error(
             "PREFLIGHT FAILED: a configured Grok model is unavailable. Aborting."
@@ -1447,7 +1447,7 @@ def _preflight_credit_check() -> None:
             "before any work. "
             + _queue_followup("config", "a configured Grok model is unavailable"),
         )
-        sys.exit(1)
+        _exit_before_work()
     except SystemExit:
         raise
     except Exception as e:
@@ -2703,16 +2703,35 @@ def _invoke_trigger_phase_complete(phase: str) -> None:
     """Tell the trigger Lambda a phase finished so it drives the NEXT phase from
     parked pending#* queues immediately (event-driven chain; the 15-min scheduled
     check is only a backstop). Best-effort — a lost invoke is covered by the poll."""
+    _invoke_trigger(
+        {"source": "phase-complete", "phase": phase},
+        f"phase {phase} complete -> drive the next phase",
+    )
+
+
+def _invoke_trigger(payload: dict, what: str) -> bool:
+    """Invoke the trigger Lambda asynchronously. Best-effort: a lost invoke is picked up by the
+    hourly reconcile (the queue rows stay), so a failure only warns. Returns whether it was sent.
+    """
     try:
         env_name = os.environ.get("ENV_NAME", "dev")
         boto3.client("lambda", region_name=REGION).invoke(
             FunctionName=f"{env_name}-wwii-trigger",
             InvocationType="Event",
-            Payload=json.dumps({"source": "phase-complete", "phase": phase}).encode(),
+            Payload=json.dumps(payload).encode(),
         )
-        logger.info("Notified trigger: phase %s complete -> drive next phase", phase)
-    except Exception as e:
-        logger.warning("Failed to notify trigger of phase %s completion: %s", phase, e)
+        logger.info("OBSERV trigger.invoked what=%s status=ok", what)
+        return True
+    except Exception as e:  # noqa: BLE001 - the hourly reconcile is the backstop
+        logger.warning(
+            "OBSERV trigger.invoke_failed what=%s err=%s status=warn - check this task "
+            "role's lambda:InvokeFunction on %s-wwii-trigger and the Lambda's throttles; the "
+            "hourly reconcile does the work late (up to an hour)",
+            what,
+            type(e).__name__,
+            os.environ.get("ENV_NAME", "dev"),
+        )
+        return False
 
 
 def _advance_doc_lifecycle(completed_phase: str) -> None:
@@ -3182,24 +3201,12 @@ def _post_process(phase_script: str, env: dict) -> None:
                 "Next book for enrichment: %s — triggering Phase 3, keeping networking up",
                 next_enrich,
             )
-            try:
-                env_name = os.environ.get("ENV_NAME", "dev")
-                lambda_client = boto3.client("lambda", region_name=REGION)
-                payload = json.dumps(
-                    {"source": "manual", "book": next_enrich, "phase": "3"}
-                )
-                lambda_client.invoke(
-                    FunctionName=f"{env_name}-wwii-trigger",
-                    InvocationType="Event",
-                    Payload=payload.encode(),
-                )
-                # its row stays until ITS task succeeds (task 1.2)
-            except Exception as e:
-                logger.warning(
-                    "Failed to trigger Phase 3 for %s (will retry on next reconciliation): %s",
-                    next_enrich,
-                    e,
-                )
+            # the trigger tries each queued book until one launches (one may be running in
+            # another task: naming only the first left the rest for the hourly reconcile); the
+            # rows stay until each book's own task succeeds (task 1.2)
+            _invoke_trigger(
+                {"source": "enrich-next"}, "launch the next queued Phase 3 book"
+            )
     else:
         _remove_lock(phase_script)
 
@@ -3293,6 +3300,11 @@ def _mark_attempt_claimed() -> None:
     _mark_task(claimed=True, book=os.environ.get("BOOK_NAME", ""))
 
 
+_attempt_of: dict = (
+    {}
+)  # this task's Phase 3 attempt {"n", "cap"} (the step-failure notice)
+
+
 def _claim_enrich_attempt() -> bool:
     """A Phase 3 task is starting: count this attempt on the book's queue row FIRST (task 1.2;
     owner decision D8c-2). The row stays until the run succeeds (_finish_own_enrich_row), so any
@@ -3327,6 +3339,7 @@ def _claim_enrich_attempt() -> bool:
         return True
     if allowed:
         _mark_attempt_claimed()
+        _attempt_of["n"], _attempt_of["cap"] = attempts, cap
         logger.info(
             "OBSERV queue.enrich_attempt book=%s attempt=%d max=%d status=ok",
             book,
@@ -3334,18 +3347,34 @@ def _claim_enrich_attempt() -> bool:
             cap,
         )
         return True
+    steps = _failed_steps_of(book)
     observe_error(
         "queue",
         "enrich_deferred",
         note=(
             f"Run `{pending_queue.RESUME_COMMAND} {book}` after fixing the cause (earlier "
             f"alerts): Phase 3 failed {cap} times, so the book is deferred, not retried"
+            + (f". Last failed step(s): {steps}" if steps else "")
         ),
+        failed_steps=steps or "unknown",
         book=book,
         cause="failure",
         attempts=attempts - 1,
     )
     return False
+
+
+def _failed_steps_of(book: str) -> str:
+    """The steps that failed in ``book``'s last run, from its queue row ('' if unknown)."""
+    from src.utils import pending_queue
+
+    try:
+        steps = pending_queue.failed_steps(_cache_table(), book)
+        return ", ".join(steps[:4]) + (
+            f" (+{len(steps) - 4})" if len(steps) > 4 else ""
+        )
+    except Exception:  # noqa: BLE001 - the hold alert goes out without them
+        return ""
 
 
 def _queue_followup(cause: str, reason: str) -> str:
@@ -3422,13 +3451,15 @@ def _defer_on_stop_cause(returncode: int) -> str:
     from src.utils import stop_cause
 
     if returncode == stop_cause.EXIT_STEP_FAILED:
-        steps = (
-            ", ".join(map(str, _phase_results().get("errored_sources") or []))
-            or "unknown"
+        failed = [str(x) for x in (_phase_results().get("errored_sources") or [])]
+        steps = ", ".join(failed[:4]) + (
+            f" (+{len(failed) - 4})" if len(failed) > 4 else ""
         )
+        _record_failed_steps(failed)
+        # what happens next goes FIRST: the alert note is capped at 300 characters
         return (
-            f"Phase 3 step(s) failed partway: {steps}. The book is not finished: it stays "
-            "queued and is retried (attempt-capped); work already saved is kept"
+            f"Phase 3 did not finish: {_retry_sentence()}. Work already saved is kept. "
+            f"Failed step(s): {steps or 'unknown'}"
         )
     cause = stop_cause.cause_for_exit(returncode)
     if not cause:
@@ -3437,6 +3468,41 @@ def _defer_on_stop_cause(returncode: int) -> str:
     if returncode == stop_cause.EXIT_DATA_CORRUPT:
         reason = _alert_data_corruption()
     return _queue_followup(cause, reason)
+
+
+def _record_failed_steps(steps: list) -> None:
+    """Keep the failed steps on the book's queue row (the cap hold and `resume_book.py list`
+    name them). Never raises."""
+    book = os.environ.get("BOOK_NAME", "")
+    if not book or not steps or "phase3" not in _current_phase_script:
+        return
+    from src.utils import pending_queue
+
+    try:
+        pending_queue.record_failed_steps(_cache_table(), book, steps)
+    except Exception as e:  # noqa: BLE001 - the alert still names them
+        logger.warning(
+            "OBSERV queue.failed_steps_not_recorded book=%s err=%s status=warn",
+            book,
+            type(e).__name__,
+        )
+
+
+def _retry_sentence() -> str:
+    """What happens to the book after this counted failure: retried, or - on the last allowed
+    attempt - held at the next start (so the operator knows now, not a run later)."""
+    n, cap = _attempt_of.get("n"), _attempt_of.get("cap")
+    if not n or not cap:
+        return "it stays queued and is retried (attempt-capped)"
+    if n >= cap:
+        book = os.environ.get("BOOK_NAME", "")
+        from src.utils import pending_queue
+
+        return (
+            f"this was the LAST attempt ({n} of {cap}): the book is held at its next start - "
+            f"fix the cause, then run `{pending_queue.RESUME_COMMAND} {book}`"
+        )
+    return f"it stays queued and is retried (attempt {n} of {cap})"
 
 
 def _alert_data_corruption() -> str:

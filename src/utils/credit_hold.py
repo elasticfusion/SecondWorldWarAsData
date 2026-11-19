@@ -175,34 +175,14 @@ def alert_held(
     """One alert per ALERT_HOURS across Lambda invocations: a conditional put on
     ``credit#hold_alerted`` keyed on when it was last sent (a time in the future - a tampered or
     clock-skewed marker - does not silence it). Returns whether this call alerted."""
+    from src.utils import alert_window
+
     now = time.time() if now is None else now
-    try:
-        table.put_item(
-            Item={
-                "cache_key": ALERT_KEY,
-                "at": int(now),
-                "ttl": int(now + ALERT_HOURS * 3600),
-            },
-            ConditionExpression=(
-                "attribute_not_exists(cache_key) OR #at < :cutoff OR #at > :now"
-            ),
-            ExpressionAttributeNames={"#at": "at"},
-            ExpressionAttributeValues={
-                ":cutoff": int(now - ALERT_HOURS * 3600),
-                ":now": int(now),
-            },
+    if not alert_window.claim(table, ALERT_KEY, ALERT_HOURS * 3600, now):
+        logger.info(
+            "OBSERV credit.hold usd=%.2f what=%s status=ok - already alerted", usd, what
         )
-    except (
-        Exception
-    ) as e:  # noqa: BLE001 - already alerted in the window (or Dynamo down)
-        if type(e).__name__ == "ConditionalCheckFailedException":
-            logger.info(
-                "OBSERV credit.hold usd=%.2f what=%s status=ok - already alerted",
-                usd,
-                what,
-            )
-            return False
-        logger.warning("credit hold alert marker failed: %s", type(e).__name__)
+        return False
     observe_alert(
         "credit",
         "launches_held",

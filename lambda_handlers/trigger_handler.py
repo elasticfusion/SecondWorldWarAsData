@@ -1689,6 +1689,12 @@ def handler(event, _context):
     if event.get("source") == "scheduled":
         return _handle_scheduled_check()
 
+    # A Phase 3 task finished its book: launch the next queued one that can run (each is tried
+    # until one launches - another may be running in its own task)
+    if event.get("source") == "enrich-next":
+        # True also when every queued book's lock is held (they run or wait their turn)
+        return {"queued_work": _reconcile_phase3("enrich-next")}
+
     # ECS Task State Change (the dev-wwii-spot-recovery rule): a task STOPPED — recover immediately.
     if (
         event.get("source") == "aws.ecs"

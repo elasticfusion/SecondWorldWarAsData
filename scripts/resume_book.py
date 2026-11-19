@@ -4,7 +4,7 @@ never"). A book is deferred instead of dropped: ``failure`` past the attempt cap
 bad API key or model (both held until resumed here), or ``funding`` / ``connectivity`` (resumed by
 the reconcile on its own; resuming one here only ends the hold sooner).
 
-  list                 every deferred book: cause, reason, attempts, when
+  list                 every deferred book: cause, reason, attempts, when, failed steps
   <book> [<book> ...]  clear the deferral and the attempt count; the next hourly reconcile runs it
   --all [--cause C]    resume every deferred book (optionally only cause C)
 
@@ -51,9 +51,11 @@ def _list(table: Any) -> int:
         print("No deferred Phase 3 books.")
         return 0
     for r in rows:
+        steps = ",".join(r["last_failed_steps"])
         print(
-            f"{_printable(r['book'])}\t{r['cause']}\tattempts={r['attempts']}"
+            f"{_printable(r['book'])}\t{_printable(r['cause'])}\tattempts={r['attempts']}"
             f"\t{_when(r['deferred_at'])}\t{_printable(r['reason'])}"
+            + (f"\tfailed_steps={_printable(steps)}" if steps else "")
         )
     return 0
 

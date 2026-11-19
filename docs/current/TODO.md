@@ -136,10 +136,11 @@ continues from where it stopped. Order: 1.2b, 1.1b, 1.2c, 1.2e, 1.2d, 1.2f, 1.1c
   - DONE (1.2e) - repeated auto-resume is capped: `connectivity` deferrals are counted
     (`connectivity_stops`); past `queue.max_connectivity_deferrals` (24) the book is held
     `failure`; `resume_book.py` resets the count. `funding` is not capped (it stops before spend).
-  - LOW - a held (`failure`/`config`) book is only logged (`OBSERV queue.deferred_held`) by each
-    reconcile after its one deferral alert; add a rate-limited reminder alert.
-  - LOW - the cluster-wide hold picks books alphabetically; a book that keeps renewing the hold
-    starves the others. Pick by the oldest `deferred_at` (with the cap above).
+  - DONE (2026-11-19) - a held (`failure`/`config`) book is re-announced once a day
+    (`queue.held_reminder`, through `src/utils/alert_window`, the window the credit-hold alert now
+    shares).
+  - DONE (2026-11-19) - runnable books go never-deferred first, then the oldest `deferred_at`
+    (was alphabetical), so a book that keeps renewing the hold goes last.
   - LOW - an ordinary failure whose alert was not delivered, then an outside SIGTERM in the same
     task, gives that attempt back (rare; bounded to once per task).
 - **1.2c - the NAT does not fail over.** A NAT gateway is zonal by default; `nat_manager` always
@@ -277,9 +278,10 @@ continues from where it stopped. Order: 1.2b, 1.1b, 1.2c, 1.2e, 1.2d, 1.2f, 1.1c
     object) raises a loud `record.corrupt` alert naming the file, is skipped so the step goes on
     with its other records, and Phase 3 exits 83 at the end (book held; `.phase_results.json`
     `corrupt_records` names the files in the hold alert). A missing file is an OBSERV warning,
-    not corruption. Follow-ups: keep the failed step names on the queue row
-    (`last_failed_steps`) so the attempt-cap alert names them, and say "last attempt" on the
-    final retry.
+    not corruption. Follow-ups DONE (2026-11-19): a step failure keeps its steps on the queue
+    row (`last_failed_steps`, cleared by the next allowed start), the attempt-cap hold alert and
+    `resume_book.py list` name them, and the failure notice says "attempt n of cap" or, on the
+    final retry, "LAST attempt ... held at next start" with the resume command.
   - PART 2 (owner rule 2026-11-18), in each step's group: catch errors PER RECORD so one bad
     record does not stop the step and block every record after it. A record that fails on DATA
     CORRUPTION (unparseable / schema-invalid): error out loudly (alert, set aside for review).
@@ -329,11 +331,11 @@ continues from where it stopped. Order: 1.2b, 1.1b, 1.2c, 1.2e, 1.2d, 1.2f, 1.1c
   hourly `grok.credits_critical` alert, the run goes on. Owner 2026-11-18: a Phase 0 import whose title-page
   Grok request is on is gated too (deal with it earlier); `api.grok.balance_check: false` switches
   the check off for other deployments (open source); auto top-up is the operator's call.
-  `phase0_ingest`'s translation pass has no NAT, so it is not gated. Follow-ups: the
-  older preflight stops (`grok_credits_depleted`, `grok_key_invalid`, model unavailable) exit
-  without freeing the lock - move them to `_exit_before_work` (D10); While the
-  balance stays under the floor, each funding retry (every 50 min, cap 72) starts a task and NAT
-  just to read it again: consider a longer funding interval or a balance check before launch.
+  `phase0_ingest`'s translation pass has no NAT, so it is not gated. Follow-ups: DONE
+  (2026-11-19) the older preflight stops (`grok_credits_depleted`, `grok_key_invalid`, model
+  unavailable, Grok unreachable) free the lock and NAT lease at once (`_exit_before_work`, D10);
+  DONE (1.1e) a funding retry no longer starts a task and NAT just to read the balance: the
+  trigger checks it before the launch and leaves the book queued.
   The balance formula is verified on one answer (2026-11-18); re-check it around the 11th, when
   the month's spend posts to the ledger.
 
@@ -403,7 +405,9 @@ continues from where it stopped. Order: 1.2b, 1.1b, 1.2c, 1.2e, 1.2d, 1.2f, 1.1c
   price (`describe_spot_price_history`) stays at or below the original type's on-demand price
   (Price List API); then the on-demand queue at the original type. Extends `ocr_spot_controller`
   (today: Spot wait -> on-demand fallback, 48 h cap; no upsizing).
-- **LOW - the end-of-run chain can pick a book that is already running.** Queue rows now stay while
+- **DONE (2026-11-19: the chain invokes the trigger with `{"source": "enrich-next"}`, which runs
+  `_reconcile_phase3`; shared `ecs_entrypoint._invoke_trigger`) LOW - the end-of-run chain can pick
+  a book that is already running.** Queue rows now stay while
   their book runs (task 1.2), so `_get_next_pending_enrich` may name a running book; its lock is held,
   the trigger re-queues it, and the next free book waits for the hourly reconcile (up to an hour).
   Reuse the reconcile's "try each until one launches" (`trigger_handler._reconcile_phase3`).

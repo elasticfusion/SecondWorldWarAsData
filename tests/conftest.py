@@ -175,6 +175,8 @@ def _fresh_service_state(monkeypatch):
         # what this "task" synced: a record removed later is deleted from S3 (task 1.5)
         monkeypatch.setattr(ee, "_synced_at", {})
         monkeypatch.setattr(ee, "_synced_etag", {})
+    if ee is not None and hasattr(ee, "_attempt_of"):
+        monkeypatch.setattr(ee, "_attempt_of", {})  # this task's Phase 3 attempt number
     yield
     service_outage.reset()
 

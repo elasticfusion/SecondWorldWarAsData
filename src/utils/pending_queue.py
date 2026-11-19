@@ -77,13 +77,14 @@ def _rows(table: Any, kind: str) -> List[dict]:
         scan_prefix(
             table,
             _prefix(kind),
-            projection="#k, #d, #a, #r, #n",
+            projection="#k, #d, #a, #r, #n, #s",
             names={
                 "#k": "cache_key",
                 "#d": "defer_cause",
                 "#a": "deferred_at",
                 "#r": "defer_reason",
                 "#n": "attempts",
+                "#s": "last_failed_steps",
             },
         )
     )
@@ -92,7 +93,9 @@ def _rows(table: Any, kind: str) -> List[dict]:
 def _split_rows(table: Any, kind: str) -> Tuple[List[str], List[str], int, str]:
     """(runnable, held, newest auto-deferral time, its cause) over every row of ``kind``."""
     prefix = _prefix(kind)
-    runnable, held, newest_auto, auto_cause = [], [], 0, ""
+    runnable: List[Tuple[int, str]] = []
+    held: List[str] = []
+    newest_auto, auto_cause = 0, ""
     for item in _rows(table, kind):
         book = str(item["cache_key"])[len(prefix) :]
         cause = item.get("defer_cause")
@@ -104,8 +107,10 @@ def _split_rows(table: Any, kind: str) -> Tuple[List[str], List[str], int, str]:
             continue
         if cause in AUTO_RESUME and at > newest_auto:
             newest_auto, auto_cause = at, cause
-        runnable.append(book)
-    return sorted(runnable), sorted(held), newest_auto, auto_cause
+        # never-deferred books first, then the OLDEST deferral: a book that keeps renewing the
+        # cluster-wide hold goes last instead of starving the others (it was alphabetical)
+        runnable.append((at if cause in AUTO_RESUME else 0, book))
+    return [b for _, b in sorted(runnable)], sorted(held), newest_auto, auto_cause
 
 
 def runnable_books(
@@ -125,6 +130,7 @@ def runnable_books(
             ",".join(held),
             RESUME_COMMAND,
         )
+        remind_held(table, kind, held, now)
     now = time.time() if now is None else now
     wait = int(retry_minutes * 60 - (now - newest_auto)) if newest_auto else 0
     if wait > 0 and runnable:
@@ -140,6 +146,68 @@ def runnable_books(
     return runnable
 
 
+HELD_REMINDER_HOURS = 24
+
+
+def remind_held(
+    table: Any, kind: str, held: List[str], now: Optional[float] = None
+) -> bool:
+    """Once a day (across Lambda invocations), remind the operator that books are held for them:
+    after the one alert when each was held, a held book was only logged by every reconcile.
+    Returns whether the reminder was sent. Never raises."""
+    from src.utils import alert_window
+    from src.utils.observe import observe_alert
+
+    now = time.time() if now is None else now
+    key = f"queue#held_reminded#{kind}"
+    try:
+        if not alert_window.claim(table, key, HELD_REMINDER_HOURS * 3600, now):
+            return False
+        shown = ", ".join(held[:10]) + (
+            f" (+{len(held) - 10} more)" if len(held) > 10 else ""
+        )
+        sent = observe_alert(
+            "queue",
+            "held_reminder",
+            note=(
+                f"{len(held)} book(s) are still held for you and will not run until resumed: "
+                f"{shown}. `{RESUME_COMMAND} list` shows why; after the fix run "
+                f"`{RESUME_COMMAND} <book>`"
+            ),
+            dedup_key=f"{kind}.{int(now // 86400)}",
+            kind=kind,
+            count=len(held),
+        )
+        if not sent:  # not delivered: the next reconcile tries again
+            alert_window.release(table, key)
+        return bool(sent)
+    except Exception as e:  # noqa: BLE001 - a reminder must never stop the reconcile
+        logger.warning(
+            "OBSERV queue.held_reminder_failed err=%s status=warn", type(e).__name__
+        )
+        return False
+
+
+def record_failed_steps(table: Any, book: str, steps: List[str]) -> None:
+    """Keep the Phase 3 steps that failed in the book's last run on its queue row, so the
+    attempt-cap hold and ``resume_book.py --list`` can name them (task 1.2f follow-up).
+    """
+    clean = [str(s)[:60] for s in steps if s][:10]
+    table.update_item(
+        Key={"cache_key": row_key("enrich", book)},
+        UpdateExpression="SET last_failed_steps = :s",
+        ConditionExpression="attribute_exists(cache_key)",
+        ExpressionAttributeValues={":s": clean},
+    )
+
+
+def failed_steps(table: Any, book: str) -> List[str]:
+    """The steps that failed in the book's last run ([] if none recorded)."""
+    item = table.get_item(Key={"cache_key": row_key("enrich", book)}).get("Item") or {}
+    steps = item.get("last_failed_steps")
+    return [str(s) for s in steps] if isinstance(steps, list) else []
+
+
 def deferred_rows(table: Any, kind: str = "enrich") -> List[dict]:
     """Deferred rows as {book, cause, reason, deferred_at, attempts}, sorted by book."""
     prefix = _prefix(kind)
@@ -150,6 +218,7 @@ def deferred_rows(table: Any, kind: str = "enrich") -> List[dict]:
             "reason": i.get("defer_reason", ""),
             "deferred_at": int(i.get("deferred_at") or 0),
             "attempts": int(i.get("attempts") or 0),
+            "last_failed_steps": [str(x) for x in (i.get("last_failed_steps") or [])],
         }
         for i in _rows(table, kind)
         if i.get("defer_cause")
@@ -223,11 +292,12 @@ def claim_attempt(
             )
         return attempts, False
     # only now clear a deferral (this run is the retry): clearing it in the counting update
-    # would make a capped row look runnable until the re-defer above
+    # would make a capped row look runnable until the re-defer above. The last run's failed
+    # steps go too: a refused (capped) start keeps them, so its hold alert names them
     try:
         table.update_item(
             Key=key,
-            UpdateExpression="REMOVE defer_cause, deferred_at, defer_reason",
+            UpdateExpression="REMOVE defer_cause, deferred_at, defer_reason, last_failed_steps",
             ConditionExpression="attribute_exists(cache_key)",
         )
     except Exception as e:  # noqa: BLE001 - the attempt IS counted; run it
