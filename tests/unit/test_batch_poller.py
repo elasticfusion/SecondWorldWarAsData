@@ -150,10 +150,13 @@ def test_poll_api_error_stays_pending(mock_get, dynamodb_table):
 
 @patch("lambda_handlers.batch_poller.boto3.client")
 def test_submit_action_creates_networking_and_launches_task(
-    mock_boto_client, dynamodb_table
+    mock_boto_client, dynamodb_table, monkeypatch
 ):
+    from lambda_handlers import batch_poller
     from lambda_handlers.batch_poller import handler
 
+    # the credit gate (task 1.1e, tests/test_credit_hold.py) is not under test here
+    monkeypatch.setattr(batch_poller, "_credit_hold_reply", lambda phase, book: {})
     mock_lambda = MagicMock()
     mock_ecs = MagicMock()
     mock_ecs.run_task.return_value = {

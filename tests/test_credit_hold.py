@@ -31,7 +31,7 @@ from src.utils import credit_hold as cg  # noqa: E402
 
 CONVERT = "test-wwii-phase0-convert"
 VIDEO = "test-wwii-phase0-video"
-ALLOWED = (CONVERT, VIDEO)
+ALLOWED = {CONVERT: {"CONVERT_KEY": cg.IMPORT_KEY}, VIDEO: {"VIDEO_KEY": cg.IMPORT_KEY}}
 ENV = [{"name": "CONVERT_KEY", "value": "contentrepository/books/Utah.pdf"}]
 
 
@@ -160,9 +160,12 @@ def test_a_hold_is_kept_until_it_launches_and_never_lost(table):
     def launch(req):
         return req["book"] == "Utah"  # Film's lock is held: not launched
 
-    assert cg.release_held(table, launch, held) == 1
+    assert cg.release_held(table, launch, held) == (1, 0)
     assert set(cg.held_requests(table, ALLOWED)) == {b}  # kept, not dropped
-    assert cg.release_held(table, lambda r: True, cg.held_requests(table, ALLOWED)) == 1
+    assert cg.release_held(table, lambda r: True, cg.held_requests(table, ALLOWED)) == (
+        1,
+        0,
+    )
 
 
 def test_the_same_launch_held_twice_is_one_hold(table):
@@ -173,16 +176,40 @@ def test_the_same_launch_held_twice_is_one_hold(table):
     assert len(cg.held_requests(table, ALLOWED)) == 1
 
 
-def test_a_launch_that_raises_keeps_its_hold(table):
+def test_a_launch_that_raises_keeps_its_hold_and_the_others_still_go(table):
     rid = cg.hold_request(table, CONVERT, "s3", "Utah", ENV)
+    video = [{"name": "VIDEO_KEY", "value": "contentrepository/films/Film.mp4"}]
+    other = cg.hold_request(table, VIDEO, "s3", "Film", video)
 
-    def boom(req):
-        raise RuntimeError("ecs down")
+    def launch(req):
+        if req["book"] == "Utah":
+            raise RuntimeError("ecs down")
+        return True
 
-    with pytest.raises(RuntimeError):
-        cg.release_held(table, boom, cg.held_requests(table, ALLOWED))
+    assert cg.release_held(table, launch, cg.held_requests(table, ALLOWED)) == (1, 1)
     assert set(cg.held_requests(table, ALLOWED)) == {rid}
-    assert cg.release_held(table, lambda r: True, cg.held_requests(table, ALLOWED)) == 1
+    assert other != rid
+    assert cg.release_held(table, lambda r: True, cg.held_requests(table, ALLOWED)) == (
+        1,
+        0,
+    )
+
+
+def test_holds_are_spread_over_shards(table):
+    """No single item nears DynamoDB's 400 KB limit."""
+    ids = [
+        cg.hold_request(
+            table,
+            CONVERT,
+            "s3",
+            f"Book{n}",
+            [{"name": "CONVERT_KEY", "value": f"contentrepository/b/B{n}.pdf"}],
+        )
+        for n in range(64)
+    ]
+    assert len({cg._shard_key(i) for i in ids}) > 4
+    assert len(cg.held_requests(table, ALLOWED)) == 64
+    assert set(cg.hold_keys()) >= {cg._shard_key(i) for i in ids}
 
 
 def test_a_live_claim_blocks_a_second_reconcile_and_a_stale_one_is_retried(table):
@@ -192,10 +219,10 @@ def test_a_live_claim_blocks_a_second_reconcile_and_a_stale_one_is_retried(table
     held = cg.held_requests(table, ALLOWED)
     assert cg._claim(table, rid, now=1000.0)  # ... and the Lambda dies here
     launched = []
-    assert cg.release_held(table, launched.append, held, now=1500.0) == 0
+    assert cg.release_held(table, launched.append, held, now=1500.0) == (0, 0)
     assert launched == []
     later = 1000.0 + cg.CLAIM_STALE_SECONDS + 1
-    assert cg.release_held(table, lambda r: True, held, now=later) == 1
+    assert cg.release_held(table, lambda r: True, held, now=later) == (1, 0)
     assert cg.held_requests(table, ALLOWED) == {}
 
 
@@ -212,13 +239,18 @@ def test_a_live_claim_blocks_a_second_reconcile_and_a_stale_one_is_retried(table
         json.dumps({"task_def": CONVERT, "book": "Utah",
                     "extra_env": [{"name": "CONVERT_KEY", "value": "contentrepository/../x"}]}),
         json.dumps({"task_def": CONVERT, "book": "Utah", "source": "s" * 65}),
+        json.dumps({"task_def": CONVERT, "book": "unknown", "extra_env": []}),
+        json.dumps({"task_def": CONVERT, "book": "..", "extra_env": []}),
+        # a video key on the convert task: each task def has only its own env
+        json.dumps({"task_def": CONVERT, "book": "Utah",
+                    "extra_env": [{"name": "VIDEO_KEY", "value": "contentrepository/x"}]}),
     ],
 )  # fmt: skip
 def test_a_hold_the_gate_could_not_have_written_is_never_replayed(table, caplog, req):
     """The table is writable by other roles: a stored entry is not trusted to name a launch."""
-    cg.hold_request(table, CONVERT, "s3", "Utah", ENV)
+    rid = cg.hold_request(table, CONVERT, "s3", "Utah", ENV)
     table.update_item(
-        Key={"cache_key": cg.HOLDS_KEY},
+        Key={"cache_key": cg._shard_key(rid)},
         UpdateExpression="SET #h.#id = :r",
         ExpressionAttributeNames={"#h": "holds", "#id": "forged"},
         ExpressionAttributeValues={":r": req},
@@ -321,7 +353,7 @@ def test_an_import_under_the_floor_becomes_a_credit_hold(th, monkeypatch):
     monkeypatch.setenv("BOOK_METADATA", "1")
     env = [{"name": "CONVERT_KEY", "value": "contentrepository/books/Utah.pdf"}]
     assert th._run_task(th.PHASE0_TASK_DEF, "s3", "Utah", env) is False
-    [req] = cg.held_requests(th.dynamo, th._holdable_task_defs()).values()
+    [req] = cg.held_requests(th.dynamo, th._hold_env_rules()).values()
     assert req["task_def"] == th.PHASE0_TASK_DEF and req["extra_env"] == env
 
 
@@ -374,7 +406,7 @@ def test_the_hourly_check_releases_holds_once_credit_is_back(th, monkeypatch):
     [(args, kwargs)] = launched
     assert args[:3] == (th.PHASE0_TASK_DEF, "s3", "Utah")
     assert kwargs == {"credit_checked": True}  # not gated twice
-    assert cg.held_requests(th.dynamo, th._holdable_task_defs()) == {}
+    assert cg.held_requests(th.dynamo, th._hold_env_rules()) == {}
 
 
 def test_a_manual_trigger_that_is_held_says_queued(th, monkeypatch):
@@ -383,11 +415,30 @@ def test_a_manual_trigger_that_is_held_says_queued(th, monkeypatch):
     assert out["status"] == "queued"
 
 
-def test_an_unscoped_manual_run_is_not_held_but_launched(th, monkeypatch):
-    """Nothing could keep it: launch, and the task's preflight stops it with an alert."""
+def test_an_unscoped_run_is_held_and_replayed(th, monkeypatch):
+    """A manual or dedup-complete Phase 3 run with no book has no queue: it is a credit hold."""
     _gate(monkeypatch, False, 12.0)
-    assert not th._held_for_credit(th.PHASE3_TASK_DEF, "manual", "", None)
-    assert cg.held_requests(th.dynamo, th._holdable_task_defs()) == {}
+    assert th._held_for_credit(th.PHASE3_TASK_DEF, "dedup-complete", "", None)
+    [req] = cg.held_requests(th.dynamo, th._hold_env_rules()).values()
+    assert req["task_def"] == th.PHASE3_TASK_DEF and req["book"] == ""
+
+
+@pytest.mark.parametrize("allowed", [True, False])
+def test_a_held_declared_count_replays_only_while_the_operator_allows_it(
+    th, monkeypatch, allowed
+):
+    _gate(monkeypatch, False, 12.0)
+    monkeypatch.setattr(th, "ALLOW_MANUAL_EXPECTED_COUNT", True)
+    count = [{"name": "EXPECTED_COUNT", "value": "250"}]
+    assert th._held_for_credit(th.PHASE2_TASK_DEF, "manual", "", count)
+    monkeypatch.setattr(th, "ALLOW_MANUAL_EXPECTED_COUNT", allowed)
+    held = cg.held_requests(th.dynamo, th._hold_env_rules())
+    assert bool(held) is allowed
+
+
+def test_any_gate_error_launches(th, monkeypatch):
+    monkeypatch.setattr(th, "_credit_lambda", mock.Mock(side_effect=RuntimeError("x")))
+    assert not th._held_for_credit(th.PHASE3_TASK_DEF, "s3", "Utah", None)
 
 
 def test_the_scheduled_check_releases_holds_before_the_reconcile(th, monkeypatch):
@@ -441,8 +492,77 @@ def test_phase_tasks_may_not_write_the_credit_gate_items():
     ]
     deny = next(st for st in stmts if st.get("Sid") == "NoCreditGateWrites")
     assert deny["Effect"] == "Deny"
-    keys = deny["Condition"]["ForAnyValue:StringEquals"]["dynamodb:LeadingKeys"]
-    assert set(keys) == {cg.HOLDS_KEY, cg.BALANCE_KEY, cg.ALERT_KEY}
+    keys = deny["Condition"]["ForAnyValue:StringLike"]["dynamodb:LeadingKeys"]
+    assert set(keys) == {cg.HOLDS_PREFIX + "*", cg.BALANCE_KEY, cg.ALERT_KEY}
+
+
+@pytest.mark.parametrize(
+    "template,role,keys",
+    [("ocr.yaml", "OcrSpotControllerRole", 3), ("dispatcher.yaml", "DispatcherStateMachineRole", 3),
+     ("dispatcher.yaml", "DispatcherLambdaRole", 2)],
+)  # fmt: skip
+def test_other_roles_may_not_write_the_credit_gate_items(template, role, keys):
+    import yaml
+
+    from tests.test_spot_ladder import _CfnLoader
+
+    path = os.path.join(os.path.dirname(__file__), "..", "cloudformation", template)
+    res = yaml.load(open(path, encoding="utf-8"), Loader=_CfnLoader)["Resources"]
+    stmts = [
+        st
+        for p in res[role]["Properties"]["Policies"]
+        for st in p["PolicyDocument"]["Statement"]
+    ]
+    deny = next(st for st in stmts if st.get("Sid") == "NoCreditGateWrites")
+    assert deny["Effect"] == "Deny"
+    found = deny["Condition"]["ForAnyValue:StringLike"]["dynamodb:LeadingKeys"]
+    assert len(found) == keys and cg.HOLDS_PREFIX + "*" in found
+
+
+def test_a_snapshot_restore_keeps_held_launches_and_the_balance():
+    from scripts import phase_snapshot as ps
+
+    for key in cg.hold_keys() + [cg.BALANCE_KEY, cg.ALERT_KEY]:
+        assert ps.classify(key) == "ignore"
+    assert (
+        ps.classify("credit#spend") == "reset"
+    )  # the batch spend counter is run state
+
+
+# --- the dispatcher and the batch submit ----------------------------------------------------------
+
+
+def test_the_dispatcher_leaves_grok_docs_ready_while_credit_is_low(table, monkeypatch):
+    import lambda_handlers.dispatcher_handlers as dh
+
+    monkeypatch.setattr(cg, "launch_allowed", lambda *a, **k: (False, 12.0, 50.0))
+    monkeypatch.setattr(cg, "alert_held", mock.Mock())
+    monkeypatch.setattr(cg, "lambda_client", lambda: None)
+    docs = [{"cache_key": "doc#1", "next_phase": "phase1"},
+            {"cache_key": "doc#2", "next_phase": "phase2"},
+            {"cache_key": "doc#3", "next_phase": "phase3"}]  # fmt: skip
+    assert dh._hold_grok_work_if_credit_low(table, docs) == [docs[0]]
+    cg.alert_held.assert_called_once()
+    monkeypatch.setattr(cg, "launch_allowed", lambda *a, **k: (True, 62.0, 50.0))
+    assert dh._hold_grok_work_if_credit_low(table, docs) == docs
+    monkeypatch.setattr(cg, "launch_allowed", mock.Mock(side_effect=RuntimeError))
+    assert dh._hold_grok_work_if_credit_low(table, docs) == docs  # gate error: dispatch
+
+
+def test_a_batch_submit_under_the_floor_starts_no_task(monkeypatch):
+    import lambda_handlers.batch_poller as bp
+
+    monkeypatch.setattr(cg, "launch_allowed", lambda *a, **k: (False, 12.0, 50.0))
+    monkeypatch.setattr(cg, "alert_held", mock.Mock())
+    monkeypatch.setattr(cg, "lambda_client", lambda: None)
+    monkeypatch.setattr(bp.boto3, "client", mock.Mock(side_effect=AssertionError))
+    import src.utils.aws_clients as ac
+
+    monkeypatch.setattr(ac, "get_dynamo_table", lambda **k: mock.Mock())
+    out = bp._handle_submit({"action": "submit", "phase": "phase3", "book": "Utah"})
+    assert out["status"] == "held" and "console.x.ai" in out["message"]
+    monkeypatch.setattr(cg, "launch_allowed", lambda *a, **k: (True, None, 50.0))
+    assert bp._credit_hold_reply("phase3", "Utah") == {}
 
 
 def test_the_credit_check_lambda_rereads_a_rejected_key(table, monkeypatch):
@@ -458,3 +578,32 @@ def test_the_credit_check_lambda_rereads_a_rejected_key(table, monkeypatch):
     monkeypatch.setattr(cc.grok_balance, "balance_usd", rejected)
     cc.handler(sm=sm, table=table)
     assert cc._keys == {}
+
+
+def test_a_large_backlog_is_released_a_slice_per_hour(table, monkeypatch):
+    monkeypatch.setattr(cg, "RELEASE_PER_RUN", 3)
+    for n in range(5):
+        cg.hold_request(
+            table,
+            CONVERT,
+            "s3",
+            f"Book{n}",
+            [{"name": "CONVERT_KEY", "value": f"contentrepository/b/B{n}.pdf"}],
+        )
+    assert cg.release_held(table, lambda r: True, cg.held_requests(table, ALLOWED)) == (
+        3,
+        0,
+    )
+    assert len(cg.held_requests(table, ALLOWED)) == 2
+
+
+def test_the_enumerate_lambda_outlasts_a_slow_credit_check():
+    import yaml
+
+    from tests.test_spot_ladder import _CfnLoader
+
+    path = os.path.join(
+        os.path.dirname(__file__), "..", "cloudformation", "dispatcher.yaml"
+    )
+    res = yaml.load(open(path, encoding="utf-8"), Loader=_CfnLoader)["Resources"]
+    assert res["EnumeratePendingFunction"]["Properties"]["Timeout"] >= 120

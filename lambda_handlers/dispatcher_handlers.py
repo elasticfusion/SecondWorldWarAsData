@@ -134,6 +134,8 @@ def enumerate_pending(_event, _context):
     if _expected is not None and len(candidates) > LARGE_RUN_CEILING:
         _notify_large_dispatch(len(candidates))
 
+    candidates = _hold_grok_work_if_credit_low(table, candidates)
+
     # Scope approved — claim ONLY from the guarded snapshot, atomically
     # (status -> running). A doc a concurrent drain already claimed fails the
     # conditional and is skipped (no double-dispatch); the dispatched set is a
@@ -143,6 +145,47 @@ def enumerate_pending(_event, _context):
     items.sort(key=lambda x: x["doc_id"])
     logger.info("enumerate_pending: %d dispatchable docs", len(items))
     return {"count": len(items), "items": items}
+
+
+_GROK_PHASES = ("phase2", "phase3")
+
+
+def _hold_grok_work_if_credit_low(table, candidates: list) -> list:
+    """Task 1.1e (owner 2026-11-18): while xAI credit is under the floor, do not dispatch Phase
+    2/3 docs - their tasks would start only to stop at the preflight. They are left READY and
+    unclaimed (never dropped), so a later drain takes them once credit is back; Phase 1 docs
+    still go. Unreadable balance or any gate error: dispatch (the task's preflight decides).
+    """
+    grok: list = []
+    rest: list = []
+    for c in candidates:
+        (grok if c.get("next_phase", "phase1") in _GROK_PHASES else rest).append(c)
+    if not grok:
+        return candidates
+    try:
+        from src.utils import credit_hold
+        from src.utils.config import load_config
+
+        allowed, usd, floor = credit_hold.launch_allowed(
+            table, credit_hold.lambda_client(), load_config() or {}
+        )
+        if allowed or usd is None:
+            return candidates
+        credit_hold.alert_held(table, usd, floor, f"dispatcher: {len(grok)} doc(s)")
+    except Exception as e:  # noqa: BLE001 - the gate only saves cost
+        logger.warning(
+            "OBSERV credit.dispatch_gate_failed err=%s status=warn - dispatching anyway; the "
+            "tasks' own preflight decides",
+            type(e).__name__,
+        )
+        return candidates
+    logger.info(
+        "OBSERV credit.dispatch_held docs=%d usd=%.2f floor=%.2f status=ok - left READY",
+        len(grok),
+        usd,
+        floor,
+    )
+    return rest
 
 
 def _scan_ready_candidates(table) -> list:

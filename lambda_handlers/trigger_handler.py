@@ -2489,36 +2489,35 @@ def _spends_grok(task_def: str) -> bool:
 def _held_for_credit(task_def, source, book_name, extra_env) -> bool:
     """Task 1.1e (owner 2026-11-18): do not launch a Grok phase while xAI credit is under the
     floor - the task would start (Fargate + NAT) only to stop at its preflight. The request is
-    kept, never dropped: a Phase 2/3 book stays on its queue; a Phase 0 import becomes a credit
-    hold that the hourly check replays (_release_credit_holds). True when held; a request that
-    cannot be kept is launched (False) and its own preflight stops and alerts."""
+    kept, never dropped: a Phase 2/3 book stays on its queue; anything else (a Phase 0 import,
+    an unscoped manual or dedup-complete run) becomes a credit hold that the hourly check
+    replays (_release_credit_holds). True when held. The gate only saves cost: any error in it,
+    or a request that cannot be kept, launches (False) and the task's own preflight decides.
+    """
     if not _spends_grok(task_def):
         return False
     from src.utils import credit_hold
 
-    allowed, usd, floor = credit_hold.launch_allowed(
-        dynamo, _credit_lambda(), _trigger_config()
-    )
-    if allowed or usd is None:
-        return False
     family = TASK_FAMILIES.get(task_def, "unknown")
     try:
+        allowed, usd, floor = credit_hold.launch_allowed(
+            dynamo, _credit_lambda(), _trigger_config()
+        )
+        if allowed or usd is None:
+            return False
         if task_def == PHASE3_TASK_DEF and book_name:
             _queue_pending_enrich(book_name, strict=True)
         elif task_def == PHASE2_TASK_DEF and book_name:
             _queue_pending_parsed_book(book_name, strict=True)
-        elif task_def in _holdable_task_defs():
-            credit_hold.hold_request(dynamo, task_def, source, book_name, extra_env)
         else:
-            # an unscoped Phase 2/3 run (manual): nothing to keep it in - launch, and its own
-            # preflight stops it with an alert that says to re-trigger after a top-up
-            return False
+            credit_hold.hold_request(dynamo, task_def, source, book_name, extra_env)
     except (
         Exception
-    ) as e:  # noqa: BLE001 - not kept: launch, the task's preflight stops it
+    ) as e:  # noqa: BLE001 - not kept: launch, the task's preflight decides
         logger.warning(
             "OBSERV credit.hold_failed family=%s book=%s err=%s status=warn - launching "
-            "instead; the task's own preflight stops it under the floor",
+            "instead; the task's own preflight stops it under the floor. Check the trigger's "
+            "DynamoDB access and the credit-check Lambda if this repeats",
             family,
             book_name,
             type(e).__name__,
@@ -2547,10 +2546,19 @@ def _credit_lambda():
     return _credit_client["c"]
 
 
-def _holdable_task_defs() -> tuple:
-    """The launches kept as credit holds (Phase 0 imports; Phase 2/3 books use their own
-    queues): the only task definitions a stored hold may replay."""
-    return (PHASE0_TASK_DEF, PHASE0_VIDEO_TASK_DEF)
+def _hold_env_rules() -> dict:
+    """What a stored hold may name: each Grok task definition with the only env it is ever held
+    with (its source key; a manual run's declared count, and that only while the operator allows
+    it, as _handle_manual_trigger does). Anything else in a hold is never replayed."""
+    from src.utils import credit_hold
+
+    count = {"EXPECTED_COUNT": credit_hold.COUNT} if ALLOW_MANUAL_EXPECTED_COUNT else {}
+    return {
+        PHASE0_TASK_DEF: {"CONVERT_KEY": credit_hold.IMPORT_KEY},
+        PHASE0_VIDEO_TASK_DEF: {"VIDEO_KEY": credit_hold.IMPORT_KEY},
+        PHASE2_TASK_DEF: count,
+        PHASE3_TASK_DEF: count,
+    }
 
 
 def _release_credit_holds() -> int:
@@ -2560,10 +2568,12 @@ def _release_credit_holds() -> int:
     from src.utils import credit_hold
 
     try:
-        held = credit_hold.held_requests(dynamo, _holdable_task_defs())
+        held = credit_hold.held_requests(dynamo, _hold_env_rules())
     except Exception as e:  # noqa: BLE001 - try again next hour
         logger.warning(
-            "OBSERV credit.holds_unreadable err=%s status=warn", type(e).__name__
+            "OBSERV credit.holds_unreadable err=%s status=warn - held launches wait another "
+            "hour; check the trigger's DynamoDB access",
+            type(e).__name__,
         )
         return 0
     if not held:
@@ -2576,7 +2586,7 @@ def _release_credit_holds() -> int:
             "OBSERV credit.holds_waiting n=%d usd=%.2f status=ok", len(held), usd or 0
         )
         return 0
-    n = credit_hold.release_held(
+    n, failed = credit_hold.release_held(
         dynamo,
         lambda r: _run_task(
             r["task_def"],
@@ -2587,7 +2597,12 @@ def _release_credit_holds() -> int:
         ),
         held,
     )
-    logger.info("OBSERV credit.holds_released n=%d status=ok", n)
+    logger.info(
+        "OBSERV credit.holds_released n=%d failed=%d status=%s",
+        n,
+        failed,
+        "warn" if failed else "ok",
+    )
     return n
 
 

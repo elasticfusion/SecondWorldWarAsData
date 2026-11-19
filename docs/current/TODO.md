@@ -330,17 +330,17 @@ continues from where it stopped. Order: 1.2b, 1.1b, 1.2c, 1.2e, 1.2d, 1.2f, 1.1c
   Only allow-listed holds replay (Phase 0 task defs, CONVERT_KEY/VIDEO_KEY under
   `contentrepository/`); ECSTaskRole is denied writes to the gate's items. One
   `credit.launches_held` alert per 6 h. Unreadable here: launch, the task's preflight decides.
-  Follow-ups: the batch poller's submit-only launch (`lambda_handlers/batch_poller.py:~128`) and
-  the SFN dispatcher (`MULTI_DOC_ENABLED`) do not ask the gate (their tasks still stop at the
-  preflight); an unscoped manual Phase 2/3 run is launched, not held (its preflight alerts);
-  `scripts/phase_snapshot` restore resets `credit#` keys, which drops any held import; the
-  deploy role can still replace the credit-check code (CI trust boundary); reserved concurrency
-  on the credit-check Lambda was left off (it fails on accounts with a low concurrency quota).
-  Review suggestions (2026-11-18, not blocking): one hold whose launch raises stops the rest of
-  that hour's release (catch per hold); all holds share one 400 KB item (cap + alert, or one item
-  per hold); the OCR and dispatcher roles can still write `credit#balance` (add the same Deny);
-  `valid_hold` should also reject `.`/`..`/`unknown`; wrap the whole gate call so any gate error
-  launches; the credit-check "balance not cached" warning should name the role/key to check.
+  Follow-ups DONE (owner 2026-11-18, same task): the dispatcher's `enumerate_pending` leaves Phase
+  2/3 docs READY while credit is low (Phase 1 still dispatched); the batch poller's direct submit
+  invoke starts no task and replies `held` with what to do; unscoped Phase 2/3 runs (manual,
+  dedup-complete) are credit holds too (a held `EXPECTED_COUNT` replays only while
+  `ALLOW_MANUAL_EXPECTED_COUNT` is on); each task def replays only its own env; holds are spread
+  over 16 items (`credit#holds#0..15`, far below 400 KB each); one failing hold no longer stops the
+  others; any gate error launches; `.`/`..`/`unknown` holds are rejected; the OCR controller and
+  dispatcher roles are denied writes to the gate's items; a snapshot restore keeps holds and the
+  balance; the credit-check cache warning names what to check. Left: the deploy role can replace
+  the credit-check code (CI trust boundary); no reserved concurrency (fails on accounts with a
+  low concurrency quota).
 
 #### Task 1.1 follow-ups (found in review, 2026-11-18)
 - **MED - an alert from a task that has no network path is lost.** When NAT never becomes ready the

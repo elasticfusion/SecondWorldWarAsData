@@ -102,6 +102,9 @@ def _handle_submit(event: dict) -> dict:
     phase = event.get("phase", "phase3")
     book = event.get("book", "unknown")
     phase_script = "phase2_extract.py" if phase == "phase2" else "phase3_enrich_data.py"
+    held = _credit_hold_reply(phase, book)
+    if held:
+        return held
 
     # Create networking first
     try:
@@ -161,6 +164,47 @@ def _handle_submit(event: dict) -> dict:
     except Exception as e:
         logger.error("Failed to start submit task: %s", e)
         return {"error": str(e)}
+
+
+def _credit_hold_reply(phase: str, book: str) -> dict:
+    """Task 1.1e: a submit task spends Grok credit, so under the floor it is not started (it
+    would only stop at its preflight). This is a direct operator invoke with no queue, so the
+    reply says so and what to do; the alert goes out too. {} = go ahead (also when the balance
+    cannot be read, or the gate itself fails: the task's preflight decides)."""
+    try:
+        from src.utils import credit_hold
+        from src.utils.aws_clients import get_dynamo_table
+        from src.utils.config import load_config
+
+        table = get_dynamo_table(region=REGION)
+        allowed, usd, floor = credit_hold.launch_allowed(
+            table, credit_hold.lambda_client(), load_config() or {}
+        )
+        if allowed or usd is None:
+            return {}
+        credit_hold.alert_held(table, usd, floor, f"batch submit {phase} {book}")
+    except Exception as e:  # noqa: BLE001 - the gate only saves cost
+        logger.warning(
+            "OBSERV credit.submit_gate_failed err=%s status=warn - starting the submit task; "
+            "its preflight decides",
+            type(e).__name__,
+        )
+        return {}
+    logger.info(
+        "OBSERV credit.submit_held phase=%s book=%s usd=%.2f status=ok",
+        phase,
+        book,
+        usd,
+    )
+    return {
+        "status": "held",
+        "phase": phase,
+        "book": book,
+        "balance_usd": round(usd, 2),
+        "floor_usd": floor,
+        "message": "xAI credit is under the floor: no submit task was started. Top up at "
+        "https://console.x.ai, then invoke this submit again",
+    }
 
 
 def _get_api_key() -> str:

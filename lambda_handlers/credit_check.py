@@ -85,6 +85,10 @@ def handler(_event=None, _context=None, sm=None, table=None, session=None):
     except (
         Exception
     ) as e:  # noqa: BLE001 - the answer is still good; only the cache missed
-        logger.warning("credit balance not cached: %s", type(e).__name__)
+        logger.warning(
+            "OBSERV credit.cache_write_failed err=%s status=warn - each launch now asks again; "
+            "check the credit-check role's dynamodb:PutItem on credit#balance",
+            type(e).__name__,
+        )
     logger.info("OBSERV credit.check usd=%.2f status=ok", usd)
     return {"usd": usd}

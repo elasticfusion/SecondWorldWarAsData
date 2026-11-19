@@ -18,8 +18,9 @@ only stop. The in-task check stays the final word.
 * Balance unreadable here: launch anyway - the task's own preflight reads it again and stops
   (and alerts) if it really cannot; this gate only saves cost, it never guesses "low".
 * A credit hold is replayed only if it is a launch this gate could have held (an allow-listed
-  task definition and env names, a ``contentrepository/`` key): the table is writable by other
-  roles, so a stored entry is not trusted to name what to run.
+  task definition with only its own env names, e.g. a ``contentrepository/`` key): the table is
+  shared, so a stored entry is not trusted to name what to run (the phase-task, OCR and
+  dispatcher roles are also denied writes to the gate's items, cloudformation/).
 """
 
 from __future__ import annotations
@@ -40,14 +41,19 @@ logger = logging.getLogger(__name__)
 
 BALANCE_KEY = "credit#balance"
 ALERT_KEY = "credit#hold_alerted"
-HOLDS_KEY = "credit#holds"
+HOLDS_PREFIX = "credit#holds#"
+HOLD_SHARDS = 16
 CACHE_SECONDS = 300
 FAILURE_SECONDS = 60
 ALERT_HOURS = 6
 # a claimed hold whose launch never confirmed (the Lambda died mid-launch) is retried after this
 CLAIM_STALE_SECONDS = 3600
-HOLD_ENV_NAMES = frozenset({"CONVERT_KEY", "VIDEO_KEY"})
-_HOLD_VALUE = re.compile(r"contentrepository/[^\x00-\x1f]{1,900}")
+# holds replayed per hourly run: a large backlog drains over several hours instead of keeping the
+# trigger's scheduled check (which runs the reconcile next) busy
+RELEASE_PER_RUN = 25
+# the env a held import may carry (its source key), and a held manual run (its declared count)
+IMPORT_KEY = re.compile(r"contentrepository/[^\x00-\x1f]{1,900}")
+COUNT = re.compile(r"[1-9][0-9]{0,6}")
 _BOOK = re.compile(r"[A-Za-z0-9._-]{0,128}")
 
 _failure: Dict[str, Any] = {}  # in-process: the last failed read {"at", "reason"}
@@ -220,35 +226,52 @@ def hold_id(task_def: str, book: str, extra_env: Optional[list]) -> str:
     return hashlib.sha256(raw.encode()).hexdigest()[:32]
 
 
-def _safe_env(env: Any) -> bool:
-    """Only the import env names, each a ``contentrepository/`` key without ``..``."""
+def _shard_key(rid: str) -> str:
+    """The hold's item: holds are spread over HOLD_SHARDS items so no item nears DynamoDB's
+    400 KB limit (about 1 KB a hold, so thousands of holds), and listing them is HOLD_SHARDS
+    reads, not a table scan."""
+    return f"{HOLDS_PREFIX}{int(rid[:8], 16) % HOLD_SHARDS}"
+
+
+def hold_keys() -> list:
+    """Every hold item's key (for the IAM deny and the snapshot rules)."""
+    return [f"{HOLDS_PREFIX}{n}" for n in range(HOLD_SHARDS)]
+
+
+def _safe_env(env: Any, rules: Dict[str, "re.Pattern[str]"]) -> bool:
+    """Only the env names ``rules`` allows for this task definition, each value matching its
+    pattern (and never containing ``..``)."""
     if not isinstance(env, list):
         return False
     for e in env:
-        value = e.get("value") if isinstance(e, dict) else None
+        if not isinstance(e, dict):
+            return False
+        value, rule = e.get("value"), rules.get(str(e.get("name")))
         if (
-            not isinstance(value, str)
-            or e.get("name") not in HOLD_ENV_NAMES
+            rule is None
+            or not isinstance(value, str)
             or ".." in value
-            or not _HOLD_VALUE.fullmatch(value)
+            or not rule.fullmatch(value)
         ):
             return False
     return True
 
 
-def valid_hold(req: Any, allowed_task_defs: Iterable[str]) -> bool:
-    """A stored hold may be replayed only if it is a launch the gate could have held: an
-    allow-listed task definition, a safe book name, a short source and only the import env.
-    """
-    if not isinstance(req, dict) or req.get("task_def") not in set(allowed_task_defs):
+def valid_hold(req: Any, env_rules: Dict[str, Dict[str, "re.Pattern[str]"]]) -> bool:
+    """A stored hold may be replayed only if it is a launch the gate could have held:
+    ``env_rules`` maps each holdable task definition to the env names (and value patterns) it
+    may carry; the book is a safe slug (not ``.``/``..``/``unknown``, which the launcher refuses
+    and would only fail every hour); the source is short."""
+    if not isinstance(req, dict) or req.get("task_def") not in env_rules:
         return False
     book, source = req.get("book", ""), req.get("source", "")
     return (
         isinstance(book, str)
         and bool(_BOOK.fullmatch(book))
+        and book not in (".", "..", "unknown")
         and isinstance(source, str)
         and len(source) <= 64
-        and _safe_env(req.get("extra_env") or [])
+        and _safe_env(req.get("extra_env") or [], env_rules[req["task_def"]])
     )
 
 
@@ -260,8 +283,8 @@ def hold_request(
     extra_env: Optional[list],
 ) -> str:
     """Keep a launch that has no queue of its own (a Phase 0 import, an unscoped phase) until
-    credit is back, as one entry of the ``credit#holds`` map (one item: listing them is a single
-    read, not a table scan). Returns the hold id; ``release_held`` replays it."""
+    credit is back, as an entry of its shard's ``holds`` map. Returns the hold id;
+    ``release_held`` replays it."""
     rid = hold_id(task_def, book, extra_env)
     request = json.dumps(
         {
@@ -271,7 +294,7 @@ def hold_request(
             "extra_env": extra_env or [],
         }
     )
-    key = {"cache_key": HOLDS_KEY}
+    key = {"cache_key": _shard_key(rid)}
     table.update_item(
         Key=key,
         UpdateExpression="SET #h = if_not_exists(#h, :e), #c = if_not_exists(#c, :e)",
@@ -287,29 +310,31 @@ def hold_request(
     return rid
 
 
-def held_requests(table: Any, allowed_task_defs: Iterable[str]) -> Dict[str, dict]:
+def held_requests(
+    table: Any, env_rules: Dict[str, Dict[str, "re.Pattern[str]"]]
+) -> Dict[str, dict]:
     """Every replayable held launch: {hold id: request}. An entry that cannot be read or is not
     a launch this gate could have held is reported loudly and left in place for the operator.
     """
-    item = table.get_item(Key={"cache_key": HOLDS_KEY}).get("Item") or {}
-    allowed = set(allowed_task_defs)
     out: Dict[str, dict] = {}
-    for rid, raw in (item.get("holds") or {}).items():
-        try:
-            req = json.loads(raw)
-        except (TypeError, ValueError):
-            req = None
-        if isinstance(req, dict) and valid_hold(req, allowed):
-            out[str(rid)] = req
-            continue
-        logger.error(
-            "OBSERV credit.hold_invalid id=%s status=error - a held launch is unreadable or not "
-            "one the credit gate writes, so it is NOT replayed: inspect holds.%s in item %s of "
-            "the api-cache table, re-trigger the import by hand, then remove the entry",
-            str(rid)[:64],
-            str(rid)[:64],
-            HOLDS_KEY,
-        )
+    for key in hold_keys():
+        item = table.get_item(Key={"cache_key": key}).get("Item") or {}
+        for rid, raw in (item.get("holds") or {}).items():
+            try:
+                req = json.loads(raw)
+            except (TypeError, ValueError):
+                req = None
+            if isinstance(req, dict) and valid_hold(req, env_rules):
+                out[str(rid)] = req
+                continue
+            logger.error(
+                "OBSERV credit.hold_invalid id=%s status=error - a held launch is unreadable or "
+                "not one the credit gate writes, so it is NOT replayed: inspect holds.%s in item "
+                "%s of the api-cache table, re-trigger the launch by hand, then remove the entry",
+                str(rid)[:64],
+                str(rid)[:64],
+                key,
+            )
     return out
 
 
@@ -319,7 +344,7 @@ def _claim(table: Any, rid: str, now: float) -> bool:
     taken over, so a crash never loses the hold."""
     try:
         table.update_item(
-            Key={"cache_key": HOLDS_KEY},
+            Key={"cache_key": _shard_key(rid)},
             UpdateExpression="SET #c.#id = :now",
             ConditionExpression=(
                 "attribute_exists(#h.#id) AND "
@@ -338,17 +363,33 @@ def _claim(table: Any, rid: str, now: float) -> bool:
 
 
 def _finish(table: Any, rid: str, launched: bool) -> None:
-    """Launched: the hold is done (removed). Not launched: only the claim goes, the hold stays."""
+    """Launched: the hold is done (removed). Not launched: only the claim goes, the hold stays.
+    A failure here is logged: the stale claim is retried after CLAIM_STALE_SECONDS."""
     names = {"#c": "claims", "#id": rid}
     expr = "REMOVE #c.#id"
     if launched:
         names["#h"] = "holds"
         expr = "REMOVE #h.#id, #c.#id"
-    table.update_item(
-        Key={"cache_key": HOLDS_KEY},
-        UpdateExpression=expr,
-        ExpressionAttributeNames=names,
-    )
+    try:
+        table.update_item(
+            Key={"cache_key": _shard_key(rid)},
+            UpdateExpression=expr,
+            ExpressionAttributeNames=names,
+        )
+    except Exception as e:  # noqa: BLE001 - see above
+        logger.warning(
+            "OBSERV credit.hold_finish_failed id=%s launched=%s err=%s status=warn - the claim "
+            "stays; the hold is retried in %d min%s",
+            rid[:64],
+            launched,
+            type(e).__name__,
+            CLAIM_STALE_SECONDS // 60,
+            (
+                " (it may launch again: the import runs twice, nothing is lost)"
+                if launched
+                else ""
+            ),
+        )
 
 
 def release_held(
@@ -356,22 +397,41 @@ def release_held(
     launch: Callable[[dict], Any],
     held: Dict[str, dict],
     now: Optional[float] = None,
-) -> int:
+) -> Tuple[int, int]:
     """Replay each held launch through ``launch(request)``, which returns whether it launched.
     A hold is claimed first (two reconciles cannot both launch it) and removed only after its
     launch, so it is never lost: if the Lambda dies mid-launch the stale claim is retried an
-    hour later (at worst a second launch, which the family lock serialises). Returns how many
-    launched."""
+    hour later (at worst the import runs twice; nothing is lost). One hold that fails
+    does not stop the others. Returns (launched, failed)."""
     now = time.time() if now is None else now
-    n = 0
-    for rid, req in held.items():
+    n = failed = tried = 0
+    # start at a different hold each hour, so holds that keep failing at the front cannot keep
+    # the rest from ever being tried
+    items = list(held.items())
+    start = int(now // 3600) % len(items) if items else 0
+    for rid, req in items[start:] + items[:start]:
+        if tried >= RELEASE_PER_RUN:
+            logger.info(
+                "OBSERV credit.release_capped tried=%d left=%d status=ok - the rest go next hour",
+                tried,
+                len(held) - tried,
+            )
+            break
+        tried += 1
         if not _claim(table, rid, now):
             continue
         try:
             launched = bool(launch(req))
-        except Exception:
-            _finish(table, rid, launched=False)
-            raise
+        except Exception as e:  # noqa: BLE001 - keep it; the next hour tries again
+            failed += 1
+            launched = False
+            logger.warning(
+                "OBSERV credit.release_one_failed id=%s family=%s err=%s status=warn - kept; "
+                "retried next hour",
+                rid[:64],
+                str(req.get("task_def"))[:64],
+                type(e).__name__,
+            )
         _finish(table, rid, launched)
         n += launched
-    return n
+    return n, failed

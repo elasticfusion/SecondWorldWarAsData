@@ -323,9 +323,9 @@ Resources:
                 Resource:
                   - !Ref CacheTableArn
                 Condition:
-                  ForAnyValue:StringEquals:
+                  ForAnyValue:StringLike:
                     dynamodb:LeadingKeys:
-                      - credit#holds
+                      - credit#holds#*
                       - credit#balance
                       - credit#hold_alerted
               - Sid: SecretsManager
