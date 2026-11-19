@@ -16,9 +16,10 @@ source for the normal pipeline; extraction remains the pipeline's job.
 
 from __future__ import annotations
 
+import contextlib
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterator, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -468,20 +469,31 @@ def _content_sha256(data: bytes) -> str:
     return "sha256:" + hashlib.sha256(data).hexdigest()
 
 
-def _register_content_hash_if_new(digest: str, source_id: str) -> bool:
-    """GLOBAL exact-content dedup: atomically claim ``contenthash#<sha>`` across ALL sources,
-    regardless of domain/title. Returns True if this is NEW content (claim won -> proceed), False
-    if the identical bytes were already submitted (skip the duplicate ingestion).
+CLAIM_WON, CLAIM_DUPLICATE, CLAIM_ERROR = "won", "duplicate", "error"
 
-    Fail-SAFE but fail-OPEN: if there is no table (local/test) or any error, return True (proceed) —
-    dedup must never block a legitimate submission. Uses a conditional put so two concurrent batches
-    cannot both win the same hash.
+
+def _register_content_hash_if_new(digest: str, source_id: str) -> bool:
+    """True unless the content is a known duplicate (see ``_claim_content_hash``)."""
+    return _claim_content_hash(digest, source_id) != CLAIM_DUPLICATE
+
+
+def _claim_content_hash(digest: str, source_id: str) -> str:
+    """GLOBAL exact-content dedup: atomically claim ``contenthash#<sha>`` across ALL sources,
+    regardless of domain/title. Returns:
+
+    * CLAIM_WON - new content, this attempt holds the claim (it releases it if the content is
+      not stored: ``claimed_content`` / ``release_content_hash``);
+    * CLAIM_DUPLICATE - the identical bytes were already claimed: skip the ingestion;
+    * CLAIM_ERROR - no table (local/test) or a DynamoDB error: fail-OPEN, proceed, but nothing
+      was claimed, so nothing may be released.
+
+    A conditional put, so two concurrent batches cannot both win the same hash.
     """
     from src.utils import fetch_provenance as fp
 
     table = _resolve_table(fp)
     if table is None:
-        return True
+        return CLAIM_ERROR  # no registry: proceed, nothing claimed (nothing to release)
     try:
         import json
         import time
@@ -492,10 +504,12 @@ def _register_content_hash_if_new(digest: str, source_id: str) -> bool:
                 "response": json.dumps(
                     {"source_id": source_id, "registered_at": int(time.time())}
                 ),
+                # who holds the claim: only that writer may release it (release_content_hash)
+                "source_id": source_id,
             },
             ConditionExpression="attribute_not_exists(cache_key)",
         )
-        return True  # claim won -> new content
+        return CLAIM_WON
     except Exception as e:  # noqa: BLE001
         # Duplicate iff the conditional put failed because the item already exists. Prefer the
         # precise botocore Error.Code; fall back to a class-name/message substring so the helper
@@ -506,10 +520,67 @@ def _register_content_hash_if_new(digest: str, source_id: str) -> bool:
             code = (resp.get("Error", {}) or {}).get("Code", "")
         haystack = f"{code} {type(e).__name__} {e}"
         if "ConditionalCheckFailed" in haystack:
-            return False  # identical content already registered -> duplicate
-        # Transient/other error: fail-open (proceed) so dedup never blocks a real submit.
+            return CLAIM_DUPLICATE  # identical content already registered
+        # Transient/other error: fail-open (proceed) so dedup never blocks a real submit - but
+        # nothing was claimed, so a failed write must not release (it could be a valid claim
+        # an earlier run holds)
         logger.debug("content-hash claim errored (fail-open): %s", e)
-        return True
+        return CLAIM_ERROR
+
+
+def release_content_hash(digest: str, source_id: str) -> None:
+    """Give a content-hash claim back because the content was NOT stored (task 1.6): otherwise
+    every later run skips the content as a duplicate of something that never landed. Only the
+    claim's own writer releases it (conditional on ``source_id``). Never raises; a failure is
+    alerted, since the content would be skipped for good."""
+    from src.utils import fetch_provenance as fp
+
+    table = _resolve_table(fp)
+    if table is None:
+        return
+    try:
+        table.delete_item(
+            Key={"cache_key": f"{_CONTENT_HASH_PREFIX}{digest}"},
+            ConditionExpression="source_id = :s",
+            ExpressionAttributeValues={":s": source_id},
+        )
+        logger.info(
+            "OBSERV content_hash.released source=%s %s status=ok - not stored, so the next "
+            "run may submit it again",
+            source_id,
+            digest[:20],
+        )
+    except Exception as e:  # noqa: BLE001
+        if "ConditionalCheckFailed" in f"{type(e).__name__} {e}":
+            return  # someone else's claim (or already gone): nothing of ours to release
+        from src.utils.observe import observe_error
+
+        observe_error(
+            "content_hash",
+            "release_failed",
+            note=(
+                "Content that was NOT stored still holds its dedup claim, so later runs skip it "
+                "as a duplicate. Delete the api-cache item named here, then re-run the step"
+            ),
+            cache_key=f"{_CONTENT_HASH_PREFIX}{digest}"[:120],
+            source=source_id,
+            error=type(e).__name__,
+        )
+
+
+@contextlib.contextmanager
+def claimed_content(digest: str, source_id: str) -> Iterator[bool]:
+    """Claim ``digest`` for the block (True = new content, go ahead and store it; False = a
+    duplicate). If the block raises, the claim is released so the content is not lost to a
+    failed write (task 1.6); a block that fails without raising calls release_content_hash.
+    """
+    state = _claim_content_hash(digest, source_id)
+    try:
+        yield state != CLAIM_DUPLICATE
+    except BaseException:
+        if state == CLAIM_WON:  # only a claim this attempt took is given back
+            release_content_hash(digest, source_id)
+        raise
 
 
 def _submit_one_find(
@@ -526,21 +597,28 @@ def _submit_one_find(
     try:
         body = _find_content_bytes(find)
         digest = _content_sha256(body)
-        # (a) GLOBAL exact-content dedup across all sources/domains/titles.
-        if not _register_content_hash_if_new(digest, source_id):
-            logger.info(
-                "OBSERV fetch_find.batch_submit.deduped fetch_event_id=%s %s "
-                "— identical content already submitted; skipping re-ingestion",
-                fid,
-                digest[:20],
+        # (a) GLOBAL exact-content dedup across all sources/domains/titles; a failed upload
+        # gives the claim back (task 1.6), so the find is not skipped as a duplicate later
+        with claimed_content(digest, source_id) as new:
+            if not new:
+                logger.info(
+                    "OBSERV fetch_find.batch_submit.deduped fetch_event_id=%s %s "
+                    "— identical content already submitted; skipping re-ingestion",
+                    fid,
+                    digest[:20],
+                )
+                set_review_status(
+                    fid, fp.SUBMITTED
+                )  # terminal: a known duplicate, done
+                result["deduped"] += 1
+                return
+            key = f"contentrepository/_system/{_find_title(find)}/{_safe_token(source_id, 'fetchfind')}.html"
+            client.put_object(
+                Bucket=bucket,
+                Key=key,
+                Body=body,
+                ContentType="text/html; charset=utf-8",
             )
-            set_review_status(fid, fp.SUBMITTED)  # terminal: a known duplicate, done
-            result["deduped"] += 1
-            return
-        key = f"contentrepository/_system/{_find_title(find)}/{_safe_token(source_id, 'fetchfind')}.html"
-        client.put_object(
-            Bucket=bucket, Key=key, Body=body, ContentType="text/html; charset=utf-8"
-        )
         # Only count a submission once the SUBMITTED transition is CONFIRMED; otherwise the content
         # is uploaded but the find stays AFFIRMED (deterministic key -> safe re-click overwrite;
         # launch is idle-gated + title-deduped downstream, so a redundant attempt is harmless).

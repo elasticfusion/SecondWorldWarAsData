@@ -9,7 +9,7 @@ link and feeds it into the EXISTING map-as-source machinery:
          -> global content-hash dedup -> recycle as a map-as-source (contentrepository/ source pair)
 
 It reuses the map_vision prompt (search_external_maps._build_verification_prompt), the vision call
-(grok_client.extract_json_with_image), the content-hash dedup (fetch_review._register_content_hash_if_new),
+(grok_client.extract_json_with_image), the content-hash dedup (fetch_review._claim_content_hash),
 and the map_source_adapter render/recycle — only the DISCOVERY front-end (an in-document link vs an
 OpenSERP web search) is new (map spec §3.1 + the OpenSERP map path). Pure of pipeline side effects
 beyond writing the source pair; fail-safe (never raises into the phase).
@@ -216,11 +216,14 @@ def _ingest_one_link(
             return
         summary["verified"] += 1
         # Global exact-content dedup (reuse the fetch_review registry) keyed by the map URL.
-        if not _content_is_new(cleaned):
+        from src.enrichment.fetch_review import CLAIM_DUPLICATE, CLAIM_WON
+
+        claim = _claim_map(cleaned)
+        if claim == CLAIM_DUPLICATE:
             logger.info("OBSERV map_link.deduped url=%s", cleaned[:120])
             summary["deduped"] += 1
             return
-        if _recycle_as_source(map_id, map_title, cleaned, depicted):
+        if _store_claimed_map(map_id, map_title, cleaned, depicted, claim == CLAIM_WON):
             logger.info(
                 "OBSERV map_link.recycled map=%s url=%s -> contentrepository/ "
                 "(re-enters pipeline for event derivation)",
@@ -235,17 +238,41 @@ def _ingest_one_link(
         summary["skipped"] += 1
 
 
-def _content_is_new(url: str) -> bool:
-    """Dedup an in-doc map by URL via the global content-hash registry (fail-OPEN -> True)."""
+def _store_claimed_map(
+    map_id: str, title: str, url: str, depicted: Dict[str, Any], won: bool = True
+) -> bool:
+    """Recycle a claimed map; when it is not written (False or a raise) give back the dedup claim
+    this attempt won, so a later run retries it instead of skipping it as a duplicate (task
+    1.6). A claim that errored (fail-open) was not taken here and is never released."""
+    stored = False
     try:
-        import hashlib
+        stored = _recycle_as_source(map_id, title, url, depicted)
+    finally:
+        if not stored and won:
+            from src.enrichment.fetch_review import release_content_hash
 
-        from src.enrichment.fetch_review import _register_content_hash_if_new
+            digest = _map_digest(url)
+            release_content_hash(digest, f"maplink-{digest[:16]}")
+    return stored
 
-        digest = "sha256:" + hashlib.sha256(url.encode("utf-8")).hexdigest()
-        return _register_content_hash_if_new(digest, f"maplink-{digest[:16]}")
+
+def _claim_map(url: str) -> str:
+    """Claim an in-doc map by URL in the global content-hash registry: fetch_review CLAIM_WON,
+    CLAIM_DUPLICATE or CLAIM_ERROR (fail-OPEN: proceed without a claim)."""
+    from src.enrichment.fetch_review import CLAIM_ERROR, _claim_content_hash
+
+    try:
+        digest = _map_digest(url)
+        return _claim_content_hash(digest, f"maplink-{digest[:16]}")
     except Exception:  # noqa: BLE001
-        return True
+        return CLAIM_ERROR
+
+
+def _map_digest(url: str) -> str:
+    """The content-hash registry digest for an in-doc map (keyed by its URL)."""
+    import hashlib
+
+    return "sha256:" + hashlib.sha256(url.encode("utf-8")).hexdigest()
 
 
 def persist_map_entities(

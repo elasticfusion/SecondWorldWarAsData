@@ -196,10 +196,7 @@ def _upload_batch_item(body: bytes, volume: Optional[str]) -> bool:
     (contentrepository/_system/...). Reuses the fetch_review S3 client + dedup registry. Fail-safe.
     """
     try:
-        from src.enrichment.fetch_review import (
-            _register_content_hash_if_new,
-            _s3_client_and_bucket,
-        )
+        from src.enrichment.fetch_review import _s3_client_and_bucket, claimed_content
 
         client, bucket = _s3_client_and_bucket()
         if client is None:
@@ -209,19 +206,28 @@ def _upload_batch_item(body: bytes, volume: Optional[str]) -> bool:
             return False
         digest = hashlib.sha256(body).hexdigest()
         source_id = f"intracorpus-{(volume or 'vol')}-{digest[:12]}"
-        if not _register_content_hash_if_new(digest, source_id):
-            logger.info(
-                "OBSERV intra_corpus.queue_deduped %s volume=%s", digest[:20], volume
+        # a failed upload gives the claim back (task 1.6): the document is queued next run
+        with claimed_content(digest, source_id) as new:
+            if not new:
+                logger.info(
+                    "OBSERV intra_corpus.queue_deduped %s volume=%s",
+                    digest[:20],
+                    volume,
+                )
+                return False
+            safe_vol = (
+                "".join(c for c in str(volume or "vol") if c.isalnum() or c in "._-")[
+                    :60
+                ]
+                or "vol"
             )
-            return False
-        safe_vol = (
-            "".join(c for c in str(volume or "vol") if c.isalnum() or c in "._-")[:60]
-            or "vol"
-        )
-        key = f"contentrepository/_system/{safe_vol}/{source_id}.html"
-        client.put_object(
-            Bucket=bucket, Key=key, Body=body, ContentType="text/html; charset=utf-8"
-        )
+            key = f"contentrepository/_system/{safe_vol}/{source_id}.html"
+            client.put_object(
+                Bucket=bucket,
+                Key=key,
+                Body=body,
+                ContentType="text/html; charset=utf-8",
+            )
         return True
     except Exception as e:  # noqa: BLE001
         logger.warning(

@@ -69,7 +69,7 @@ def test_ingest_recycles_relevant_map(tmp_path, monkeypatch):
                 },
             }
 
-    monkeypatch.setattr(MLS, "_content_is_new", lambda url: True)
+    monkeypatch.setattr(MLS, "_claim_map", lambda url: "won")
     docs = [
         {
             "book": "XChannel",
@@ -139,7 +139,7 @@ def test_ingest_deduped(tmp_path, monkeypatch):
         def extract_json_with_image(self, **k):
             return {"is_relevant": True, "depicted": {"description": "x"}}
 
-    monkeypatch.setattr(MLS, "_content_is_new", lambda url: False)  # already seen
+    monkeypatch.setattr(MLS, "_claim_map", lambda url: "duplicate")  # already seen
     docs = [
         {
             "book": "X",
@@ -173,7 +173,7 @@ def test_ingest_trusts_only_configured_hosts_not_the_documents_own(
     import src.extraction.search_external_maps as SEM
 
     monkeypatch.setattr(SEM, "_build_verification_prompt", lambda *a, **k: "P")
-    monkeypatch.setattr(MLS, "_content_is_new", lambda url: True)
+    monkeypatch.setattr(MLS, "_claim_map", lambda url: "won")
 
     class _GC:
         def extract_json_with_image(self, **k):

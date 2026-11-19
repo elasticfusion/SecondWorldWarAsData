@@ -110,7 +110,7 @@ What several HIGH items in later groups depend on; MED/LOW items are here when a
 1. one paginated `pending#` queue module (the next-book / reconcile readers; the task deletes its own
    row only on success, keeps it on failure for the retry; owner D8c-2, V3);
 2. DONE (1.5) deletes reach S3 (the final sync deletes every synced record the phase removed);
-3. the global content-hash dedup claims only after the object is in S3 (or releases on failure);
+3. DONE (1.6) the global content-hash dedup claim is released when the content was not stored;
 4. DONE (1.4) non-search steps independent of `use_openserp`; `use_openserp: false` honoured on ECS;
 5. one alert path to `phase2-complete` (preflight aborts, crashed task, validation failure, reconcile
    failure, unreachable OpenSERP, short bibliography download);
@@ -1430,7 +1430,7 @@ meta.yaml + content.md pair) so the map re-enters Phase 1 -> 2 -> 3 as a new "bo
   that directory, so the files vanish when the task exits and no Phase 1 run is ever triggered. The Grok
   vision call is still paid. Verified in code; not observed live (Phase 3 has not run since the
   recycle was enabled).
-- **HIGH - the dedup claim is taken before the write, so a lost map is never retried.** `_content_is_new`
+- **DONE (1.6, 2026-11-18: `fetch_review.claimed_content` / `release_content_hash`, used by fetch-review submits, intra-corpus queueing and in-doc maps; a claim is released only by its own writer) - HIGH - the dedup claim is taken before the write, so a lost map is never retried.** Note: an in-doc map's recycle still writes only to the container's contentrepository/ (the HIGH above), so its claim is kept for content that is then lost at task exit - fixed by the owner's 2026-11-17 decision to stop recycling maps (Group 8). Follow-ups: claims written before 1.6 carry no `source_id` and can never be released (a one-off cleanup of `contenthash#` items whose content is not in S3); intra-corpus digests have no `sha256:` prefix, so its dedup does not meet fetch-review's; a hard kill between claim and write still leaves the claim, so later runs see the content as a duplicate (an owner-keyed re-claim would fix it); a claim is released only by the attempt that won it. `_content_is_new`
   (`map_link_source.py:219`, `:238`) puts `contenthash#<sha of URL>` in DynamoDB before
   `_recycle_as_source` runs. With the files lost (above), or a failed write, every later run skips the map
   as a duplicate. Fix with the upload: claim after the source is durably in S3, or release the claim on
