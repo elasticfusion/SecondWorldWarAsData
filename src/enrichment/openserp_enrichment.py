@@ -9,12 +9,16 @@ All results verified by Grok before acceptance.
 Requires OpenSERP service running (ECS Fargate or localhost:7001).
 """
 
+import contextlib
+import contextvars
+import functools
 import json
 import logging
+import os
 import threading
 import datetime as _dt
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterator, List, Optional
 
 import requests
 
@@ -356,6 +360,7 @@ def _search_openserp(query: str, openserp_url: str, limit: int = 5) -> List[Dict
     """Run an OpenSERP search. Returns list of {url, title, description}."""
     if _breaker_is_open():
         logger.info("OpenSERP circuit breaker SKIP: %s", query[:60])
+        _trace_query(query, "error")
         return []
 
     _metric("queries_issued")
@@ -388,18 +393,23 @@ def _search_openserp(query: str, openserp_url: str, limit: int = 5) -> List[Dict
         if resp.status_code == 200:
             data = resp.json()
             if not data:
-                _breaker_record_failure()
+                # a genuine "nothing found" is an answer, not an OpenSERP failure: it must not
+                # open the breaker (which would leave every later entity unsearched, 1.2d)
+                _breaker_record_success()
                 _metric("zero_result_queries")
+                _trace_query(query, "empty")
                 return []
             # Handle both flat list and {"results": [...]} formats
             results = data if isinstance(data, list) else data.get("results", [])
             if results:
                 _breaker_record_success()
             else:
-                _breaker_record_failure()
+                _breaker_record_success()
                 _metric("zero_result_queries")
+                _trace_query(query, "empty")
                 return []
             logger.info("OpenSERP [%s]: %d results", query[:60], len(results))
+            _trace_query(query, "results", len(results))
             _metric("results_returned", len(results))
             mapped = [
                 {
@@ -416,7 +426,189 @@ def _search_openserp(query: str, openserp_url: str, limit: int = 5) -> List[Dict
     except Exception as e:
         logger.warning("OpenSERP [%s]: %s", query[:60], e)
         _breaker_record_failure()
+    _trace_query(query, "error")
     return []
+
+
+# --- per-entity search trace and the review log (task 1.2d, owner 2026-11-18) -----------------
+# Owner rules: (1) OpenSERP found nothing -> log for later review, mark searched, move on;
+# (2) Grok rejected every candidate -> log WITH the Grok prompt (it may need revising), mark
+# searched, move on; (3) Grok failed -> handled by the shared client (task 1.2e). OpenSERP
+# itself unavailable is none of these: the entity is NOT marked searched (it was not searched).
+
+_trace: contextvars.ContextVar = contextvars.ContextVar("openserp_trace", default=None)
+_review_lock = threading.Lock()
+_PROMPT_CAP = 2000
+
+
+def _new_trace(entity: str, f: Any, data: Dict, name: Any) -> Dict[str, Any]:
+    ids = {k: v for k, v in data.items() if k.endswith("ID") and isinstance(v, str)}
+    return {
+        "entity": entity,
+        "file": getattr(f, "name", str(f)),
+        "ids": ids,
+        "name": str(name)[:200],
+        "queries": [],
+        "verdicts": [],
+    }
+
+
+@contextlib.contextmanager
+def _tracing(trace: Dict[str, Any]) -> Iterator[Dict[str, Any]]:
+    """Collect this entity's queries and verdicts into ``trace`` while the block runs."""
+    token = _trace.set(trace)
+    try:
+        yield trace
+    finally:
+        _trace.reset(token)
+
+
+def _trace_query(query: str, status: str, count: int = 0) -> None:
+    t = _trace.get()
+    if t is not None:
+        t["queries"].append({"query": query[:300], "status": status, "results": count})
+
+
+def _trace_verdict(
+    title: str, url: str, verdict: str, prompt: str, model: str, cached: bool
+) -> None:
+    t = _trace.get()
+    if t is not None:
+        t["verdicts"].append(
+            {
+                "title": title[:200],
+                "url": url[:300],
+                "verdict": verdict,
+                "cached": cached,
+                "model": model,
+                "prompt": prompt[:_PROMPT_CAP],
+            }
+        )
+
+
+def _trace_batch(results, to_verify, answers, title_key, url_key, prompt, grok_client):
+    """Record a batched verify's verdicts in the entity trace (one shared prompt)."""
+    model = _model_for(grok_client, "openserp_verify_batch")
+    for n, idx in enumerate(to_verify):
+        _trace_verdict(
+            str(results[idx].get(title_key, "") or ""),
+            str(results[idx].get(url_key, "") or ""),
+            answers[n],
+            prompt,
+            model,
+            cached=False,
+        )
+
+
+def _model_for(grok_client: Any, cache_type: str) -> str:
+    try:
+        return str(grok_client._get_model(cache_type))
+    except Exception:  # noqa: BLE001 - provenance only
+        return ""
+
+
+def search_outcome(trace: Dict[str, Any], changed: bool) -> str:
+    """found | unavailable | empty | excluded | rejected | nothing_new for one entity's search.
+
+    unavailable (a query errored or the breaker was open, and no query returned results): NOT
+    searched - do not mark it. With results, the verdicts decide even if another query errored. empty: every query returned nothing. excluded: results, but all were filtered out
+    (excluded domains, name gate) before any verdict. rejected: Grok said NO to every candidate.
+    nothing_new: something was accepted but nothing new was added."""
+    if changed:
+        return "found"
+    statuses = {q["status"] for q in trace["queries"]}
+    if "error" in statuses and "results" not in statuses:
+        return "unavailable"  # part of the search did not happen and nothing came back
+    if not trace["queries"] or statuses <= {"empty"}:
+        return "empty"
+    verdicts = trace["verdicts"]
+    if not verdicts:
+        return "excluded"
+    if all(v["verdict"] == "NO" for v in verdicts):
+        return "rejected"
+    return "nothing_new"
+
+
+def _review_path(output_root: Path) -> Path:
+    """output/review/openserp_misses/<book or _all>/<UTC date>-<task>.jsonl (one prefix per book;
+    output/ is synced to S3 by the ECS wrapper)."""
+    book = _path_part(os.environ.get("BOOK_NAME", ""), "_all")
+    task = _path_part(os.environ.get("ECS_TASK_ID", ""), "local")
+    day = _dt.datetime.now(_dt.timezone.utc).strftime("%Y-%m-%d")
+    return output_root / "review" / "openserp_misses" / book / f"{day}-{task}.jsonl"
+
+
+def _path_part(value: str, default: str) -> str:
+    """``value`` as one safe path segment: [A-Za-z0-9._-] only, capped; dots-only or empty ->
+    ``default`` (never '.', '..' or a separator)."""
+    safe = "".join(
+        c if (c.isascii() and c.isalnum()) or c in "._-" else "_" for c in value
+    )[:120]
+    return safe if safe.strip(".") else default
+
+
+def _record_miss(output_root: Path, trace: Dict[str, Any], outcome: str) -> None:
+    """Append an empty / excluded / rejected search to the review log. Never raises (the search
+    result is already decided); a failed append is logged."""
+    record = {
+        "outcome": outcome,
+        "at": _dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds"),
+        **{
+            k: v
+            for k, v in trace.items()
+            if not (outcome != "rejected" and k == "verdicts")
+        },
+    }
+    try:
+        path = _review_path(output_root)
+        with _review_lock:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            with open(path, "a", encoding="utf-8") as fh:
+                fh.write(json.dumps(record, ensure_ascii=False) + "\n")
+        _metric(f"review_{outcome}")
+        logger.info(
+            "OBSERV openserp.review_logged status=ok outcome=%s entity=%s name=%s file=%s",
+            outcome,
+            trace.get("entity"),
+            trace.get("name", "")[:60],
+            path.name,
+        )
+    except Exception as e:  # noqa: BLE001 - the review log must not stop enrichment
+        logger.warning(
+            "OBSERV openserp.review_log_failed status=warn entity=%s err=%s",
+            trace.get("entity"),
+            type(e).__name__,
+        )
+
+
+def _settle(output_root: Path, trace: Dict[str, Any], changed: bool) -> bool:
+    """After one entity's search: True if it counts as searched (mark it), else False (OpenSERP
+    was unavailable: leave it for the next run). Empty / excluded / rejected go to the review
+    log."""
+    outcome = search_outcome(trace, changed)
+    if outcome == "unavailable":
+        _metric("entities_unavailable")
+        return False
+    if outcome in ("empty", "excluded", "rejected"):
+        _record_miss(output_root, trace, outcome)
+    return True
+
+
+def _search_entity(
+    entity: str, f: Any, data: Dict, name: Any, output_root: Path, search: Any
+) -> Optional[bool]:
+    """Run ``search()`` (one entity's searches + verification) traced, then settle it: the
+    changed flag to mark-and-write with, or None to leave the entity unsearched (Grok gave no
+    verdict - VerifyFailed - or OpenSERP was unavailable). Misses go to the review log.
+    """
+    trace = _new_trace(entity, f, data, name)
+    try:
+        with _tracing(trace):
+            changed = bool(search())
+    except VerifyFailed as e:
+        _verify_failed(entity, name, e)
+        return None
+    return changed if _settle(output_root, trace, changed) else None
 
 
 class VerifyFailed(Exception):
@@ -465,6 +657,18 @@ def _ask_verdicts(
     raise VerifyFailed(f"{cache_type}: no usable verdict after a re-ask")
 
 
+def _single_verify_prompt(context: str, title: str, snippet: str, url: str) -> str:
+    """The one-result relevance prompt (also recorded for a cached verdict in the review log)."""
+    return (
+        "Is this search result relevant to the context?\n"
+        f'Context: "{context[:200]}"\n'
+        f'Result title: "{title[:200]}"\n'
+        f'Result snippet: "{snippet[:300]}"\n'
+        f"Result URL: {url[:200]}\n"
+        'Return ONLY {"relevant": "YES"} or {"relevant": "NO"}.'
+    )
+
+
 def _one_verdict(answer: Any) -> Optional[str]:
     """ "YES"/"NO" from a single-verdict JSON answer, or None if it holds no clear verdict."""
     value = answer.get("relevant") if isinstance(answer, dict) else None
@@ -491,28 +695,22 @@ def _verify_result(
     from src.utils.search_cache import cache_result, get_cached
 
     cache_key = f"{expected_context[:50]}|{candidate_title[:50]}|{url[:60]}"
+    prompt = _single_verify_prompt(expected_context, candidate_title, snippet, url)
+    model = _model_for(grok_client, "openserp_verify")
     cached = get_cached("openserp_verify", cache_key)
-    if cached == "YES":
-        return True
-    if cached == "NO" or cached == "NOT_FOUND":
-        return False
+    if cached in ("YES", "NO", "NOT_FOUND"):
+        verdict = "YES" if cached == "YES" else "NO"
+        _trace_verdict(candidate_title, url, verdict, prompt, model, cached=True)
+        return verdict == "YES"
 
     try:
         answer = _ask_verdicts(
-            "Is this search result relevant to the context?\n"
-            f'Context: "{expected_context[:200]}"\n'
-            f'Result title: "{candidate_title[:200]}"\n'
-            f'Result snippet: "{snippet[:300]}"\n'
-            f"Result URL: {url[:200]}\n"
-            'Return ONLY {"relevant": "YES"} or {"relevant": "NO"}.',
-            _VERDICT_SYSTEM,
-            grok_client,
-            "openserp_verify",
-            _one_verdict,
+            prompt, _VERDICT_SYSTEM, grok_client, "openserp_verify", _one_verdict
         )
     except VerifyFailed:
         _metric("verify_failed")
         raise
+    _trace_verdict(candidate_title, url, answer, prompt, model, cached=False)
     cache_result("openserp_verify", cache_key, answer)
     _metric("verify_yes" if answer == "YES" else "verify_no")
     logger.info(
@@ -544,10 +742,20 @@ def _prefilter_verify_cache(
         cache_key = f"{expected_context[:50]}|{title[:50]}|{url[:60]}"
         cache_keys.append(cache_key)
         cached = get_cached("openserp_verify", cache_key)
-        if cached == "YES":
-            verdicts[i] = True
-        elif cached in ("NO", "NOT_FOUND"):
-            verdicts[i] = False
+        if cached in ("YES", "NO", "NOT_FOUND"):
+            verdicts[i] = cached == "YES"
+            # a cached verdict counts in the entity's outcome too (a resumed run is mostly
+            # cache hits); its prompt is the one-result prompt that decided it
+            _trace_verdict(
+                title,
+                url,
+                "YES" if cached == "YES" else "NO",
+                _single_verify_prompt(
+                    expected_context, title, str(r.get("description", "") or ""), url
+                ),
+                "",
+                cached=True,
+            )
         else:
             to_verify.append(i)
     return cache_keys, to_verify
@@ -645,6 +853,7 @@ def _verify_results_batch(
         _metric("verify_failed", len(to_verify))
         raise
 
+    _trace_batch(results, to_verify, answers, title_key, url_key, prompt, grok_client)
     for n, idx in enumerate(to_verify):
         answer = answers[n]
         verdicts[idx] = answer == "YES"
@@ -1509,23 +1718,13 @@ def enrich_people_with_openserp(
 ) -> int:
     """Add images and academic sources to people files. Returns count enriched.
 
-    Two-pass approach:
-    1. Search OpenSERP for all people, collect candidate results
-    2. Verify candidates with Grok (cached — repeat runs are free)
-    3. Write verified results to files
+    One person at a time: search OpenSERP, verify with Grok (cached), then mark and write that
+    person before the next (task 1.2d). It used to search EVERY person before writing any, so a
+    run killed midway (Spot, an outage) repeated all those searches on the re-run.
     """
     if not _reset_and_check_reachable(openserp_url):
         return 0
 
-    # Pass 1: Collect candidates from OpenSERP
-    candidates = _collect_people_candidates(people_dir, openserp_url, max_items)
-
-    logger.info(
-        "OpenSERP people: %d candidates collected, verifying with Grok...",
-        len(candidates),
-    )
-
-    # Pass 2: Verify and write
     from src.utils.config import load_config
 
     cfg = load_config().get("openserp", {})
@@ -1533,17 +1732,28 @@ def enrich_people_with_openserp(
     max_web = cfg.get("max_web_results_per_entity", 5)
 
     enriched = 0
-    for c in candidates:
-        data = c["data"]
-        name = c["name"]
-        try:
-            changed = _verify_and_apply(c, data, name, grok_client, max_images, max_web)
-        except VerifyFailed as e:
-            _verify_failed("people", name, e)
+    for person in _collect_people_candidates(people_dir, openserp_url, max_items):
+        f, data, name = person["file"], person["data"], person["name"]
+        changed = _search_entity(
+            "people",
+            f,
+            data,
+            name,
+            people_dir.parent,
+            lambda f=f, name=name, data=data: _verify_and_apply(
+                _collect_person_candidates(f, name, data, openserp_url),
+                data,
+                name,
+                grok_client,
+                max_images,
+                max_web,
+            ),
+        )
+        if changed is None:
             continue
 
         _mark_openserp_searched(data)
-        if write_json_with_lock(c["file"], data, entity="people"):
+        if write_json_with_lock(f, data, entity="people"):
             if changed:
                 enriched += 1
                 _metric("entities_enriched")
@@ -1556,13 +1766,14 @@ def enrich_people_with_openserp(
 def _collect_people_candidates(
     people_dir: Path, openserp_url: str, max_items: Optional[int]
 ) -> List[Dict]:
-    """Pass 1 of people enrichment: iterate people files, skip the index/recently-searched/
-    nameless ones, and build an OpenSERP candidate bundle per eligible person."""
-    candidates: List[Dict] = []
+    """The people to search this run, as {file, data, name}: the index, recently searched and
+    nameless ones skipped. No search happens here (the driver searches one person at a time).
+    """
+    people: List[Dict] = []
     for f in sorted(people_dir.glob("*.json")):
         if f.name in SKIP_FILES:
             continue
-        if max_items and len(candidates) >= max_items:
+        if max_items and len(people) >= max_items:
             break
         try:
             data = json.loads(f.read_text(encoding="utf-8"))
@@ -1576,9 +1787,8 @@ def _collect_people_candidates(
         if not _usable_entity_name(name):
             continue
         _record_eligible()
-
-        candidates.append(_collect_person_candidates(f, name, data, openserp_url))
-    return candidates
+        people.append({"file": f, "data": data, "name": name})
+    return people
 
 
 def enrich_equipment_with_openserp(
@@ -1637,10 +1847,15 @@ def _process_equipment_file(f, openserp_url: str, grok_client: Any) -> bool:
         return False  # generic / unresolved / undecided equipment is never searched (owner rule)
     _record_eligible()
 
-    try:
-        changed = enrich_one_equipment(data, openserp_url, grok_client)
-    except VerifyFailed as e:
-        _verify_failed("equipment", name, e)
+    changed = _search_entity(
+        "equipment",
+        f,
+        data,
+        name,
+        Path(f).parent.parent,
+        lambda: enrich_one_equipment(data, openserp_url, grok_client),
+    )
+    if changed is None:
         return False
     _mark_openserp_searched(data)
     if not write_json_with_lock(f, data, entity="equipment"):
@@ -1748,10 +1963,15 @@ def _process_one_source_section(
     _record_eligible()
     op_name = operation["name"]
     before = len(data.get("primary_sources") or [])
-    try:
-        changed = enrich_one_source_section(data, openserp_url, grok_client)
-    except VerifyFailed as e:
-        _verify_failed("source_section", op_name, e)
+    changed = _search_entity(
+        "source_section",
+        f,
+        data,
+        op_name,
+        Path(f).parent.parent,
+        lambda: enrich_one_source_section(data, openserp_url, grok_client),
+    )
+    if changed is None:
         return False
     enriched = False
     _mark_openserp_searched(data)
@@ -1888,12 +2108,21 @@ def enrich_groups_with_openserp(
             continue
         _record_eligible()
 
-        try:
-            changed = enrich_one_group(
-                data, openserp_url, grok_client, output_root=groups_dir.parent
-            )
-        except VerifyFailed as e:
-            _verify_failed("people_groups", name, e)
+        changed = _search_entity(
+            "people_groups",
+            f,
+            data,
+            name,
+            groups_dir.parent,
+            functools.partial(
+                enrich_one_group,
+                data,
+                openserp_url,
+                grok_client,
+                output_root=groups_dir.parent,
+            ),
+        )
+        if changed is None:
             continue
 
         _mark_openserp_searched(data)
@@ -2089,10 +2318,15 @@ def enrich_places_with_openserp(
             continue
 
         primary = variants[0]
-        try:
-            changed = enrich_one_place(data, openserp_url, grok_client)
-        except VerifyFailed as e:
-            _verify_failed("places", primary, e)
+        changed = _search_entity(
+            "places",
+            f,
+            data,
+            primary,
+            places_dir.parent,
+            functools.partial(enrich_one_place, data, openserp_url, grok_client),
+        )
+        if changed is None:
             continue
 
         _mark_openserp_searched(data)

@@ -30,7 +30,6 @@ def _stub_run_phase_to_failure(monkeypatch, order):
         "_setup_symlinks",
         "_download_inputs",
         "_stamp_schema_versions",
-        "_reset_openserp_searched",
         "_audit_failed_phase2",
     ):
         monkeypatch.setattr(ee, name, lambda *a, **k: None)

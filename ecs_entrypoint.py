@@ -1050,8 +1050,8 @@ def _alert_openserp_down(reason: str) -> None:
         "openserp",
         "unavailable",
         note=(
-            "OpenSERP is unavailable, so this Phase 3 run's web searches return nothing and the "
-            "entities are marked searched for 90 days. Check the ECS service "
+            "OpenSERP is unavailable, so this Phase 3 run's web searches return nothing; the "
+            "entities are left unsearched for the next run. Check the ECS service "
             f"{os.environ.get('ENV_NAME', 'dev')}-wwii-openserp, then re-run Phase 3 for this book"
         ),
         reason=reason,
@@ -1319,7 +1319,6 @@ def run_phase(phase_script: str, extra_args: list) -> None:
 
     if "phase3" in phase_script:
         _stamp_schema_versions()
-        _reset_openserp_searched()
 
     sync = BackgroundSync(SYNC_INTERVAL)
     if "phase2" in phase_script or "phase3" in phase_script:
@@ -4122,37 +4121,6 @@ PHASE_SUFFIXES = {
 }
 
 
-def _reset_openserp_searched() -> None:
-    """Reset openserp_searched on files that were searched but got no results."""
-    output = Path("/app/output")
-    skip = {"index.json", "duplicate_report.json", "not_duplicates.json"}
-    reset = 0
-    for d in [output / "people", output / "equipment"]:
-        if not d.exists():
-            continue
-        for f in d.glob("*.json"):
-            if f.name in skip:
-                continue
-            try:
-                data = json.loads(f.read_text(encoding="utf-8"))
-                if (
-                    data.get("openserp_searched")
-                    and not data.get("images")
-                    and not data.get("military_awards")
-                ):
-                    del data["openserp_searched"]
-                    f.write_text(
-                        json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8"
-                    )
-                    reset += 1
-            except Exception:
-                continue
-    if reset:
-        logger.info(
-            "Reset openserp_searched on %d files (no results from previous run)", reset
-        )
-
-
 def _dir_all_current(files, entity, needs_migration) -> bool:
     """True iff EVERY file in ``files`` is already at ``entity``'s current schema version. Fail-safe:
     an unreadable/unparseable file returns False (so stamping still runs — never skip on doubt).
@@ -4783,7 +4751,6 @@ def run_submit_only(phase_script: str, extra_args: list) -> None:
 
     if "phase3" in phase_script:
         _stamp_schema_versions()
-        _reset_openserp_searched()
 
     logger.info("[step] %s: submitting batch to Grok API", phase_name)
     # Monkey-patch poll_batch/retrieve_results so submit_batch returns after upload

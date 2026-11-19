@@ -165,6 +165,31 @@ continues from where it stopped. Order: 1.2b, 1.1b, 1.2c, 1.2e, 1.2d, 1.2f, 1.1c
   Then delete `_reset_openserp_searched`; the existing 90-day re-search gate stays. Also check every
   other step's skip logic; test that a run killed midway resumes with no repeated Grok or OpenSERP
   work. Review log: JSONL in S3 (one prefix per book), written through the shared S3 writers.
+- **1.2d built (2026-11-18):** each OpenSERP entity search is traced (queries: results / empty
+  / error; Grok verdicts with prompt and model); `search_outcome` decides: empty / excluded /
+  rejected -> appended to `output/review/openserp_misses/<book>/<date>-<task>.jsonl` (synced to
+  S3) and marked searched; OpenSERP unavailable (a query errored) -> NOT marked;
+  `_reset_openserp_searched` deleted; people are searched and written one at a time. Phase 3
+  resume inventory of the other steps (review 2026-11-18) - fix in each step's group:
+  - bibliography_resolve: unresolved records retried every run (no `last_searched`); archive.org
+    and Gutendex candidate searches uncached; a NARA exception cached as a permanent miss
+    (`bibliography_resolver.py:1699`); `review_queue.json` written only at the end (`:2435`);
+    `max_items` counts skipped records (`:2424`);
+  - claim-before-write (lost forever on a kill): in_doc_map_links (`map_link_source.py:219`, ties
+    to 1.6), intra_corpus_links (`intra_corpus.py:212`), openserp_external_maps `mark_searched`
+    before processing (`openserp_maps.py:718`, disabled in config);
+  - failures stored as terminal: hill geocode Grok exception -> `not_found`
+    (`hill_geocode.py:132`), unparseable geocode reply -> `not_found`
+    (`places_grok_geocode.py:538`), a transient page-fetch failure cached `REJECT` for 90 days
+    (`openserp_enrichment.process_positive_url`);
+  - disk-only state lost on a Spot reclaim: Nominatim cache, `cache/openserp_search_history.json`,
+    in-doc maps written to `contentrepository/` (not in the 120 s sync);
+  - link_asset_review writes duplicate PENDING review items on every re-run (`link_assets.py:201`);
+  - maps `index.json` saved only at the end of the step (`map_link_source.py:287`).
+  - OpenSERP SQS worker path (`openserp_worker.py`) is not traced: its misses are not in the
+    review log (call `_search_entity` there too);
+  - an entity whose queries always error and return nothing is never marked and is re-searched
+    every run (cheap: no Grok); add a `last_attempt` stamp / attempt cap and log it.
 - **1.2e - OpenSERP verification bypasses the shared Grok library** (found 2026-11-18). `GrokClient`
   (`src/grok_client.py`) already retries transport errors (`_call_api`: 5 tries, exponential backoff
   on HTTPError/ConnectionError) and repairs or re-asks a malformed JSON answer (`extract_json`). The
