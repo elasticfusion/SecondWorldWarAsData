@@ -111,7 +111,7 @@ What several HIGH items in later groups depend on; MED/LOW items are here when a
    row only on success, keeps it on failure for the retry; owner D8c-2, V3);
 2. deletes reach S3 (one delete helper wired to `track_deletion`);
 3. the global content-hash dedup claims only after the object is in S3 (or releases on failure);
-4. non-search steps independent of `use_openserp`; `use_openserp: false` honoured on ECS;
+4. DONE (1.4) non-search steps independent of `use_openserp`; `use_openserp: false` honoured on ECS;
 5. one alert path to `phase2-complete` (preflight aborts, crashed task, validation failure, reconcile
    failure, unreachable OpenSERP, short bibliography download);
 6. per-request identity (`current_book`, BookID, RequestID) for Phase 3;
@@ -307,13 +307,17 @@ continues from where it stopped. Order: 1.2b, 1.1b, 1.2c, 1.2e, 1.2d, 1.2f, 1.1c
     (per-citation deferral counter); `watch()` does not follow work into a thread pool (the
     bibliography resolver is sequential today).
   - `url_hygiene._pinned_get` (pages, images, Wayback) has no shared retry;
-  - NOAA 429 sleeps 60 s per file and goes on (`noaa_weather.py:~81`).
+  - NOAA: moved to its own task, 1.2g (owner 2026-11-18).
   - retryable page fetches (walled / rate-limited) are no longer REJECT-cached and have no per-URL
     backoff beyond the domain politeness gate: add a short negative TTL (e.g. 1 h);
   - `lambda_handlers/phase3_handler.py` (not deployed) now fails its invocation when OpenSERP is
     down (the stop is a BaseException): retire it or catch the stop;
-  - each start-time OpenSERP stop still brings NAT up and waits up to 12 min for OpenSERP before
-    stopping (bounded by the connectivity cap, 24).
+  - ACCEPTED (owner 2026-11-18): each start-time OpenSERP stop still brings NAT up and waits up
+    to 12 min for OpenSERP before stopping (bounded by the connectivity cap, 24).
+- **1.2g - troubleshoot NOAA weather** (owner 2026-11-18, its own task). NOAA 429 sleeps 60 s per
+  file and goes on (`noaa_weather.py:~81`); find why NOAA rate-limits or fails, then make it
+  resumable like the other services (service_outage, no record stamped on an outage, the step
+  continues where it stopped).
 - **1.1c - Grok balance thresholds.** DONE (2026-11-18, `src/utils/grok_balance`). The live
   balance is `/postpaid/invoice/preview` credit minus this month's use, NOT `/prepaid/balance`'s
   `total` (a ledger that posts each month's spend on the 11th of the next month: 2026-11-18 ledger
@@ -539,17 +543,17 @@ of `output/` and `artifacts/` except `-parsed.json`, final flush in `stop()`) an
   both), so `_final_sync` removes the key.
 
 #### Carried over from PHASE3_MAP.md §6 (found by the 2026-11-17 documentation review) (moved here from Group 11)
-- **HIGH (was gap 1) - An unreachable OpenSERP is silent.** A start timeout or error only logs a
+- **DONE (1.2f slice 1, D8c) - HIGH (was gap 1) - An unreachable OpenSERP is silent.** It now stops the phase with an alert. A start timeout or error only logs a
   warning (`EP:781-783`), and every driver then fails the `/health` probe, logs one warning and returns
   0 (`OE:1428-1436`). The steps report `status=ok enriched=0`, no `openserp.anomaly` fires (nothing was
   eligible), and no SNS alert is sent. A run can finish with no OpenSERP enrichment and nobody is told.
   Needs an actionable alert or a `skipped` status.
-- **HIGH (was gap 3) - Five non-search steps are gated by `use_openserp`.** `image_person_link`,
+- **DONE (1.4, 2026-11-18: `phase3_enrich_data._run_document_link_steps`, outside the OpenSERP gate) - HIGH (was gap 3) - Five non-search steps are gated by `use_openserp`.** `image_person_link`,
   `link_asset_review`, `image_place_link`, `intra_corpus_links` and `event_provenance_stamp` sit inside
   `_run_openserp_enrichment` (`P3:351-385`). Setting the flag false, or a failed import or
   `reset_metrics` (`P3:285-292`, returns 0), also skips them and the SourceSectionID stamp. The comment
   on `_run_document_media_steps` says document media must not depend on the OpenSERP flag.
-- **HIGH (was gap 4) - On ECS `use_openserp: false` has no effect when the service starts.** The
+- **DONE (1.4, 2026-11-18: the service is not started when the flag is off; `_patch_openserp_url` writes only the address) - HIGH (was gap 4) - On ECS `use_openserp: false` has no effect when the service starts.** The
   entrypoint starts the service (Fargate and NAT cost) whatever the flag says, and
   `_patch_openserp_url` then forces the flag true (`EP:786-793`). The flag only holds when the start
   fails.

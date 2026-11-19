@@ -1107,9 +1107,18 @@ def _start_openserp_if_needed(phase_script: str) -> None:
 
     OpenSERP (live web-search browser service) is a Phase-3-only dependency.
     NAT is handled separately by _ensure_nat_if_needed (phase2+phase3), so this
-    function no longer manages NAT — it only brings up the OpenSERP service.
+    function no longer manages NAT — it only brings up the OpenSERP service. Not started when
+    web search is off (``_openserp_switched_off``: use_openserp false, absent or unreadable).
     """
     if "phase3" not in phase_script:
+        return
+    if _openserp_switched_off():
+        # task 1.4: the operator switched web search off - do not pay for the service (Fargate
+        # + NAT time); the non-search steps run without it
+        logger.info(
+            "OBSERV openserp.not_started status=ok reason=use_openserp_off - "
+            "supplemental_material.use_openserp is false"
+        )
         return
     try:
         env = os.environ.get("ENV_NAME", "dev")
@@ -1331,8 +1340,9 @@ def _patch_openserp_url(ip: str) -> None:
     config_path = Path("/app/config.yaml")
     with open(config_path, "r", encoding="utf-8") as f:
         config = yaml.safe_load(f)
+    # only the address: the operator's use_openserp is never overridden (task 1.4; it used to be
+    # forced true here, so `use_openserp: false` had no effect once the service started)
     config.setdefault("external_maps", {})["openserp_url"] = f"http://{ip}:7001"
-    config.setdefault("supplemental_material", {})["use_openserp"] = True
     with open(config_path, "w", encoding="utf-8") as f:
         yaml.dump(config, f, default_flow_style=False)
 

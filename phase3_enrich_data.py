@@ -267,7 +267,8 @@ def _run_document_media_steps(args, config, grok_client, run_step) -> int:
 
 def _run_openserp_enrichment(args, config, grok_client, run_step) -> int:
     """Run the OpenSERP enrichment step-group (people/equipment/groups/places/
-    source-sections + optional external maps + metrics). Returns total enriched."""
+    source-sections + optional external maps + metrics): web search only. Returns total
+    enriched."""
     logger.info("[phase3 step 5/6] OpenSERP enrichment (people + equipment)")
     _update_lock_status("step 5/6: enriching openserp")
     try:
@@ -347,6 +348,25 @@ def _run_openserp_enrichment(args, config, grok_client, run_step) -> int:
                 image_storage_path=ext_config.get("image_storage_path"),
             ),
         )
+    # Durable OpenSERP effectiveness/health metrics -> output/metrics/openserp_metrics.json
+    try:
+        _write_openserp_metrics(out)
+    except Exception as e:  # noqa: BLE001 - metrics write must not abort the phase
+        logger.warning(
+            "OBSERV phase3.openserp_metrics_write_failed reason=%s status=warn",
+            type(e).__name__,
+        )
+    return enriched
+
+
+def _run_document_link_steps(args, config, grok_client, run_step) -> int:
+    """Steps that work on the book's own documents and records, NOT web search: they run whether
+    or not OpenSERP is on or reachable (task 1.4; they used to sit inside the OpenSERP group, so
+    `use_openserp: false` or a failed OpenSERP import silently skipped them and the
+    SourceSectionID stamp). Each keeps its own config gate. Returns the count produced.
+    """
+    out = args.output_dir
+    enriched = 0
     # M3: link document photos to the PersonIDs they depict (caption-driven). Independent of the
     # maps feature; runs after people are written. Gated by images.link_people (default on).
     if config.get("images", {}).get("link_people", True):
@@ -383,14 +403,6 @@ def _run_openserp_enrichment(args, config, grok_client, run_step) -> int:
         "event_provenance_stamp",
         lambda: _stamp_event_provenance(out),
     )
-    # Durable OpenSERP effectiveness/health metrics -> output/metrics/openserp_metrics.json
-    try:
-        _write_openserp_metrics(out)
-    except Exception as e:  # noqa: BLE001 - metrics write must not abort the phase
-        logger.warning(
-            "OBSERV phase3.openserp_metrics_write_failed reason=%s status=warn",
-            type(e).__name__,
-        )
     return enriched
 
 
@@ -896,6 +908,10 @@ def main():
         "use_openserp", False
     ):
         total_enriched += _run_openserp_enrichment(args, config, grok_client, _run_step)
+
+    # Document links, photos and the provenance stamp - not web search, never gated by OpenSERP
+    if not args.people_only:
+        total_enriched += _run_document_link_steps(args, config, grok_client, _run_step)
 
     # Equipment images: candidates for SPECIFIC equipment only (qualified Wikipedia article +
     # any OpenSERP candidates above), each confirmed by Grok vision; generic records are cleaned.
