@@ -1043,20 +1043,35 @@ def _start_openserp_if_needed(phase_script: str) -> None:
 
 
 def _alert_openserp_down(reason: str) -> None:
-    """OpenSERP is unavailable for this Phase 3 run ("was gap 1": it was silent). Until owner
-    decision D8c is built (stop the phase, re-queue the book), this run's OpenSERP searches return
-    nothing and entities are stamped searched: say so and what to do. Never raises."""
-    observe_error(
-        "openserp",
-        "unavailable",
-        note=(
-            "OpenSERP is unavailable, so this Phase 3 run's web searches return nothing; the "
-            "entities are left unsearched for the next run. Check the ECS service "
-            f"{os.environ.get('ENV_NAME', 'dev')}-wwii-openserp, then re-run Phase 3 for this book"
+    """OpenSERP could not be started for this Phase 3 run. Owner decision D8c (task 1.2f): stop
+    the whole phase before any work, stamp nothing, alert; the book is deferred (connectivity)
+    and resumes when OpenSERP is back. Skipped when the operator switched OpenSERP off
+    (supplemental_material.use_openserp: false) - then there is nothing to wait for."""
+    if _openserp_switched_off():
+        logger.info(
+            "OBSERV openserp.not_started status=ok reason=%s - use_openserp is off",
+            reason,
+        )
+        return
+    _alert_phase_stopped(
+        "openserp_unavailable",
+        (
+            f"OpenSERP did not start ({reason}), so Phase 3 stopped before any work. Check the "
+            f"ECS service {os.environ.get('ENV_NAME', 'dev')}-wwii-openserp. "
+            + _queue_followup("connectivity", f"OpenSERP did not start: {reason}")
         ),
         reason=reason,
-        book=os.environ.get("BOOK_NAME", ""),
     )
+    _remove_lock(_current_phase_script)
+    _release_nat_lease()  # nothing will run: drop this task's NAT demand
+    sys.exit(1)
+
+
+def _openserp_switched_off() -> bool:
+    """True if config.yaml says supplemental_material.use_openserp: false."""
+    sm = _config_or_empty().get("supplemental_material") or {}
+    # the same default as phase3_enrich_data: absent / unreadable = off
+    return sm.get("use_openserp", False) is not True
 
 
 def _patch_openserp_url(ip: str) -> None:

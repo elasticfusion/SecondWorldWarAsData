@@ -56,6 +56,11 @@ class GrokUnreachable(GrokModelUnavailable):
     network or xAI is back."""
 
 
+class ServiceUnreachable(GrokUnreachable):
+    """A REQUIRED external service is down (OpenSERP, owner decision D8c: stop the whole phase,
+    stamp nothing, alert). Same exit and deferral as a Grok outage (connectivity)."""
+
+
 class GrokFundsExhausted(GrokModelUnavailable):
     """xAI refused for lack of credit (HTTP 402, or 403 naming credit). The phase exits
     ``stop_cause.EXIT_FUNDING``; the book is deferred and resumes after a top-up."""

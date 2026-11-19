@@ -136,3 +136,12 @@ def mock_config():
         "maps": {"enabled": False},
         "external_maps": {"enabled": False},
     }
+
+
+@pytest.fixture(autouse=True)
+def _no_leftover_grok_stop(monkeypatch):
+    """A run-stopping Grok/service condition (src/utils/grok_models.stop_run) is process-global:
+    one test's stop must not make later tests' Grok calls raise (task 1.2e/1.2f)."""
+    from src.utils import grok_models
+
+    monkeypatch.setattr(grok_models, "_stopped", {})

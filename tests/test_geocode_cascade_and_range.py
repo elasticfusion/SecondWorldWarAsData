@@ -85,18 +85,23 @@ def test_h2_transient_preferred_over_genuine_miss():
     )  # retriable, NOT terminal not_found
 
 
-def test_h2_confident_hit_still_wins_over_transient():
+def test_a_nominatim_outage_is_not_replaced_by_an_llm_guess():
+    """Owner decision D8d (task 1.2f): the authoritative geocoder (first) down -> the place stays
+    retriable; the Grok fallback is not asked (it used to win with a guessed coordinate).
+    """
     osm = _g(
         GeocodeResult(found=False, confidence=0.0, transient=True, source="nominatim")
     )
-    grok = _g(
-        GeocodeResult(
+    asked = []
+
+    def grok(name, place, client):
+        asked.append(name)
+        return GeocodeResult(
             found=True, latitude=50.78, longitude=6.08, confidence=0.95, source="grok"
         )
-    )
-    casc = cascade_geocoder(osm, grok)
-    out = casc("X", {}, None)
-    assert out.found is True and out.confidence == 0.95  # confident hit wins
+
+    out = cascade_geocoder(osm, grok)("X", {}, None)
+    assert out.transient is True and asked == []
 
 
 def test_h2_genuine_miss_still_terminal_when_no_transient():

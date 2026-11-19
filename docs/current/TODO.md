@@ -254,6 +254,32 @@ continues from where it stopped. Order: 1.2b, 1.1b, 1.2c, 1.2e, 1.2d, 1.2f, 1.1c
   `failure` cap. In 1.1b the trigger Lambda reads the STOPPED event's `stopCode`; for
   `SpotInterruption` it gives the attempt back (`pending_queue.give_back`), so only real failures
   count. Work since the last S3 sync (120 s) is the only loss; 1.2d makes the resume skip the rest.
+- **1.2f slice 1 built (2026-11-18):** OpenSERP down at start (cannot be started) or failing
+  mid-run (5 consecutive failed searches) stops Phase 3 (D8c: `grok_models.ServiceUnreachable`,
+  exit 81, book deferred connectivity); a transient page fetch is no longer a 90-day REJECT;
+  archive.org not answering is not cached as NOT_FOUND; a Nominatim outage is never replaced by
+  an LLM-guessed coordinate and 5 transient places in a row stop geocoding for the run with an
+  alert (D8d). Remaining, from the 2026-11-18 inventory:
+  - OWNER QUESTION: Phase 3 exits 0 even when a step raised (`_run_step` records it, the book is
+    finished, lifecycle advanced, queue row removed). Should an errored step leave the book
+    queued (retried, attempt-capped) instead?
+  - other `supplemental_search.py` sources (Gutendex, Gutenberg, archive.org metadata, OpenSERP
+    books) swallow errors as "no candidates" (`:19`, `:18`, `:313`);
+  - S3 outage: BackgroundSync swallows errors (`ecs_entrypoint.py:595`), the watchdog then kills
+    the task and the emergency sync fails too; the merged-key delete is silent (`:4095`); no
+    botocore retry `Config` on the wrapper's S3 client;
+  - DynamoDB outage disables the URL registry (claim -> DEFERRED, never fetched) and search cache
+    (put logged at DEBUG) silently;
+  - image-host outage burns image_map_vision's 3-attempt budget (`image_map_vision.py:57`);
+  - a NARA secret failure silently skips NARA for the run (`ecs_entrypoint.py:663`, D8b says alert);
+  - `url_hygiene._pinned_get` (pages, images, Wayback) has no shared retry;
+  - NOAA 429 sleeps 60 s per file and goes on (`noaa_weather.py:~81`).
+  - retryable page fetches (walled / rate-limited) are no longer REJECT-cached and have no per-URL
+    backoff beyond the domain politeness gate: add a short negative TTL (e.g. 1 h);
+  - `lambda_handlers/phase3_handler.py` (not deployed) now fails its invocation when OpenSERP is
+    down (the stop is a BaseException): retire it or catch the stop;
+  - each start-time OpenSERP stop still brings NAT up and waits up to 12 min for OpenSERP before
+    stopping (bounded by the connectivity cap, 24).
 - **1.1c - Grok balance thresholds.** Read the real prepaid balance from the xAI Management API
   (`GET https://management-api.x.ai/v1/billing/teams/{team_id}/prepaid/balance`; management key + team
   ID in Secrets Manager). Under $50 (configurable) at the start of any phase: stop before any Grok spend

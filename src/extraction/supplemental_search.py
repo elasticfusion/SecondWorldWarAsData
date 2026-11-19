@@ -1,7 +1,7 @@
 """Search for supplemental material URLs using multiple sources."""
 
 import logging
-from typing import Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 from urllib.parse import quote
 
 import requests
@@ -88,7 +88,7 @@ def search_archive_org(
     ):
         return None
 
-    from src.utils.search_cache import cache_result, get_cached
+    from src.utils.search_cache import get_cached
 
     query_key = f"{title}|{author or ''}|{periodical or ''}"
     cached = get_cached("archive_org", query_key)
@@ -97,15 +97,29 @@ def search_archive_org(
     if cached:
         return cached
 
+    return _search_and_cache(query_key, title, author, periodical)
+
+
+def _search_and_cache(
+    query_key: str, title: str, author: Optional[str], periodical: Optional[str]
+) -> Optional[str]:
+    """Ask archive.org and cache the answer; an outage (TRANSIENT) is not cached and reads as
+    no result for now (task 1.2f)."""
+    from src.utils.search_cache import TRANSIENT, cache_result
+
     result = _search_archive_org_api(title, author, periodical)
-    cache_result("archive_org", query_key, result)
-    return result
+    cache_result("archive_org", query_key, result)  # TRANSIENT is never cached
+    return None if result is TRANSIENT else result
 
 
 def _search_archive_org_api(
     title: str, author: Optional[str] = None, periodical: Optional[str] = None
-) -> Optional[str]:
-    """Execute archive.org API search."""
+) -> Any:
+    """Execute archive.org API search: the item URL, None (a genuine miss), or
+    ``search_cache.TRANSIENT`` when archive.org did not answer (error / non-200): an outage must
+    not be cached as "not on archive.org" for 7 days (task 1.2f)."""
+    from src.utils.search_cache import TRANSIENT
+
     try:
         query = _build_archive_query(title, author, periodical)
         # Search API
@@ -134,10 +148,20 @@ def _search_archive_org_api(
                     logger.info("Found on Archive.org: %s", result_url)
                     return result_url
 
+            return None  # answered, nothing found: a real miss
+        logger.warning(
+            "OBSERV archive_org.search_unavailable status=warn http=%s - not cached, retried "
+            "next run",
+            response.status_code,
+        )
+        return TRANSIENT
     except Exception as e:
-        logger.debug("Archive.org search failed: %s", e)
-
-    return None
+        logger.warning(
+            "OBSERV archive_org.search_unavailable status=warn err=%s - not cached, retried "
+            "next run",
+            type(e).__name__,
+        )
+        return TRANSIENT
 
 
 _ARCHIVE_TITLE_REJECT_KW = [

@@ -180,13 +180,14 @@ def process_message(
         # Grok down or no credits (task 1.2e): keep the message, pause before the next one so
         # the worker does not burn through the queue (and into the DLQ) while Grok is out
         logger.error(
-            "OBSERV openserp_worker.grok_stopped status=error kind=%s path=%s - pausing %ds; "
-            "the message is redelivered",
+            "OBSERV openserp_worker.service_stopped status=error kind=%s path=%s - pausing "
+            "%ds; the message is redelivered",
             type(e).__name__,
             entity_path,
             GROK_STOP_PAUSE_S,
         )
         time.sleep(GROK_STOP_PAUSE_S)
+        oe.reset_circuit()  # look again after the pause (an open breaker would stop forever)
         return "retry"
     except (
         Exception

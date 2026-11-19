@@ -16,9 +16,14 @@ def test_prelude_helper_contract(monkeypatch):
     # reachable -> True
     monkeypatch.setattr(oe, "_openserp_reachable", lambda url: True)
     assert oe._reset_and_check_reachable("http://x") is True
-    # unreachable -> False (still reset the circuit first)
+    # unreachable -> the phase stops (owner decision D8c, task 1.2f), circuit reset first
+    import pytest
+
+    from src.utils import grok_models
+
     monkeypatch.setattr(oe, "_openserp_reachable", lambda url: False)
-    assert oe._reset_and_check_reachable("http://x") is False
+    with pytest.raises(grok_models.ServiceUnreachable):
+        oe._reset_and_check_reachable("http://x")
     assert len(reset_calls) == 2  # circuit reset on both calls
 
 

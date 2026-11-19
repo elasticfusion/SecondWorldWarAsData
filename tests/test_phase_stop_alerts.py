@@ -151,9 +151,33 @@ def test_openserp_unavailable_alerts(alerts, monkeypatch, failure):
     monkeypatch.setattr(ee.boto3, "client", lambda *a, **k: ecs)
     monkeypatch.setattr(ee, "_get_openserp_alb_dns", lambda: "")
     monkeypatch.setattr("time.sleep", lambda *_: None)
+    monkeypatch.setattr(ee, "_queue_followup", lambda cause, reason: f"NEXT-{cause}")
+    monkeypatch.setattr(ee, "_remove_lock", lambda *a: None)
+    monkeypatch.setattr(ee, "_release_nat_lease", lambda: None)
+    monkeypatch.setattr(
+        ee,
+        "_config_or_empty",
+        lambda: {"supplemental_material": {"use_openserp": True}},
+    )
+    # owner decision D8c (task 1.2f): the phase stops before any work and the book is deferred
+    with pytest.raises(SystemExit):
+        ee._start_openserp_if_needed("phase3_enrich_data.py")
+    a = _one(alerts, "openserp_unavailable")
+    assert a["scope"] == "phase" and a["book"] == "USA-E-XChannel"
+    assert a["note"].endswith("NEXT-connectivity")
+
+
+def test_openserp_switched_off_does_not_stop_the_phase(alerts, monkeypatch):
+    ecs = mock.MagicMock()
+    ecs.describe_services.side_effect = RuntimeError("no service")
+    monkeypatch.setattr(ee.boto3, "client", lambda *a, **k: ecs)
+    monkeypatch.setattr(
+        ee,
+        "_config_or_empty",
+        lambda: {"supplemental_material": {"use_openserp": False}},
+    )
     ee._start_openserp_if_needed("phase3_enrich_data.py")
-    a = _one(alerts, "unavailable")
-    assert a["scope"] == "openserp" and a["book"] == "USA-E-XChannel"
+    assert alerts == []
 
 
 def test_openserp_is_not_checked_outside_phase3(alerts):

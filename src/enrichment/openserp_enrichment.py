@@ -34,13 +34,17 @@ _circuit_open = False
 _circuit_lock = threading.Lock()
 
 
+_last_url = ""  # the OpenSERP base URL in use (for the breaker's health re-check)
+
+
 def reset_circuit() -> None:
     """Reset the OpenSERP circuit breaker (call at the start of an enrichment run
     so breaker state never leaks across books/runs in a long-lived process)."""
-    global _consecutive_failures, _circuit_open
+    global _consecutive_failures, _circuit_open, _last_url
     with _circuit_lock:
         _consecutive_failures = 0
         _circuit_open = False
+        _last_url = ""
 
 
 def _breaker_is_open() -> bool:
@@ -53,16 +57,33 @@ def _breaker_record_failure() -> bool:
     global _consecutive_failures, _circuit_open
     with _circuit_lock:
         _consecutive_failures += 1
-        if _consecutive_failures >= _CIRCUIT_BREAKER_THRESHOLD:
-            if not _circuit_open:
-                logger.warning(
-                    "OpenSERP circuit breaker OPEN — %d consecutive empty/failed "
-                    "responses, skipping remaining searches",
-                    _consecutive_failures,
-                )
-                _metric("breaker_opened")
-            _circuit_open = True
+        streak = _consecutive_failures
+    if streak < _CIRCUIT_BREAKER_THRESHOLD:
         return _circuit_open
+    # Failing searches are not proof OpenSERP is down: 5 bad queries (odd entity names from a
+    # book's text) must not stop the phase. Ask OpenSERP itself (security review, task 1.2f).
+    if _last_url and _openserp_reachable(_last_url):
+        with _circuit_lock:
+            _consecutive_failures = 0
+        logger.warning(
+            "OBSERV openserp.queries_failing status=warn streak=%d - OpenSERP is healthy, so "
+            "these are per-query failures; the entities are retried next run",
+            streak,
+        )
+        return False
+    with _circuit_lock:
+        if not _circuit_open:
+            logger.warning(
+                "OpenSERP circuit breaker OPEN — %d consecutive failed responses",
+                streak,
+            )
+            _metric("breaker_opened")
+        _circuit_open = True
+    # OpenSERP is down mid-run: stop the phase (owner decision D8c) rather than skip the rest
+    _stop_openserp_down(
+        f"{streak} consecutive failed searches and the health check failed"
+    )
+    return True
 
 
 def _breaker_record_success() -> None:
@@ -359,9 +380,11 @@ def _drop_excluded_domains(results: List[Dict]) -> List[Dict]:
 def _search_openserp(query: str, openserp_url: str, limit: int = 5) -> List[Dict]:
     """Run an OpenSERP search. Returns list of {url, title, description}."""
     if _breaker_is_open():
-        logger.info("OpenSERP circuit breaker SKIP: %s", query[:60])
+        # OpenSERP was found down: nothing may be searched (and stamped) until it is back
         _trace_query(query, "error")
-        return []
+        _stop_openserp_down("the circuit breaker is open")
+    global _last_url
+    _last_url = openserp_url
 
     _metric("queries_issued")
     try:
@@ -955,19 +978,19 @@ def _summarize_url_page(
     from src.utils import url_fetch, url_registry
 
     result = url_fetch.fetch(url)
-    if result.source in (url_fetch.SKIP, url_fetch.DEFERRED):
-        # SKIP = already searched (reuse the shared verdict); DEFERRED = in-progress
-        # elsewhere / domain cooldown (retry later). Neither is a negative — signal the
-        # caller NOT to cache REJECT (that would poison cross-entity positive reuse or
-        # permanently deny a legitimate deferred retry).
-        return _SKIP_SENTINEL
-    if result.source in (
-        url_fetch.DEAD,
-        url_fetch.BLOCKED_NO_ARCHIVE,
-        url_fetch.RATE_LIMITED,
-    ):
-        # gone / walled-with-no-archive / rate-limited -> no content this run.
-        return None
+    # No content this run. SKIP = already searched (reuse the shared verdict); DEFERRED =
+    # in-progress elsewhere / domain cooldown; walled / rate-limited / transient with no archive
+    # are RETRYABLE in url_fetch (task 1.2f). None of these is a negative: the caller must not
+    # cache REJECT. Only DEAD (confirmed gone, no archive) is a real negative.
+    no_content = {
+        url_fetch.SKIP: _SKIP_SENTINEL,
+        url_fetch.DEFERRED: _SKIP_SENTINEL,
+        url_fetch.BLOCKED_NO_ARCHIVE: _SKIP_SENTINEL,
+        url_fetch.RATE_LIMITED: _SKIP_SENTINEL,
+        url_fetch.DEAD: None,
+    }
+    if result.source in no_content:
+        return no_content[result.source]
     html = result.content
     summary: Optional[str] = None
     try:
@@ -1685,9 +1708,18 @@ def _reset_and_check_reachable(openserp_url: str) -> bool:
     enrich_*_with_openserp driver opens with this identical guard."""
     reset_circuit()  # H3: don't inherit breaker state from a prior book/run
     if not _openserp_reachable(openserp_url):
-        logger.warning("OpenSERP not reachable at %s — skipping", openserp_url)
-        return False
+        _stop_openserp_down(f"health check failed at {openserp_url}")
     return True
+
+
+def _stop_openserp_down(detail: str) -> None:
+    """OpenSERP is down at the start of a step or mid-run (owner decision D8c, task 1.2f): stop
+    the whole phase - nothing is stamped, the book is deferred (connectivity) and resumes when
+    OpenSERP is back. Raises grok_models.ServiceUnreachable (a run-stopping BaseException).
+    """
+    from src.utils import grok_models
+
+    grok_models.stop_run(grok_models.ServiceUnreachable, "openserp", detail)
 
 
 def _iter_loadable_records(directory: Path):

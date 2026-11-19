@@ -738,17 +738,52 @@ def geocode_places_dir(
             "toponym person-disambiguation disabled this pass"
         )
 
+    _geocode_all(
+        places_dir, grok_client, write, force, limit, report, resolve, person_names
+    )
+    _log_geocode_summary(report)
+    return report
+
+
+GEOCODER_DOWN_STREAK = 5  # transient failures in a row: the geocoder is down
+
+
+def _geocode_all(places_dir, grok_client, write, force, limit, report, resolve, people):
+    """Geocode every place file; stop the pass when the geocoder looks down (owner decision
+    D8d: GEOCODER_DOWN_STREAK transient failures in a row -> alert, stamp nothing more).
+    """
+    streak = 0
     for path in sorted(places_dir.glob("*.json")):
         if path.name in _SKIP_FILES:
             continue
         if limit is not None and report.attempted >= limit:
             break
-        _geocode_one_file(
-            path, grok_client, write, force, report, resolve, person_names
-        )
+        attempted = report.attempted
+        _geocode_one_file(path, grok_client, write, force, report, resolve, people)
+        if report.attempted > attempted:  # this place was geocoded (not skipped)
+            # a transient result, or the geocoder raising (no status), both mean "not answered"
+            transient = report.details[-1].get("status") in (_STATUS_ERROR, None)
+            streak = streak + 1 if transient else 0
+        if streak >= GEOCODER_DOWN_STREAK:
+            _alert_geocoder_down(streak)
+            return
 
-    _log_geocode_summary(report)
-    return report
+
+def _alert_geocoder_down(streak: int) -> None:
+    """Owner decision D8d (task 1.2f): Nominatim unreachable -> skip geocoding for this run,
+    stamp nothing (the places already tried are left retriable), alert."""
+    from src.utils.observe import observe_error
+
+    observe_error(
+        "geocode",
+        "geocoder_unavailable",
+        note=(
+            f"{streak} places in a row failed transiently, so the geocoder (Nominatim) looks "
+            "down: geocoding is skipped for the rest of this run and no coordinates were "
+            "guessed. Those places are left retriable; check Nominatim status if this repeats"
+        ),
+        streak=streak,
+    )
 
 
 def _log_geocode_summary(report: "GeocodeRunReport") -> None:
@@ -798,8 +833,12 @@ def cascade_geocoder(*geocoders: Any) -> Any:
     def geocode(name: str, place: dict, client: Any) -> GeocodeResult:
         best: Optional[GeocodeResult] = None
         transient_seen: Optional[GeocodeResult] = None
-        for geocoder in geocoders:
+        for n, geocoder in enumerate(geocoders):
             result = geocoder(name, place, client)
+            if n == 0 and getattr(result, "transient", False):
+                # the authoritative geocoder (Nominatim) is down: never fall through to an
+                # LLM guess - leave the place retriable (owner decision D8d, task 1.2f)
+                return result
             if result.found and result.confidence > MIN_GEOCODE_CONFIDENCE:
                 return result
             if getattr(result, "transient", False) and transient_seen is None:
