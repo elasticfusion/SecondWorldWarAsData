@@ -652,7 +652,7 @@ def link_parent_place_ids(places_dir: Path) -> int:
         key=lambda item: priority.get(item[1].get("geography_type", ""), 3),
     )
 
-    updated = 0
+    updated = refused = 0
     for pf, data in ordered:
         hierarchy = data.get("hierarchy")
         if not hierarchy or not isinstance(hierarchy, dict):
@@ -662,11 +662,25 @@ def link_parent_place_ids(places_dir: Path) -> int:
         parent_id = _find_parent_id(hierarchy, name_to_id, data.get("PlaceID", ""))
         if parent_id:
             hierarchy["parent_place_id"] = parent_id
-            write_json_with_lock(pf, data)
-            updated += 1
+            # entity="places": the version and _last_updated stamp, so change detection sees
+            # the new parent (task 1.10); a refused write is not counted as linked
+            if write_json_with_lock(pf, data, entity="places"):
+                updated += 1
+            else:
+                refused += 1
+                logger.warning(
+                    "OBSERV places.parent_link_refused place=%s status=warn - the schema guard "
+                    "refused the record; check its fields against the places schema",
+                    pf.name,
+                )
 
     logger.info("Linked parent_place_id for %d places", updated)
-    logger.info("OBSERV places.parent_link linked=%d", updated)
+    logger.info(
+        "OBSERV places.parent_link linked=%d refused=%d status=%s",
+        updated,
+        refused,
+        "warn" if refused else "ok",
+    )
     return updated
 
 
