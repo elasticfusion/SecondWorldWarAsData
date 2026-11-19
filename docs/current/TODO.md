@@ -114,8 +114,8 @@ What several HIGH items in later groups depend on; MED/LOW items are here when a
 4. DONE (1.4) non-search steps independent of `use_openserp`; `use_openserp: false` honoured on ECS;
 5. one alert path to `phase2-complete` (preflight aborts, crashed task, validation failure, reconcile
    failure, unreachable OpenSERP, short bibliography download);
-6. per-request identity (`current_book`, BookID, RequestID) for Phase 3;
-7. public find-or-create entity writers (places, dates, people_groups) shared by Phase 2 and 3;
+6. MOVED to Group 2 (owner 2026-11-18): per-request identity for Phase 3 - Phase 3 runs live today, where an answer cannot be swapped; the 2026-11-11 swap was the positional batch-result mapping (fixed: `batch_api.align_by_request_id`), so the identity check is added when Phase 3 goes onto the Batch API;
+7. DONE (1.8, `src/extraction/entity_writers`: `find_or_create_place` / `find_or_create_date` / `find_or_create_group`, each through the Phase 2 writer under the entity's index lock; image_place_link uses it) public find-or-create entity writers (places, dates, people_groups) shared by Phase 2 and 3. Hardened: names/dates from untrusted text are validated, a per-run creation cap alerts, a schema-refused record is never indexed (Phase 2: that place mention is skipped with an alert), and new place/date/group filenames end in the ULID's random tail (the timestamp head let two same-second records share a file). Left: the Phase 2 dates extractor still saves its whole in-memory index at the end of a chapter (last writer wins against a concurrent entry-point creation); `enrich_biographies`' filename fallback cannot find a legacy head-named group missing from its index (warns);
 8. config: `trusted_sources` (HyperWar html+pdf; NARA `catalog.archives.gov/id/` + `/medialz/`) and
    `links.follow` (same_domain / external: max_hops 1, max_per_page 20), read in one place;
 9. every Phase 3 write stamps metadata (`entity=`), so change detection works.
@@ -580,6 +580,15 @@ larger change (equipment's index build differs); deferred. Lower value than the 
 whitelist fixes shipped in PR #707 since duplicates are recovered, not lost.
 
 ### Group 2 - batching (owner rule: every Grok submission is batched)
+
+- **1.7 (moved here, owner 2026-11-18) - answer identity for Phase 3 batch requests.** When Phase 3
+  goes onto the Batch API, give every Phase 3 request a RequestID (and the source document's
+  BookID where it is about one document: map vision, document links, photo linking), so a swapped
+  answer is rejected as in Phase 2 (`src/utils/request_identity`). Cost: each cached Phase 3 answer
+  is asked once more (count them first).
+- **Validation pass (owner 2026-11-18, after the Phase 3 list):** cached Phase 2 answers from
+  batches before 2026-11-11 may be stored under another request's key; identity-checked kinds are
+  caught on read (evicted, re-asked), others are not - check them.
 
 Every Grok-validation feature in G3 and later must be batched, so this comes before them. Reuse the
 existing batch code and the under-50 rule (`batch.min_requests`); Phase 2's multi-round hand-off; vision

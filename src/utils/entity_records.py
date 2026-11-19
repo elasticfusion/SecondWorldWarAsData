@@ -154,6 +154,15 @@ def reset_corrupt_records() -> None:
         _corrupt.clear()
 
 
+def load_json_index_keys(index_file: Path) -> set:
+    """The keys of a name -> file ``index.json`` (empty when missing or unreadable)."""
+    try:
+        data = json.loads(Path(index_file).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return set()
+    return set(data) if isinstance(data, dict) else set()
+
+
 def iter_mentions(rec: Dict[str, Any]) -> List[Dict[str, Any]]:
     """A record's source mentions: ``event_mentions[]``; for casualties their single
     ``event_context`` (a present, real EventID - authoritative, see src/loader/load.py); for

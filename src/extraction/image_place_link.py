@@ -165,18 +165,22 @@ def _resolve_or_create_place(
         key = place_name.lower().strip()
         if not key:
             return None
-        if key in name_to_id or key in index:
-            from src.extraction.places import (
-                _find_or_create_place,
-            )  # existing -> returns its file
+        from src.extraction.entity_writers import find_or_create_place
 
-            return _find_or_create_place(place_name, {}, places_dir, index)
-        # Not yet a place -> create it through the real pipeline (provenance-marked mention).
-        from src.extraction.places import _find_or_create_place
-
-        mention = {"geography_type": "other", "source": "document:image-caption"}
-        pf = _find_or_create_place(place_name, mention, places_dir, index)
-        logger.info("OBSERV image_place.created place=%s", place_name)
+        known = key in name_to_id or key in index
+        # an unknown place goes through the shared place writer with a provenance-marked
+        # mention (task 1.8: the one writer Phase 2 uses too)
+        mention = (
+            {}
+            if known
+            else {"geography_type": "other", "source": "document:image-caption"}
+        )
+        pf = find_or_create_place(place_name, places_dir, mention)
+        index[key] = (
+            pf.name
+        )  # the next photo of this place in the run finds it as known
+        if not known:
+            logger.info("OBSERV image_place.created place=%s", place_name)
         return pf
     except Exception as e:  # noqa: BLE001
         logger.warning(
