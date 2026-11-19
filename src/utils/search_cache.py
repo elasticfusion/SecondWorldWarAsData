@@ -87,8 +87,11 @@ class _DynamoBackend:
         self._table = boto3.resource("dynamodb", region_name=region).Table(table_name)
 
     def get(self, key: str) -> Optional[str]:
+        from src.utils import service_outage
+
         try:
             resp = self._table.get_item(Key={"cache_key": key})
+            service_outage.ok("dynamodb")
             item = resp.get("Item")
             if not item:
                 return None
@@ -97,10 +100,15 @@ class _DynamoBackend:
             if ttl and int(time.time()) > ttl:
                 return None  # Expired
             return item.get("response", "")
-        except Exception:
+        except (
+            Exception
+        ) as e:  # noqa: BLE001 - a miss: search again (and count the outage)
+            service_outage.dynamodb_failed("search_cache_get", e)
             return None
 
     def put(self, key: str, value: str, ttl_days: int = 30) -> None:
+        from src.utils import service_outage
+
         try:
             self._table.put_item(
                 Item={
@@ -109,8 +117,9 @@ class _DynamoBackend:
                     "ttl": int(time.time()) + (ttl_days * 86400),
                 }
             )
-        except Exception as e:
-            logger.debug("Cache write failed: %s", e)
+            service_outage.ok("dynamodb")
+        except Exception as e:  # noqa: BLE001 - not cached: searched again next time
+            service_outage.dynamodb_failed("search_cache_put", e)
 
 
 class _LocalBackend:

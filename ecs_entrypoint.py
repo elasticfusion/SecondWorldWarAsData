@@ -387,8 +387,25 @@ def _clear_manifest() -> None:
         pass
 
 
+_s3: dict = {}
+
+
 def _s3_client():
-    return boto3.client("s3", region_name=REGION)
+    """The wrapper's S3 client (one per process): adaptive retries and bounded timeouts, so a
+    short S3 throttle or blip is retried here instead of failing a sync (task 1.2f)."""
+    if "c" not in _s3:
+        from botocore.config import Config
+
+        _s3["c"] = boto3.client(
+            "s3",
+            region_name=REGION,
+            config=Config(
+                retries={"mode": "adaptive", "max_attempts": 10},
+                connect_timeout=10,
+                read_timeout=60,
+            ),
+        )
+    return _s3["c"]
 
 
 def _get_account_id() -> str:
@@ -572,10 +589,20 @@ class BackgroundSync:
         while not self._stop.wait(self._interval):
             self._sync()
 
+    # background passes in a row with failed uploads before the operator is told (10 min)
+    S3_ALERT_AFTER_PASSES = 5
+
     def _sync(self):
         try:
             _heartbeat_nat_lease()  # M3: keep NAT lease alive while task runs
             self._upload_changed()
+            if self._s3_failing_passes and (
+                self._s3_failing_passes * self._interval < self.WATCHDOG_TIMEOUT
+            ):
+                # S3 is the reason nothing uploaded: the task is not stuck - do not kill it as
+                # a stall (the work stays on disk and is uploaded when S3 answers). Bounded: an
+                # S3 failure as long as the watchdog window lets the watchdog act as before.
+                return
             # Watchdog: self-terminate if no activity for too long
             idle = time.time() - self._last_activity_time
             if idle > self.WATCHDOG_TIMEOUT:
@@ -595,24 +622,59 @@ class BackgroundSync:
         except Exception as e:
             logger.warning("Background sync error: %s", e)
 
+    _s3_failing_passes = 0
+
     def _upload_changed(self) -> None:
-        """Upload the output/ and artifacts/ files changed since the last pass."""
+        """Upload the output/ and artifacts/ files changed since the last pass. A file that fails
+        to upload does not stop the pass (task 1.2f); it is retried next pass."""
+        failed = 0
         for name, prefix in [("output", "output"), ("artifacts", "artifacts")]:
             d = WORKDIR / name
             if d.exists():
-                n = self._sync_changed(d, prefix)
+                n, f = self._sync_changed(d, prefix)
+                failed += f
                 if n:
                     self._last_activity_time = time.time()
                     self.progress.mark()
                     logger.info("Background sync: uploaded %d %s files", n, name)
+        self._note_s3_pass(failed)
 
-    def _sync_changed(self, local_dir: Path, prefix: str) -> int:
-        """Upload only files modified since last sync."""
+    def _note_s3_pass(self, failed: int) -> None:
+        """Count passes with failed uploads; tell the operator once S3 has failed for
+        S3_ALERT_AFTER_PASSES passes in a row (the work is only on the task's disk meanwhile).
+        """
+        if not failed:
+            if self._s3_failing_passes >= self.S3_ALERT_AFTER_PASSES:
+                logger.info(
+                    "OBSERV s3.sync_recovered status=ok - background uploads resumed"
+                )
+            self._s3_failing_passes = 0
+            from src.utils import service_outage
+
+            service_outage.ok("s3")
+            return
+        self._s3_failing_passes += 1
+        if self._s3_failing_passes == self.S3_ALERT_AFTER_PASSES:
+            observe_error(
+                "s3",
+                "sync_failing",
+                note=(
+                    f"Background S3 uploads have failed for {self._s3_failing_passes} passes "
+                    f"({self._s3_failing_passes * self._interval // 60} min): this task's work "
+                    "since then is only on its disk and is lost if the task stops. Check S3 "
+                    "health and the task role's s3:PutObject on the data bucket"
+                ),
+                failed_files=failed,
+                book=os.environ.get("BOOK_NAME", ""),
+            )
+
+    def _sync_changed(self, local_dir: Path, prefix: str) -> tuple:
+        """Upload only files modified since last sync. Returns (uploaded, failed)."""
         s3 = _s3_client()
         exclude = [
             "-parsed.json"
         ]  # Keep parsed excluded (triggers Phase 2 via S3 notification)
-        count = 0
+        count = failed = 0
         now = time.time()
         for f in local_dir.rglob("*"):
             if not f.is_file():
@@ -632,10 +694,19 @@ class BackgroundSync:
             # Skip files modified in the last 2s (may still be mid-write)
             if now - mtime < 2:
                 continue
-            s3.upload_file(str(f), BUCKET, key)
+            try:
+                s3.upload_file(str(f), BUCKET, key)
+            except FileNotFoundError:
+                continue  # removed between the scan and the upload (merged away): not S3
+            except Exception as e:  # noqa: BLE001 - retried next pass; counted
+                from src.utils import service_outage
+
+                service_outage.failed("s3", "background_upload", type(e).__name__)
+                failed += 1
+                continue
             self._uploaded_mtimes[key] = mtime
             count += 1
-        return count
+        return count, failed
 
 
 def _load_secrets():
@@ -665,7 +736,7 @@ def _load_secrets():
             os.environ["NARA_API_KEY"] = resp["SecretString"].strip()
             logger.info("Loaded NARA API key from Secrets Manager")
         except Exception as e:  # noqa: BLE001 - NARA key optional; never block the run
-            logger.warning("NARA API key not loaded (%s): %s", nara_secret, e)
+            _alert_nara_key_missing(nara_secret, e)
     # xAI Management API key: reads the live credit balance (task 1.1c), Grok phases only. It
     # can buy credit and manage keys, so it is held in grok_balance, NOT os.environ: no phase
     # subprocess inherits it. Its absence is alerted by _preflight_balance_check (which stops
@@ -690,6 +761,29 @@ def _load_secrets():
             logger.warning(
                 "xAI management key not loaded (%s): %s", mgmt_secret, type(e).__name__
             )
+
+
+def _alert_nara_key_missing(secret_id: str, error: Exception) -> None:
+    """D8b (task 1.2f): without the NARA key Phase 3 leaves every archive-path citation
+    unresolved for the next run (never "not found online") - say so, once, so the key is fixed
+    before the next run. Other phases do not use NARA: a warning only."""
+    if "phase3" not in _current_phase_script:
+        logger.warning(
+            "NARA API key not loaded (%s): %s", secret_id, type(error).__name__
+        )
+        return
+    observe_error(
+        "nara",
+        "key_unavailable",
+        note=(
+            f"The NARA API key ({secret_id}) did not load, so this Phase 3 run leaves NARA "
+            "citations unresolved (retried next run, never marked not found). Check the secret "
+            "and the task role's secretsmanager:GetSecretValue, then re-run Phase 3"
+        ),
+        secret=secret_id,
+        error=type(error).__name__,
+        book=os.environ.get("BOOK_NAME", ""),
+    )
 
 
 def _setup_symlinks():
@@ -4235,6 +4329,63 @@ def _final_sync_phase1() -> None:
         logger.info("OBSERV run_scope.synced files=%d", n_rs)
 
 
+def _delete_merged_from_s3() -> None:
+    """Delete the records this task merged away from S3 too. A delete that fails would leave a
+    duplicate entity in S3 that the next phase downloads again: alert with the keys and how to
+    remove them, never silently (task 1.2f)."""
+    s3 = _s3_client()
+    left = []
+    for key in sorted(_deleted_keys):
+        try:
+            s3.delete_object(Bucket=BUCKET, Key=key)
+        except Exception as e:  # noqa: BLE001 - reported below
+            left.append((key, type(e).__name__))
+    logger.info(
+        "Final sync: deleted %d merged files from S3",
+        len(_deleted_keys) - len(left),
+    )
+    if left:
+        _alert_merged_left(left)
+
+
+def _alert_merged_left(left: list) -> None:
+    """Alert that merged-away records are still in S3. The keys (built from entity names, so
+    untrusted) go to a manifest and to sanitised OBSERV lines - never into a command for the
+    operator to paste - and the operator reviews them before deleting."""
+    task = os.environ.get("ECS_TASK_ID", "") or "local"
+    manifest = f"manifests/merged_delete_left/{_safe_key_part(task)}.json"
+    where = f"s3://{BUCKET}/{manifest}"
+    try:
+        _s3_client().put_object(
+            Bucket=BUCKET,
+            Key=manifest,
+            Body=json.dumps([k for k, _ in left], indent=1).encode(),
+            ContentType="application/json",
+        )
+    except Exception:  # noqa: BLE001 - the per-key OBSERV lines below still list them
+        where = "this task's log (OBSERV s3.merged_delete_left lines)"
+    observe_error(
+        "s3",
+        "merged_delete_failed",
+        note=(
+            f"{len(left)} merged-away record(s) are still in S3 and would come back as "
+            f"duplicates on the next download. The keys are in {where}: review them, delete "
+            "each from the data bucket, then re-run dedup for the book"
+        ),
+        count=len(left),
+        error=left[0][1],
+    )
+    for key, err in left:
+        observe("s3", "merged_delete_left", status="error", key=key, err=err)
+
+
+def _safe_key_part(value: str) -> str:
+    """``value`` as one safe S3 key segment."""
+    import re as _re
+
+    return _re.sub(r"[^A-Za-z0-9._-]", "_", value)[:128] or "x"
+
+
 def _final_sync(phase_script: str = ""):
     """Final upload of new output to S3. Only uploads entity subdirs, not parsed/event files."""
     if "phase0" in phase_script:
@@ -4316,15 +4467,7 @@ def _final_sync(phase_script: str = ""):
 
         # Delete merged/removed files from S3
         if _deleted_keys:
-            s3 = _s3_client()
-            for key in _deleted_keys:
-                try:
-                    s3.delete_object(Bucket=BUCKET, Key=key)
-                except Exception:
-                    pass
-            logger.info(
-                "Final sync: deleted %d merged files from S3", len(_deleted_keys)
-            )
+            _delete_merged_from_s3()
 
         # Write manifest to DynamoDB so next phase only downloads changed files
         if all_uploaded and "phase2" in phase_script:

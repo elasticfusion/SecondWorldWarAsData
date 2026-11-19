@@ -703,7 +703,14 @@ def _find_in_nara(
     to the right RG. Retries with the expanded alt_title. (_search_nara iterates + verifies.)
     """
     nara_key = config.get("nara_api_key")
-    if not (nara_key and _is_nara_searchable(entry, verbatim)):
+    if not _is_nara_searchable(entry, verbatim):
+        return []
+    if not nara_key:
+        # D8b: no NARA key - leave the archive-path record unresolved for the next run (an
+        # outage, never "not found"); the wrapper alerts that the key did not load
+        from src.utils import service_outage
+
+        service_outage.failed("nara", "no_api_key", "NARA_API_KEY not set")
         return []
     rg = _lookup_record_group(verbatim or search_text or title)
     rg_num = rg[1] if rg else None
@@ -2130,7 +2137,7 @@ def _process_bib_record(
     if data.get("search_status") == "resolved" and data.get("resource_urls"):
         return ("skipped", False, "")
 
-    cached = _resolve_or_reuse(data, grok_client, config, resolved_by_key)
+    cached = _resolve_watched(data, grok_client, config, resolved_by_key)
 
     from src.utils.file_lock import write_json_with_lock
 
@@ -2172,6 +2179,28 @@ def _process_bib_record(
     return (account_status, cached is not None, "")
 
 
+def _resolve_watched(
+    data: Dict[str, Any],
+    grok_client: Any,
+    config: Optional[Dict],
+    resolved_by_key: Dict[str, Dict[str, Any]],
+) -> Any:
+    """``_resolve_or_reuse`` noting any source that did not answer (archive.org, Gutendex,
+    OpenSERP, NARA without its key): then a miss is an outage, not "not found online" - retried
+    next run, never queued for a human (task 1.2f, src/utils/service_outage)."""
+    from src.utils import service_outage
+
+    with service_outage.watch() as outages:
+        cached = _resolve_or_reuse(data, grok_client, config, resolved_by_key)
+    if outages:
+        _mark_backend_down(data)
+        # an identical citation later in the run must search again, not reuse this miss
+        key = _citation_key(data)
+        if key and resolved_by_key.get(key) is data:
+            del resolved_by_key[key]
+    return cached
+
+
 def _consume_backend_down(data: Dict[str, Any], status: str) -> str:
     """Pop the internal `_backend_down` marker (set when OpenSERP was unavailable while resolving
     this entry) so it is NEVER persisted (the bibliography schema is additionalProperties=False),
@@ -2182,7 +2211,7 @@ def _consume_backend_down(data: Dict[str, Any], status: str) -> str:
         backend_down = bool(data.pop("_backend_down", False))
     except Exception:  # noqa: BLE001 - defensive
         backend_down = False
-    if backend_down and status == "not_found":
+    if backend_down and status in ("not_found", "reference_identified"):
         return "backend_down"
     return status
 

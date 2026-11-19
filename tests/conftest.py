@@ -157,3 +157,19 @@ def _no_live_xai_balance(monkeypatch):
     monkeypatch.delenv(grok_balance.MANAGEMENT_KEY_ENV, raising=False)
     monkeypatch.setattr(grok_balance, "_team", {})
     monkeypatch.setattr(grok_balance, "_management_key", {})
+
+
+@pytest.fixture(autouse=True)
+def _fresh_service_state(monkeypatch):
+    """Outage streaks (src/utils/service_outage) and the wrapper's cached S3 client are
+    process-global: one test's failures or patched boto3 must not leak into the next."""
+    import sys
+
+    from src.utils import service_outage
+
+    service_outage.reset()
+    ee = sys.modules.get("ecs_entrypoint")
+    if ee is not None and hasattr(ee, "_s3"):
+        monkeypatch.setattr(ee, "_s3", {})
+    yield
+    service_outage.reset()

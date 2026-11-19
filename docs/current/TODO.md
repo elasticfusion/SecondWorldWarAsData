@@ -286,15 +286,26 @@ continues from where it stopped. Order: 1.2b, 1.1b, 1.2c, 1.2e, 1.2d, 1.2f, 1.1c
     Any other record failure: leave it unmarked and queued for retry. Use
     `entity_records.read_record` / `stop_cause.is_data_corruption` (DRY). Steps that mark a record done before the work (see
     the 1.2d inventory) must be fixed in the same change.
-  - other `supplemental_search.py` sources (Gutendex, Gutenberg, archive.org metadata, OpenSERP
-    books) swallow errors as "no candidates" (`:19`, `:18`, `:313`);
-  - S3 outage: BackgroundSync swallows errors (`ecs_entrypoint.py:595`), the watchdog then kills
-    the task and the emergency sync fails too; the merged-key delete is silent (`:4095`); no
-    botocore retry `Config` on the wrapper's S3 client;
-  - DynamoDB outage disables the URL registry (claim -> DEFERRED, never fetched) and search cache
-    (put logged at DEBUG) silently;
-  - image-host outage burns image_map_vision's 3-attempt budget (`image_map_vision.py:57`);
-  - a NARA secret failure silently skips NARA for the run (`ecs_entrypoint.py:663`, D8b says alert);
+  - DONE (1.2f slice 3, 2026-11-18, `src/utils/service_outage`): one shared way to report an
+    outage. The bibliography search sources (Gutendex, archive.org search/candidates/metadata,
+    OpenSERP book and Gutenberg searches) report 429/5xx/no answer as an outage, so a citation
+    searched during one is `backend_down` (retried next run, never queued as "not found online");
+    a missing NARA key (D8b) is the same for NARA citations and the wrapper alerts
+    `nara.key_unavailable` in Phase 3. DynamoDB: URL-registry claims/finalize and the search
+    cache count failures; 10 in a row stop the run (exit 81, deferred). Image hosts: a 429/5xx
+    or no answer no longer uses an image's vision attempts (`host_unavailable`). S3: the wrapper
+    client retries (adaptive, 10 attempts); a failed background upload no longer stops the pass;
+    5 failing passes alert `s3.sync_failing` once, and the watchdog does not kill a task whose
+    only "stall" is S3; a merged-away record left in S3 is alerted with the `aws s3 rm` command.
+    Review hardening: 403/408 from a search host is an outage; an outage-affected citation is not
+    reused for a duplicate; image hosts: only a timeout or 429/5xx is an outage (refused/TLS/DNS
+    is a dead link), and after 5 such runs the image goes to needs_review (images schema 2.29
+    `host_unavailable_runs`); the S3 watchdog bypass ends after the watchdog window; the
+    merged-delete alert points to a key manifest (`manifests/merged_delete_left/<task>.json`),
+    never a pasteable command. Remaining: the emergency (SIGTERM) sync has no retry beyond the
+    client's; a citation whose search sources keep failing is retried every run with no cap
+    (per-citation deferral counter); `watch()` does not follow work into a thread pool (the
+    bibliography resolver is sequential today).
   - `url_hygiene._pinned_get` (pages, images, Wayback) has no shared retry;
   - NOAA 429 sleeps 60 s per file and goes on (`noaa_weather.py:~81`).
   - retryable page fetches (walled / rate-limited) are no longer REJECT-cached and have no per-URL

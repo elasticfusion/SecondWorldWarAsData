@@ -9,13 +9,16 @@ os.environ.setdefault("S3_BUCKET", "b")
 os.environ.setdefault("AWS_DEFAULT_REGION", "us-east-1")
 
 
-def test_sync_up_excludes_files_subdir_by_path():
+def test_sync_up_excludes_files_subdir_by_path(monkeypatch):
     import ecs_entrypoint as e
 
     up = []
-    e._s3_client = lambda: type(
-        "S", (), {"upload_file": lambda s, p, b, k: up.append(k)}
-    )()
+    # monkeypatch: a bare assignment leaked this fake into every later test
+    monkeypatch.setattr(
+        e,
+        "_s3_client",
+        lambda: type("S", (), {"upload_file": lambda s, p, b, k: up.append(k)})(),
+    )
     d = Path(tempfile.mkdtemp()) / "maps"
     (d / "files").mkdir(parents=True)
     (d / "map1.json").write_text("{}")
@@ -25,13 +28,16 @@ def test_sync_up_excludes_files_subdir_by_path():
     assert not any("map1.jpg" in k for k in keys)  # binary excluded from prod
 
 
-def test_sync_up_stages_files_to_unscanned():
+def test_sync_up_stages_files_to_unscanned(monkeypatch):
     import ecs_entrypoint as e
 
     up = []
-    e._s3_client = lambda: type(
-        "S", (), {"upload_file": lambda s, p, b, k: up.append(k)}
-    )()
+    # monkeypatch: a bare assignment leaked this fake into every later test
+    monkeypatch.setattr(
+        e,
+        "_s3_client",
+        lambda: type("S", (), {"upload_file": lambda s, p, b, k: up.append(k)})(),
+    )
     d = Path(tempfile.mkdtemp())
     (d / "files").mkdir()
     (d / "files" / "m.jpg").write_bytes(b"x")

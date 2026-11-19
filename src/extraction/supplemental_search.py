@@ -9,6 +9,31 @@ import requests
 logger = logging.getLogger(__name__)
 
 
+def _answered(service: str, op: str, response: Any) -> bool:
+    """True when ``service`` answered (HTTP 200, or a definite non-outage status such as 404).
+    403 (blocked) / 408 / 429 / 5xx - and any non-200 from OpenSERP, our own service - is an
+    outage: reported through
+    service_outage (task 1.2f), so the citation it was for is retried next run instead of being
+    recorded as not found online."""
+    from src.utils import service_outage
+
+    code = getattr(response, "status_code", 0)
+    if code == 200:
+        service_outage.ok(service)
+        return True
+    if service == "openserp" or code in (403, 408, 429) or code >= 500 or not code:
+        service_outage.failed(service, op, f"http {code}")
+        return False
+    return True  # e.g. 404: a definite answer
+
+
+def _unreachable(service: str, op: str, e: Exception) -> None:
+    """``service`` could not be reached at all (timeout, DNS, connection): an outage."""
+    from src.utils import service_outage
+
+    service_outage.failed(service, op, type(e).__name__)
+
+
 def search_gutenberg_openserp(
     title: str,
     author: Optional[str] = None,
@@ -44,7 +69,7 @@ def search_gutenberg_openserp(
             result_summary_fn=lambda r: f"status={r.status_code}",
         )
 
-        if response.status_code == 200:
+        if _answered("openserp", "gutenberg_search", response):
             results = response.json().get("results", [])
             for result in results:
                 url = result.get("url", "")
@@ -53,7 +78,7 @@ def search_gutenberg_openserp(
                     return url
 
     except Exception as e:
-        logger.debug("Gutenberg search failed: %s", e)
+        _unreachable("openserp", "gutenberg_search", e)
 
     return None
 
@@ -138,6 +163,7 @@ def _search_archive_org_api(
         )
 
         if response.status_code == 200:
+            _answered("archive_org", "search", response)
             data = response.json()
             docs = data.get("response", {}).get("docs", [])
 
@@ -149,18 +175,10 @@ def _search_archive_org_api(
                     return result_url
 
             return None  # answered, nothing found: a real miss
-        logger.warning(
-            "OBSERV archive_org.search_unavailable status=warn http=%s - not cached, retried "
-            "next run",
-            response.status_code,
-        )
+        _answered("archive_org", "search", response)  # not 200: reported, not cached
         return TRANSIENT
     except Exception as e:
-        logger.warning(
-            "OBSERV archive_org.search_unavailable status=warn err=%s - not cached, retried "
-            "next run",
-            type(e).__name__,
-        )
+        _unreachable("archive_org", "search", e)  # not cached, retried next run
         return TRANSIENT
 
 
@@ -229,12 +247,12 @@ def search_archive_org_candidates(
             allow_redirects=True,
             result_summary_fn=lambda r: f"status={r.status_code}",
         )
-        if response.status_code == 200:
+        if _answered("archive_org", "candidates", response):
             docs = response.json().get("response", {}).get("docs", [])
             for doc in docs:
                 _append_archive_candidate(doc, out)
     except Exception as e:
-        logger.debug("Archive.org candidate search failed: %s", e)
+        _unreachable("archive_org", "candidates", e)
     return out
 
 
@@ -283,11 +301,11 @@ def search_gutenberg_candidates(
             timeout=30.0,
             result_summary_fn=lambda r: f"status={r.status_code}",
         )
-        if response.status_code == 200:
+        if _answered("gutendex", "candidates", response):
             for book in response.json().get("results", [])[:5]:
                 _append_gutenberg_candidate(book, out)
     except Exception as e:
-        logger.debug("Gutenberg (gutendex) candidate search failed: %s", e)
+        _unreachable("gutendex", "candidates", e)
     return out
 
 
@@ -342,45 +360,48 @@ def fetch_archive_org_metadata(identifier: str) -> Optional[Dict]:
             timeout=30.0,
             result_summary_fn=lambda r: f"metadata status={r.status_code}",
         )
-        if resp.status_code != 200:
+        if not _answered("archive_org", "metadata", resp) or resp.status_code != 200:
             return None
-
-        data = resp.json()
-        meta = data.get("metadata", {})
-        files = data.get("files", [])
-
-        pdf_url = _select_archive_pdf(identifier, files)
-        text_formats = _archive_text_formats(identifier, files)
-
-        result = {
-            "archive_org_identifier": identifier,
-            "archive_org_title": meta.get("title"),
-            "archive_org_creator": meta.get("creator"),
-            "archive_org_date": meta.get("date"),
-            "archive_org_language": meta.get("language"),
-            "archive_org_ocr": meta.get("ocr"),
-            "archive_org_pages": meta.get("pages") or meta.get("imagecount"),
-        }
-        if pdf_url:
-            result["pdf_url"] = pdf_url
-        # Record ALL available processing formats (nothing discarded — the human/
-        # retrieval can pick EPUB even if large). ``text_url``/``text_format`` is
-        # only the size-aware DEFAULT recommendation, not an exclusive choice.
-        if text_formats.get("epub_url"):
-            result["epub_url"] = text_formats["epub_url"]
-            result["epub_size"] = text_formats.get("epub_size")
-        if text_formats.get("djvu_txt_url"):
-            result["djvu_txt_url"] = text_formats["djvu_txt_url"]
-        if text_formats.get("text_url"):
-            result["text_url"] = text_formats["text_url"]
-            result["text_format"] = text_formats["text_format"]
-
-        # Remove None values
-        return {k: v for k, v in result.items() if v is not None}
+        return _archive_metadata(identifier, resp.json())
 
     except Exception as e:
-        logger.debug("Archive.org metadata fetch failed for %s: %s", identifier, e)
+        _unreachable("archive_org", "metadata", e)
         return None
+
+
+def _archive_metadata(identifier: str, data: Dict) -> Dict:
+    """The fields kept from an archive.org metadata answer (None values dropped)."""
+    meta = data.get("metadata", {})
+    files = data.get("files", [])
+
+    pdf_url = _select_archive_pdf(identifier, files)
+    text_formats = _archive_text_formats(identifier, files)
+
+    result = {
+        "archive_org_identifier": identifier,
+        "archive_org_title": meta.get("title"),
+        "archive_org_creator": meta.get("creator"),
+        "archive_org_date": meta.get("date"),
+        "archive_org_language": meta.get("language"),
+        "archive_org_ocr": meta.get("ocr"),
+        "archive_org_pages": meta.get("pages") or meta.get("imagecount"),
+    }
+    if pdf_url:
+        result["pdf_url"] = pdf_url
+    # Record ALL available processing formats (nothing discarded — the human/
+    # retrieval can pick EPUB even if large). ``text_url``/``text_format`` is
+    # only the size-aware DEFAULT recommendation, not an exclusive choice.
+    if text_formats.get("epub_url"):
+        result["epub_url"] = text_formats["epub_url"]
+        result["epub_size"] = text_formats.get("epub_size")
+    if text_formats.get("djvu_txt_url"):
+        result["djvu_txt_url"] = text_formats["djvu_txt_url"]
+    if text_formats.get("text_url"):
+        result["text_url"] = text_formats["text_url"]
+        result["text_format"] = text_formats["text_format"]
+
+    # Remove None values
+    return {k: v for k, v in result.items() if v is not None}
 
 
 def _dl_url(identifier: str, name: str) -> str:
@@ -487,7 +508,7 @@ def search_openserp(
             result_summary_fn=lambda r: f"status={r.status_code}",
         )
 
-        if response.status_code == 200:
+        if _answered("openserp", "book_search", response):
             results = response.json().get("results", [])
             if results:
                 url = results[0].get("url")
@@ -495,7 +516,7 @@ def search_openserp(
                 return url
 
     except Exception as e:
-        logger.debug("OpenSERP search failed: %s", e)
+        _unreachable("openserp", "book_search", e)
 
     return None
 
