@@ -53,6 +53,19 @@ def load_json(f: Path) -> Any:
         return None
 
 
+def read_record(f: Path) -> Any:
+    """A stored record's JSON. Raises ``stop_cause.RecordCorrupt`` when the file exists but is
+    not text or not JSON (the book's own data is bad: Phase 3 holds the book, owner 2026-11-18);
+    an OSError (missing file, disk) is raised as is, since it is not corruption."""
+    from src.utils.stop_cause import RecordCorrupt
+
+    raw = Path(f).read_bytes()
+    try:
+        return json.loads(raw.decode("utf-8"))
+    except (UnicodeDecodeError, ValueError) as e:
+        raise RecordCorrupt(f, type(e).__name__) from e
+
+
 def iter_mentions(rec: Dict[str, Any]) -> List[Dict[str, Any]]:
     """A record's source mentions: ``event_mentions[]``; for casualties their single
     ``event_context`` (a present, real EventID - authoritative, see src/loader/load.py); for

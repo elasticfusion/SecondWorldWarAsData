@@ -260,9 +260,29 @@ continues from where it stopped. Order: 1.2b, 1.1b, 1.2c, 1.2e, 1.2d, 1.2f, 1.1c
   archive.org not answering is not cached as NOT_FOUND; a Nominatim outage is never replaced by
   an LLM-guessed coordinate and 5 transient places in a row stop geocoding for the run with an
   alert (D8d). Remaining, from the 2026-11-18 inventory:
-  - OWNER QUESTION: Phase 3 exits 0 even when a step raised (`_run_step` records it, the book is
-    finished, lifecycle advanced, queue row removed). Should an errored step leave the book
-    queued (retried, attempt-capped) instead?
+  - DONE (owner 2026-11-18) - a step that raised no longer finishes the book: Phase 3 exits 82
+    (`stop_cause.EXIT_STEP_FAILED`, an ordinary counted failure: the book stays queued and is
+    retried, attempt-capped, saved work kept) or 83 when the cause was data corruption
+    (`EXIT_DATA_CORRUPT`: loud `phase.data_corrupt` alert, book held `failure` until resumed).
+    Definitions: run stop = a required service down (deferred); step failure = the step raised;
+    record failure = one record left unmarked, retried next run, does not block the book.
+    Corruption is ONLY `stop_cause.RecordCorrupt` (in the error or its cause chain), raised by
+    `entity_records.read_record` for the book's own stored records; a parse/schema error on a
+    service answer (HTML error page, Grok reply, write guard) is a step failure (82), so
+    untrusted content can never hold a book. A held book's corpus stays unrepaired until resumed.
+    GAP: today's Phase 3 record loaders (`places_geo._load_place`, `noaa_weather`, openserp
+    `_iter`/people/equipment, `groups_wikipedia`, `equipment_wikipedia`, `equipment_images`,
+    `places_grok_geocode`, `bibliography_resolver`, `_load_parsed_docs`) still skip a corrupt
+    file with a warning (some silently) instead of calling `read_record`, so exit 83 has no
+    producer yet: move them to `read_record` in PART 2. Follow-ups: keep the failed step names
+    on the queue row (`last_failed_steps`) so the attempt-cap alert names them, and say "last
+    attempt" on the final retry.
+  - PART 2 (owner rule 2026-11-18), in each step's group: catch errors PER RECORD so one bad
+    record does not stop the step and block every record after it. A record that fails on DATA
+    CORRUPTION (unparseable / schema-invalid): error out loudly (alert, set aside for review).
+    Any other record failure: leave it unmarked and queued for retry. Use
+    `entity_records.read_record` / `stop_cause.is_data_corruption` (DRY). Steps that mark a record done before the work (see
+    the 1.2d inventory) must be fixed in the same change.
   - other `supplemental_search.py` sources (Gutendex, Gutenberg, archive.org metadata, OpenSERP
     books) swallow errors as "no candidates" (`:19`, `:18`, `:313`);
   - S3 outage: BackgroundSync swallows errors (`ecs_entrypoint.py:595`), the watchdog then kills

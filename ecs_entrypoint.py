@@ -3126,15 +3126,55 @@ def _queue_followup(cause: str, reason: str) -> str:
 
 
 def _defer_on_stop_cause(returncode: int) -> str:
-    """The phase script exited with a src/utils/stop_cause code (Grok funds, connectivity):
-    defer instead of counting a failure, and return what happens next for the failure notice.
-    Other codes: nothing (the attempt counts), ''."""
-    from src.utils.stop_cause import cause_for_exit
+    """The phase script exited with a src/utils/stop_cause code: defer (Grok funds,
+    connectivity) or hold (data corruption) instead of counting a failure, and return what
+    happens next for the failure notice. A step failure (82) is counted and retried. Other
+    codes: nothing (the attempt counts), ''."""
+    from src.utils import stop_cause
 
-    cause = cause_for_exit(returncode)
+    if returncode == stop_cause.EXIT_STEP_FAILED:
+        steps = (
+            ", ".join(map(str, _phase_results().get("errored_sources") or []))
+            or "unknown"
+        )
+        return (
+            f"Phase 3 step(s) failed partway: {steps}. The book is not finished: it stays "
+            "queued and is retried (attempt-capped); work already saved is kept"
+        )
+    cause = stop_cause.cause_for_exit(returncode)
     if not cause:
         return ""
-    return _queue_followup(cause, f"the phase exited {returncode} ({cause})")
+    reason = f"the phase exited {returncode} ({cause})"
+    if returncode == stop_cause.EXIT_DATA_CORRUPT:
+        reason = _alert_data_corruption()
+    return _queue_followup(cause, reason)
+
+
+def _alert_data_corruption() -> str:
+    """Alert loudly that the book's own stored data stopped Phase 3 (exit 83): name only the
+    corrupt step(s) and their (truncated) error, so the operator can find the record. Returns
+    the queue reason."""
+    stats = _phase_results().get("source_stats") or {}
+    bad = {
+        n: str(s.get("error", ""))[:120]
+        for n, s in stats.items()
+        if isinstance(s, dict) and s.get("corrupt")
+    }
+    steps = ", ".join(bad) or "unknown"
+    detail = "; ".join(f"{n}: {err}" for n, err in bad.items())[:400]
+    observe_error(
+        "phase",
+        "data_corrupt",
+        note=(
+            f"DATA CORRUPTION stopped Phase 3 step(s) {steps}: a stored record could not be "
+            "read. A retry cannot fix it, so the book is held and its corpus stays unrepaired "
+            "until resumed. Repair or delete the record named in the error, then resume the book"
+        ),
+        steps=steps,
+        error=detail,
+        book=os.environ.get("BOOK_NAME", ""),
+    )
+    return f"data corruption in step(s) {steps}"
 
 
 def _dedup_has_no_pending() -> bool:

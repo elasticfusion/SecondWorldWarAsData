@@ -222,7 +222,10 @@ def _enrich_places_and_geocode(
             )
         source_stats["geocode"] = {
             "enriched": geo_report.geocoded,
-            "status": "error" if geo_report.errors else "ok",
+            # per-place errors are RECORD failures: those places stay un-geocoded and are
+            # retried next run, so they do not fail the step (only a raise does, owner
+            # 2026-11-18); the count is shown in the completion summary
+            "status": "ok",
             "attempted": geo_report.attempted,
             "not_found": geo_report.not_found,
             "low_confidence": geo_report.low_confidence,
@@ -233,11 +236,7 @@ def _enrich_places_and_geocode(
         logger.error(
             "Geocoding step FAILED (places left un-geocoded): %s", e, exc_info=True
         )
-        source_stats["geocode"] = {
-            "enriched": 0,
-            "status": "error",
-            "error": str(e)[:300],
-        }
+        source_stats["geocode"] = _raised_step_stats(e)
         return enriched
 
 
@@ -819,41 +818,7 @@ def main():
     source_stats: dict = {}
 
     def _run_step(name: str, fn) -> int:
-        """Run one enrichment source; record enriched/status/error. Returns the
-        enriched count (0 on error). Never raises — a failed source is captured,
-        logged, and surfaced, not swallowed. Emits OBSERV phase3.step per source so the
-        whole Phase-3 hand-off (N enriched / status / error) is visible in one query."""
-        try:
-            result = fn()
-            count = (
-                result
-                if isinstance(result, int)
-                else getattr(result, "geocoded", 0) or 0
-            )
-            source_stats[name] = {"enriched": count, "status": "ok"}
-            try:
-                logger.info(
-                    "OBSERV phase3.step name=%s enriched=%d status=ok", name, count
-                )
-            except Exception:  # noqa: BLE001 - observability never breaks the step
-                pass
-            return count
-        except Exception as e:  # noqa: BLE001 - capture + surface, don't abort Phase 3
-            logger.error("Enrichment source '%s' FAILED: %s", name, e, exc_info=True)
-            source_stats[name] = {
-                "enriched": 0,
-                "status": "error",
-                "error": _CTRL.sub(" ", str(e))[:300],
-            }
-            try:
-                logger.info(
-                    "OBSERV phase3.step name=%s enriched=0 status=error error=%s",
-                    name,
-                    _CTRL.sub(" ", str(e))[:120],
-                )
-            except Exception:  # noqa: BLE001
-                pass
-            return 0
+        return run_enrichment_step(source_stats, name, fn)
 
     # Enrich people — MOVED TO PHASE 2. All Grokipedia/Wikipedia people enrichment
     # (bio text + Wikipedia portrait images + award citations) is now committed
@@ -1078,7 +1043,69 @@ def main():
             logger.info("Post-Phase-3 validation exit=%d (0=pass, 1=fail)", rc)
         except Exception as _e:  # noqa: BLE001 - validation must not crash a phase
             logger.warning("Post-Phase-3 validation skipped: %s", _e)
-    return 0
+    return _exit_for_steps(source_stats)
+
+
+def _raised_step_stats(e: BaseException) -> dict:
+    """The stats of a step that RAISED (a step failure: the book stays queued, owner
+    2026-11-18). ``corrupt`` marks one stopped by the book's own bad data
+    (``stop_cause.RecordCorrupt``), which holds the book instead."""
+    from src.utils.stop_cause import is_data_corruption
+
+    return {
+        "enriched": 0,
+        "status": "error",
+        "error": _CTRL.sub(" ", str(e))[:300],
+        # data corruption cannot be fixed by a retry: the book is held (owner 2026-11-18)
+        "corrupt": is_data_corruption(e),
+    }
+
+
+def run_enrichment_step(source_stats: dict, name: str, fn) -> int:
+    """Run one enrichment source; record enriched/status/error in ``source_stats``. Returns the
+    enriched count (0 on error). Never raises - a failed source is captured, logged, and
+    surfaced, not swallowed. ``corrupt`` marks a step stopped by the book's own bad data
+    (``stop_cause.RecordCorrupt``), which holds the book. Emits OBSERV phase3.step per source so
+    the whole Phase-3 hand-off (N enriched / status / error) is visible in one query."""
+    try:
+        result = fn()
+        count = (
+            result if isinstance(result, int) else getattr(result, "geocoded", 0) or 0
+        )
+        source_stats[name] = {"enriched": count, "status": "ok"}
+        try:
+            logger.info("OBSERV phase3.step name=%s enriched=%d status=ok", name, count)
+        except Exception:  # noqa: BLE001 - observability never breaks the step
+            pass
+        return count
+    except Exception as e:  # noqa: BLE001 - capture + surface, don't abort Phase 3
+        logger.error("Enrichment source '%s' FAILED: %s", name, e, exc_info=True)
+        source_stats[name] = _raised_step_stats(e)
+        try:
+            logger.info(
+                "OBSERV phase3.step name=%s enriched=0 status=error corrupt=%s error=%s",
+                name,
+                source_stats[name]["corrupt"],
+                _CTRL.sub(" ", str(e))[:120],
+            )
+        except Exception:  # noqa: BLE001
+            pass
+        return 0
+
+
+def _exit_for_steps(source_stats: dict) -> int:
+    """0 when every step finished. A step that raised means part of its work was never
+    attempted, so the book must not be marked finished (owner 2026-11-18): EXIT_STEP_FAILED (the
+    book stays queued and is retried), or EXIT_DATA_CORRUPT when the cause was bad data (held
+    for the operator: a retry cannot fix it)."""
+    from src.utils import stop_cause
+
+    failed = [s for s in source_stats.values() if s.get("status") == "error"]
+    if not failed:
+        return 0
+    if any(s.get("corrupt") for s in failed):
+        return stop_cause.EXIT_DATA_CORRUPT
+    return stop_cause.EXIT_STEP_FAILED
 
 
 if __name__ == "__main__":
