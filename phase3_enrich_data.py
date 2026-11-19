@@ -1082,4 +1082,8 @@ def main():
 
 
 if __name__ == "__main__":
-    exit(main())
+    from src.utils.stop_cause import run_main
+
+    # a Grok outage or no credits stops the run with its own exit code (task 1.2e): the ECS
+    # wrapper defers the book and it resumes when Grok is back
+    exit(run_main(main))

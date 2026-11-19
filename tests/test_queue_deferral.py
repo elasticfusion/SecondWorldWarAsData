@@ -53,7 +53,7 @@ def _row(table, book):
 def _deferred(table, book, cause, reason="x"):
     """A queued book, then deferred (defer only marks an existing row)."""
     pq.queue_enrich(table, book)
-    assert pq.defer(table, book, cause, reason) is True
+    assert pq.defer(table, book, cause, reason) == cause
 
 
 # --- pending_queue ---------------------------------------------------------------------------
@@ -122,7 +122,7 @@ def test_an_unknown_cause_is_refused(table):
 
 
 def test_a_finished_book_is_never_re_queued_by_a_deferral(table):
-    assert pq.defer(table, "Utah", "config", "x") is False
+    assert pq.defer(table, "Utah", "config", "x") == ""
     assert _row(table, "Utah") is None
 
 
@@ -531,3 +531,38 @@ def test_run_phase_defers_on_a_connectivity_exit(phase3, monkeypatch):
         ee.run_phase("phase3_enrich_data.py", [])
     row = _row(phase3, "Utah")
     assert row["defer_cause"] == "connectivity" and row["attempts"] == 0
+
+
+def test_repeated_connectivity_stops_end_in_a_failure_hold(table):
+    """1.2b follow-up (MED, built with the exit-code producers in 1.2e): a book that keeps
+    stopping for connectivity would retry hourly forever; past the cap it is held instead.
+    """
+    pq.queue_enrich(table, "Utah")
+    assert [pq.defer(table, "Utah", "connectivity", "x", 3) for _ in range(3)] == [
+        "connectivity"
+    ] * 3
+    assert pq.defer(table, "Utah", "connectivity", "NAT", 3) == "failure"
+    row = _row(table, "Utah")
+    assert row["defer_cause"] == "failure" and "4 times since" in row["defer_reason"]
+    assert pq.runnable_books(table, "enrich") == []
+    pq.resume(table, "Utah")  # the operator's resume starts the count again
+    assert "connectivity_stops" not in _row(table, "Utah")
+
+
+def test_funding_stops_have_their_own_higher_cap(table):
+    pq.queue_enrich(table, "Utah")
+    got = [pq.defer(table, "Utah", "funding", "x", 1, 3) for _ in range(4)]
+    assert got == ["funding"] * 3 + ["failure"]
+    pq.resume(table, "Utah")
+    assert "funding_stops" not in _row(table, "Utah")
+
+
+def test_the_alert_says_when_repeated_stops_held_the_book(phase3, monkeypatch):
+    monkeypatch.setattr(
+        "src.utils.config.load_config",
+        lambda *a, **k: {"queue": {"max_connectivity_deferrals": 1}},
+    )
+    ee._claim_enrich_attempt()
+    ee._queue_followup("connectivity", "a")
+    note = ee._queue_followup("connectivity", "b")
+    assert "too many times" in note and "resume_book.py Utah" in note

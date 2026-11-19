@@ -246,3 +246,33 @@ def test_safe_entity_path_accepts_valid():
     assert (
         w._safe_entity_path("people/sub/../x.json", "people") is False
     )  # normalization change
+
+
+def test_a_grok_stop_keeps_the_message_and_pauses(monkeypatch):
+    """Task 1.2e: Grok down or no credits must not crash the worker or drain the queue into the
+    DLQ: the message is kept (retry) and the worker pauses for the stop window."""
+    import openserp_worker as w
+    from src.utils import grok_models
+
+    slept = []
+    monkeypatch.setattr(w.time, "sleep", slept.append)
+    monkeypatch.setattr(w, "_safe_entity_path", lambda *a: True)
+
+    class Storage:
+        def read_json(self, path):
+            return {"name": "x"}
+
+    import src.enrichment.openserp_enrichment as oe
+
+    monkeypatch.setattr(
+        oe,
+        "enrich_one_person",
+        lambda *a: (_ for _ in ()).throw(grok_models.GrokUnreachable("down")),
+    )
+    out = w.process_message(
+        {"entity_type": "people", "entity_path": "people/x.json"},
+        Storage(),
+        "http://serp",
+        object(),
+    )
+    assert out == "retry" and slept == [w.GROK_STOP_PAUSE_S]

@@ -100,6 +100,8 @@ extraction:
 queue:
   phase3_max_attempts: 3
   defer_retry_minutes: 50              # under the hourly reconcile, so its next run retries
+  max_connectivity_deferrals: 24       # connectivity stops (since the last resume) before the book is held
+  max_funding_deferrals: 72            # funding stops (since the last resume) before the book is held
 
 # Fargate Spot price ladder (src/utils/spot_ladder.py, owner 2026-11-18). Every task starts on Spot at
 # its task-definition size. Each reclaim of a book's task doubles vCPU and memory for its next launch,

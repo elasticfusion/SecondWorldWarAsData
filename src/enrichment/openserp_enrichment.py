@@ -103,6 +103,11 @@ _METRIC_KEYS = (
     "zero_result_queries",
     "verify_yes",
     "verify_no",
+    # verify_failed counts results Grok gave no usable verdict for (task 1.2e): not a NO, not
+    # cached; the entity is left unsearched so the next run asks again
+    "verify_failed",
+    # verify_reasked counts answers of the wrong shape that were evicted and asked once more
+    "verify_reasked",
     "breaker_opened",
     "urls_fetched",
     "items_added",
@@ -414,6 +419,59 @@ def _search_openserp(query: str, openserp_url: str, limit: int = 5) -> List[Dict
     return []
 
 
+class VerifyFailed(Exception):
+    """Grok gave no usable verdict for a search result (a malformed answer the shared client
+    could not repair or re-ask into shape). NOT a "NO": nothing is cached, and the entity is not
+    marked searched, so the next run asks again (owner rule 3, task 1.2e). A Grok OUTAGE is not
+    this: the shared client stops the run (grok_models.GrokUnreachable)."""
+
+
+_VERDICT_SYSTEM = (
+    'You verify search result relevance. Reply with JSON only: {"relevant": "YES"} or '
+    '{"relevant": "NO"}.'
+)
+
+
+def _ask_verdicts(
+    prompt: str, system_prompt: str, grok_client: Any, cache_type: str, parse: Any
+):
+    """One Grok request through the shared client's JSON path (repair, re-ask), parsed with
+    ``parse`` (None = no usable verdict). A well-formed answer of the wrong shape is cached by
+    the client, so it is evicted and asked once more; still none: VerifyFailed (nothing cached,
+    the next run asks again). Run-stopping Grok conditions (outage, no credits, model gone) are
+    BaseExceptions and pass through."""
+    for attempt in (1, 2):
+        try:
+            answer = grok_client.extract_json(
+                prompt,
+                system_prompt=system_prompt,
+                temperature=0.0,
+                use_cache=True,
+                cache_type=cache_type,
+            )
+        except Exception as e:  # noqa: BLE001 - any client error: no verdict, not a NO
+            raise VerifyFailed(f"{cache_type}: {type(e).__name__}") from e
+        verdict = parse(answer)
+        if verdict is not None:
+            return verdict
+        try:  # do not keep (or re-read next run) an answer that holds no verdict
+            grok_client.clear_cache_entry(
+                prompt, cache_type, temperature=0.0, system_prompt=system_prompt
+            )
+        except Exception:  # noqa: BLE001 - the re-ask below still happens
+            pass
+        if attempt == 1:
+            _metric("verify_reasked")
+    raise VerifyFailed(f"{cache_type}: no usable verdict after a re-ask")
+
+
+def _one_verdict(answer: Any) -> Optional[str]:
+    """ "YES"/"NO" from a single-verdict JSON answer, or None if it holds no clear verdict."""
+    value = answer.get("relevant") if isinstance(answer, dict) else None
+    value = str(value or "").strip().upper()
+    return value if value in ("YES", "NO") else None
+
+
 def _verify_result(
     candidate_title: str,
     expected_context: str,
@@ -423,9 +481,10 @@ def _verify_result(
 ) -> bool:
     """Use Grok to verify a search result is relevant (cached, batch-friendly).
 
-    FAIL-CLOSED: with no grok_client, or on any Grok error, return False (reject) rather than
-    accepting an unverified result. The judgment uses the title, the result snippet, AND the
-    URL (not the title alone) for a stronger signal."""
+    No grok_client: reject (fail-closed). A real YES/NO is cached (90 days, search_cache) and
+    returned. No usable verdict: VerifyFailed (not cached, not a NO - task 1.2e). The judgment
+    uses the title, the result snippet, AND the URL (not the title alone) for a stronger
+    signal."""
     if not grok_client:
         # No verifier available -> cannot confirm relevance -> reject (fail-closed).
         return False
@@ -439,37 +498,30 @@ def _verify_result(
         return False
 
     try:
-        response = grok_client.chat_completion(
-            prompt=(
-                "Is this search result relevant to the context?\n"
-                f'Context: "{expected_context[:200]}"\n'
-                f'Result title: "{candidate_title[:200]}"\n'
-                f'Result snippet: "{snippet[:300]}"\n'
-                f"Result URL: {url[:200]}\n"
-                'Return ONLY "YES" or "NO".'
-            ),
-            system_prompt="You verify search result relevance.",
-            temperature=0.0,
-            use_cache=True,
-            cache_type="openserp_verify",
+        answer = _ask_verdicts(
+            "Is this search result relevant to the context?\n"
+            f'Context: "{expected_context[:200]}"\n'
+            f'Result title: "{candidate_title[:200]}"\n'
+            f'Result snippet: "{snippet[:300]}"\n'
+            f"Result URL: {url[:200]}\n"
+            'Return ONLY {"relevant": "YES"} or {"relevant": "NO"}.',
+            _VERDICT_SYSTEM,
+            grok_client,
+            "openserp_verify",
+            _one_verdict,
         )
-        answer = "YES" if response.strip().upper().startswith("YES") else "NO"
-        cache_result("openserp_verify", cache_key, answer)
-        _metric("verify_yes" if answer == "YES" else "verify_no")
-        logger.info(
-            "Grok verify [%s]: %s — '%s'",
-            answer,
-            expected_context[:40],
-            candidate_title[:50],
-        )
-        return answer == "YES"
-    except Exception:
-        # Verifier errored -> cannot confirm -> reject (fail-closed). NOT cached, so a later
-        # run with a healthy Grok can still verify it.
-        logger.warning(
-            "Grok verify errored (fail-closed reject): %s", candidate_title[:50]
-        )
-        return False
+    except VerifyFailed:
+        _metric("verify_failed")
+        raise
+    cache_result("openserp_verify", cache_key, answer)
+    _metric("verify_yes" if answer == "YES" else "verify_no")
+    logger.info(
+        "Grok verify [%s]: %s — '%s'",
+        answer,
+        expected_context[:40],
+        candidate_title[:50],
+    )
+    return answer == "YES"
 
 
 def _prefilter_verify_cache(
@@ -523,9 +575,9 @@ def _build_batch_verify_prompt(
         "For EACH numbered search result below, decide if it is relevant to the context.\n"
         f'Context: "{expected_context[:200]}"\n\n'
         "Results:\n" + "\n".join(lines) + "\n\n"
-        f'Return ONLY a JSON array of exactly {len(to_verify)} strings, each "YES" or "NO", '
-        "in the same order as the numbered results (index 0 first). "
-        'Example for 2 results: ["YES", "NO"]'
+        f'Return ONLY {{"verdicts": [...]}} with exactly {len(to_verify)} strings, each "YES" '
+        'or "NO", in the same order as the numbered results (index 0 first). '
+        'Example for 2 results: {"verdicts": ["YES", "NO"]}'
     )
 
 
@@ -581,27 +633,20 @@ def _verify_results_batch(
     )
 
     try:
-        response = grok_client.chat_completion(
-            prompt=prompt,
-            system_prompt="You verify search result relevance. Reply with a JSON YES/NO array.",
-            temperature=0.0,
-            use_cache=True,
-            cache_type="openserp_verify_batch",
+        answers = _ask_verdicts(
+            prompt,
+            'You verify search result relevance. Reply with JSON only: {"verdicts": [...]}.',
+            grok_client,
+            "openserp_verify_batch",
+            lambda a: _parse_batch_verdicts(a, len(to_verify)),
         )
-        answers = _parse_batch_verdicts(response)
-    except Exception:
-        # Verifier errored -> cannot confirm -> reject uncached (fail-closed). NOT cached, so a
-        # later run with a healthy Grok can still verify them.
-        logger.warning(
-            "Grok batch verify errored (fail-closed reject %d results): %s",
-            len(to_verify),
-            expected_context[:40],
-        )
-        return verdicts
+    except VerifyFailed:
+        # no usable answer: NOT a NO and nothing cached - the next run asks again (task 1.2e)
+        _metric("verify_failed", len(to_verify))
+        raise
 
     for n, idx in enumerate(to_verify):
-        # Fail-closed on a missing/short/malformed index.
-        answer = answers[n] if n < len(answers) else "NO"
+        answer = answers[n]
         verdicts[idx] = answer == "YES"
         cache_result("openserp_verify", cache_keys[idx], answer)
         _metric("verify_yes" if answer == "YES" else "verify_no")
@@ -614,35 +659,16 @@ def _verify_results_batch(
     return verdicts
 
 
-def _parse_batch_verdicts(response: Any) -> List[str]:
-    """Parse a batched-verify Grok response into a list of "YES"/"NO" strings (fail-closed).
-
-    ONLY a well-formed JSON array of verdicts is accepted; any entry that is not an unambiguous
-    YES becomes "NO". Any non-JSON/malformed response returns [] (so the caller treats EVERY
-    result as NO). We deliberately do not token-scan prose — out-of-order YES/NO tokens could
-    misalign verdicts to results, and a verifier must never accept on ambiguous output.
+def _parse_batch_verdicts(answer: Any, expected: int) -> Optional[List[str]]:
+    """The "YES"/"NO" list from a batched-verify JSON answer ({"verdicts": [...]}), or None
+    unless it holds exactly ``expected`` clear verdicts. A partial or ambiguous answer is not
+    turned into NOs (that would cache false rejections): the caller treats it as no answer.
     """
-    if not response:
-        return []
-    text = str(response).strip()
-    # ONLY accept a well-formed JSON array of verdicts. Anything else is fail-closed:
-    # return [] so the caller treats every result as NO (reject). We deliberately do NOT
-    # token-scan prose for YES/NO — out-of-order tokens could misalign verdicts to results,
-    # and a verifier must never accept on ambiguous output.
-    try:
-        import re as _re
-
-        m = _re.search(r"\[.*\]", text, _re.DOTALL)
-        if m:
-            arr = json.loads(m.group(0))
-            if isinstance(arr, list):
-                return [
-                    "YES" if str(x).strip().upper().startswith("YES") else "NO"
-                    for x in arr
-                ]
-    except Exception:  # noqa: BLE001 - malformed -> fail-closed ([] => all NO)
-        pass
-    return []
+    raw = answer.get("verdicts") if isinstance(answer, dict) else answer
+    if not isinstance(raw, list) or len(raw) != expected:
+        return None
+    verdicts = [str(x).strip().upper() for x in raw]
+    return verdicts if all(v in ("YES", "NO") for v in verdicts) else None
 
 
 # --- Positive-URL page processing (fetch -> summarize -> 90-day retention) ---------------
@@ -1425,6 +1451,25 @@ def _mark_openserp_searched(data: Dict) -> None:
     data["openserp_searched_at"] = int(_time.time())
 
 
+def _verify_failed(entity: str, name: Any, error: Exception) -> None:
+    """An entity whose search results Grok could not verify: left UNSEARCHED (not marked, not
+    written), so the next run asks again. Counted per run, logged on the first and every 25th.
+    """
+    from src.utils.observe import observe_warn_counted
+
+    observe_warn_counted(
+        "openserp",
+        "verify_failed",
+        key=("verify_failed", entity),
+        every=25,
+        note="Grok gave no usable verdict for a search result; this entity is left unsearched "
+        "and retried next run. Many of these: check the verify prompt and the Grok logs",
+        entity=entity,
+        name=str(name)[:80],
+        error=str(error)[:120],
+    )
+
+
 def _reset_and_check_reachable(openserp_url: str) -> bool:
     """Shared driver prelude: reset the circuit breaker (don't inherit a prior book/run's state) and
     check OpenSERP reachability. Returns True to proceed, False (with a loud warning) to skip. Every
@@ -1491,7 +1536,11 @@ def enrich_people_with_openserp(
     for c in candidates:
         data = c["data"]
         name = c["name"]
-        changed = _verify_and_apply(c, data, name, grok_client, max_images, max_web)
+        try:
+            changed = _verify_and_apply(c, data, name, grok_client, max_images, max_web)
+        except VerifyFailed as e:
+            _verify_failed("people", name, e)
+            continue
 
         _mark_openserp_searched(data)
         if write_json_with_lock(c["file"], data, entity="people"):
@@ -1588,7 +1637,11 @@ def _process_equipment_file(f, openserp_url: str, grok_client: Any) -> bool:
         return False  # generic / unresolved / undecided equipment is never searched (owner rule)
     _record_eligible()
 
-    changed = enrich_one_equipment(data, openserp_url, grok_client)
+    try:
+        changed = enrich_one_equipment(data, openserp_url, grok_client)
+    except VerifyFailed as e:
+        _verify_failed("equipment", name, e)
+        return False
     _mark_openserp_searched(data)
     if not write_json_with_lock(f, data, entity="equipment"):
         _metric("write_failed")
@@ -1695,7 +1748,11 @@ def _process_one_source_section(
     _record_eligible()
     op_name = operation["name"]
     before = len(data.get("primary_sources") or [])
-    changed = enrich_one_source_section(data, openserp_url, grok_client)
+    try:
+        changed = enrich_one_source_section(data, openserp_url, grok_client)
+    except VerifyFailed as e:
+        _verify_failed("source_section", op_name, e)
+        return False
     enriched = False
     _mark_openserp_searched(data)
     if not write_json_with_lock(f, data, entity="source_section"):
@@ -1831,9 +1888,13 @@ def enrich_groups_with_openserp(
             continue
         _record_eligible()
 
-        changed = enrich_one_group(
-            data, openserp_url, grok_client, output_root=groups_dir.parent
-        )
+        try:
+            changed = enrich_one_group(
+                data, openserp_url, grok_client, output_root=groups_dir.parent
+            )
+        except VerifyFailed as e:
+            _verify_failed("people_groups", name, e)
+            continue
 
         _mark_openserp_searched(data)
         if write_json_with_lock(f, data, entity="people_groups"):
@@ -2028,7 +2089,11 @@ def enrich_places_with_openserp(
             continue
 
         primary = variants[0]
-        changed = enrich_one_place(data, openserp_url, grok_client)
+        try:
+            changed = enrich_one_place(data, openserp_url, grok_client)
+        except VerifyFailed as e:
+            _verify_failed("places", primary, e)
+            continue
 
         _mark_openserp_searched(data)
         if write_json_with_lock(f, data, entity="places"):

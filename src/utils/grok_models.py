@@ -39,12 +39,64 @@ _alerted: Set[tuple] = set()
 _alert_lock = threading.Lock()
 # set by the first stop: every later call in this process raises BEFORE touching the network (a
 # thread pool's queued work would otherwise each make a billed call to the redirected model)
-_stopped: Dict[str, str] = {}
+_stopped: Dict[str, Any] = {}
 
 
 class GrokModelUnavailable(BaseException):
     """The requested model version is not served (retired, redirected or unknown). Stops the run:
-    not an ``Exception``, so no fail-safe handler absorbs it."""
+    not an ``Exception``, so no fail-safe handler absorbs it. It is also the base of every other
+    run-stopping Grok condition below, so the stop handling written for it (thread pools,
+    ``asyncio.gather``, ``ensure_running``) stops for those too."""
+
+
+class GrokUnreachable(GrokModelUnavailable):
+    """Grok could not be reached after the shared client's retries: network, timeouts, xAI 5xx or
+    429 (owner decision D8 and rule 3, 2026-11-18: retry, then stop - never count it as an answer).
+    The phase exits ``stop_cause.EXIT_CONNECTIVITY``; the book is deferred and resumes when the
+    network or xAI is back."""
+
+
+class GrokFundsExhausted(GrokModelUnavailable):
+    """xAI refused for lack of credit (HTTP 402, or 403 naming credit). The phase exits
+    ``stop_cause.EXIT_FUNDING``; the book is deferred and resumes after a top-up."""
+
+
+TRANSIENT_STOP_SECONDS = 300
+
+
+def clear_transient_stop() -> None:
+    """Forget an outage or funding stop (a caller for which that Grok request was optional and
+    that goes on without it). A missing model's stop is kept (it is recorded separately).
+    """
+    with _alert_lock:
+        _stopped.pop("transient", None)
+
+
+def stop_run(cls: type, where: str, detail: str) -> None:
+    """Raise ``cls`` (an outage or funding stop) and make every later Grok call in this process
+    raise it too, before touching the network (``ensure_running``), for TRANSIENT_STOP_SECONDS:
+    queued work in a thread pool must not keep calling an unreachable or unfunded API, while a
+    long-lived process (a warm Lambda, the OpenSERP worker) may call again later. Recorded apart
+    from a missing model's stop, which is permanent and always wins. Logged once; the operator
+    alert comes from the ECS wrapper's failure notice for the phase's exit code."""
+    import time as _time
+
+    with _alert_lock:
+        first = "transient" not in _stopped
+        if first:
+            _stopped["transient"] = {
+                "reason": f"{where}: {detail}",
+                "cls": cls,
+                "until": _time.time() + TRANSIENT_STOP_SECONDS,
+            }
+    if first:
+        logger.error(
+            "OBSERV grok.run_stopped status=error kind=%s where=%s detail=%s",
+            cls.__name__,
+            where,
+            detail[:200],
+        )
+    raise cls(f"{where}: {detail}")
 
 
 class PreflightUnverified(RuntimeError):
@@ -98,8 +150,17 @@ def ensure_running() -> None:
     """Raise ``GrokModelUnavailable`` (no network, no new alert) when this process already
     stopped on an unavailable model. Called before every Grok call."""
     reason = _stopped.get("reason")
-    if reason:
+    if reason:  # a missing model: permanent
         raise GrokModelUnavailable(f"stopped earlier - {reason}")
+    transient = _stopped.get("transient")
+    if not transient:
+        return
+    import time as _time
+
+    if _time.time() >= transient["until"]:
+        clear_transient_stop()
+        return
+    raise transient["cls"](f"stopped earlier - {transient['reason']}")
 
 
 def raise_if_unavailable(results: Iterable[Any]) -> None:

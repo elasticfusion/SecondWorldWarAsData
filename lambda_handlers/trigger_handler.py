@@ -287,6 +287,14 @@ def _review_alert(category: str) -> dict:
     }
 
 
+def _grok_transient_stops():
+    """The outage / no-credit stops (src/utils/grok_models), caught BEFORE the missing-model stop
+    they derive from."""
+    from src.utils.grok_models import GrokFundsExhausted, GrokUnreachable
+
+    return (GrokUnreachable, GrokFundsExhausted)
+
+
 def _grok_model_unavailable():
     """The stop raised when a Grok model is gone (src/utils/grok_models)."""
     from src.utils.grok_models import GrokModelUnavailable
@@ -488,6 +496,15 @@ def _resolve_title_identity(s3, title: str, tkeys: list):
         else:
             new_fp = _multi_fingerprint(s3, tkeys)
             same = _llm_same_work(title, (existing_marker or "")[4:], new_fp)
+    except _grok_transient_stops() as e:
+        # an outage / no credits is not a missing model (task 1.2e): the fail-open path below
+        from src.utils.grok_models import clear_transient_stop
+
+        clear_transient_stop()
+        logger.warning(
+            "identity compare failed for %r (%s) — proceeding", title, type(e).__name__
+        )
+        return True, "", ""
     except _grok_model_unavailable() as e:
         logger.error("sameness check stopped for %r: %s", title, e)
         return (

@@ -120,6 +120,12 @@ class _Heartbeat:
             self._thread.join(timeout=2)
 
 
+# pause on a Grok stop for the shared client's stop window
+from src.utils.grok_models import (  # noqa: E402
+    TRANSIENT_STOP_SECONDS as GROK_STOP_PAUSE_S,
+)
+
+
 def process_message(
     body: dict,
     storage: Any,
@@ -166,8 +172,22 @@ def process_message(
     import src.enrichment.openserp_enrichment as oe
 
     enrich_one = getattr(oe, fn_name)
+    from src.utils.grok_models import GrokFundsExhausted, GrokUnreachable
+
     try:
         changed = enrich_one(data, openserp_url, grok_client)
+    except (GrokUnreachable, GrokFundsExhausted) as e:
+        # Grok down or no credits (task 1.2e): keep the message, pause before the next one so
+        # the worker does not burn through the queue (and into the DLQ) while Grok is out
+        logger.error(
+            "OBSERV openserp_worker.grok_stopped status=error kind=%s path=%s - pausing %ds; "
+            "the message is redelivered",
+            type(e).__name__,
+            entity_path,
+            GROK_STOP_PAUSE_S,
+        )
+        time.sleep(GROK_STOP_PAUSE_S)
+        return "retry"
     except (
         Exception
     ) as e:  # noqa: BLE001 - a transient OpenSERP/Grok error -> redeliver

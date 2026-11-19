@@ -40,6 +40,9 @@ DEFAULT_MAX_ATTEMPTS = 3
 AUTO_RESUME = ("funding", "connectivity")
 MANUAL_RESUME = ("failure", "config")
 CAUSES = AUTO_RESUME + MANUAL_RESUME
+# connectivity / funding stops since the last resume before a book is held for the operator
+DEFAULT_MAX_CONNECTIVITY_DEFERRALS = 24  # ~a day of hourly retries
+DEFAULT_MAX_FUNDING_DEFERRALS = 72  # ~3 days waiting for a top-up
 DEFAULT_DEFER_RETRY_MINUTES = 50  # under the hourly reconcile, so its next run retries
 RESUME_COMMAND = "python3 scripts/resume_book.py"
 
@@ -239,28 +242,71 @@ def claim_attempt(
     return attempts, True
 
 
-def defer(table: Any, book: str, cause: str, reason: str = "") -> bool:
+def defer(
+    table: Any,
+    book: str,
+    cause: str,
+    reason: str = "",
+    max_connectivity: int = DEFAULT_MAX_CONNECTIVITY_DEFERRALS,
+    max_funding: int = DEFAULT_MAX_FUNDING_DEFERRALS,
+) -> str:
     """Mark ``book``'s existing Phase 3 row deferred for ``cause``: kept, never dropped. Returns
-    False if the book has no row (it finished, or was never queued): a finished book is never
-    re-queued. ``reason`` is stored one-line and capped (fixed strings today)."""
+    the cause it was deferred with, or '' if the book has no row (it finished, or was never
+    queued): a finished book is never re-queued. ``reason`` is stored one-line and capped.
+
+    ``connectivity`` and ``funding`` stops give the attempt back and resume on their own, so a
+    book that keeps stopping that way (a bug, one book's own request, a mid-run 402 after paid
+    work) would retry forever. They are counted since the last resume; past ``max_connectivity``
+    (``max_funding``) the book is deferred ``failure`` instead (held for the operator).
+    """
     if cause not in CAUSES:
         raise ValueError(f"unknown deferral cause {cause!r}")
+    reason = " ".join(str(reason).split())[:500]
+    field = f"{cause}_stops"
+    counted = cause in AUTO_RESUME
     try:
-        table.update_item(
+        resp = table.update_item(
             Key={"cache_key": row_key("enrich", book)},
-            UpdateExpression="SET defer_cause = :c, deferred_at = :t, defer_reason = :r",
+            UpdateExpression="SET defer_cause = :c, deferred_at = :t, defer_reason = :r"
+            + (f", {field} = if_not_exists({field}, :z) + :one" if counted else ""),
             ConditionExpression="attribute_exists(cache_key)",
             ExpressionAttributeValues={
                 ":t": int(time.time()),
                 ":c": cause,
-                ":r": " ".join(str(reason).split())[:500],
+                ":r": reason,
+                **({":z": 0, ":one": 1} if counted else {}),
             },
+            ReturnValues="UPDATED_NEW",
         )
-        return True
     except Exception as e:  # noqa: BLE001 - re-raised unless it is the guard
         if _condition_failed(e):
-            return False
+            return ""
         raise
+    stops = int((resp.get("Attributes") or {}).get(field, 0))
+    cap = max_connectivity if cause == "connectivity" else max_funding
+    if counted and stops > max(1, int(cap)):
+        return _hold(table, book, cause, stops, reason)
+    return cause
+
+
+def _hold(table: Any, book: str, cause: str, stops: int, reason: str) -> str:
+    """Too many automatic stops: hold the book for the operator ('failure'); '' if it finished."""
+    try:
+        table.update_item(
+            Key={"cache_key": row_key("enrich", book)},
+            UpdateExpression="SET defer_cause = :c, defer_reason = :r",
+            ConditionExpression="attribute_exists(cache_key)",
+            ExpressionAttributeValues={
+                ":c": "failure",
+                ":r": f"stopped for {cause} {stops} times since the last resume: "
+                f"{reason}"[:500],
+            },
+        )
+    except Exception as e:  # noqa: BLE001 - re-raised unless the book just finished
+        if _condition_failed(e):
+            return ""
+        raise
+    return "failure"
 
 
 def _condition_failed(e: Exception) -> bool:
@@ -301,7 +347,8 @@ def resume(table: Any, book: str) -> bool:
         table.update_item(
             Key={"cache_key": row_key("enrich", book)},
             UpdateExpression=(
-                "SET attempts = :zero REMOVE defer_cause, deferred_at, defer_reason"
+                "SET attempts = :zero REMOVE defer_cause, deferred_at, defer_reason, "
+                "connectivity_stops, funding_stops"
             ),
             ConditionExpression="attribute_exists(cache_key)",
             ExpressionAttributeValues={":zero": 0},
@@ -311,6 +358,26 @@ def resume(table: Any, book: str) -> bool:
         if _condition_failed(e):
             return False
         raise
+
+
+def max_connectivity_deferrals(config: Optional[dict] = None) -> int:
+    """``queue.max_connectivity_deferrals`` (default 24)."""
+    try:
+        value = int(
+            ((config or {}).get("queue") or {}).get("max_connectivity_deferrals", 0)
+        )
+    except (TypeError, ValueError):
+        value = 0
+    return value if value > 0 else DEFAULT_MAX_CONNECTIVITY_DEFERRALS
+
+
+def max_funding_deferrals(config: Optional[dict] = None) -> int:
+    """``queue.max_funding_deferrals`` (default 72)."""
+    try:
+        value = int(((config or {}).get("queue") or {}).get("max_funding_deferrals", 0))
+    except (TypeError, ValueError):
+        value = 0
+    return value if value > 0 else DEFAULT_MAX_FUNDING_DEFERRALS
 
 
 def defer_retry_minutes(config: Optional[dict] = None) -> int:

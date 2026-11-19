@@ -133,10 +133,9 @@ continues from where it stopped. Order: 1.2b, 1.1b, 1.2c, 1.2e, 1.2d, 1.2f, 1.1c
   `scripts/resume_book.sh <book>` (or all deferred books). Preflight aborts do not count as attempts
   (owner decision 4(b)). The reconcile launches nothing while a funding or connectivity check fails.
 - **1.2b follow-ups (from review, 2026-11-18):**
-  - MED - no cap on repeated auto-resume. `funding`/`connectivity` give the attempt back, so a book
-    that keeps exiting 80/81 (a bug, or one book's own fetch) retries hourly forever. Unreachable
-    until 1.1c/1.2e/1.2f add producers of those exit codes; add a give-back counter with a cap that
-    escalates to a `failure` hold in the same change.
+  - DONE (1.2e) - repeated auto-resume is capped: `connectivity` deferrals are counted
+    (`connectivity_stops`); past `queue.max_connectivity_deferrals` (24) the book is held
+    `failure`; `resume_book.py` resets the count. `funding` is not capped (it stops before spend).
   - LOW - a held (`failure`/`config`) book is only logged (`OBSERV queue.deferred_held`) by each
     reconcile after its one deferral alert; add a rate-limited reminder alert.
   - LOW - the cluster-wide hold picks books alphabetically; a book that keeps renewing the hold
@@ -183,6 +182,30 @@ continues from where it stopped. Order: 1.2b, 1.1b, 1.2c, 1.2e, 1.2d, 1.2f, 1.1c
   verdicts, never cache or mark searched on a failure; a Grok outage follows D8 (retry, then stop
   with an alert) and defers the book `connectivity` (1.2b). Belongs with Group 2 batching of these
   calls. Check the other Phase 3 callers of raw `chat_completion` for the same pattern.
+  **Built (2026-11-18):** the shared client now stops the run when its retries are used up on an
+  outage (`grok_models.GrokUnreachable`: network, timeout, 5xx, 429) or xAI refuses for credit
+  (`GrokFundsExhausted`); both are run-stopping like a missing model, `stop_cause.run_main` maps
+  them to exit 81/80 in phase2/phase3, and the wrapper defers the book (1.2b). This fixes the
+  outage case for EVERY Grok caller at once. The OpenSERP verifiers use `extract_json` and raise
+  `VerifyFailed` on no usable verdict (not cached, entity left unsearched). Optional requests
+  (book_metadata) catch the stop and go on; a transient stop expires after 5 min in long-lived
+  processes. Still to do, per step group: the other Phase 3 raw `chat_completion` callers parse
+  text themselves - check each for a malformed answer being taken as an answer:
+  `extraction/image_place_link.py:82`, `extraction/link_relevancy.py:82`,
+  `enrichment/fetch_review.py:253`, `enrichment/hill_geocode.py:124`,
+  `enrichment/places_grok_geocode.py:529`, `enrichment/situational_geocode.py:338`,
+  `enrichment/bibliography_resolver.py:1114,1900,1942,2014`, `extraction/title_memberships.py:238`.
+  The OpenSERP SQS worker keeps the message and pauses 5 min on a Grok stop. Mid-run only a 402
+  stops for funding (a 403 that merely says "credit" is an ordinary error); funding deferrals are
+  capped too (`queue.max_funding_deferrals`, 72). Left for 1.2f (review findings):
+  - the client's own wall-clock deadline (`_post_with_deadline`) raises `GrokAPIError`, not an
+    outage: a hung connection still reaches callers as an ordinary error;
+  - the Phase 2 Batch API path (`batch_api` submit/poll/retrieve) does not use `_call_api`, so a
+    Batch API outage is unchanged; Phase 2 stops are told to re-trigger (no Phase 2 deferral);
+  - Phase 0 and Lambda callers now see a Grok stop as a plain failure (exit 1 / Lambda error),
+    not a deferral: `md_correction.correct_markdown` ("never raises") and
+    `translation.normalize_markdown_to_english` let it through (phase0_convert, phase0_ingest,
+    phase0_video, ocr_merge_handler). Decide per caller: optional (go on) or stop-and-defer.
 - **1.2f - every external service is resumable** (owner 2026-11-18). Grok, NOAA weather,
   geocoding (Nominatim), archive.org, NARA, OpenSERP, HyperWar and any other fetch can fail at the
   service or the network level. For each: one shared retry policy (`src/utils/failure_taxonomy`

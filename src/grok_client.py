@@ -1445,6 +1445,14 @@ class GrokClient:
         if response.status_code >= 500:
             response.raise_for_status()
 
+        # 402 only: mid-run, a 403 whose text happens to say "credit" must not stop the whole
+        # run (the preflight still treats a 403-credit as no funds, before any spend)
+        if response.status_code == 402:
+            grok_models.stop_run(
+                grok_models.GrokFundsExhausted,
+                "grok_client",
+                f"HTTP {response.status_code}: no API credits",
+            )
         if response.status_code != 200:
             if grok_models.is_model_missing(response.status_code, response.text):
                 grok_models.model_unavailable(
@@ -1473,13 +1481,38 @@ class GrokClient:
                     f"API call exceeded {self.timeout}s wall-clock deadline"
                 ) from err
 
+    def _call_api(
+        self, messages: list, temperature: float = 0.1, model: str = ""
+    ) -> Dict[str, Any]:
+        """Make an API call; the shared retries (5 tries, exponential backoff) are in
+        ``_call_api_retrying``. When they are used up on a network error, a timeout, an xAI 5xx
+        or 429, the run STOPS (``grok_models.GrokUnreachable``, D8): an outage is never handed
+        to a caller as an error it might count as "no answer" (owner rule 3, 2026-11-18).
+        """
+        try:
+            return self._call_api_retrying(messages, temperature, model)
+        except (requests.ConnectionError, requests.Timeout) as e:
+            grok_models.stop_run(
+                grok_models.GrokUnreachable, "grok_client", type(e).__name__
+            )
+        except requests.HTTPError as e:
+            status = e.response.status_code if e.response is not None else 0
+            if status >= 500 or status == 429:
+                grok_models.stop_run(
+                    grok_models.GrokUnreachable, "grok_client", f"HTTP {status}"
+                )
+            raise
+        raise AssertionError("unreachable")  # stop_run always raises
+
     @retry(
         stop=stop_after_attempt(5),
         wait=wait_exponential(multiplier=2, min=4, max=60),
-        retry=retry_if_exception_type((requests.HTTPError, requests.ConnectionError)),
+        retry=retry_if_exception_type(
+            (requests.HTTPError, requests.ConnectionError, requests.Timeout)
+        ),
         reraise=True,
     )
-    def _call_api(
+    def _call_api_retrying(
         self, messages: list, temperature: float = 0.1, model: str = ""
     ) -> Dict[str, Any]:
         """Make API call with retry logic."""

@@ -1124,6 +1124,19 @@ def _preflight_credit_check() -> None:
         _grok_models.preflight(
             api_key, _grok_models.configured_models(), probed={default}
         )
+    except (_grok_models.GrokUnreachable, _grok_models.GrokFundsExhausted) as e:
+        # derived from GrokModelUnavailable: caught first so an outage is not a "model gone"
+        cause = (
+            "funding"
+            if isinstance(e, _grok_models.GrokFundsExhausted)
+            else "connectivity"
+        )
+        _alert_phase_stopped(
+            f"grok_{cause}",
+            f"Grok stopped the preflight ({type(e).__name__}). "
+            + _queue_followup(cause, f"preflight: {type(e).__name__}"),
+        )
+        sys.exit(1)
     except _grok_models.GrokModelUnavailable:
         logger.error(
             "PREFLIGHT FAILED: a configured Grok model is unavailable. Aborting."
@@ -3044,7 +3057,14 @@ def _queue_followup(cause: str, reason: str) -> str:
 
     try:
         table = _cache_table()
-        deferred = pending_queue.defer(table, book, cause, reason)
+        deferred = pending_queue.defer(
+            table,
+            book,
+            cause,
+            reason,
+            pending_queue.max_connectivity_deferrals(_config_or_empty()),
+            pending_queue.max_funding_deferrals(_config_or_empty()),
+        )
     except Exception as e:  # noqa: BLE001 - the caller is on its way to exit
         logger.error(
             "OBSERV queue.enrich_defer_failed book=%s cause=%s err=%s status=error",
@@ -3072,9 +3092,15 @@ def _queue_followup(cause: str, reason: str) -> str:
     logger.info(
         "OBSERV queue.enrich_deferred book=%s cause=%s reason=%s status=ok",
         book,
-        cause,
+        deferred,
         reason,
     )
+    if deferred != cause:  # repeated connectivity stops: held for the operator now
+        return (
+            f"It stopped for {cause} too many times since the last resume, so it is held: "
+            "after the fix "
+            f"run `{pending_queue.RESUME_COMMAND} {book}`"
+        )
     if cause in pending_queue.AUTO_RESUME:
         return (
             f"The book is deferred ({cause}); Phase 3 is held and the hourly reconcile "
