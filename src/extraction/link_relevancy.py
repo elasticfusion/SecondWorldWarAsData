@@ -3,9 +3,9 @@
 Owner policy (2026-10-27): every outbound link in a parsed doc is enqueued for HUMAN review rather
 than auto-ingested. To keep that queue signal-rich we gate on relevancy first:
 
-  * domain on the EXTERNAL, EDITABLE whitelist (``link_relevancy_whitelist`` in
-    ``config/domain_blacklist.yaml``, seeded with ``ibiblio.org`` — the corpus host) -> TRUST, skip
-    the model call, enqueue;
+  * a TRUSTED source (``trusted_sources`` in config.yaml, read through ``src/utils/link_policy`` -
+    HyperWar volumes and NARA records; task 1.9 replaced the wider ``link_relevancy_whitelist``,
+    which trusted all of ibiblio.org) -> skip the model call, enqueue;
   * domain on the license-rejection ``blacklist`` -> DROP (never enqueue, never fetch);
   * otherwise -> ask Grok a one-word relevancy verdict; relevant -> enqueue, irrelevant -> drop.
 
@@ -16,32 +16,10 @@ human decide. No network I/O here beyond the (optional) Grok call; the link itse
 from __future__ import annotations
 
 import logging
-from pathlib import Path
 from typing import Any, List, Optional
 from urllib.parse import urlparse
 
-import yaml
-
 logger = logging.getLogger(__name__)
-
-_CONFIG = Path("config/domain_blacklist.yaml")
-
-
-def load_link_relevancy_whitelist(path: Path = _CONFIG) -> List[str]:
-    """Load the editable ``link_relevancy_whitelist`` domains (lowercased). Mirrors
-    grok_search_maps.load_whitelisted_sites. Fail-safe -> the corpus-host default ``[ibiblio.org]``
-    so the relevancy bypass still works if the file is missing/garbled."""
-    try:
-        data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
-        wl = [
-            str(d).strip().lower()
-            for d in (data.get("link_relevancy_whitelist") or [])
-            if d
-        ]
-        return wl or ["ibiblio.org"]
-    except Exception as e:  # noqa: BLE001
-        logger.warning("link_relevancy_whitelist load failed (%s); using default", e)
-        return ["ibiblio.org"]
 
 
 def _host_matches(url: str, domains: List[str]) -> bool:
@@ -62,10 +40,13 @@ def _host_matches(url: str, domains: List[str]) -> bool:
 
 
 def is_whitelisted(url: str, whitelist: Optional[List[str]] = None) -> bool:
-    """True if the link's domain is on the relevancy whitelist (trusted -> skip Grok)."""
-    return _host_matches(
-        url, whitelist if whitelist is not None else load_link_relevancy_whitelist()
-    )
+    """True if the link is to a trusted source (skip Grok): ``whitelist`` (host or subdomain
+    match) when given, else the configured trusted sources (host AND path prefix)."""
+    if whitelist is not None:
+        return _host_matches(url, whitelist)
+    from src.utils.link_policy import trust_basis
+
+    return trust_basis(url) is not None
 
 
 def _grok_link_relevant(grok_client: Any, text: str, url: str, context: str) -> bool:

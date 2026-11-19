@@ -76,6 +76,24 @@ logistics:
 casualties:
   enabled: true
 
+# Trusted sources and link following (task 1.9, owner 2026-11-17; src/utils/link_policy, logged at
+# the start of each Phase 3 run). A cited document from a trusted source is queued for ingestion
+# with no URL Grok check and no human URL review; its CONTENT is still Grok-classified, and its
+# links to untrusted sites follow the review rule. A trusted record found by a search still needs
+# the Grok check that it is the cited document. match: host/path/ prefix (the exact host, www.
+# ignored - other subdomains are other sites; the path is case-sensitive and ends in /). Adding
+# a source is a config edit.
+trusted_sources:
+  - {name: hyperwar, match: ["ibiblio.org/hyperwar/"], forms: [html, pdf]}
+  - {name: nara, match: ["catalog.archives.gov/id/", "catalog.archives.gov/medialz/"]}
+
+links:
+  # how far a followed link's own links are followed (hops) and how many per page, for links on
+  # the parent page's own site and elsewhere (ceilings: 3 hops, 200 per page)
+  follow:
+    same_domain: {max_hops: 1, max_per_page: 20}
+    external: {max_hops: 1, max_per_page: 20}
+
 supplemental_material:
   enabled: true
   extract_citations: true              # Phase 2: parse citations into structured bibliography entries

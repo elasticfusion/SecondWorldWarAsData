@@ -803,6 +803,9 @@ def main():
     from src.utils.entity_records import reset_corrupt_records
 
     reset_corrupt_records()  # task 1.2f PART 2: corrupt records found this run hold the book
+    from src.utils.link_policy import log_policy
+
+    log_policy()  # task 1.9: what this run trusts and how far links are followed
 
     # Notify: enrichment is starting (downloads complete, real work beginning)
     _notify_enrichment_started()

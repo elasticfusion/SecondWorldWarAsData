@@ -177,3 +177,13 @@ def _fresh_service_state(monkeypatch):
         monkeypatch.setattr(ee, "_synced_etag", {})
     yield
     service_outage.reset()
+
+
+@pytest.fixture(autouse=True)
+def _fresh_link_policy():
+    """src/utils/link_policy keeps the process's trusted-source list: re-read per test."""
+    from src.utils import link_policy
+
+    link_policy.reset()
+    yield
+    link_policy.reset()

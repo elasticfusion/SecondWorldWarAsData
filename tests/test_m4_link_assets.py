@@ -95,9 +95,37 @@ def test_grok_error_failsafe_enqueue():
     assert enq and v == "relevant"  # fail-safe: when in doubt, enqueue
 
 
-def test_whitelist_loader_failsafe_default(tmp_path):
-    missing = tmp_path / "nope.yaml"
-    assert LR.load_link_relevancy_whitelist(missing) == ["ibiblio.org"]
+def test_without_a_list_the_trusted_sources_decide(monkeypatch):
+    """Task 1.9: the configured trusted sources replace the wider ibiblio.org whitelist."""
+    import src.utils.config as config
+
+    cfg = {
+        "trusted_sources": [{"name": "hyperwar", "match": ["ibiblio.org/hyperwar/"]}]
+    }
+    monkeypatch.setattr(config, "load_config", lambda: cfg)
+    assert LR.is_whitelisted("https://www.ibiblio.org/hyperwar/USA/x.html")
+    assert not LR.is_whitelisted("https://www.ibiblio.org/pub/other.html")
+
+
+def test_an_untrusted_ibiblio_link_is_asked_about(monkeypatch):
+    """The intended change: only HyperWar skips the Grok check, not all of ibiblio.org."""
+    import src.utils.config as config
+
+    cfg = {
+        "trusted_sources": [{"name": "hyperwar", "match": ["ibiblio.org/hyperwar/"]}]
+    }
+    monkeypatch.setattr(config, "load_config", lambda: cfg)
+    asked = []
+
+    class G:
+        def chat_completion(self, p):
+            asked.append(p)
+            return "YES"
+
+    enq, verdict = LR.should_enqueue_link(
+        "https://www.ibiblio.org/pub/x.html", "t", grok_client=G()
+    )
+    assert enq and verdict == "relevant" and len(asked) == 1
 
 
 # --- enqueue (real fetch-provenance write path) ---
