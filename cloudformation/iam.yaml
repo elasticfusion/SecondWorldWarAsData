@@ -74,6 +74,14 @@ Resources:
                   - secretsmanager:GetSecretValue
                 Resource:
                   - !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${EnvironmentName}-wwii-*
+              - Sid: NoXaiManagementKey
+                # the xAI Management API key (task 1.1c) is read only by the ECS phase tasks
+                # (ECSTaskRole): it can buy credit and manage keys, so no other role may read it
+                Effect: Deny
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource:
+                  - !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${EnvironmentName}-wwii-pipeline/xai-management-key*
               - Sid: SNSPublish
                 Effect: Allow
                 Action:
@@ -539,6 +547,14 @@ Resources:
                 Condition:
                   StringEquals:
                     aws:RequestedRegion: !Ref AWS::Region
+              - Sid: NoXaiManagementKey
+                # the xAI Management API key (task 1.1c) is read only by the ECS phase tasks
+                # (ECSTaskRole): it can buy credit and manage keys, so no other role may read it
+                Effect: Deny
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource:
+                  - !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${EnvironmentName}-wwii-pipeline/xai-management-key*
 
 Outputs:
   LambdaExecutionRoleArn:

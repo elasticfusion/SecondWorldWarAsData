@@ -90,6 +90,7 @@ _CACHE_BOOKS_DIR = Path("/app/cache/api/books")
 
 # Global state for SIGTERM handler
 _current_phase_script = ""
+_balance_checked = False  # this task's Grok credit preflight passed (task 1.1c)
 # The batch a resumed Phase 2 run (retrieve task) was started from: marked retrieved before the
 # run, so a reclaim mid-run must hand it back to the poller (see _handle_sigterm)
 _current_resume_batch = ""
@@ -665,6 +666,30 @@ def _load_secrets():
             logger.info("Loaded NARA API key from Secrets Manager")
         except Exception as e:  # noqa: BLE001 - NARA key optional; never block the run
             logger.warning("NARA API key not loaded (%s): %s", nara_secret, e)
+    # xAI Management API key: reads the live credit balance (task 1.1c), Grok phases only. It
+    # can buy credit and manage keys, so it is held in grok_balance, NOT os.environ: no phase
+    # subprocess inherits it. Its absence is alerted by _preflight_balance_check (which stops
+    # the phase), not here.
+    from src.utils import grok_balance
+
+    if _uses_grok(_current_phase_script) and not os.environ.get(
+        grok_balance.MANAGEMENT_KEY_ENV
+    ):
+        env = os.environ.get("ENV_NAME", "dev")
+        mgmt_secret = os.environ.get(
+            "XAI_MANAGEMENT_SECRET_ID", f"{env}-wwii-pipeline/xai-management-key"
+        )
+        try:
+            sm = sm or boto3.client("secretsmanager", region_name=REGION)
+            resp = sm.get_secret_value(SecretId=mgmt_secret)
+            grok_balance.set_management_key(resp["SecretString"])
+            logger.info("Loaded xAI management key from Secrets Manager")
+        except (
+            Exception
+        ) as e:  # noqa: BLE001 - reported (and stopped on) by the preflight
+            logger.warning(
+                "xAI management key not loaded (%s): %s", mgmt_secret, type(e).__name__
+            )
 
 
 def _setup_symlinks():
@@ -863,12 +888,9 @@ def _ensure_nat_if_needed(phase_script: str) -> None:
     stem = Path(phase_script).stem
     # An import needs the internet only for its title-page metadata request, which is fail-safe:
     # one try, and on failure the import goes on (the metadata-gap marker records what is missing).
-    optional = "phase0_convert" in phase_script or "phase0_video" in phase_script
-    if optional:
-        from src.ingestion import book_metadata
-
-        if not book_metadata.enabled():
-            return  # the request is switched off: the import needs no internet at all
+    optional = _is_import(phase_script)
+    if optional and not _import_asks_grok(phase_script):
+        return  # the request is switched off: the import needs no internet at all
     # READINESS CONTRACT: Phase 2/3 need public egress (Grok/Wiki/geocode). Invoke
     # the nat-manager and WAIT until it reports status=ready (NAT available + ACTIVE
     # route + endpoints). nat-manager itself blocks on route-active, but a cold NAT
@@ -1062,9 +1084,143 @@ def _alert_openserp_down(reason: str) -> None:
         ),
         reason=reason,
     )
+    _exit_before_work()
+
+
+def _exit_before_work() -> None:
+    """A preflight stopped the phase before any work (already alerted and queued): free the lock
+    at once (owner decision D10) and this task's NAT demand, then exit 1."""
     _remove_lock(_current_phase_script)
     _release_nat_lease()  # nothing will run: drop this task's NAT demand
     sys.exit(1)
+
+
+def _is_import(phase_script: str) -> bool:
+    """A Phase 0 import task (document or video), whose only internet use is the title-page
+    metadata request to Grok."""
+    return "phase0_convert" in phase_script or "phase0_video" in phase_script
+
+
+def _import_asks_grok(phase_script: str) -> bool:
+    """True if this import will make its title-page metadata request (ingestion.book_metadata)."""
+    if not _is_import(phase_script):
+        return False
+    from src.ingestion import book_metadata
+
+    return book_metadata.enabled()
+
+
+def _uses_grok(phase_script: str) -> bool:
+    """Phases that spend Grok credit and have the internet to read the balance: Phase 2/3, and a
+    Phase 0 import whose title-page request is on (owner 2026-11-18: halt it under the floor too,
+    better to deal with low credit earlier)."""
+    return (
+        "phase2" in phase_script
+        or "phase3" in phase_script
+        or _import_asks_grok(phase_script)
+    )
+
+
+def _preflight_balance_check(phase_script: str) -> None:
+    """Task 1.1c (owner 2026-11-18): read the LIVE xAI credit balance before any Grok spend.
+    Under the floor ($50): stop, alert, defer ``funding`` (resumes on its own after a top-up).
+    Unreadable: stop, do not guess (``config`` is held for the operator; ``connectivity``
+    resumes on its own). Other phases: nothing."""
+    global _balance_checked
+    if not _uses_grok(phase_script) or _balance_checked:
+        return  # (a batch run_phase hands on to run_submit_only: one check per task)
+    from src.utils import grok_balance
+
+    if not grok_balance.check_enabled(_config_or_empty()):
+        logger.info(
+            "OBSERV grok.balance_check status=ok enabled=false - api.grok.balance_check is "
+            "off: this deployment does not gate runs on the xAI credit balance"
+        )
+        return
+    floor, alert_at, _ = grok_balance.thresholds(_config_or_empty())
+    try:
+        usd = grok_balance.balance_usd()
+    except grok_balance.BalanceUnreadable as e:
+        fix = (
+            "Check the xAI management key (Secrets Manager "
+            f"{os.environ.get('ENV_NAME', 'dev')}-wwii-pipeline/xai-management-key, billing "
+            "read) and the Grok key"
+            if e.cause == "config"
+            else "Check xAI status (status.x.ai) and this task's network path"
+        )
+        _alert_phase_stopped(
+            "grok_balance_unreadable",
+            f"The xAI credit balance could not be read ({e.reason}), so the phase stopped "
+            f"before any Grok spend (it never guesses). {fix}. "
+            + _queue_followup(e.cause, f"xAI balance unreadable: {e.reason}"),
+            reason=e.reason,
+        )
+        _exit_before_work()
+        return
+    if usd < floor:
+        _alert_phase_stopped(
+            "grok_credits_low",
+            f"xAI prepaid credit is ${usd:.2f}, under the ${floor:.2f} floor, so the phase "
+            "stopped before any Grok spend. Top up at https://console.x.ai (Billing). "
+            + _queue_followup("funding", f"xAI credit ${usd:.2f} under ${floor:.2f}"),
+            balance_usd=f"{usd:.2f}",
+            floor_usd=f"{floor:.2f}",
+        )
+        _exit_before_work()
+        return
+    _balance_checked = True
+    logger.info(
+        "OBSERV grok.balance usd=%.2f floor=%.2f alert_at=%.2f status=ok",
+        usd,
+        floor,
+        alert_at,
+    )
+
+
+def _start_balance_monitor(phase_script: str):
+    """During a Grok phase, a loud alert every hour while the balance is at or under
+    ``credit_alert_usd`` ($10); the run continues (owner). Returns the monitor (``stop()`` it),
+    or None for other phases."""
+    from src.utils import grok_balance
+
+    if not _uses_grok(phase_script) or not grok_balance.check_enabled(
+        _config_or_empty()
+    ):
+        return None
+    _, alert_at, minutes = grok_balance.thresholds(_config_or_empty())
+    task = os.environ.get("ECS_TASK_ID", "") or "local"
+
+    def alert(usd: float) -> None:
+        observe_alert(
+            "grok",
+            "credits_critical",
+            note=(
+                f"xAI prepaid credit is ${usd:.2f} (alert at ${alert_at:.2f}). The run goes on; "
+                "when it runs out the book is deferred (funding) and resumes after a top-up. "
+                "Top up now at https://console.x.ai (Billing)"
+            ),
+            dedup_key=f"{task}.{grok_balance.hour_bucket()}",
+            balance_usd=f"{usd:.2f}",
+            book=os.environ.get("BOOK_NAME", ""),
+        )
+
+    def unreadable(reason: str) -> None:
+        observe_warn_counted(
+            "grok",
+            "balance_unreadable",
+            key=(task,),
+            every=4,
+            note=(
+                "The xAI credit balance could not be read mid-run, so the low-credit alert "
+                "cannot fire; the run goes on (no credit still stops it, HTTP 402). Check the "
+                "xai-management-key secret and status.x.ai"
+            ),
+            reason=reason,
+        )
+
+    monitor = grok_balance.LowBalanceMonitor(alert_at, minutes, alert, unreadable)
+    monitor.start()
+    return monitor
 
 
 def _openserp_switched_off() -> bool:
@@ -1319,6 +1475,7 @@ def run_phase(phase_script: str, extra_args: list) -> None:
     logger.info("[step] %s: loading secrets", phase_name)
     _load_secrets()
     logger.info("[step] %s: preflight credit check", phase_name)
+    _preflight_balance_check(phase_script)
     _preflight_credit_check()
     _preflight_notification_subscriptions()
     _preflight_runtime_tables()
@@ -1366,7 +1523,12 @@ def run_phase(phase_script: str, extra_args: list) -> None:
     import time as _time
 
     _phase_start = _time.monotonic()
-    result = subprocess.run(cmd, cwd="/app", env=env, check=False)
+    balance_monitor = _start_balance_monitor(phase_script)
+    try:
+        result = subprocess.run(cmd, cwd="/app", env=env, check=False)
+    finally:
+        if balance_monitor is not None:
+            balance_monitor.stop()
     _phase_duration = _time.monotonic() - _phase_start
 
     sync.stop()
@@ -4794,6 +4956,7 @@ def run_submit_only(phase_script: str, extra_args: list) -> None:
     logger.info("[step] %s: loading secrets", phase_name)
     _load_secrets()
     logger.info("[step] %s: preflight credit check", phase_name)
+    _preflight_balance_check(phase_script)
     _preflight_credit_check()
     _preflight_notification_subscriptions()
     _preflight_runtime_tables()

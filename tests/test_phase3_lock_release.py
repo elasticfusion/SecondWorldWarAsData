@@ -23,6 +23,8 @@ def _stub_run_phase_to_failure(monkeypatch, order):
         "_clear_title_cache_if_reprocess",
         "_load_secrets",
         "_preflight_credit_check",
+        "_preflight_balance_check",
+        "_start_balance_monitor",
         "_preflight_notification_subscriptions",
         "_preflight_runtime_tables",
         "_patch_config",

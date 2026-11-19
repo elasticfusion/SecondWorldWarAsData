@@ -145,3 +145,15 @@ def _no_leftover_grok_stop(monkeypatch):
     from src.utils import grok_models
 
     monkeypatch.setattr(grok_models, "_stopped", {})
+
+
+@pytest.fixture(autouse=True)
+def _no_live_xai_balance(monkeypatch):
+    """src/grok_client loads .env, which may hold the real xAI management key: no test may read
+    the live credit balance (task 1.1c). Tests that need a balance pass keys and a fake session.
+    """
+    from src.utils import grok_balance
+
+    monkeypatch.delenv(grok_balance.MANAGEMENT_KEY_ENV, raising=False)
+    monkeypatch.setattr(grok_balance, "_team", {})
+    monkeypatch.setattr(grok_balance, "_management_key", {})

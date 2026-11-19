@@ -300,12 +300,24 @@ continues from where it stopped. Order: 1.2b, 1.1b, 1.2c, 1.2e, 1.2d, 1.2f, 1.1c
     down (the stop is a BaseException): retire it or catch the stop;
   - each start-time OpenSERP stop still brings NAT up and waits up to 12 min for OpenSERP before
     stopping (bounded by the connectivity cap, 24).
-- **1.1c - Grok balance thresholds.** Read the real prepaid balance from the xAI Management API
-  (`GET https://management-api.x.ai/v1/billing/teams/{team_id}/prepaid/balance`; management key + team
-  ID in Secrets Manager). Under $50 (configurable) at the start of any phase: stop before any Grok spend
-  and alert (defer `funding`). At or under $10 during a run: loud repeating alert, the run continues
-  (owner); if xAI then refuses for credit, the book defers `funding` and resumes after a top-up.
-  Balance unreadable: stop, do not guess. Waits on the owner's management key and team ID.
+- **1.1c - Grok balance thresholds.** DONE (2026-11-18, `src/utils/grok_balance`). The live
+  balance is `/postpaid/invoice/preview` credit minus this month's use, NOT `/prepaid/balance`'s
+  `total` (a ledger that posts each month's spend on the 11th of the next month: 2026-11-18 ledger
+  $192.59, console $62.31). Team ID from the inference key (`GET /v1/api-key`); management key in
+  `<env>-wwii-pipeline/xai-management-key` (ECSTaskRole only; Lambda and deploy roles denied).
+  Phase 2/3 start: under `api.grok.credit_floor_usd` ($50) stop, alert `phase.grok_credits_low`,
+  defer `funding`; unreadable: stop (`config` held / `connectivity` auto-resumes), never guess.
+  During the run: every `balance_check_minutes` (15), at or under `credit_alert_usd` ($10) an
+  hourly `grok.credits_critical` alert, the run goes on. Owner 2026-11-18: a Phase 0 import whose title-page
+  Grok request is on is gated too (deal with it earlier); `api.grok.balance_check: false` switches
+  the check off for other deployments (open source); auto top-up is the operator's call.
+  `phase0_ingest`'s translation pass has no NAT, so it is not gated. Follow-ups: the
+  older preflight stops (`grok_credits_depleted`, `grok_key_invalid`, model unavailable) exit
+  without freeing the lock - move them to `_exit_before_work` (D10); While the
+  balance stays under the floor, each funding retry (every 50 min, cap 72) starts a task and NAT
+  just to read it again: consider a longer funding interval or a balance check before launch.
+  The balance formula is verified on one answer (2026-11-18); re-check it around the 11th, when
+  the month's spend posts to the ledger.
 
 #### Task 1.1 follow-ups (found in review, 2026-11-18)
 - **MED - an alert from a task that has no network path is lost.** When NAT never becomes ready the

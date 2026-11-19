@@ -28,6 +28,17 @@ api:
     model_map: {}
     max_retries: 3
     timeout: 60
+    # Live xAI prepaid credit (task 1.1c, src/utils/grok_balance; needs the management key secret
+    # <env>-wwii-pipeline/xai-management-key). Under the floor a Phase 2/3 run does not start (the
+    # book is deferred "funding" and resumes after a top-up); at or under the alert line a running
+    # task alerts every hour and goes on. Checked every balance_check_minutes during a run.
+    # Phase 0 imports are gated too when their title-page Grok request is on. A deployment that
+    # does not use prepaid xAI credit (or has no management key) sets balance_check: false.
+    # xAI auto top-up (console) can keep the balance above both lines: that is the operator's call.
+    balance_check: true
+    credit_floor_usd: 50
+    credit_alert_usd: 10
+    balance_check_minutes: 15
   calls_per_minute: 20                 # Conservative rate limit
   nara_api_key: ""
   noaa_api_token: ""
