@@ -109,7 +109,7 @@ Phase 3 once on the restored Phase 2 data as the baseline every later group is c
 What several HIGH items in later groups depend on; MED/LOW items are here when a HIGH needs them.
 1. one paginated `pending#` queue module (the next-book / reconcile readers; the task deletes its own
    row only on success, keeps it on failure for the retry; owner D8c-2, V3);
-2. deletes reach S3 (one delete helper wired to `track_deletion`);
+2. DONE (1.5) deletes reach S3 (the final sync deletes every synced record the phase removed);
 3. the global content-hash dedup claims only after the object is in S3 (or releases on failure);
 4. DONE (1.4) non-search steps independent of `use_openserp`; `use_openserp: false` honoured on ECS;
 5. one alert path to `phase2-complete` (preflight aborts, crashed task, validation failure, reconcile
@@ -531,7 +531,7 @@ of `output/` and `artifacts/` except `-parsed.json`, final flush in `stop()`) an
 - The map-as-source files in `contentrepository/` are outside `output/` and never uploaded; see the
   map-vision step above.
 
-- **HIGH - a file Phase 3 deletes locally is never deleted from S3.** `track_deletion` (`EP:209`) is the
+- **DONE (1.5, 2026-11-18: `ecs_entrypoint._removed_downloads` - every entity record this task downloaded or background-uploaded and the phase removed locally is deleted from S3 at the final sync; one that another task rewrote in S3 after this task synced it (ETag from the listing, else LastModified) is kept and alerted; removals are snapshotted before the final uploads, so a SIGTERM sync never deletes a record whose replacement is not uploaded; more than max(50, 5%) removals delete nothing and alert `sync.mass_delete_refused`; S3 versioning keeps deletes restorable) - HIGH - a file Phase 3 deletes locally is never deleted from S3.** `track_deletion` (`EP:209`) is the
   only way to fill `_deleted_keys`, which `_final_sync` deletes from S3 (`EP:3550`), and it has no callers
   (trace_path: 0). Phase 3 case: `bibliography_resolve` moves each `not_citation` record to
   `output/narrative_notes/` and unlinks the bibliography file (`_relocate_narrative_note`,

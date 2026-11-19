@@ -414,6 +414,24 @@ def _get_account_id() -> str:
 
 
 _downloaded_keys: dict = {}  # key → mtime at download time
+# key → when this task last downloaded or uploaded it (task 1.5): a record the phase then
+# removes locally is deleted from S3 too, unless another writer replaced it after that time
+_synced_at: dict = {}
+_synced_etag: dict = (
+    {}
+)  # key → the S3 ETag this task downloaded (when the listing gave it)
+
+
+def _note_download(key: str, local: Path, etag: str = "") -> None:
+    """Record a downloaded key: its local mtime (unchanged-file skip) and when it was downloaded
+    (a later S3 delete of a record the phase removed must not undo another task's newer write).
+    """
+    _downloaded_keys[key] = local.stat().st_mtime
+    _synced_at[key] = time.time()
+    if etag:
+        _synced_etag[key] = etag
+
+
 _deleted_keys: set = (
     set()
 )  # Files deleted locally (merged) — remove from S3 in final sync
@@ -503,7 +521,7 @@ def s3_sync_down(prefix: str, local_dir: Path) -> int:
                 continue
             local.parent.mkdir(parents=True, exist_ok=True)
             s3.download_file(BUCKET, key, str(local))
-            _downloaded_keys[key] = local.stat().st_mtime
+            _note_download(key, local, obj.get("ETag", ""))
             count += 1
     return count
 
@@ -705,6 +723,11 @@ class BackgroundSync:
                 failed += 1
                 continue
             self._uploaded_mtimes[key] = mtime
+            # a record removed later is deleted from S3 too
+            _synced_at[key] = time.time()
+            # our own upload replaced the downloaded version: its ETag no longer identifies
+            # the S3 object, so the change check falls back to the upload time
+            _synced_etag.pop(key, None)
             count += 1
         return count, failed
 
@@ -2622,7 +2645,7 @@ def _download_s3_file(s3, key: str, *, optional: Union[bool, str] = False) -> No
     local.parent.mkdir(parents=True, exist_ok=True)
     try:
         s3.download_file(BUCKET, key, str(local))
-        _downloaded_keys[key] = local.stat().st_mtime
+        _note_download(key, local)
     except ClientError as e:
         if e.response["Error"]["Code"] in ("404", "NoSuchKey") and optional:
             observe(
@@ -4339,20 +4362,125 @@ def _final_sync_phase1() -> None:
         logger.info("OBSERV run_scope.synced files=%d", n_rs)
 
 
-def _delete_merged_from_s3() -> None:
-    """Delete the records this task merged away from S3 too. A delete that fails would leave a
-    duplicate entity in S3 that the next phase downloads again: alert with the keys and how to
-    remove them, never silently (task 1.2f)."""
+def _deletable_record_key(key: str) -> bool:
+    """The only S3 keys the final sync may delete: entity records ``output/<entity>/...json``
+    (not sidecars, binaries, parsed content or anything outside output/) - one rule for the
+    tracked and the detected removals (DRY)."""
+    from src.utils.entity_records import is_record_file
+
+    parts = key.split("/")
+    if len(parts) < 3 or parts[0] != "output" or parts[1] not in _PHASE23_ENTITY_DIRS:
+        return False
+    local = _safe_local_path(WORKDIR, key)
+    return local is not None and key.endswith(".json") and is_record_file(local)
+
+
+def _removed_downloads() -> set:
+    """Entity records this task downloaded or background-uploaded and the phase then removed
+    locally: their S3 copy must go too, or the next download brings them back (task 1.5: the
+    phase runs in a subprocess, so its unlinks never reached ``track_deletion``)."""
+    out = set()
+    for key in list(_synced_at):
+        if not _deletable_record_key(key):
+            continue
+        local = _safe_local_path(WORKDIR, key)
+        if local is not None and not local.exists():
+            out.add(key)
+    return out
+
+
+def _changed_in_s3_since_download(s3, key: str) -> bool:
+    """True when another writer replaced ``key`` in S3 after this task synced it (so deleting it
+    would destroy their update). Unknown -> True: never delete on a guess."""
+    at = _synced_at.get(key)
+    if at is None:
+        return False  # tracked in-process and never synced: this task owns it
+    try:
+        head = s3.head_object(Bucket=BUCKET, Key=key)
+    except Exception as e:  # noqa: BLE001
+        code = getattr(e, "response", {}).get("Error", {}).get("Code", "")
+        return code not in (
+            "404",
+            "NoSuchKey",
+            "NotFound",
+        )  # gone already: nothing to do
+    etag = _synced_etag.get(key)
+    if etag:  # the S3 object's own identity: no clock involved
+        return head.get("ETag") != etag
+    # a background upload has no recorded ETag: compare times (the task clock is NTP-synced;
+    # S3 stamps LastModified before upload_file returned, so our own upload is never "newer")
+    modified = head.get("LastModified")
+    return modified is None or modified.timestamp() > at + 1
+
+
+# more removed records than this (and than MASS_DELETE_FRACTION of the synced records) in one
+# final sync is not a merge: something removed the corpus locally - delete nothing, alert
+MASS_DELETE_MIN = 50
+MASS_DELETE_FRACTION = 0.05
+
+
+def _mass_delete_refused(keys: set) -> bool:
+    """True (and alerted) when ``keys`` is too many to be merges."""
+    synced = sum(1 for k in _synced_at if _deletable_record_key(k))
+    if len(keys) <= max(MASS_DELETE_MIN, MASS_DELETE_FRACTION * synced):
+        return False
+    observe_error(
+        "sync",
+        "mass_delete_refused",
+        note=(
+            f"The phase removed {len(keys)} of {synced} synced records locally - far more than "
+            "a merge does - so none were deleted from S3. Check the task log for what removed "
+            "them; if they really should go, delete them by hand"
+        ),
+        count=len(keys),
+        synced=synced,
+        book=os.environ.get("BOOK_NAME", ""),
+    )
+    return True
+
+
+def _forget_synced(key: str) -> None:
+    """A deleted key: a later final sync in this process must not look at it again."""
+    _synced_at.pop(key, None)
+    _synced_etag.pop(key, None)
+    _downloaded_keys.pop(key, None)
+    _deleted_keys.discard(key)
+
+
+def _delete_merged_from_s3(removed: Optional[set] = None) -> None:
+    """Delete from S3 the records this task merged away or removed. ``removed`` is the set seen
+    BEFORE the final uploads (``_removed_downloads``): a record the still-running phase removes
+    after that (a SIGTERM sync) keeps its S3 copy, since its replacement may not be uploaded yet.
+    A delete that fails would leave a duplicate entity in S3 that the next phase downloads
+    again: alert, never silently (task 1.2f). A record another task rewrote after this one
+    synced it is kept and alerted, and a mass removal deletes nothing (task 1.5); S3 versioning
+    keeps every deleted record restorable."""
+    detected = _removed_downloads() if removed is None else removed
+    # the cap applies to the DETECTED removals (something removed files locally); the tracked
+    # ones are merges this process recorded one by one as it made them
+    detected = {k for k in detected if _deletable_record_key(k)}
+    if _mass_delete_refused(detected):
+        detected = set()
+    keys = {k for k in set(_deleted_keys) if _deletable_record_key(k)} | detected
+    if not keys:
+        return
     s3 = _s3_client()
     left = []
-    for key in sorted(_deleted_keys):
+    for key in sorted(keys):
         try:
+            if _changed_in_s3_since_download(s3, key):
+                left.append((key, "changed_since_download"))
+                continue
             s3.delete_object(Bucket=BUCKET, Key=key)
         except Exception as e:  # noqa: BLE001 - reported below
             left.append((key, type(e).__name__))
+            continue
+        _forget_synced(key)
     logger.info(
-        "Final sync: deleted %d merged files from S3",
-        len(_deleted_keys) - len(left),
+        "OBSERV sync.records_deleted count=%d kept=%d status=%s",
+        len(keys) - len(left),
+        len(left),
+        "warn" if left else "ok",
     )
     if left:
         _alert_merged_left(left)
@@ -4378,9 +4506,10 @@ def _alert_merged_left(left: list) -> None:
         "s3",
         "merged_delete_failed",
         note=(
-            f"{len(left)} merged-away record(s) are still in S3 and would come back as "
-            f"duplicates on the next download. The keys are in {where}: review them, delete "
-            "each from the data bucket, then re-run dedup for the book"
+            f"{len(left)} removed record(s) are still in S3 and would come back on the next "
+            f"download (a failed delete, or another task rewrote it since: "
+            f"changed_since_download). The keys are in {where}: review each, delete it from "
+            "the data bucket if it is really gone, then re-run dedup for the book"
         ),
         count=len(left),
         error=left[0][1],
@@ -4417,6 +4546,9 @@ def _final_sync(phase_script: str = ""):
         # downloaded record (shared bibliography/maps for every book) cost a PUT each and widened
         # the window in which a concurrent task's update to a shared record is overwritten.
         skip = _unchanged_downloads()
+        # removed records, seen BEFORE the uploads: a record the phase removes after this (a
+        # SIGTERM sync while it still runs) keeps its S3 copy until a later sync (task 1.5)
+        removed = _removed_downloads()
         for subdir in entity_dirs:
             d = WORKDIR / "output" / subdir
             if not d.exists():
@@ -4475,9 +4607,10 @@ def _final_sync(phase_script: str = ""):
                 "OBSERV cache.synced status=error reason=%s", type(_e).__name__
             )
 
-        # Delete merged/removed files from S3
-        if _deleted_keys:
-            _delete_merged_from_s3()
+        # Delete merged/removed records from S3 (task 1.5): the ones tracked in this process
+        # and every downloaded record the phase removed locally (a dedup merge, a narrative
+        # note moved out of bibliography/, a shard folded in)
+        _delete_merged_from_s3(removed)
 
         # Write manifest to DynamoDB so next phase only downloads changed files
         if all_uploaded and "phase2" in phase_script:

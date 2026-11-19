@@ -171,5 +171,9 @@ def _fresh_service_state(monkeypatch):
     ee = sys.modules.get("ecs_entrypoint")
     if ee is not None and hasattr(ee, "_s3"):
         monkeypatch.setattr(ee, "_s3", {})
+    if ee is not None and hasattr(ee, "_synced_at"):
+        # what this "task" synced: a record removed later is deleted from S3 (task 1.5)
+        monkeypatch.setattr(ee, "_synced_at", {})
+        monkeypatch.setattr(ee, "_synced_etag", {})
     yield
     service_outage.reset()
