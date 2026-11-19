@@ -76,7 +76,8 @@ Resources:
                   - !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${EnvironmentName}-wwii-*
               - Sid: NoXaiManagementKey
                 # the xAI Management API key (task 1.1c) is read only by the ECS phase tasks
-                # (ECSTaskRole): it can buy credit and manage keys, so no other role may read it
+                # (ECSTaskRole) and the credit-check Lambda's own role (compute.yaml, task 1.1e):
+                # it can buy credit and manage keys, so this shared role may not read it
                 Effect: Deny
                 Action:
                   - secretsmanager:GetSecretValue
@@ -309,6 +310,24 @@ Resources:
                 Resource:
                   - !Ref CacheTableArn
                   - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${EnvironmentName}-wwii-*
+              - Sid: NoCreditGateWrites
+                # task 1.1e: the trigger replays credit#holds entries as task launches and trusts
+                # credit#balance / credit#hold_alerted for launch and alert decisions; a phase task
+                # (which processes untrusted book text) must not be able to write them
+                Effect: Deny
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:BatchWriteItem
+                Resource:
+                  - !Ref CacheTableArn
+                Condition:
+                  ForAnyValue:StringEquals:
+                    dynamodb:LeadingKeys:
+                      - credit#holds
+                      - credit#balance
+                      - credit#hold_alerted
               - Sid: SecretsManager
                 Effect: Allow
                 Action:
@@ -549,7 +568,8 @@ Resources:
                     aws:RequestedRegion: !Ref AWS::Region
               - Sid: NoXaiManagementKey
                 # the xAI Management API key (task 1.1c) is read only by the ECS phase tasks
-                # (ECSTaskRole): it can buy credit and manage keys, so no other role may read it
+                # (ECSTaskRole) and the credit-check Lambda's own role (compute.yaml, task 1.1e):
+                # it can buy credit and manage keys, so this shared role may not read it
                 Effect: Deny
                 Action:
                   - secretsmanager:GetSecretValue

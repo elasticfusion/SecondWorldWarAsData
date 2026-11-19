@@ -1670,8 +1670,13 @@ def _handle_manual_trigger(event):
                 "(set the env to authorize a scope override).",
                 exp,
             )
-    _run_task(task_def, "manual", book_name=book, extra_env=extra_env)
-    return {"status": "launched", "book": book, "phase": phase}
+    launched = _run_task(task_def, "manual", book_name=book, extra_env=extra_env)
+    # not launched = queued (its lock is held, or held for low xAI credit): it runs later
+    return {
+        "status": "launched" if launched else "queued",
+        "book": book,
+        "phase": phase,
+    }
 
 
 def handler(event, _context):
@@ -1950,6 +1955,14 @@ def _handle_scheduled_check():
     # but if a phase-complete invoke was lost, this scheduled poll drains any
     # parked pending#* queue when the cluster is idle. Shared drain implementation
     # (WARNING-level errors) — this is the B460-strand fix (was a silent block).
+    try:
+        _release_credit_holds()  # task 1.1e: imports held while credit was low
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - the hold was put back; the reconcile still runs
+        logger.warning(
+            "OBSERV credit.release_failed err=%s status=warn", type(e).__name__
+        )
     _reconcile_pending(reason="scheduled-backstop")
 
     return {"action": "lock_check_complete"}
@@ -2400,7 +2413,9 @@ def _acquire_task_lock(task_def, family, lock_key, book_name, now) -> bool:
     return False
 
 
-def _run_task(task_def, source, book_name="", extra_env=None) -> bool:
+def _run_task(
+    task_def, source, book_name="", extra_env=None, credit_checked=False
+) -> bool:
     """Create networking, acquire lock, launch ECS task. True when a launch was made (the lock
     was taken); False when refused (unsafe name) or the lock is held (the request is queued).
 
@@ -2428,6 +2443,8 @@ def _run_task(task_def, source, book_name="", extra_env=None) -> bool:
     if _task_family(task_def) == _task_family(AV_SCAN_TASK_DEF):
         _run_av_scan(task_def, source, extra_env)
         return True
+    if not credit_checked and _held_for_credit(task_def, source, book_name, extra_env):
+        return False  # kept (queue row or credit hold); launched once credit is back
     # Cancel any pending delayed teardown
     _cancel_delayed_teardown()
 
@@ -2455,6 +2472,123 @@ def _run_task(task_def, source, book_name="", extra_env=None) -> bool:
 
     _launch_ecs_task(task_def, source, book_name, extra_env, lock_key, family)
     return True
+
+
+def _spends_grok(task_def: str) -> bool:
+    """The launches that spend xAI credit: Phase 2/3, and a Phase 0 import whose title-page
+    request is on (ecs_entrypoint._uses_grok is the in-task twin)."""
+    if task_def in (PHASE2_TASK_DEF, PHASE3_TASK_DEF):
+        return True
+    if task_def in (PHASE0_TASK_DEF, PHASE0_VIDEO_TASK_DEF):
+        from src.ingestion import book_metadata
+
+        return book_metadata.enabled(_trigger_config())
+    return False
+
+
+def _held_for_credit(task_def, source, book_name, extra_env) -> bool:
+    """Task 1.1e (owner 2026-11-18): do not launch a Grok phase while xAI credit is under the
+    floor - the task would start (Fargate + NAT) only to stop at its preflight. The request is
+    kept, never dropped: a Phase 2/3 book stays on its queue; a Phase 0 import becomes a credit
+    hold that the hourly check replays (_release_credit_holds). True when held; a request that
+    cannot be kept is launched (False) and its own preflight stops and alerts."""
+    if not _spends_grok(task_def):
+        return False
+    from src.utils import credit_hold
+
+    allowed, usd, floor = credit_hold.launch_allowed(
+        dynamo, _credit_lambda(), _trigger_config()
+    )
+    if allowed or usd is None:
+        return False
+    family = TASK_FAMILIES.get(task_def, "unknown")
+    try:
+        if task_def == PHASE3_TASK_DEF and book_name:
+            _queue_pending_enrich(book_name, strict=True)
+        elif task_def == PHASE2_TASK_DEF and book_name:
+            _queue_pending_parsed_book(book_name, strict=True)
+        elif task_def in _holdable_task_defs():
+            credit_hold.hold_request(dynamo, task_def, source, book_name, extra_env)
+        else:
+            # an unscoped Phase 2/3 run (manual): nothing to keep it in - launch, and its own
+            # preflight stops it with an alert that says to re-trigger after a top-up
+            return False
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - not kept: launch, the task's preflight stops it
+        logger.warning(
+            "OBSERV credit.hold_failed family=%s book=%s err=%s status=warn - launching "
+            "instead; the task's own preflight stops it under the floor",
+            family,
+            book_name,
+            type(e).__name__,
+        )
+        return False
+    logger.info(
+        "OBSERV credit.launch_held family=%s book=%s usd=%.2f floor=%.2f status=ok",
+        family,
+        book_name,
+        usd,
+        floor,
+    )
+    credit_hold.alert_held(dynamo, usd, floor, f"{family} {book_name}".strip())
+    return True
+
+
+_credit_client: dict = {}
+
+
+def _credit_lambda():
+    """The Lambda client for the credit-check invoke (one per container)."""
+    from src.utils import credit_hold
+
+    if "c" not in _credit_client:
+        _credit_client["c"] = credit_hold.lambda_client()
+    return _credit_client["c"]
+
+
+def _holdable_task_defs() -> tuple:
+    """The launches kept as credit holds (Phase 0 imports; Phase 2/3 books use their own
+    queues): the only task definitions a stored hold may replay."""
+    return (PHASE0_TASK_DEF, PHASE0_VIDEO_TASK_DEF)
+
+
+def _release_credit_holds() -> int:
+    """Hourly: once credit is back over the floor, launch every held request (the queues of
+    Phase 2/3 drain through _reconcile_pending as before). Returns how many were launched.
+    """
+    from src.utils import credit_hold
+
+    try:
+        held = credit_hold.held_requests(dynamo, _holdable_task_defs())
+    except Exception as e:  # noqa: BLE001 - try again next hour
+        logger.warning(
+            "OBSERV credit.holds_unreadable err=%s status=warn", type(e).__name__
+        )
+        return 0
+    if not held:
+        return 0
+    allowed, usd, _ = credit_hold.launch_allowed(
+        dynamo, _credit_lambda(), _trigger_config()
+    )
+    if not allowed:
+        logger.info(
+            "OBSERV credit.holds_waiting n=%d usd=%.2f status=ok", len(held), usd or 0
+        )
+        return 0
+    n = credit_hold.release_held(
+        dynamo,
+        lambda r: _run_task(
+            r["task_def"],
+            r.get("source") or "credit-release",
+            r.get("book") or "",
+            r.get("extra_env") or None,
+            credit_checked=True,  # just checked; a False now means its lock is held
+        ),
+        held,
+    )
+    logger.info("OBSERV credit.holds_released n=%d status=ok", n)
+    return n
 
 
 def _run_av_scan(task_def, source, extra_env) -> None:
@@ -2931,8 +3065,10 @@ def _launch_phase2_if_idle(book_name=""):
     _run_task(PHASE2_TASK_DEF, "pending-parsed", book_name=book_name)
 
 
-def _queue_pending_enrich(book_name: str) -> None:
-    """Queue a book for Phase 3 enrichment when the lock is held (keeps its attempt count)."""
+def _queue_pending_enrich(book_name: str, strict: bool = False) -> None:
+    """Queue a book for Phase 3 enrichment when the lock is held (keeps its attempt count).
+    ``strict``: raise if the row was not written (a caller that must not lose the request).
+    """
     from src.utils import pending_queue
 
     try:
@@ -2940,6 +3076,8 @@ def _queue_pending_enrich(book_name: str) -> None:
         logger.info("Queued Phase 3 enrichment for %s", book_name)
     except Exception as e:
         logger.error("Failed to queue enrichment for %s: %s", book_name, e)
+        if strict:
+            raise
 
 
 def _get_pending_books_for_enrich() -> list:
@@ -2964,8 +3102,10 @@ def _get_pending_books_for_enrich() -> list:
         return []
 
 
-def _queue_pending_parsed_book(book_name: str) -> None:
-    """Queue a book for Phase 2 extraction when the lock is held (no file keys, just marks book as pending)."""
+def _queue_pending_parsed_book(book_name: str, strict: bool = False) -> None:
+    """Queue a book for Phase 2 extraction when the lock is held (no file keys, just marks book as pending).
+    ``strict``: raise if the row was not written (a caller that must not lose the request).
+    """
     try:
         dynamo.update_item(
             Key={"cache_key": f"pending#parsed#{book_name}"},
@@ -2975,3 +3115,5 @@ def _queue_pending_parsed_book(book_name: str) -> None:
         logger.info("Queued Phase 2 extraction for %s", book_name)
     except Exception as e:
         logger.error("Failed to queue extraction for %s: %s", book_name, e)
+        if strict:
+            raise

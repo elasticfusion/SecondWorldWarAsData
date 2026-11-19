@@ -319,6 +319,29 @@ continues from where it stopped. Order: 1.2b, 1.1b, 1.2c, 1.2e, 1.2d, 1.2f, 1.1c
   The balance formula is verified on one answer (2026-11-18); re-check it around the 11th, when
   the month's spend posts to the ledger.
 
+- **1.1e - hold Grok launches while credit is low.** DONE (owner 2026-11-18,
+  `src/utils/credit_hold`, `lambda_handlers/credit_check.py`). The trigger Lambda (outside the VPC,
+  no NAT) asks the `<env>-wwii-credit-check` Lambda (the only Lambda allowed the management key;
+  answer cached 5 min as `credit#balance`) before a Phase 2/3 or Phase 0 import launch. Under the
+  floor nothing launches: a Phase 2/3 book stays on its queue (strict write: a failed write
+  launches instead), a Phase 0 import becomes an entry of the `credit#holds` item (one id per
+  launch, so a redelivered event is one hold), replayed by the hourly check once credit is back
+  (claimed, removed only after the launch; a stale claim is retried, so a crash never loses it).
+  Only allow-listed holds replay (Phase 0 task defs, CONVERT_KEY/VIDEO_KEY under
+  `contentrepository/`); ECSTaskRole is denied writes to the gate's items. One
+  `credit.launches_held` alert per 6 h. Unreadable here: launch, the task's preflight decides.
+  Follow-ups: the batch poller's submit-only launch (`lambda_handlers/batch_poller.py:~128`) and
+  the SFN dispatcher (`MULTI_DOC_ENABLED`) do not ask the gate (their tasks still stop at the
+  preflight); an unscoped manual Phase 2/3 run is launched, not held (its preflight alerts);
+  `scripts/phase_snapshot` restore resets `credit#` keys, which drops any held import; the
+  deploy role can still replace the credit-check code (CI trust boundary); reserved concurrency
+  on the credit-check Lambda was left off (it fails on accounts with a low concurrency quota).
+  Review suggestions (2026-11-18, not blocking): one hold whose launch raises stops the rest of
+  that hour's release (catch per hold); all holds share one 400 KB item (cap + alert, or one item
+  per hold); the OCR and dispatcher roles can still write `credit#balance` (add the same Deny);
+  `valid_hold` should also reject `.`/`..`/`unknown`; wrap the whole gate call so any gate error
+  launches; the credit-check "balance not cached" warning should name the role/key to check.
+
 #### Task 1.1 follow-ups (found in review, 2026-11-18)
 - **MED - an alert from a task that has no network path is lost.** When NAT never becomes ready the
   task has no route to SNS (nat-manager creates interface endpoints for ecr, logs, secretsmanager,
