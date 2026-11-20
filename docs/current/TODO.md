@@ -1387,7 +1387,27 @@ bibliography JSON; Archive.org / Gutenberg finds through G3.
   through the same multi-source search as the archive path.
 - **LOW - owner - article path: add OpenSERP.** `_resolve_article_search` (`BR:1872`) searches
   Archive.org only; many papers are on `.mil` and `.gov` / education sites that OpenSERP would find.
-- **LOW - a bookseller listing can be stored as an "online copy", and no book data is taken from it.**
+- **DONE (2026-11-20, owner: "Amazon is to be added to the pipeline like archive.org and
+  gutenberg; no expectation of a download") Amazon as a bibliography source.** It was in this
+  list only as the LOW item below (a listing stored as an online copy) and the two FEATURE items
+  (affiliate / BookFinder links); the search itself was never built. Now: books (and untyped
+  published works, not archival records) get an Amazon listing search through OpenSERP
+  (`site:amazon.com`, template `search_queries/bibliography.yaml` `amazon`; Amazon's pages are
+  never fetched), gated on `supplemental_material.search_amazon` (default on) + `use_openserp`;
+  candidates must be https product pages on exactly amazon.com / www.amazon.com (no userinfo,
+  port, backslash or encoded characters), stored as the canonical `https://www.amazon.com/dp/<ASIN>`
+  (a third party's `tag=` is never kept); the title/author put in the query lose quotes and
+  operators; the same token-gate + Grok verify as the other sources (no Grok client: no listing);
+  the finding is `source_metadata.bookseller` (+ a `kind: bookseller` finding), never in
+  `resource_urls`, no change to `search_status`; also for books that already have a copy; the
+  search is asked once per window, an empty answer included (`openserp_cache_days`, 14), and a
+  found listing is never searched for again, and a search that found none is stamped
+  (`source_metadata.bookseller_searched_at`, not stamped during an outage) and not repeated within
+  `openserp_cache_days`, so resolved books are not rewritten every run. Left: the schema does not
+  pin the listing URL (`source_metadata` is free-form; add a pattern when `source_metadata` gets
+  a defined `bookseller` item). Still to do (the FEATURE items): build the affiliate
+  link from the stored listing (ASIN from the URL + the associate tag in config) and the
+  BookFinder link; ISBN/edition from Open Library. Was: LOW - a bookseller listing can be stored as an "online copy", and no book data is taken from it.
   Nothing in the resolver reads Amazon (or any bookseller) pages for ISBN, publisher or edition, and an
   Amazon listing that passes the title-level Grok check is stored like a digitized copy. Owner
   (2026-11-17): Amazon is wanted (affiliate links, below), so `amazon.com` was REMOVED from

@@ -1,5 +1,6 @@
 """Search for supplemental material URLs using multiple sources."""
 
+import json
 import logging
 import re
 from typing import Any, Dict, Optional, Tuple
@@ -543,6 +544,132 @@ def _set_default_text(out: Dict, epub: Optional[dict]) -> None:
     elif out.get("djvu_txt_url"):
         out["text_url"] = out["djvu_txt_url"]
         out["text_format"] = "djvu_txt"
+
+
+_AMAZON_HOSTS = ("amazon.com", "www.amazon.com")
+_AMAZON_PRODUCT = re.compile(
+    r"^/(?:[^/?#\\]+/)?(?:dp|gp/product|exec/obidos/ASIN)/([A-Z0-9]{10})(?:[/?#]|$)"
+)
+
+
+def _clean_listing_text(url: Any) -> bool:
+    """A plain, short URL string: no backslash / @ / % and no whitespace or control character."""
+    if not isinstance(url, str) or len(url) > 300:
+        return False
+    if any(c in url for c in ("\\", "@", "%")):
+        return False
+    return not any(c.isspace() or ord(c) < 32 or ord(c) == 127 for c in url)
+
+
+def _amazon_path(url: str) -> Optional[str]:
+    """The URL's path if it is https on exactly amazon.com / www.amazon.com with no userinfo or
+    port, else None."""
+    from urllib.parse import urlparse
+
+    try:
+        parts = urlparse(url)
+        plain = (
+            not parts.username
+            and not parts.password
+            and parts.port is None
+            and parts.netloc.lower() == (parts.hostname or "")
+        )
+    except ValueError:
+        return None
+    ok = parts.scheme == "https" and plain and parts.hostname in _AMAZON_HOSTS
+    return parts.path if ok else None
+
+
+def amazon_listing_url(url: str) -> Optional[str]:
+    """The canonical listing URL ``https://www.amazon.com/dp/<ASIN>`` for an Amazon product page,
+    else None. Strict, because the result is published and used to build an affiliate link: an
+    https URL on exactly amazon.com / www.amazon.com, no userinfo, port, backslash, whitespace or
+    control character (a browser reads ``\\`` as ``/``, Python's urlparse does not: the two would
+    disagree about the host), and a product path with an ASIN. Everything else - the query string
+    (a third party's ``tag=``), fragment, search / review / seller pages - is dropped.
+    """
+    if not _clean_listing_text(url):
+        return None
+    path = _amazon_path(url)
+    m = _AMAZON_PRODUCT.match(path) if path else None
+    return f"https://www.amazon.com/dp/{m.group(1)}" if m else None
+
+
+def _search_text(value: Optional[str], limit: int = 150) -> str:
+    """A title / author for a search query: no quotes, parentheses, or operator characters (the
+    text is untrusted book text and must not add ``site:`` / ``-`` terms), capped."""
+    text = re.sub(r'["()<>\[\]{}\\|]', " ", str(value or ""))
+    text = re.sub(r"(?i)\b(?:site|inurl|intitle|filetype|OR|AND)\b:?", " ", text)
+    words = [w.lstrip("-+~") for w in text.split()]  # no exclude / require operators
+    return " ".join(w for w in words if w)[:limit].strip()
+
+
+def search_amazon_candidates(
+    title: str,
+    author: Optional[str] = None,
+    openserp_url: str = "http://localhost:7001",
+    limit: int = 5,
+) -> "list[Tuple[str, str]]":
+    """Amazon listings for a book, as ``(url, title)`` pairs for the caller to verify. A bookseller
+    listing is a pointer (to buy, and the source of an affiliate link), NOT a copy: there is no
+    expectation of a download. Found through OpenSERP (``site:amazon.com``): Amazon's own pages
+    are never fetched, so its terms against scraping are not touched. Asked once per window, an
+    empty answer included (``cached_answer``); never raises."""
+    title, author = _search_text(title), _search_text(author, 80)
+    if len(title) < 4:
+        return []
+    from src.utils.search_cache import scraped_ttl_days
+
+    return _as_pairs(
+        cached_answer(
+            "amazon_candidates_v2",  # v2: strict canonical listing URLs
+            json.dumps([title, author, limit]),
+            lambda: _amazon_candidates(title, author, openserp_url, limit),
+            ttl_days=scraped_ttl_days(),  # a scraped engine: empty may mean throttled
+        )
+    )
+
+
+def _amazon_candidates(
+    title: str, author: Optional[str], openserp_url: str, limit: int
+) -> "list[Tuple[str, str]]":
+    out: "list[Tuple[str, str]]" = []
+    try:
+        import time
+
+        from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
+        from src.utils.search_query_loader import render_search_queries
+
+        queries = render_search_queries(
+            "bibliography", "amazon", title=title, author=author or ""
+        )
+        time.sleep(
+            5
+        )  # the OpenSERP politeness gap the other searches keep (a real call only)
+        response = recorded_fetch(
+            "openserp",
+            f"{openserp_url}/mega/search",
+            kind=TEXTUAL,
+            method="GET",
+            params={
+                "text": queries[0] if queries else f"{title} site:amazon.com",
+                "limit": str(limit * 2),
+                "mode": "any",
+                "engines": "google,bing,duckduckgo",
+            },
+            timeout=30.0,
+            result_summary_fn=lambda r: f"status={r.status_code}",
+        )
+        if _answered("openserp", "amazon_search", response):
+            for r in response.json().get("results", []):
+                listing = amazon_listing_url(str(r.get("url", "")))
+                if listing and listing not in {u for u, _ in out}:
+                    out.append((listing, str(r.get("title", ""))[:500]))
+                if len(out) >= limit:
+                    break
+    except Exception as e:
+        _unreachable("openserp", "amazon_search", e)
+    return out
 
 
 def search_openserp(

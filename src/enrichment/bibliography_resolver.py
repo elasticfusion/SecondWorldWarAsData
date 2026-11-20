@@ -180,8 +180,7 @@ def resolve_bibliography_entry(
     # block the online-copy search (OpenSERP/archive.org/Gutenberg). Re-running Phase 3 should
     # therefore re-attempt those. A genuinely resolved entry carries resource_urls.
     if entry.get("resource_urls"):
-        entry["search_status"] = "resolved"
-        return entry
+        return _already_has_a_copy(entry, grok_client, config or {})
 
     # Best resolution: we ALREADY HOLD the cited source (e.g. MS # B-405 ->
     # B405.pdf). Short-circuit before any online search. Distinguish PROCESSED
@@ -221,7 +220,123 @@ def resolve_bibliography_entry(
     result = resolver(entry, citation, grok_client, cfg)
 
     _apply_result(entry, result)
+    _maybe_bookseller(entry, doc_type, nara_ok, grok_client, cfg)
     return entry
+
+
+def _already_has_a_copy(entry: Dict, grok_client: Any, config: Dict) -> Dict:
+    """An entry with an online copy is resolved; a book still gets its bookseller listing."""
+    entry["search_status"] = "resolved"
+    doc_type = ((entry.get("citation") or {}).get("document_type") or "").lower()
+    nara_ok = _is_nara_searchable(entry, _entry_verbatim(entry))
+    _maybe_bookseller(entry, doc_type, nara_ok, grok_client, config)
+    return entry
+
+
+def _maybe_bookseller(
+    entry: Dict, doc_type: str, nara_ok: bool, grok_client: Any, config: Dict
+) -> None:
+    """The listing search is OPTIONAL: whatever happens in it, the resolution already made stays."""
+    if not _wants_bookseller(entry, doc_type, nara_ok, config) or grok_client is None:
+        return  # (no Grok client: a listing is never kept unverified)
+    try:
+        _find_bookseller(entry, grok_client, config)
+    except Exception as e:  # noqa: BLE001 - optional step
+        observe_warn(
+            "bibliography",
+            "bookseller_failed",
+            note="the Amazon listing search failed for this record; its resolution is kept and "
+            "the search is repeated next run. Check the OpenSERP service",
+            error=type(e).__name__,
+        )
+
+
+def _needs_bookseller(entry: Dict, config: Dict) -> bool:
+    """``_wants_bookseller`` for an entry that is not being resolved now (already has a copy)."""
+    doc_type = ((entry.get("citation") or {}).get("document_type") or "").lower()
+    return _wants_bookseller(
+        entry, doc_type, _is_nara_searchable(entry, _entry_verbatim(entry)), config
+    )
+
+
+def _wants_bookseller(entry: Dict, doc_type: str, nara_ok: bool, config: Dict) -> bool:
+    """A published work (a book, or an untyped citation that is not an archival record and has a
+    real title) gets a bookseller listing search; archival records and articles do not. Gated on
+    ``search_amazon`` (default on) and on OpenSERP (the only way a listing is found); done once
+    per window: not again when a listing was found, or searched for within ``openserp_cache_days``
+    (``source_metadata.bookseller_searched_at``: no rewrite and no repeat verify every run).
+    """
+    if not config.get("search_amazon", True) or not config.get("use_openserp"):
+        return False
+    meta = entry.get("source_metadata") or {}
+    if meta.get("bookseller") or _searched_recently(meta.get("bookseller_searched_at")):
+        return False
+    return doc_type in BOOK_TYPES or _untyped_published_work(entry, doc_type, nara_ok)
+
+
+def _untyped_published_work(entry: Dict, doc_type: str, nara_ok: bool) -> bool:
+    """An untyped, non-archival citation that has a real title (not 'Unknown': prose, interviews
+    and 'Ibid.' variants are not books)."""
+    if doc_type or nara_ok:
+        return False
+    citation = entry.get("citation") or {}
+    return any(
+        t and t != "Unknown" for t in (citation.get("title"), citation.get("alt_title"))
+    )
+
+
+def _searched_recently(stamp: Any) -> bool:
+    """True if a listing search ran within the OpenSERP answer window."""
+    import time
+
+    from src.utils.search_cache import scraped_ttl_days
+
+    try:
+        return time.time() - float(stamp) < scraped_ttl_days() * 86400
+    except (TypeError, ValueError):
+        return False
+
+
+def _find_bookseller(entry: Dict, grok_client: Any, config: Dict) -> None:
+    """Amazon, like archive.org and Gutenberg: candidates -> verify -> keep - but the finding is a
+    BOOKSELLER listing, never an online copy: it is recorded under ``source_metadata.bookseller``
+    (and as a ``kind: bookseller`` finding), never in ``resource_urls``, and it does not change
+    ``search_status`` (there is no expectation of a download). The search is stamped
+    (``bookseller_searched_at``) unless a service was down during it."""
+    import time
+
+    from src.extraction.supplemental_search import search_amazon_candidates
+    from src.utils import service_outage
+
+    citation = entry.get("citation") or {}
+    verbatim = _entry_verbatim(entry)
+    title = _pick_meaningful_title(
+        citation.get("alt_title") or "", citation.get("title") or "", verbatim
+    )
+    author = _joined_author(citation.get("author") or "")
+    with service_outage.watch() as outages:
+        cands = search_amazon_candidates(
+            title, author or None, config.get("openserp_url", "http://localhost:7001")
+        )
+    urls = _collect_verified_candidates(
+        verbatim[:300] or title, cands, grok_client, entry, max_findings=1
+    )
+    meta = entry.get("source_metadata")
+    if not isinstance(meta, dict):
+        meta = entry["source_metadata"] = {}
+    if urls:
+        listing = {"url": urls[0], "source": "amazon", "kind": "bookseller"}
+        meta["bookseller"] = [listing]
+        meta.setdefault("findings", []).append(dict(listing))
+        logger.info("OBSERV bib.bookseller_found source=amazon url=%s", urls[0][:120])
+    else:
+        logger.info(
+            "OBSERV bib.bookseller_none source=amazon candidates=%d outage=%s",
+            len(cands),
+            bool(outages),
+        )
+    if not outages:
+        meta["bookseller_searched_at"] = int(time.time())
 
 
 def _enrich_from_biblio_note(entry: Dict[str, Any], citation: Dict[str, Any]) -> None:
@@ -2163,6 +2278,15 @@ def _process_bib_file(
     return _process_bib_record(f, data, grok_client, config, resolved_by_key)
 
 
+def _fully_resolved(data: Dict[str, Any], config: Dict) -> bool:
+    """Resolved with an actual online copy (resource_urls), and no listing search still to do."""
+    return bool(
+        data.get("search_status") == "resolved"
+        and data.get("resource_urls")
+        and not _needs_bookseller(data, config)
+    )
+
+
 def _process_bib_record(
     f: Path,
     data: Dict[str, Any],
@@ -2175,7 +2299,7 @@ def _process_bib_record(
     # "resolved" by a prior RG-IDENTIFY pass but with ZERO resource_urls has no digitized
     # copy yet — re-process it so the online sources (NARA catalog / OpenSERP / archive.org /
     # Gutenberg) get a chance to find one.
-    if data.get("search_status") == "resolved" and data.get("resource_urls"):
+    if _fully_resolved(data, config or {}):
         return ("skipped", False, "")
 
     cached = _resolve_watched(data, grok_client, config, resolved_by_key)
@@ -2267,8 +2391,14 @@ def _resolve_or_reuse(
     it. Returns the cached record used (or None if this was a fresh resolution)."""
     key = _citation_key(data)
     cached = resolved_by_key.get(key) if key else None
-    if cached is not None:
+    if cached is not None and not data.get("resource_urls"):
         _reuse_cached_resolution(data, cached)
+    elif cached is not None:
+        # already has its own copy: another record's resolution never replaces it; it is
+        # resolved on its own and is a fresh resolution, not a reuse
+        resolve_bibliography_entry(data, grok_client, config)
+        resolved_by_key[key] = data
+        return None
     else:
         resolve_bibliography_entry(data, grok_client, config)
         if key:

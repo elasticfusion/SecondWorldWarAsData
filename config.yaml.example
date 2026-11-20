@@ -102,6 +102,7 @@ supplemental_material:
   llm_search: true                     # Phase 3: Grok "LLM search" fallback (content-verified)
   search_gutenberg: true               # Phase 3: Gutendex API (free; independent of OpenSERP)
   search_archive_org: true             # Phase 3: archive.org API (free; independent of OpenSERP)
+  search_amazon: true                  # Phase 3: a bookseller listing (Amazon, via OpenSERP site: search) for books; a pointer, never an online copy
   use_openserp: true                   # Phase 3 ONLY: OpenSERP service is scaled up on demand
   verify_archive_urls: false           # Skip verification pass
   extract_isbn: false                  # Skip — uses API calls
