@@ -1,10 +1,13 @@
 """Search for supplemental material URLs using multiple sources."""
 
 import logging
+import re
 from typing import Any, Dict, Optional, Tuple
 from urllib.parse import quote
 
 import requests
+
+from src.utils.search_cache import cached_answer
 
 logger = logging.getLogger(__name__)
 
@@ -43,8 +46,21 @@ def search_gutenberg_openserp(
     Search Project Gutenberg using OpenSERP.
 
     Returns:
-        URL if found, None otherwise
+        URL if found, None otherwise (asked once per window, a miss included)
     """
+    from src.utils.search_cache import scraped_ttl_days
+
+    return cached_answer(
+        "gutenberg_openserp",
+        f"{title}|{author or ''}",
+        lambda: _gutenberg_via_openserp(title, author, openserp_url),
+        ttl_days=scraped_ttl_days(),  # a scraped engine: empty may mean throttled, not "none"
+    )
+
+
+def _gutenberg_via_openserp(
+    title: str, author: Optional[str], openserp_url: str
+) -> Optional[str]:
     try:
         from src.utils.search_query_loader import render_search_queries
 
@@ -130,10 +146,11 @@ def _search_and_cache(
 ) -> Optional[str]:
     """Ask archive.org and cache the answer; an outage (TRANSIENT) is not cached and reads as
     no result for now (task 1.2f)."""
-    from src.utils.search_cache import TRANSIENT, cache_result
+    from src.utils.search_cache import TRANSIENT, answer_ttl_days, cache_result
 
     result = _search_archive_org_api(title, author, periodical)
-    cache_result("archive_org", query_key, result)  # TRANSIENT is never cached
+    # TRANSIENT is never cached; a real "nothing found" is kept for the whole answer window
+    cache_result("archive_org", query_key, result, negative_days=answer_ttl_days())
     return None if result is TRANSIENT else result
 
 
@@ -207,8 +224,8 @@ def _append_archive_candidate(doc: dict, out: "list[Tuple[str, str]]") -> None:
     """Append one archive.org result as a (url, title) pair, normalizing a list-valued title.
     Skips docs with no identifier. Mutates ``out`` in place."""
     identifier = doc.get("identifier")
-    if not identifier:
-        return
+    if not identifier or not re.fullmatch(r"[A-Za-z0-9._-]{1,200}", str(identifier)):
+        return  # not an archive.org identifier: never built into a URL
     cand_title = doc.get("title") or ""
     if isinstance(cand_title, list):  # archive.org may return a list
         cand_title = cand_title[0] if cand_title else ""
@@ -229,9 +246,31 @@ def search_archive_org_candidates(
         return []
     if _archive_title_rejected(title):
         return []
+    query = _build_archive_query(title, author, periodical)
+    # asked once per window, empty answers included (owner 2026-11-20)
+    return _as_pairs(
+        cached_answer(
+            "archive_org_candidates",
+            f"{query}|rows={rows}",
+            lambda: _archive_candidates(query, rows),
+        )
+    )
+
+
+def _as_pairs(answer: Any) -> "list[Tuple[str, str]]":
+    """A stored candidate list back as (url, title) pairs (JSON keeps them as lists)."""
+    try:
+        return [(str(u), str(t)[:500]) for u, t in (answer or [])]
+    except (TypeError, ValueError):
+        return (
+            []
+        )  # not a candidate list (a stale or foreign entry): treated as no answer
+
+
+def _archive_candidates(query: str, rows: int) -> "list[Tuple[str, str]]":
+    """One archive.org advancedsearch call (an outage is reported, and gives [])."""
     out: "list[Tuple[str, str]]" = []
     try:
-        query = _build_archive_query(title, author, periodical)
         url = (
             f"https://archive.org/advancedsearch.php?q={quote(query)}"
             f"&fl[]=identifier&fl[]=title&output=json&rows={rows}"
@@ -285,11 +324,23 @@ def search_gutenberg_candidates(
     ``search_archive_org_candidates`` so the resolver treats every source uniformly. Low hit
     expectation (out-of-copyright literary texts, not WWII operational records) but cheap and
     self-contained. Never raises."""
-    out: "list[Tuple[str, str]]" = []
     if not title or len(title) < 4:
-        return out
+        return []
+    search_term = title if not author else f"{title} {author}"
+    # asked once per window, empty answers included (owner 2026-11-20)
+    return _as_pairs(
+        cached_answer(
+            "gutendex_candidates",
+            search_term,
+            lambda: _gutendex_candidates(search_term),
+        )
+    )
+
+
+def _gutendex_candidates(search_term: str) -> "list[Tuple[str, str]]":
+    """One Gutendex search (an outage is reported, and gives [])."""
+    out: "list[Tuple[str, str]]" = []
     try:
-        search_term = title if not author else f"{title} {author}"
         from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
 
         response = recorded_fetch(
@@ -348,7 +399,19 @@ def _build_archive_query(
 
 
 def fetch_archive_org_metadata(identifier: str) -> Optional[Dict]:
-    """Fetch metadata and PDF link from Archive.org for a given identifier."""
+    """Fetch metadata and PDF link from Archive.org for a given identifier - once per window,
+    a missing item (None) included."""
+    from src.utils.search_cache import METADATA_TTL_DAYS
+
+    return cached_answer(
+        "archive_org_metadata",
+        identifier,
+        lambda: _fetch_archive_metadata(identifier),
+        ttl_days=METADATA_TTL_DAYS,  # a fresh upload may still be gaining its files
+    )
+
+
+def _fetch_archive_metadata(identifier: str) -> Optional[Dict]:
     try:
         from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
 

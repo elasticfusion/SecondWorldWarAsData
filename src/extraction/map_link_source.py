@@ -293,6 +293,7 @@ def persist_map_entities(
     index_path = maps_dir / "index.json"
     url_index = _load_url_index(index_path)
     counts = {"created": 0, "existing": 0, "skipped": 0}
+    saved = len(url_index)
     for doc in parsed_docs:
         if not isinstance(doc, dict):
             continue
@@ -311,6 +312,11 @@ def persist_map_entities(
                     output_root,
                     grok_client,
                 )
+        if len(url_index) != saved:
+            # after a document that added maps (not only at the end): a task stopped midway keeps
+            # the URLs it already mapped, so the next run does not create the same Map again
+            _save_url_index(index_path, url_index)
+            saved = len(url_index)
     _save_url_index(index_path, url_index)
     logger.info(
         "OBSERV maps.persist_summary created=%d existing=%d skipped=%d status=%s",

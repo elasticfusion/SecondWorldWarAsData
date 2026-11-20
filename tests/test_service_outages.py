@@ -145,7 +145,7 @@ def test_an_archive_org_outage_is_not_cached_as_not_found(monkeypatch, response)
     monkeypatch.setattr("src.utils.search_cache.get_cached", lambda *a: None)
     monkeypatch.setattr(
         "src.utils.search_cache.cache_result",
-        lambda source, key, result: cached.append(result),
+        lambda source, key, result, negative_days=None: cached.append(result),
     )
     if isinstance(response.side_effect, Exception):
         fetch = mock.Mock(side_effect=response.side_effect)
@@ -165,7 +165,7 @@ def test_a_genuine_archive_org_miss_is_still_cached(monkeypatch):
     monkeypatch.setattr("src.utils.search_cache.get_cached", lambda *a: None)
     monkeypatch.setattr(
         "src.utils.search_cache.cache_result",
-        lambda source, key, result: cached.append(result),
+        lambda source, key, result, negative_days=None: cached.append(result),
     )
     monkeypatch.setattr(
         "src.utils.fetch_provenance.recorded_fetch",
@@ -270,3 +270,14 @@ def test_carry_outside_a_watch_changes_nothing():
     from src.utils import service_outage as so
 
     assert so.carry(lambda: so._scope.get())() is None
+
+
+def test_an_outage_in_a_nested_watch_reaches_the_outer_one():
+    from src.utils import service_outage as so
+
+    with so.watch() as outer:
+        with so.watch() as inner:
+            so.failed("archive_org", "search", "x")
+        assert inner == ["archive_org"]
+        so.failed("archive_org", "search", "y")
+    assert outer == ["archive_org"]  # once

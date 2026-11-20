@@ -570,10 +570,10 @@ def _path_part(value: str, default: str) -> str:
     return safe if safe.strip(".") else default
 
 
-def _record_miss(output_root: Path, trace: Dict[str, Any], outcome: str) -> None:
-    """Append an empty / excluded / rejected search to the review log. Never raises (the search
-    result is already decided); a failed append is logged."""
-    record = {
+def miss_record(trace: Dict[str, Any], outcome: str) -> Dict[str, Any]:
+    """The review-log record of one empty / excluded / rejected search (the verdicts, with the
+    Grok prompt and model, only for a rejection)."""
+    return {
         "outcome": outcome,
         "at": _dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds"),
         **{
@@ -582,6 +582,12 @@ def _record_miss(output_root: Path, trace: Dict[str, Any], outcome: str) -> None
             if not (outcome != "rejected" and k == "verdicts")
         },
     }
+
+
+def _record_miss(output_root: Path, trace: Dict[str, Any], outcome: str) -> None:
+    """Append an empty / excluded / rejected search to the review log. Never raises (the search
+    result is already decided); a failed append is logged."""
+    record = miss_record(trace, outcome)
     try:
         path = _review_path(output_root)
         with _review_lock:
@@ -604,6 +610,37 @@ def _record_miss(output_root: Path, trace: Dict[str, Any], outcome: str) -> None
         )
 
 
+UNAVAILABLE_RUN_CAP = 5  # days on which an entity's searches only errored -> logged
+_UNAVAILABLE_TTL_DAYS = 30
+
+
+def _count_unavailable_run(trace: Dict[str, Any]) -> int:
+    """One more DAY on which this entity's searches only errored (OpenSERP unavailable); counted
+    in the shared search cache (the record schemas have no room for it), at most once a day (a
+    worker redelivery is not another run). At UNAVAILABLE_RUN_CAP days the entity is logged for
+    a human - it is still retried, never dropped (task 1.2f). Returns the count (0 if unkept).
+    """
+    from src.utils.search_cache import bump_counter
+
+    ident = (
+        f"{trace.get('entity')}|{json.dumps(trace.get('ids') or {}, sort_keys=True)}"
+    )
+    runs = bump_counter(
+        "openserp_unavailable_days", ident, _UNAVAILABLE_TTL_DAYS, once_per_day=True
+    )
+    if runs == UNAVAILABLE_RUN_CAP:  # once, on the day it is reached
+        logger.error(
+            "OBSERV openserp.entity_never_searched status=error entity=%s name=%s days=%d - its "
+            "searches only errored on %d different days; still retried. Check the OpenSERP "
+            "service and its engines (and this entity's name) for what keeps failing",
+            trace.get("entity"),
+            " ".join(str(trace.get("name", "")).split())[:60],
+            runs,
+            runs,
+        )
+    return runs
+
+
 def _settle(output_root: Path, trace: Dict[str, Any], changed: bool) -> bool:
     """After one entity's search: True if it counts as searched (mark it), else False (OpenSERP
     was unavailable: leave it for the next run). Empty / excluded / rejected go to the review
@@ -611,6 +648,7 @@ def _settle(output_root: Path, trace: Dict[str, Any], changed: bool) -> bool:
     outcome = search_outcome(trace, changed)
     if outcome == "unavailable":
         _metric("entities_unavailable")
+        _count_unavailable_run(trace)
         return False
     if outcome in ("empty", "excluded", "rejected"):
         _record_miss(output_root, trace, outcome)

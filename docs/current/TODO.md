@@ -173,10 +173,19 @@ continues from where it stopped. Order: 1.2b, 1.1b, 1.2c, 1.2e, 1.2d, 1.2f, 1.1c
   S3) and marked searched; OpenSERP unavailable (a query errored) -> NOT marked;
   `_reset_openserp_searched` deleted; people are searched and written one at a time. Phase 3
   resume inventory of the other steps (review 2026-11-18) - fix in each step's group:
-  - bibliography_resolve: unresolved records retried every run (no `last_searched`); archive.org
-    and Gutendex candidate searches uncached; ~~a NARA exception cached as a permanent miss~~
-    (DONE 2026-11-20); `review_queue.json` written only at the end (`:2435`);
-    `max_items` counts skipped records (`:2424`);
+  - DONE (2026-11-20, owner: "record empty responses for archive.org, gutenberg, Amazon")
+    bibliography_resolve re-asked archive.org / Gutendex the same question every run: every
+    candidate search, the archive.org metadata fetch and the OpenSERP Gutenberg search now go
+    through `search_cache.cached_answer`, which records the answer - an EMPTY one too - for
+    `supplemental_material.search_cache_days` (90) across runs and tasks; an answer given while
+    the source was down is never recorded; the older archive.org single-result search keeps
+    empty answers for the same window. OpenSERP (a scraped engine: an empty 200 may be
+    throttling) uses `openserp_cache_days` (14); archive.org metadata (a fresh upload may still
+    gain files) 7 days. AMAZON: no Amazon source
+    exists in the code - the same helper is ready for it (see the open question to the owner);
+    ~~a NARA exception cached as a permanent miss~~ (DONE 2026-11-20); `review_queue.json` written only at the end (`:2435`);
+    DONE (2026-11-20) `max_items` counted skipped records (it now counts records worked on) and
+    `review_queue.json` was written only at the end (now as it grows);
   - claim-before-write (lost forever on a kill): in_doc_map_links (`map_link_source.py:219`, ties
     to 1.6), intra_corpus_links (`intra_corpus.py:212`), ~~openserp_external_maps `mark_searched`
     before processing~~ (DONE 2026-11-20);
@@ -191,11 +200,12 @@ continues from where it stopped. Order: 1.2b, 1.1b, 1.2c, 1.2e, 1.2d, 1.2f, 1.1c
   - DONE (2026-11-20) link_asset_review queued a duplicate PENDING item on every re-run: each
     link of a source section now has a deterministic fetch_event_id recorded once
     (`record_fetch_event(once_key=...)`, a conditional put: a reviewed item is never reset);
-  - maps `index.json` saved only at the end of the step (`map_link_source.py:287`).
-  - OpenSERP SQS worker path (`openserp_worker.py`) is not traced: its misses are not in the
-    review log (call `_search_entity` there too);
-  - an entity whose queries always error and return nothing is never marked and is re-searched
-    every run (cheap: no Grok); add a `last_attempt` stamp / attempt cap and log it.
+  - DONE (2026-11-20) maps `index.json` is saved after each document.
+  - DONE (2026-11-20) the OpenSERP SQS worker is traced like the directory driver: misses go to
+    `review/openserp_misses/<book>/` in S3, and an entity whose searches only errored is no
+    longer marked searched (it was) - it is sent again fresh;
+  - DONE (2026-11-20) an entity whose queries always error is counted per run in the search
+    cache and, at 5 runs, logged `openserp.entity_never_searched` (still retried).
 - **1.2e - OpenSERP verification bypasses the shared Grok library** (found 2026-11-18). `GrokClient`
   (`src/grok_client.py`) already retries transport errors (`_call_api`: 5 tries, exponential backoff
   on HTTPError/ConnectionError) and repairs or re-asks a malformed JSON answer (`extract_json`). The

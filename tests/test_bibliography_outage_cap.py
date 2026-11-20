@@ -68,3 +68,24 @@ def test_a_garbled_count_starts_again(cache):
     key = search_cache._make_key("bibliography_outage_runs", "bib_abc.json")
     cache.put(key, "not-a-number")
     assert br._count_outage_run("bib_abc.json") == 1
+
+
+def test_max_items_counts_resolved_records_not_skipped_ones(tmp_path, monkeypatch):
+    """Task 1.2f: already-resolved (skipped) records used to use up the cap, so a capped run
+    could end having worked on nothing."""
+    for i in range(6):
+        (tmp_path / f"bib_{i}.json").write_text("{}")
+    order = []
+
+    def fake(f, grok, cfg, by_key, stats, samples, queue):
+        order.append(f.name)
+        stats["skipped" if f.name < "bib_4.json" else "resolved"] += 1
+        if f.name == "bib_5.json":
+            queue.append({"file": f.name})
+
+    monkeypatch.setattr(br, "_resolve_one_bib_file", fake)
+    monkeypatch.setattr(br, "build_holdings_index", lambda: {})
+    out = br.resolve_bibliography_dir(tmp_path, None, {}, max_items=2)
+    assert order == [f"bib_{i}.json" for i in range(6)] and out["resolved"] == 2
+    # the review queue was written as soon as it grew (not only at the end)
+    assert (tmp_path / "review_queue.json").exists()

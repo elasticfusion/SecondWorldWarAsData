@@ -107,6 +107,8 @@ supplemental_material:
   extract_isbn: false                  # Skip — uses API calls
   determine_copyright: false           # Skip — uses API calls
   max_materials_per_chapter: 500       # Limit scope
+  search_cache_days: 90                # a source (archive.org, Gutendex) is asked the same question at most once per this many days; an EMPTY answer is kept too
+  openserp_cache_days: 14              # the same for OpenSERP (a scraped engine: an empty answer may only mean it was throttled)
 
 concurrency:
   enabled: false

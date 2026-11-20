@@ -324,3 +324,84 @@ def test_a_failed_requeue_keeps_the_original_message(monkeypatch, caplog):
     _, sqs, _ = _defer_run(monkeypatch, send_fails=True)
     sqs.delete_message.assert_not_called()
     assert "OBSERV openserp_worker.requeue_failed" in caplog.text
+
+
+# --- the worker traces each entity like the directory driver (task 1.2f) ----------------------
+
+
+def _traced(monkeypatch, statuses, changed=False, verdicts=None):
+    """enrich_one_person records ``statuses`` as its queries' results."""
+    import src.enrichment.openserp_enrichment as oe
+
+    def enrich(data, url, grok):
+        for st in statuses:
+            oe._trace_query("q", st, 1 if st == "results" else 0)
+        for v in verdicts or []:
+            oe._trace.get()["verdicts"].append(v)
+        return changed
+
+    monkeypatch.setattr(oe, "enrich_one_person", enrich)
+    monkeypatch.setattr(w, "_safe_entity_path", lambda *a: True)
+    storage = FakeStorage({"people/x.json": {"name": "X", "PersonID": "P1"}})
+    storage.written = {}
+    real = storage.write_json
+    storage.write_json = lambda p, d: (storage.written.__setitem__(p, d), real(p, d))[1]
+    out = w.process_message(
+        {"entity_type": "people", "entity_path": "people/x.json"},
+        storage,
+        "http://s",
+        object(),
+    )
+    return out, storage
+
+
+def test_an_entity_whose_searches_only_errored_is_not_marked_searched(monkeypatch):
+    out, storage = _traced(monkeypatch, ["error", "error"])
+    assert out == "defer"  # was: marked searched, with no search done
+    assert "openserp_searched" not in storage.written.get("people/x.json", {})
+
+
+def test_an_empty_search_is_marked_and_logged_for_review(monkeypatch):
+    out, storage = _traced(monkeypatch, ["empty", "empty"])
+    assert out == "done"
+    [(path, rec)] = [
+        (p, d) for p, d in storage.written.items() if p.startswith("review/")
+    ]
+    assert path.startswith("review/openserp_misses/") and rec["outcome"] == "empty"
+    assert storage.written["people/x.json"]["openserp_searched"] is True
+
+
+def test_a_found_entity_writes_no_review_record(monkeypatch):
+    out, storage = _traced(monkeypatch, ["results"], changed=True)
+    assert out == "done" and not [p for p in storage.written if p.startswith("review/")]
+
+
+def test_redeliveries_on_one_day_are_one_day_not_five_runs(monkeypatch, caplog):
+    """A 15-minute redelivery loop during an OpenSERP outage must not look like five runs."""
+    import src.enrichment.openserp_enrichment as oe
+
+    for _ in range(oe.UNAVAILABLE_RUN_CAP + 3):
+        _traced(monkeypatch, ["error"])
+    assert "entity_never_searched" not in caplog.text
+
+
+def test_an_entity_that_errors_on_five_different_days_is_called_out_once(
+    monkeypatch, caplog
+):
+    import datetime as dt
+
+    import src.enrichment.openserp_enrichment as oe
+    from src.utils import search_cache as sc
+
+    class Day(dt.datetime):
+        today = dt.datetime(2026, 11, 1, tzinfo=dt.timezone.utc)
+
+        @classmethod
+        def now(cls, tz=None):
+            return cls.today
+
+    monkeypatch.setattr(dt, "datetime", Day)
+    for i in range(oe.UNAVAILABLE_RUN_CAP + 2):
+        Day.today = dt.datetime(2026, 11, 1 + i, tzinfo=dt.timezone.utc)
+        _traced(monkeypatch, ["error"])
+    assert caplog.text.count("OBSERV openserp.entity_never_searched") == 1

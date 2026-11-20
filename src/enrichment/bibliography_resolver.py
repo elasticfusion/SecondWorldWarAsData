@@ -930,7 +930,7 @@ def _search_openserp_archive(
         _mark_backend_down(entry)
         return None
 
-    from src.utils.search_cache import cache_result, get_cached
+    from src.utils.search_cache import cache_result, get_cached, scraped_ttl_days
 
     cached = get_cached("openserp_archive", ref)
     if cached == "NOT_FOUND":
@@ -972,7 +972,8 @@ def _search_openserp_archive(
     # If every query was non-200 (e.g. 503 while OpenSERP scales 0->1), that's TRANSIENT — don't
     # poison the negative cache for 7d.
     if saw_200:
-        cache_result("openserp_archive", ref, None)
+        # a scraped engine: an empty 200 may be throttling, so a shorter window than the APIs
+        cache_result("openserp_archive", ref, None, negative_days=scraped_ttl_days())
     else:
         logger.info(
             "OBSERV bib.openserp_all_transient ref=%s (no 200, not negative-cached)",
@@ -2123,29 +2124,17 @@ _OUTAGE_RUNS_TTL_DAYS = 30  # a count not bumped for this long starts again
 
 
 def _count_outage_run(f_name: str) -> int:
-    """One more run in which this citation's search sources were down; returns the count (in
-    the shared search cache, so it survives across runs and tasks: the bibliography schema has
-    no room for it). 0 if the cache cannot be used (then it is retried as before)."""
-    try:
-        from src.utils.search_cache import _get_backend, _make_key
+    """One more run in which this citation's search sources were down; returns the count
+    (search_cache.bump_counter: it survives runs and tasks). 0 if it cannot be kept (then the
+    citation is retried as before)."""
+    from src.utils.search_cache import bump_counter
 
-        backend = _get_backend()
-        key = _make_key("bibliography_outage_runs", f_name)
-        try:
-            runs = int(backend.get(key) or 0) + 1
-        except (TypeError, ValueError):
-            runs = 1  # a value that is not a count starts again
-        backend.put(key, str(runs), ttl_days=_OUTAGE_RUNS_TTL_DAYS)
-        return runs
-    except (
-        Exception
-    ) as e:  # noqa: BLE001 - not counted: the citation is retried as before
+    runs = bump_counter("bibliography_outage_runs", f_name, _OUTAGE_RUNS_TTL_DAYS)
+    if not runs:
         logger.warning(
-            "OBSERV bibliography.outage_count_failed file=%s err=%s status=warn",
-            f_name[:80],
-            type(e).__name__,
+            "OBSERV bibliography.outage_count_failed file=%s status=warn", f_name[:80]
         )
-        return 0
+    return runs
 
 
 def _queue_entry(f_name: str, data: Dict[str, Any]) -> Dict[str, Any]:
@@ -2526,12 +2515,14 @@ def resolve_bibliography_dir(
         config["holdings_index"] = build_holdings_index()
     logger.info("Local holdings index: %d source docs", len(config["holdings_index"]))
 
+    worked = 0  # records actually resolved this run: max_items counts these, not skipped ones
     for f in sorted(bib_dir.glob("*.json")):
         if f.name in skip_files:
             continue
-        if max_items and processed >= max_items:
+        if max_items and worked >= max_items:
             break
         processed += 1
+        skipped_before, queued_before = stats["skipped"], len(review_queue)
         _resolve_one_bib_file(
             f,
             grok_client,
@@ -2541,6 +2532,11 @@ def resolve_bibliography_dir(
             not_citation_samples,
             review_queue,
         )
+        if stats["skipped"] == skipped_before:
+            worked += 1
+        if len(review_queue) > queued_before:
+            # kept as it grows: a task killed mid-pass does not lose the human queue
+            _write_review_queue(bib_dir, review_queue)
 
     _write_review_queue(bib_dir, review_queue)
     _log_bib_resolution_summary(stats, processed, not_citation_samples)
@@ -2552,10 +2548,12 @@ def _write_review_queue(bib_dir: Path, review_queue: List[Dict[str, Any]]) -> No
     if not review_queue:
         return
     try:
-        (bib_dir / "review_queue.json").write_text(
-            json.dumps(review_queue, indent=2, ensure_ascii=False),
-            encoding="utf-8",
+        target = bib_dir / "review_queue.json"
+        tmp = target.with_suffix(".json.tmp")
+        tmp.write_text(
+            json.dumps(review_queue, indent=2, ensure_ascii=False), encoding="utf-8"
         )
+        tmp.replace(target)  # atomic: a kill mid-write never leaves half a file
     except OSError as e:
         logger.warning("Failed to write bibliography review_queue.json: %s", e)
 

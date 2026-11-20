@@ -9,7 +9,7 @@ import json
 import logging
 import time
 from pathlib import Path
-from typing import Optional
+from typing import Any, Callable, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +60,7 @@ def get_cached(source: str, query: str) -> Optional[str]:
 
 
 def cache_result(
-    source: str, query: str, result
+    source: str, query: str, result, negative_days: Optional[float] = None
 ) -> None:  # result: str | None | TRANSIENT
     """Cache a search result.
 
@@ -77,7 +77,116 @@ def cache_result(
     if result:
         backend.put(key, result, ttl_days=POSITIVE_TTL_DAYS)
     else:
-        backend.put(key, "NOT_FOUND", ttl_days=NEGATIVE_TTL_DAYS)
+        backend.put(
+            key,
+            "NOT_FOUND",
+            ttl_days=NEGATIVE_TTL_DAYS if negative_days is None else negative_days,
+        )
+
+
+ANSWER_TTL_DAYS = (
+    90  # the re-search window for a source's answer, empty or not (config)
+)
+
+
+MAX_ANSWER_CHARS = 300_000  # under DynamoDB's 400 KB item limit
+SCRAPED_TTL_DAYS = 14  # an empty answer from a scraped search engine (OpenSERP)
+METADATA_TTL_DAYS = 7  # a record that may still be gaining files (archive.org metadata)
+
+
+def _window(key: str, default: float, config: Optional[dict]) -> float:
+    try:
+        if config is None:
+            from src.utils.config import load_config
+
+            config = load_config()
+        days = float(
+            ((config or {}).get("supplemental_material") or {}).get(key, default)
+        )
+        return days if days > 0 else default
+    except Exception:  # noqa: BLE001 - the default window
+        return default
+
+
+def answer_ttl_days(config: Optional[dict] = None) -> float:
+    """``supplemental_material.search_cache_days`` (default 90): how long a source's answer -
+    INCLUDING an empty one - is reused before that source is asked again (owner 2026-11-20:
+    record empty answers so archive.org and Gutenberg are not asked the same thing every run).
+    """
+    return _window("search_cache_days", ANSWER_TTL_DAYS, config)
+
+
+def scraped_ttl_days(config: Optional[dict] = None) -> float:
+    """``supplemental_material.openserp_cache_days`` (default 14): the shorter window for an
+    answer from a scraped search engine - a rate-limited or captcha'd engine can return 200 with
+    nothing, which must not hide a book for 90 days."""
+    return _window("openserp_cache_days", SCRAPED_TTL_DAYS, config)
+
+
+def bump_counter(
+    namespace: str, ident: str, ttl_days: float, once_per_day: bool = False
+) -> int:
+    """Count one more occurrence of ``ident`` in the shared cache (it survives tasks and runs;
+    the record schemas have no room for it). ``once_per_day``: at most one count per UTC day (a
+    redelivered message or a retry loop is not "another run"). Returns the count, or 0 if it
+    cannot be kept (callers then behave as before)."""
+    import datetime as _dt
+
+    try:
+        backend, key = _get_backend(), _make_key(f"counter#{namespace}", ident)
+        today = _dt.datetime.now(_dt.timezone.utc).strftime("%Y-%m-%d")
+        count, last = 0, ""
+        try:
+            count_s, _, last = str(backend.get(key) or "0|").partition("|")
+            count = int(count_s)
+        except ValueError:
+            count, last = 0, ""
+        if once_per_day and last == today:
+            return count
+        count += 1
+        backend.put(key, f"{count}|{today}", ttl_days=ttl_days)
+        return count
+    except Exception:  # noqa: BLE001 - not counted
+        return 0
+
+
+def cached_answer(
+    source: str,
+    query: str,
+    fetch: Callable[[], Any],
+    ttl_days: Optional[float] = None,
+) -> Any:
+    """``fetch()``'s answer to ``query`` at ``source``, asked at most once per window (see
+    ``answer_ttl_days``) across runs and tasks - an EMPTY answer (no candidates, not found) is
+    recorded too, so the source is not asked the same thing again. An answer given while a
+    service was down (``service_outage`` saw a failure during ``fetch``) is NOT recorded: it is
+    asked again next run. The answer must be JSON-serializable (tuples come back as lists).
+    """
+    from src.utils import service_outage
+
+    key = _make_key(f"answer#{source}", query)
+    try:
+        raw = _get_backend().get(key)
+        if raw is not None:
+            return json.loads(raw)
+    except Exception:  # noqa: BLE001 - unknown or not ours: ask the source
+        pass
+    with service_outage.watch() as outages:
+        answer = fetch()
+    if outages:
+        return answer  # an outage is never recorded as an answer
+    try:
+        body = json.dumps(answer)
+        if len(body) > MAX_ANSWER_CHARS:
+            return answer  # too big to keep (never cut: half a JSON is no answer)
+        _get_backend().put(
+            key,
+            body,
+            ttl_days=answer_ttl_days() if ttl_days is None else ttl_days,
+        )
+    except Exception:  # noqa: BLE001 - not recorded: asked again next time
+        logger.debug("search answer not recorded source=%s", source)
+    return answer
 
 
 class _DynamoBackend:

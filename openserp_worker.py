@@ -126,6 +126,29 @@ from src.utils.grok_models import (  # noqa: E402
 )
 
 
+def _record_miss(storage: Any, trace: dict, outcome: str, entity_path: str) -> None:
+    """Keep this miss in the review log (S3, one prefix per book) like the directory driver does:
+    ``review/openserp_misses/<book>/<task>-<hash of the entity>.json``. Never raises."""
+    import hashlib
+
+    import src.enrichment.openserp_enrichment as oe
+
+    try:
+        book = oe._path_part(os.environ.get("BOOK_NAME", ""), "_all")
+        task = oe._path_part(os.environ.get("ECS_TASK_ID", ""), "local")
+        tag = hashlib.sha256(entity_path.encode()).hexdigest()[:12]
+        storage.write_json(
+            f"review/openserp_misses/{book}/{task}-{tag}.json",
+            oe.miss_record(trace, outcome),
+        )
+        oe._metric(f"review_{outcome}")
+    except Exception as e:  # noqa: BLE001 - the review log must not stop the worker
+        logger.warning(
+            "OBSERV openserp_worker.review_log_failed status=warn err=%s",
+            type(e).__name__,
+        )
+
+
 def process_message(
     body: dict,
     storage: Any,
@@ -176,8 +199,17 @@ def process_message(
     enrich_one = getattr(oe, fn_name)
     from src.utils.grok_models import GrokFundsExhausted, GrokUnreachable
 
+    trace = oe._new_trace(
+        entity_label,
+        entity_path,
+        data,
+        data.get("current_name") or data.get("name") or "",
+    )
     try:
-        changed = enrich_one(data, openserp_url, grok_client)
+        with oe._tracing(
+            trace
+        ):  # the same per-entity trace as the directory driver (1.2d)
+            changed = enrich_one(data, openserp_url, grok_client)
     except (GrokUnreachable, GrokFundsExhausted) as e:
         # Grok down or no credits (task 1.2e): keep the message, pause before the next one so
         # the worker does not burn through the queue (and into the DLQ) while Grok is out
@@ -196,6 +228,16 @@ def process_message(
     ) as e:  # noqa: BLE001 - a transient OpenSERP/Grok error -> redeliver
         logger.warning("enrich failed for %s (%s) -> retry", entity_path, e)
         return "retry"
+
+    outcome = oe.search_outcome(trace, changed)
+    if outcome == "unavailable":
+        # a query errored and none answered: NOT searched (it was marked searched without a
+        # search before); sent again fresh, so an OpenSERP outage never moves it to the DLQ
+        oe._metric("entities_unavailable")
+        oe._count_unavailable_run(trace)
+        return "defer"
+    if outcome in ("empty", "excluded", "rejected"):
+        _record_miss(storage, trace, outcome, entity_path)
 
     # Mark + persist (write-then-delete: the message is deleted only after a successful write).
     data["openserp_searched"] = True

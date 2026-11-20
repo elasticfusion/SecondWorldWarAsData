@@ -48,11 +48,17 @@ _CHECK = {
 def watch() -> Iterator[List[str]]:
     """The services that failed while this work item ran (empty = every source answered)."""
     seen: List[str] = []
+    parent = _scope.get()
     token = _scope.set(seen)
     try:
         yield seen
     finally:
         _scope.reset(token)
+        if (
+            parent is not None
+        ):  # an outage inside a nested scope is one in the outer scope too
+            with _lock:
+                parent.extend(s for s in seen if s not in parent)
 
 
 def carry(fn: Callable[..., Any]) -> Callable[..., Any]:
