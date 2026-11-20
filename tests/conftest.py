@@ -177,6 +177,7 @@ def _fresh_service_state(monkeypatch):
         monkeypatch.setattr(ee, "_synced_etag", {})
     if ee is not None and hasattr(ee, "_attempt_of"):
         monkeypatch.setattr(ee, "_attempt_of", {})  # this task's Phase 3 attempt number
+        monkeypatch.setattr(ee, "_phase_failed", False)
     yield
     service_outage.reset()
 

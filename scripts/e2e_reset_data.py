@@ -77,6 +77,7 @@ SQS_QUEUES = (
     "openserp-work",
     "openserp-work-dlq",
     "s3-validation-backstop-dlq",
+    "trigger-dlq",
 )
 FULL_S3_PREFIXES = ("output", "needs-review", "dedup", "person_photos")
 SAFE_ENVS = ("dev", "test")

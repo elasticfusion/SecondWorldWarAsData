@@ -386,6 +386,43 @@ def test_the_lambda_never_gives_back_another_runs_attempt(trigger, table):
     )
 
 
+def test_an_alert_the_task_could_not_send_is_relayed(trigger, table):
+    """No NAT: the task left its own alert on the marker; ECS reports the stop (exit 1)."""
+    note = "NAT never became ready after 3 attempts, so the phase stopped. " + "x" * 300
+    task_marker.mark(
+        table,
+        "t1",
+        unsent_event="nat_not_ready",
+        unsent_note=note[: task_marker.UNSENT_NOTE_MAX],
+        book="Utah",
+    )
+    trigger.handler(_stopped(code="EssentialContainerExited", exit_code=1), None)
+    [(event, sent, fields)] = trigger.alerts
+    assert event == "task_alert_relayed" and fields["task_alert"] == "nat_not_ready"
+    assert "NAT never became ready" in sent and len(sent) <= 300
+    assert "killed before its emergency upload" in sent  # the trigger's own facts stay
+
+
+def test_a_relayed_alert_carries_no_slack_markup(trigger, table):
+    task_marker.mark(
+        table,
+        "t1",
+        unsent_event="x<!channel>",
+        unsent_note="go <https://evil|here> @all",
+    )
+    trigger.handler(_stopped(code="EssentialContainerExited", exit_code=1), None)
+    [(_, sent, fields)] = trigger.alerts
+    assert not set("<>@") & set(sent + fields["task_alert"])
+
+
+def test_a_relayed_alert_is_not_sent_when_the_task_delivered_one(trigger, table):
+    task_marker.mark(
+        table, "t1", unsent_event="nat_not_ready", unsent_note="x", alerted=True
+    )
+    trigger.handler(_stopped(code="EssentialContainerExited", exit_code=1), None)
+    assert trigger.alerts == []
+
+
 def test_two_reclaims_together_are_two_alerts(trigger, table, monkeypatch):
     from src.utils import observe as obs
 
@@ -655,7 +692,8 @@ def test_an_alert_that_was_not_delivered_is_left_to_the_trigger(
 ):
     monkeypatch.setattr(task, "observe_alert", lambda *a, **k: False)
     task._alert_phase_stopped("x", "note")
-    assert task_marker.read(table, "t9") == {}
+    # not marked alerted: the trigger alerts this stop, relaying the task's own text
+    assert task_marker.read(table, "t9") == {"unsent_event": "x", "unsent_note": "note"}
 
 
 # --- infrastructure --------------------------------------------------------------------------------
@@ -796,8 +834,9 @@ def test_an_undelivered_stop_alert_fails_the_invocation_and_is_retried(
     monkeypatch.setattr(
         trigger, "observe_alert", lambda *a, **k: (calls.append(a[1]), False)[1]
     )
-    with pytest.raises(trigger.StopAlertUndelivered):
-        trigger.handler(_stopped(), None)
+    # handled, not raised: the report is stored for the next scheduled check (no Lambda error
+    # alarm or DLQ message for a stop that is already taken care of)
+    assert trigger.handler(_stopped(), None) == {"action": "checked"}
     assert status() == "failed"
     # another reclaim of the same book is recorded before the retry
     monkeypatch.setattr(

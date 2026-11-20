@@ -318,3 +318,46 @@ def test_the_phase3_drain_tries_the_next_book_when_the_first_is_running(monkeypa
     )
     assert th._reconcile_phase3("enrich-next") is True
     assert tried == ["Anzio", "Brest"]
+
+
+# --- a counted failure is never given back (1.2b follow-up) ----------------------------------
+
+
+def test_a_failed_phase_keeps_its_attempt_through_a_later_sigterm(phase3, monkeypatch):
+    marks = []
+    monkeypatch.setattr(ee, "_mark_task", lambda **f: marks.append(f) or True)
+    assert ee._claim_enrich_attempt() is True
+    ee._attempt_counts()  # the phase failed (exit 1); its alert may not have been delivered
+    assert {"claimed": False} in marks  # the trigger Lambda gives nothing back either
+    note, outside = ee._sigterm_next_step()
+    assert outside is False and "counts as an attempt" in note
+    assert ee._give_back_own_attempt() is False
+    assert _row(phase3, "Utah")["attempts"] == 1
+
+
+def test_a_deferred_stop_still_gives_its_attempt_back(phase3):
+    assert ee._claim_enrich_attempt() is True
+    ee._defer_on_stop_cause(stop_cause.EXIT_FUNDING)
+    ee._attempt_counts()  # run_phase calls it after every deferral: nothing left to consume
+    row = _row(phase3, "Utah")
+    assert row["attempts"] == 0 and row["defer_cause"] == "funding"
+    assert ee._failure_counted() is False
+
+
+def test_the_trigger_does_not_give_back_a_counted_failure(table, monkeypatch):
+    """The marker says claimed=False after the failure, so an outside stop reported by ECS
+    afterwards forgives nothing."""
+    import lambda_handlers.trigger_handler as th
+    from src.utils import task_marker
+
+    monkeypatch.setattr(th, "dynamo", table)
+    pq.claim_attempt(table, "Utah", 3, task_id="t1")
+    task_marker.mark(table, "t1", claimed=True, book="Utah")
+    task_marker.mark(table, "t1", claimed=False)
+    facts = {
+        "family": th.TASK_FAMILIES[th.PHASE3_TASK_DEF],
+        "book": "Utah",
+        "task_id": "t1",
+    }
+    assert th._give_back_for_task(facts, task_marker.read(table, "t1")) is False
+    assert _row(table, "Utah")["attempts"] == 1

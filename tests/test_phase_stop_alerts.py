@@ -330,16 +330,46 @@ def test_a_failing_alert_does_not_block_the_exit(monkeypatch):
     assert stop.value.code == 143
 
 
-def test_an_undeliverable_nat_alert_is_called_out(alerts, monkeypatch, caplog):
+def test_an_undeliverable_nat_alert_is_left_for_the_trigger_to_relay(
+    alerts, monkeypatch
+):
+    """No NAT = no route to SNS: the alert goes on the task's stop marker (DynamoDB gateway
+    endpoint), which the trigger Lambda relays when ECS reports the stop."""
     monkeypatch.setenv("NAT_READY_MAX_ATTEMPTS", "1")
     monkeypatch.setattr(ee.time, "sleep", lambda *_: None)
     lam = mock.MagicMock()
     lam.invoke.side_effect = RuntimeError("boom")
     monkeypatch.setattr(ee.boto3, "client", lambda *a, **k: lam)
     monkeypatch.setattr(ee, "_remove_lock", lambda *_: None)
-    with caplog.at_level("ERROR"), pytest.raises(SystemExit):
+    marked = []
+    monkeypatch.setattr(ee, "_mark_task", lambda **f: marked.append(f) or True)
+    with pytest.raises(SystemExit):
         ee._ensure_nat_if_needed("phase3_enrich_data.py")
-    assert "phase.alert_undeliverable status=error reason=no_nat" in caplog.text
+    [fields] = marked
+    assert fields["unsent_event"] == "nat_not_ready"
+    assert fields["unsent_note"].startswith("NAT never became ready")
+
+
+def test_a_delivered_stop_alert_marks_the_task_alerted(monkeypatch):
+    monkeypatch.setattr(ee, "_stop_alerted", False)
+    monkeypatch.setattr(ee, "observe_alert", lambda *a, **k: True)
+    marked = []
+    monkeypatch.setattr(ee, "_mark_task", lambda **f: marked.append(f) or True)
+    ee._alert_phase_stopped("nat_not_ready", "why")
+    assert marked == [{"alerted": True}]
+
+
+def test_an_alert_that_raises_is_left_for_the_trigger_too(monkeypatch):
+    from src.utils import task_marker
+
+    monkeypatch.setattr(ee, "_stop_alerted", False)
+    monkeypatch.setattr(
+        ee, "observe_alert", mock.MagicMock(side_effect=RuntimeError("sns"))
+    )
+    marked = []
+    monkeypatch.setattr(ee, "_mark_task", lambda **f: marked.append(f) or True)
+    ee._alert_phase_stopped("grok_key_invalid", "n" * 500)
+    assert len(marked[0]["unsent_note"]) == task_marker.UNSENT_NOTE_MAX
 
 
 def test_the_validation_note_names_the_real_log_marker():

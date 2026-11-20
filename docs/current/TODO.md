@@ -141,8 +141,9 @@ continues from where it stopped. Order: 1.2b, 1.1b, 1.2c, 1.2e, 1.2d, 1.2f, 1.1c
     shares).
   - DONE (2026-11-19) - runnable books go never-deferred first, then the oldest `deferred_at`
     (was alphabetical), so a book that keeps renewing the hold goes last.
-  - LOW - an ordinary failure whose alert was not delivered, then an outside SIGTERM in the same
-    task, gives that attempt back (rare; bounded to once per task).
+  - DONE (2026-11-19, `ecs_entrypoint._attempt_counts`) - an ordinary failure, then an outside
+    SIGTERM in the same task, gave that attempt back; a failed phase now consumes its claim (and
+    marks the task `claimed=False`, so the trigger gives nothing back either).
 - **1.2c - the NAT does not fail over.** A NAT gateway is zonal by default; `nat_manager` always
   creates it in `PUBLIC_SUBNET_ID` (PublicSubnet1, `lambda_handlers/nat_manager.py:528`) and both
   private subnets route through it. If that AZ fails, both AZs lose egress and the re-create fails in
@@ -363,7 +364,10 @@ continues from where it stopped. Order: 1.2b, 1.1b, 1.2c, 1.2e, 1.2d, 1.2f, 1.1c
   low concurrency quota).
 
 #### Task 1.1 follow-ups (found in review, 2026-11-18)
-- **MED - an alert from a task that has no network path is lost.** When NAT never becomes ready the
+- **DONE (2026-11-19) MED - an alert from a task that has no network path is lost.** A stop alert
+  the task cannot deliver is left on its stop marker (`unsent_event` / `unsent_note`, through the
+  DynamoDB gateway endpoint) and the trigger relays it as `phase.task_alert_relayed` when ECS
+  reports the stop (1.1b's unreported-stop path covered SIGKILL; this keeps the task's own text). When NAT never becomes ready the
   task has no route to SNS (nat-manager creates interface endpoints for ecr, logs, secretsmanager,
   ecs, ec2, lambda and scheduler, not sns), so the `phase.nat_not_ready` alert most likely never
   arrives; the task logs `OBSERV phase.alert_undeliverable reason=no_nat` as the record. The ECS
@@ -390,13 +394,20 @@ continues from where it stopped. Order: 1.2b, 1.1b, 1.2c, 1.2e, 1.2d, 1.2f, 1.1c
     Cost Explorer (cost / usage of the `SpotUsage-Fargate-*` usage types over 7 days; 2026-11-04..18
     gave $0.014542/vCPU-h and $0.001597/GB-h), refreshed daily ($0.01 a request).
 - **1.1b follow-ups (from review, 2026-11-18):**
-  - MED - a stop alert that SNS never accepts is lost after Lambda's 2 async retries: the trigger
+  - DONE (2026-11-19) - a failed report keeps its facts and is listed in `stopevt#failed` (one
+    item, no scan); the next scheduled check (15 min) re-sends it
+    (`trigger_handler._sweep_failed_stop_reports`; the invocation no longer fails for it);
+    the trigger has a DLQ (`<env>-wwii-trigger-dlq`, alarmed when not empty) and its error alarm
+    fires on 1 error. Left (LOW, from review): a FIRST report whose Lambda is hard-killed
+    mid-report leaves a `started` row with no facts and is not listed (store the facts and list
+    the id at claim); a Spot-reclaimed task's own undelivered alert is not relayed (the reclaim
+    alert goes out instead). Was: MED - a stop alert that SNS never accepts is lost after Lambda's 2 async retries: the trigger
     Lambda has no DLQ / on-failure destination, the `stopevt#<task>` row stays `failed` and is
     never swept, and `wwii-trigger-errors` (`cloudformation/events.yaml`) alarms only at 3 errors
     in 5 minutes - through SNS too. Add an on-failure destination (SQS) and a sweep that
     re-reports `failed` rows; alarm on 1 error.
-  - LOW - the pipeline task role may write any key in the cache table, so a compromised task could
-    forge `price#fargate#` (bounded by `Rates.sane`) or `spot#` rows. Deny those prefixes to it.
+  - DONE (2026-11-19, `iam.yaml` `NoLaunchStateWrites` / `NoSpotLadderClimb`) - ECSTaskRole may
+    not write `price#fargate#` or `stopevt#` rows, and may only delete (reset) `spot#` rows.
   - LOW - Spot rates are historical (highest daily rate actually charged in 7 days); a Spot price
     rise since the last Spot day is not seen. Documented; `spot_ladder.max_fraction_of_on_demand`
     is the margin if wanted.
@@ -414,9 +425,12 @@ continues from where it stopped. Order: 1.2b, 1.1b, 1.2c, 1.2e, 1.2d, 1.2f, 1.1c
 - **LOW - Phase 3 batch mode is not attempt-counted.** `run_submit_only` / `run_retrieve_only` do not
   call `_claim_enrich_attempt`; with `batch.phase3` on (Group 2) the retry cap would not apply. Add
   the claim there when Group 2 turns batching on.
-- **LOW - the NAT teardown signal scans the 26 MB table three times per check** (one `scan_prefix`
-  per prefix). Let `scan_prefix` take several prefixes (one scan, OR-ed `begins_with`).
-- **LOW - a standalone Phase 3 re-run can repeat the barrier-timeout alert.** The alerts ask the
+- **DONE (2026-11-19) LOW - the NAT teardown signal scans the 26 MB table three times per check.**
+  `scan_prefix` takes several prefixes (one scan, OR-ed `begins_with`); the teardown uses one.
+- **DONE (2026-11-19) LOW - a standalone Phase 3 re-run can repeat the barrier-timeout alert.**
+  Verified: run ids are written unless the run-marker write fails (alerted). In that case the
+  timeout is `reconcile.barrier_unproven` and both timeout alerts now say to re-run the Phase 2
+  dedup step before Phase 3 (Phase 3 alone waits again). The alerts ask the
   operator to re-run Phase 3; if the reconcile barrier and run marker lack a `run_id`, freshness falls
   back to `completed_at >= task start - 30 s`, so the re-run waits the full 300 s and raises
   `reconcile.barrier_timeout` again with nothing new. Verify run ids are always written; if not, skip

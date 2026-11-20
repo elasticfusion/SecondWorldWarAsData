@@ -1425,9 +1425,10 @@ def _handle_task_stopped_event(event):
         )
     result = _handle_scheduled_check()
     if undelivered:
-        # fail this invocation so Lambda's async retry reports the stop again (the report is
-        # marked failed, so it is not skipped; the ladder and give-back are idempotent)
-        raise undelivered
+        # not raised: the report is stored and listed, and the next scheduled check (every
+        # ReconciliationIntervalMinutes) re-sends it - failing the invocation would only add a
+        # Lambda error alarm and a DLQ message for the same, already-handled stop
+        logger.info("OBSERV stop.report_deferred task=%s status=ok", task_id[:64])
     return result
 
 
@@ -1475,21 +1476,21 @@ def _first_report(task_id: str) -> bool:
     """
     now = int(time.time())
     try:
-        dynamo.put_item(
-            Item={
-                "cache_key": f"stopevt#{task_id}",
-                "status": "started",
-                "started_at": now,
-                "ttl": now + 7 * 86400,
-            },
+        # an update, not a put: a failed report's stored facts survive the claim, so a sweep that
+        # dies mid-report leaves a stale "started" row the next sweep can still re-send
+        dynamo.update_item(
+            Key={"cache_key": f"stopevt#{task_id}"},
+            UpdateExpression="SET #s = :started, started_at = :now, #ttl = :ttl",
             ConditionExpression=(
                 "attribute_not_exists(cache_key) OR #s = :failed OR "
                 "(#s = :started AND started_at < :stale)"
             ),
-            ExpressionAttributeNames={"#s": "status"},
+            ExpressionAttributeNames={"#s": "status", "#ttl": "ttl"},
             ExpressionAttributeValues={
                 ":started": "started",
                 ":failed": "failed",
+                ":now": now,
+                ":ttl": now + 7 * 86400,
                 ":stale": now - STOP_REPORT_STALE_S,
             },
         )
@@ -1501,21 +1502,42 @@ def _first_report(task_id: str) -> bool:
         raise
 
 
-def _report_done(task_id: str, delivered: bool = True) -> None:
-    """Mark the report done, or failed (its alert was not published) so a retry reports it."""
+FAILED_STOPS_KEY = "stopevt#failed"  # the ids of stops whose alert SNS did not take
+SWEEP_MAX = 20  # stops re-reported per scheduled check (each is one alert)
+
+
+def _report_done(facts: dict, delivered: bool = True) -> None:
+    """Mark the report done, or failed (its alert was not published): a failed report keeps its
+    facts and is listed under FAILED_STOPS_KEY, so the next scheduled check re-reports it (task
+    1.1b follow-up)."""
+    task_id = facts["task_id"]
+    if delivered:
+        dynamo.update_item(
+            Key={"cache_key": f"stopevt#{task_id}"},
+            UpdateExpression="SET #s = :s",
+            ExpressionAttributeNames={"#s": "status"},
+            ExpressionAttributeValues={":s": "done"},
+        )
+        return
+    # listed FIRST: a listed id whose facts never got stored is still alerted (stop_report_lost)
+    dynamo.update_item(
+        Key={"cache_key": FAILED_STOPS_KEY},
+        UpdateExpression="ADD tasks :t",
+        ExpressionAttributeValues={":t": {task_id}},
+    )
     dynamo.update_item(
         Key={"cache_key": f"stopevt#{task_id}"},
-        UpdateExpression="SET #s = :s",
+        UpdateExpression="SET #s = :s, facts = :f",
         ExpressionAttributeNames={"#s": "status"},
-        ExpressionAttributeValues={":s": "done" if delivered else "failed"},
+        ExpressionAttributeValues={":s": "failed", ":f": json.dumps(facts)},
     )
-    if not delivered:
-        logger.error(
-            "OBSERV phase.stop_alert_undelivered status=error task=%s - SNS did not take the "
-            "alert; this invocation fails so Lambda retries it",
-            task_id,
-        )
-        raise StopAlertUndelivered(task_id)
+    logger.error(
+        "OBSERV phase.stop_alert_undelivered status=error task=%s - SNS did not take the "
+        "alert; the next scheduled check re-sends it. Check SNS (the phase2-complete topic) "
+        "if this repeats",
+        task_id,
+    )
+    raise StopAlertUndelivered(task_id)
 
 
 def _report_task_stop(detail: dict) -> None:
@@ -1535,6 +1557,15 @@ def _report_task_stop(detail: dict) -> None:
         return  # services (OpenSERP) and tasks this Lambda does not launch
     if not _first_report(facts["task_id"]):
         return
+    _report_facts(facts)
+
+
+def _report_facts(facts: dict) -> None:
+    """Report one claimed stop (see _report_task_stop); raises StopAlertUndelivered if its alert
+    was not published (the facts are kept for the scheduled sweep, _sweep_failed_stop_reports).
+    """
+    from src.utils import task_marker
+
     marker = task_marker.read(dynamo, facts["task_id"])
     outside = facts["code"] in OUTSIDE_STOPS
     gave_back = _give_back_for_task(facts, marker) if outside else False
@@ -1549,7 +1580,113 @@ def _report_task_stop(detail: dict) -> None:
     ):
         if not marker.get("alerted"):
             delivered = _alert_unreported_stop(facts, marker, gave_back)
-    _report_done(facts["task_id"], delivered)
+    _report_done(facts, delivered)
+
+
+def _forget_failed_stop(task_id: str) -> None:
+    dynamo.update_item(
+        Key={"cache_key": FAILED_STOPS_KEY},
+        UpdateExpression="DELETE tasks :t",
+        ExpressionAttributeValues={":t": {task_id}},
+    )
+
+
+def _stored_facts(task_id: str, row: dict) -> Optional[dict]:
+    """The facts a failed report stored, or None if they are missing or not this task's."""
+    try:
+        facts = json.loads(str(row.get("facts", "")))
+    except ValueError:
+        return None
+    if (
+        not isinstance(facts, dict)
+        or facts.get("task_id") != task_id
+        or not isinstance(facts.get("family"), str)
+        or facts["family"] not in set(TASK_FAMILIES.values())
+    ):
+        return None
+    return facts
+
+
+def _resend_failed_stop(task_id: str) -> Optional[bool]:
+    """Re-report one listed stop: True sent, None nothing to send (dropped from the list or a
+    report in progress), False its alert still failed (SNS still down)."""
+    row = dynamo.get_item(Key={"cache_key": f"stopevt#{task_id}"}).get("Item")
+    status = (row or {}).get("status")
+    if status == "done":
+        _forget_failed_stop(task_id)  # reported meanwhile
+        return None
+    if status == "started" and not _stale_start(row or {}):
+        return None  # a report in progress: next check
+    facts = _stored_facts(task_id, row or {})
+    if facts is None:
+        _forget_failed_stop(task_id)
+        observe_error(
+            "phase",
+            "stop_report_lost",
+            note=(
+                "a stopped task's alert was never delivered and its stored report has "
+                "expired or is unreadable. Look up the task in the trigger Lambda logs "
+                "(OBSERV phase.stop_alert_undelivered) and check its book by hand"
+            ),
+            task=task_id[:64],
+        )
+        return None
+    if not _first_report(task_id):
+        return None
+    try:
+        _report_facts(facts)
+    except StopAlertUndelivered:
+        return False  # still failing: kept for the next hour
+    _forget_failed_stop(task_id)
+    return True
+
+
+def _stale_start(row: dict) -> bool:
+    """A "started" report older than the Lambda timeout: its reporter died (_first_report's
+    stale rule), so it may be re-sent."""
+    try:
+        return int(row.get("started_at", 0)) < int(time.time()) - STOP_REPORT_STALE_S
+    except (TypeError, ValueError):
+        return True
+
+
+def _sweep_failed_stop_reports() -> int:
+    """Hourly: re-report the stops whose alert SNS never took, after Lambda's own two async
+    retries were spent (else the alert is lost). One small item lists them (no table scan).
+    Stops at the first alert that still fails (SNS is still down). Returns how many it sent.
+    """
+    item = dynamo.get_item(Key={"cache_key": FAILED_STOPS_KEY}).get("Item") or {}
+    listed = sorted(str(t) for t in item.get("tasks") or ())
+    sent = 0
+    for task_id in listed[:SWEEP_MAX]:
+        try:
+            outcome = _resend_failed_stop(task_id)
+        except Exception as e:  # noqa: BLE001 - one bad id must not block the others
+            logger.error(
+                "OBSERV stop.resend_failed task=%s err=%s status=error - kept for the next "
+                "check; check the trigger Lambda's DynamoDB access and this task's stopevt# row",
+                task_id[:64],
+                type(e).__name__,
+            )
+            continue
+        if outcome is False:
+            break
+        sent += 1 if outcome else 0
+    if listed:
+        logger.info("OBSERV stop.sweep sent=%d listed=%d status=ok", sent, len(listed))
+    return sent
+
+
+def _sweep_stop_reports_safely() -> None:
+    """The scheduled sweep; never stops the lock check that follows (the list is kept)."""
+    try:
+        _sweep_failed_stop_reports()
+    except Exception as e:  # noqa: BLE001
+        logger.warning(
+            "OBSERV stop.sweep_failed err=%s status=warn - stop alerts SNS did not take are "
+            "retried next hour; check the trigger Lambda's DynamoDB access",
+            type(e).__name__,
+        )
 
 
 def _give_back_for_task(facts: dict, marker: dict) -> bool:
@@ -1619,9 +1756,36 @@ def _alert_spot_reclaim(facts: dict, marker: dict, gave_back: bool) -> bool:
     )
 
 
+def _plain(text: object) -> str:
+    """Task-written text without Slack markup (<!channel>, <url|label>, @mentions)."""
+    return "".join(c for c in str(text) if c not in "<>@")
+
+
+def _relay_task_alert(facts: dict, marker: dict, gave_back: bool) -> bool:
+    """The task wrote its own stop alert but could not send it (no NAT = no route to SNS)."""
+    from src.utils import task_marker
+
+    return observe_alert(
+        "phase",
+        "task_alert_relayed",
+        note=(
+            "the task could not send this alert itself (no network path to SNS): "
+            + _plain(marker.get("unsent_note", ""))[: task_marker.UNSENT_NOTE_MAX]
+            + f". {_sync_text(facts, marker)}"
+        ),
+        dedup_key=facts["task_id"],
+        task_alert=_plain(marker["unsent_event"])[:60],
+        family=facts["family"],
+        book=facts["book"] or "all",
+        attempt_given_back=gave_back,
+    )
+
+
 def _alert_unreported_stop(facts: dict, marker: dict, gave_back: bool) -> bool:
     """A stop with no alert from the task: an outside stop it recorded (it leaves the alert to
     this Lambda, which knows the cause), or one it could not report at all."""
+    if marker.get("unsent_event"):
+        return _relay_task_alert(facts, marker, gave_back)
     queued = facts["family"] == TASK_FAMILIES.get(PHASE3_TASK_DEF) and facts["book"]
     how = "was stopped" if marker.get("sigterm") else "stopped unreported"
     code = facts["code"] or "unknown"
@@ -1687,6 +1851,7 @@ def handler(event, _context):
 
     # Scheduled stale lock check
     if event.get("source") == "scheduled":
+        _sweep_stop_reports_safely()
         return _handle_scheduled_check()
 
     # A Phase 3 task finished its book: launch the next queued one that can run (each is tried

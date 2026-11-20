@@ -130,6 +130,7 @@ _stop_alerted = False
 # stalled run is a real failure and keeps its attempt, whether or not its alert was delivered.
 _attempt_claimed = False
 _watchdog_stop = False
+_phase_failed = False  # the phase failed and its attempt counts (_attempt_counts)
 
 
 def _mark_stop_alerted() -> None:
@@ -194,8 +195,9 @@ def _alert_phase_stopped(event: str, note: str, **fields: Any) -> None:
         )
         return
     _stop_alerted = True
+    delivered = False
     try:
-        if observe_alert(
+        delivered = observe_alert(
             "phase",
             event,
             note=note,
@@ -204,16 +206,24 @@ def _alert_phase_stopped(event: str, note: str, **fields: Any) -> None:
             book=os.environ.get("BOOK_NAME", ""),
             task=os.environ.get("ECS_TASK_ID", ""),
             **fields,
-        ):
-            _mark_task(
-                alerted=True
-            )  # else the trigger Lambda alerts when ECS reports the stop
+        )
     except (
         Exception
     ) as e:  # noqa: BLE001 - callers (SIGTERM, exit paths) must reach their exit
         logger.error(
             "OBSERV phase.stop_alert_failed event=%s err=%s", event, type(e).__name__
         )
+    if delivered:
+        _mark_task(alerted=True)
+        return
+    # not delivered (no NAT = no route to SNS): the marker is reached through the DynamoDB
+    # gateway endpoint, and the trigger Lambda relays this alert when ECS reports the stop
+    from src.utils import task_marker
+
+    _mark_task(
+        unsent_event=str(event)[:60],
+        unsent_note=str(note)[: task_marker.UNSENT_NOTE_MAX],
+    )
 
 
 def _sigterm_next_step() -> "tuple[str, bool]":
@@ -224,7 +234,7 @@ def _sigterm_next_step() -> "tuple[str, bool]":
     stop. A watchdog stop (the run stalled) or an already-alerted stop still counts. Decided
     BEFORE the alert (which marks the stop alerted); no AWS call."""
     queued = "phase3" in _current_phase_script and bool(os.environ.get("BOOK_NAME"))
-    if _watchdog_stop or _stop_alerted:
+    if _watchdog_stop or _stop_alerted or _failure_counted():
         if queued:
             return (
                 "The book stays queued and is retried (this counts as an attempt)",
@@ -238,6 +248,12 @@ def _sigterm_next_step() -> "tuple[str, bool]":
             True,
         )
     return "Re-trigger the phase for this book", True
+
+
+def _failure_counted() -> bool:
+    """The phase already failed and its attempt counts (_attempt_counts): a SIGTERM during the
+    failure handling gives nothing back."""
+    return _phase_failed
 
 
 def _give_back_own_attempt() -> bool:
@@ -1107,13 +1123,9 @@ def _ensure_nat_if_needed(phase_script: str) -> None:
         ),
         attempts=max_attempts,
     )
-    # KNOWN GAP (task 1.1): with no NAT this task has no route to SNS (no SNS VPC endpoint), so the
-    # alert above is most likely not delivered, and the ECS task-failure rule only clears locks.
-    # Tracked in docs/current/TODO.md (Group 1, "alert from outside the task").
-    logger.error(
-        "OBSERV phase.alert_undeliverable status=error reason=no_nat - the nat_not_ready alert "
-        "probably did not reach SNS; this log line is the record. See the nat-manager logs"
-    )
+    # with no NAT this task has no route to SNS (no SNS VPC endpoint), so the alert above is most
+    # likely not delivered: it is left on the task's stop marker, and the trigger Lambda relays
+    # it when ECS reports the stop (trigger_handler._alert_unreported_stop)
     # Release the phase lock the trigger holds BEFORE exiting so a sibling can
     # relaunch immediately instead of waiting out the stale-lock grace window
     # (~5 min) or the 2h lock TTL. Queued work (pending#*) is untouched and the
@@ -1676,9 +1688,10 @@ def run_phase(phase_script: str, extra_args: list) -> None:
             },
         )
         try:
-            _notify_failure(
-                phase_script, result.returncode, _defer_on_stop_cause(result.returncode)
-            )
+            next_step = _defer_on_stop_cause(result.returncode)
+            # a real failure (not deferred): the attempt counts even if a SIGTERM follows
+            _attempt_counts()
+            _notify_failure(phase_script, result.returncode, next_step)
             _final_sync_failed_phase(phase_script)
             _audit_failed_phase2(phase_script, result.returncode)
         finally:
@@ -2067,6 +2080,9 @@ def _wait_for_reconcile_barrier() -> str:
     deadline = time.time() + timeout
     interval = 5
     waited = 0
+    unproven = (
+        False  # a complete barrier seen, rejected only for its age (no run id to match)
+    )
     while time.time() < deadline:
         for key in keys:
             try:
@@ -2076,6 +2092,7 @@ def _wait_for_reconcile_barrier() -> str:
             body = _parse_barrier_body(obj)
             fresh, via = _judge_barrier(s3, body, min_completed_at, key)
             if not fresh:
+                unproven = unproven or (via == "timestamp" and _has_time(body))
                 continue
             completed_at = body["completed_at"]
             logger.info(
@@ -2091,6 +2108,17 @@ def _wait_for_reconcile_barrier() -> str:
             return "seen"
         time.sleep(interval)
         waited += interval
+    return _alert_barrier_timeout(keys, waited, unproven)
+
+
+def _has_time(body: dict) -> bool:
+    at = body.get("completed_at")
+    return isinstance(at, (int, float)) and not isinstance(at, bool)
+
+
+def _alert_barrier_timeout(keys: list, waited: int, unproven: bool) -> str:
+    """Phase 3 timed out waiting for a fresh reconcile barrier: alert what to do, and return the
+    outcome ("timeout_incomplete" | "timeout")."""
     # Timed out waiting for a fresh reconcile barrier. Distinguish "just slow" from KNOWN-incomplete:
     # if pending batch jobs for THIS book are still queued (e.g. a slow Grok batch offloaded to the
     # batch-poller), the bibliography/late records will DEFINITELY be missing this run — a loud,
@@ -2111,14 +2139,25 @@ def _wait_for_reconcile_barrier() -> str:
             book=os.environ.get("BOOK_NAME", ""),
         )
         return "timeout_incomplete"
-    observe_error(
-        "reconcile",
-        "barrier_timeout",
-        note=(
+    if unproven:
+        # an earlier reconcile finished but carries no run id this task can match (its run
+        # marker write failed): a Phase 3 re-run alone would wait and raise this again
+        note = (
+            "Phase 3 found only a reconcile barrier older than this task whose run id it could "
+            "not match, so it cannot prove the bibliography is current, and went on. Re-run the "
+            "Phase 2 dedup step for this book (it writes a run id), then Phase 3"
+        )
+    else:
+        note = (
             "Phase 3 did not see the bibliography reconcile finish and is going on; late "
             "bibliography records can be missing. Check the end of the Phase 2 log for the "
-            "reconcile (failed, or slower than RECONCILE_BARRIER_WAIT_SECS), then re-run Phase 3"
-        ),
+            "reconcile (failed, or slower than RECONCILE_BARRIER_WAIT_SECS), fix it and re-run "
+            "the Phase 2 dedup step, then Phase 3 (Phase 3 alone waits again)"
+        )
+    observe_error(
+        "reconcile",
+        "barrier_unproven" if unproven else "barrier_timeout",
+        note=note,
         keys=",".join(keys),
         waited_s=waited,
         book=os.environ.get("BOOK_NAME", ""),
@@ -3300,6 +3339,23 @@ def _mark_attempt_claimed() -> None:
     _mark_task(claimed=True, book=os.environ.get("BOOK_NAME", ""))
 
 
+def _attempt_counts() -> None:
+    """This task's claimed attempt is now a counted failure: neither this task (a later SIGTERM)
+    nor the trigger Lambda (an outside stop) may give it back (1.2b follow-up). No-op when nothing
+    is claimed (never claimed, or already given back by a deferral)."""
+    global _attempt_claimed, _phase_failed
+    if not _attempt_claimed:
+        return
+    _attempt_claimed, _phase_failed = False, True
+    if not _mark_task(claimed=False) and os.environ.get("ECS_TASK_ID"):
+        logger.error(
+            "OBSERV queue.attempt_counted_unmarked book=%s status=error - the stop marker "
+            "still says claimed: if ECS stops this task from outside, the trigger may give "
+            "this failed attempt back (one extra retry). Check the task role's DynamoDB access",
+            os.environ.get("BOOK_NAME", ""),
+        )
+
+
 _attempt_of: dict = (
     {}
 )  # this task's Phase 3 attempt {"n", "cap"} (the step-failure notice)
@@ -3404,10 +3460,7 @@ def _queue_followup(cause: str, reason: str) -> str:
             cause,
             type(e).__name__,
         )
-        global _attempt_claimed
-        _attempt_claimed = (
-            False  # as the alert says: this attempt counts (no later give-back)
-        )
+        _attempt_counts()  # as the alert says: this attempt counts (no later give-back)
         return (
             "The book could not be marked deferred, so this attempt still counts; its queue "
             "row stays and the hourly reconcile retries it"

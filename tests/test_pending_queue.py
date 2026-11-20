@@ -37,8 +37,9 @@ class FakeTable:
         if start is not None:
             keys = [k for k in keys if k > start]
         chunk = keys[: self.page]
-        prefix = kw["ExpressionAttributeValues"][":scan_prefix"]
-        out = {"Items": [dict(self.items[k]) for k in chunk if k.startswith(prefix)]}
+        vals = kw["ExpressionAttributeValues"]
+        prefixes = tuple(v for n, v in vals.items() if n.startswith(":scan_prefix"))
+        out = {"Items": [dict(self.items[k]) for k in chunk if k.startswith(prefixes)]}
         if len(keys) > self.page:
             out["LastEvaluatedKey"] = {"cache_key": chunk[-1]}
         return out
@@ -365,6 +366,36 @@ def test_the_reconcile_launches_the_first_book_whose_lock_is_free(monkeypatch):
     assert tried == ["A", "B"]
 
 
+def test_scan_prefix_matches_several_prefixes_in_one_scan():
+    t = FakeTable(["lock#a", "nat#lease#b", "pending#enrich#c"] + _filler(10))
+    got = sorted(i["cache_key"] for i in scan_prefix(t, ("lock#", "nat#lease#")))
+    assert got == ["lock#a", "nat#lease#b"]
+    pages = t.scans
+    assert pages == 7  # 13 items, 2 per page: one pass, not one per prefix
+
+
+def test_scan_prefix_builds_an_or_of_prefixes():
+    t = mock.MagicMock()
+    t.scan.return_value = {"Items": []}
+    list(scan_prefix(t, ["a#", "b#"], extra_filter="#s = :s", values={":s": 1}))
+    kw = t.scan.call_args.kwargs
+    assert kw["FilterExpression"] == (
+        "(begins_with(cache_key, :scan_prefix) OR begins_with(cache_key, :scan_prefix1))"
+        " AND (#s = :s)"
+    )
+    assert kw["ExpressionAttributeValues"] == {
+        ":s": 1,
+        ":scan_prefix": "a#",
+        ":scan_prefix1": "b#",
+    }
+
+
+@pytest.mark.parametrize("bad", [(), ("a#", ""), [None]])
+def test_scan_prefix_refuses_empty_prefixes(bad):
+    with pytest.raises(ValueError):
+        list(scan_prefix(mock.MagicMock(), bad))
+
+
 def test_scan_prefix_refuses_a_value_named_like_the_prefix():
     with pytest.raises(ValueError):
         list(scan_prefix(FakeTable(), "lock#", values={":scan_prefix": "x"}))
@@ -385,7 +416,9 @@ def test_the_nat_teardown_signal_reads_every_page(monkeypatch):
     monkeypatch.setattr("boto3.resource", lambda *a, **k: res)
     assert nt._ddb_networking_signal() is True
     del t.items["nat#lease#task-9"]
+    t.scans = 0
     assert nt._ddb_networking_signal() is False
+    assert t.scans == 15  # ONE pass over the 30 items (2 per page), not three
 
 
 def test_the_nat_teardown_signal_fails_safe(monkeypatch):

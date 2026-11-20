@@ -639,12 +639,24 @@ Resources:
               awslogs-stream-prefix: import
 
   # --- Trigger Lambda (SNS → ECS RunTask) ---
+  # task 1.1b follow-up: an async invoke (EventBridge task-stop rules, schedules, SNS, ECS tasks)
+  # that failed Lambda's 2 retries lands here instead of being dropped; alarmed in events.yaml
+  # (<env>-wwii-trigger-dlq-not-empty). LambdaExecutionRole may send to <env>-wwii-*-dlq.
+  TriggerDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub ${EnvironmentName}-wwii-trigger-dlq
+      MessageRetentionPeriod: 1209600  # 14 days
+      SqsManagedSseEnabled: true
+
   TriggerFunction:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: !Sub ${EnvironmentName}-wwii-trigger
       Runtime: python3.12
       Handler: lambda_handlers.trigger_handler.handler
+      DeadLetterConfig:
+        TargetArn: !GetAtt TriggerDLQ.Arn
       # Must exceed the AV scan poll in src/ingestion/av_scan.py (_poll_av_result: attempts x delay =
       # 600 s): the malware gate waits inside this Lambda for the scan task's verdict, and a Lambda that
       # timed out mid-poll never reached its quarantine logic (tests/test_trigger_container_override.py).

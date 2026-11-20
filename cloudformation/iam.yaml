@@ -328,6 +328,37 @@ Resources:
                       - credit#holds#*
                       - credit#balance
                       - credit#hold_alerted
+              - Sid: NoLaunchStateWrites
+                # task 1.1b follow-up: the trigger trusts the Fargate price rows (Spot ladder
+                # limit) and its stop reports (re-sent by the hourly sweep); a task never
+                # writes them
+                Effect: Deny
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:BatchWriteItem
+                Resource:
+                  - !Ref CacheTableArn
+                Condition:
+                  ForAnyValue:StringLike:
+                    dynamodb:LeadingKeys:
+                      - price#fargate#*
+                      - stopevt#*
+              - Sid: NoSpotLadderClimb
+                # a task may only RESET its book's Spot ladder on success (spot_ladder.reset, a
+                # DeleteItem: a lower rung is only cheaper); the climb is the trigger's
+                Effect: Deny
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:BatchWriteItem
+                Resource:
+                  - !Ref CacheTableArn
+                Condition:
+                  ForAnyValue:StringLike:
+                    dynamodb:LeadingKeys:
+                      - spot#*
               - Sid: SecretsManager
                 Effect: Allow
                 Action:

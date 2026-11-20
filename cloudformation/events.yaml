@@ -297,6 +297,13 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmName: !Sub ${EnvironmentName}-wwii-trigger-errors
+      # one error (task 1.1b follow-up). An undelivered stop alert does NOT fail the invocation
+      # (it is stored and re-sent by the next scheduled check), so an error here is a real fault.
+      AlarmDescription: !Sub >-
+        The ${EnvironmentName}-wwii-trigger Lambda failed. Search its log group for
+        status=error and the traceback, and fix the cause; launches it missed are retried by
+        the next scheduled reconcile, and an async event that failed every retry is in
+        ${EnvironmentName}-wwii-trigger-dlq.
       MetricName: Errors
       Namespace: AWS/Lambda
       Dimensions:
@@ -305,8 +312,32 @@ Resources:
       Statistic: Sum
       Period: 300
       EvaluationPeriods: 1
-      Threshold: 3
+      Threshold: 1
       ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlarmSNSTopic
+
+  TriggerDLQAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub ${EnvironmentName}-wwii-trigger-dlq-not-empty
+      AlarmDescription: !Sub >-
+        An event for the ${EnvironmentName}-wwii-trigger Lambda failed all its retries and is in
+        the SQS queue ${EnvironmentName}-wwii-trigger-dlq (kept 14 days). Read it (aws sqs
+        receive-message), fix the cause from the Lambda logs, re-invoke the Lambda with the
+        event (aws lambda invoke), then delete the message.
+      Namespace: AWS/SQS
+      MetricName: ApproximateNumberOfMessagesVisible
+      Dimensions:
+        - Name: QueueName
+          Value: !Sub ${EnvironmentName}-wwii-trigger-dlq
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
       AlarmActions:
         - !Ref AlarmSNSTopic
 

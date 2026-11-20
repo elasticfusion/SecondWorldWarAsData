@@ -15,14 +15,14 @@ coordination rows; callers do not change.
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, Iterator, Optional
+from typing import Any, Dict, Iterator, Optional, Sequence, Union
 
 logger = logging.getLogger(__name__)
 
 
 def scan_prefix(
     table: Any,
-    prefix: str,
+    prefix: Union[str, Sequence[str]],
     *,
     projection: Optional[str] = None,
     names: Optional[Dict[str, str]] = None,
@@ -30,21 +30,16 @@ def scan_prefix(
     values: Optional[Dict[str, Any]] = None,
 ) -> Iterator[Dict[str, Any]]:
     """Yield every item whose ``cache_key`` starts with ``prefix``, across all scan pages.
+    ``prefix`` may be several prefixes: ONE scan matches any of them (each scan reads the whole
+    table, so a caller that needs several prefixes pays once, not once per prefix).
 
     ``projection`` / ``names`` map to ProjectionExpression / ExpressionAttributeNames;
     ``extra_filter`` is ANDed to the prefix condition, with its placeholders in ``values``. It is
     expression TEXT: constants only, never caller data (that goes in ``values``).
     Errors propagate: a caller that must fail safe (keep NAT up on doubt) decides how.
     """
-    if not prefix:
-        raise ValueError("scan_prefix needs a non-empty prefix")
-    if ":scan_prefix" in (values or {}):
-        raise ValueError(":scan_prefix is reserved for the prefix")
-    kwargs: Dict[str, Any] = {
-        "FilterExpression": "begins_with(cache_key, :scan_prefix)"
-        + (f" AND ({extra_filter})" if extra_filter else ""),
-        "ExpressionAttributeValues": {**(values or {}), ":scan_prefix": prefix},
-    }
+    prefixes = [prefix] if isinstance(prefix, str) else list(prefix)
+    kwargs = _filter(prefixes, extra_filter, values or {})
     if projection:
         kwargs["ProjectionExpression"] = projection
     if names:
@@ -58,4 +53,29 @@ def scan_prefix(
         if not start:
             break
         kwargs["ExclusiveStartKey"] = start
-    logger.debug("scan_prefix prefix=%s pages=%d", prefix, pages)
+    logger.debug("scan_prefix prefix=%s pages=%d", ",".join(prefixes), pages)
+
+
+def _check(prefixes: list, values: Dict[str, Any]) -> None:
+    if not prefixes or not all(isinstance(p, str) and p for p in prefixes):
+        raise ValueError("scan_prefix needs non-empty prefixes")
+    if any(str(k).startswith(":scan_prefix") for k in values):
+        raise ValueError(":scan_prefix* placeholders are reserved for the prefixes")
+
+
+def _filter(
+    prefixes: list, extra_filter: str, values: Dict[str, Any]
+) -> Dict[str, Any]:
+    """FilterExpression + values matching any of ``prefixes`` (ANDed with ``extra_filter``)."""
+    _check(prefixes, values)
+    holders = {
+        (":scan_prefix" if i == 0 else f":scan_prefix{i}"): p
+        for i, p in enumerate(prefixes)
+    }
+    match = " OR ".join(f"begins_with(cache_key, {h})" for h in holders)
+    if len(holders) > 1:
+        match = f"({match})"
+    return {
+        "FilterExpression": match + (f" AND ({extra_filter})" if extra_filter else ""),
+        "ExpressionAttributeValues": {**values, **holders},
+    }

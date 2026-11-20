@@ -3,7 +3,9 @@
 A task writes ``taskstop#<task id>`` in the api-cache table as it goes: ``claimed`` (it counted a
 Phase 3 attempt), ``given_back`` (it gave that attempt back), ``alerted`` (an operator alert for
 its stop was delivered), ``sigterm`` / ``synced`` (it was stopped and whether its emergency upload
-worked). DynamoDB is reached through the gateway endpoint, so this works with no NAT.
+worked), ``unsent_event`` / ``unsent_note`` (its own stop alert could not be delivered - e.g. no NAT,
+so no route to SNS - and the trigger relays it). DynamoDB is reached through the gateway endpoint,
+so this works with no NAT.
 
 When ECS reports the task STOPPED, the trigger Lambda reads the marker
 (``trigger_handler._handle_task_stopped_event``): it alerts a stop the task did not report (killed
@@ -17,7 +19,19 @@ import time
 from typing import Any, Dict, Optional
 
 TTL_DAYS = 7
-FIELDS = ("claimed", "given_back", "alerted", "sigterm", "synced", "book", "phase")
+FIELDS = (
+    "claimed",
+    "given_back",
+    "alerted",
+    "sigterm",
+    "synced",
+    "book",
+    "phase",
+    "unsent_event",
+    "unsent_note",
+)
+# with the trigger's relay prefix and its upload sentence, under observe's 300-character note
+UNSENT_NOTE_MAX = 160
 
 
 def key(task_id: str) -> str:
