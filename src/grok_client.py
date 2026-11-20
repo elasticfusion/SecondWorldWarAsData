@@ -1463,7 +1463,10 @@ class GrokClient:
             raise GrokAPIError(f"API error {response.status_code}: {response.text}")
 
     def _post_with_deadline(self, session, headers, payload):
-        """POST with hard wall-clock deadline to prevent indefinite hangs."""
+        """POST with a hard wall-clock deadline to prevent indefinite hangs. A missed deadline is
+        a ``requests.Timeout`` (task 1.2f): the shared retries apply, then the run stops as a
+        Grok outage (``GrokUnreachable``, deferred connectivity) - a hung connection is never
+        handed to a caller as an ordinary error it might count as "no answer"."""
         import concurrent.futures
 
         def _do_post():
@@ -1471,15 +1474,23 @@ class GrokClient:
                 self.base_url, headers=headers, json=payload, timeout=(10, self.timeout)
             )
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
-            future = pool.submit(_do_post)
-            try:
-                return future.result(timeout=self.timeout)
-            except concurrent.futures.TimeoutError as err:
-                future.cancel()
-                raise GrokAPIError(
-                    f"API call exceeded {self.timeout}s wall-clock deadline"
-                ) from err
+        # not a `with` block: its exit WAITS for the hung thread, which made the deadline moot
+        pool = concurrent.futures.ThreadPoolExecutor(max_workers=1)
+        future = pool.submit(_do_post)
+        try:
+            return future.result(timeout=self.timeout)
+        except concurrent.futures.TimeoutError as err:
+            future.cancel()
+            logger.warning(
+                "OBSERV grok.deadline_exceeded seconds=%s status=warn - retried; repeated "
+                "misses stop the run as a Grok outage (check status.x.ai and the network)",
+                self.timeout,
+            )
+            raise requests.Timeout(
+                f"API call exceeded {self.timeout}s wall-clock deadline"
+            ) from err
+        finally:
+            pool.shutdown(wait=False)
 
     def _call_api(
         self, messages: list, temperature: float = 0.1, model: str = ""

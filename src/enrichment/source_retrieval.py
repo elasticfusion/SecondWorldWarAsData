@@ -160,13 +160,8 @@ def _download_to_quarantine(
     # DNS rebind between the resolved_host_is_safe check and connect cannot reach an internal
     # address (§1.0d). Pass the ORIGINAL url (not clean_url's normalized form) so a significant
     # query string is preserved — _pinned_get only rewrites the netloc to the vetted IP.
+    # a 429 / 5xx / network error is retried by _pinned_get's shared policy (Retry-After)
     resp = _pinned_get(url, host, vetted, timeout=60, headers=BROWSER_HEADERS)
-    if resp.status_code == 429:
-        # Rate-limited: wait the server-requested delay once, then retry.
-        retry_after = _parse_retry_after(resp.headers.get("Retry-After"))
-        logger.info("429 from %s — honoring Retry-After=%.0fs", host, retry_after)
-        time.sleep(retry_after)
-        resp = _pinned_get(url, host, vetted, timeout=60, headers=BROWSER_HEADERS)
     if resp.status_code != 200:
         return {"status": "error", "url": url, "reason": f"HTTP {resp.status_code}"}
     dest_dir.mkdir(parents=True, exist_ok=True)
@@ -193,15 +188,3 @@ def _download_to_quarantine(
     entry["retrieved_path"] = str(out)
     logger.info("Retrieved (pending review, not processed): %s -> %s", url, out)
     return {"status": "retrieved_pending_review", "url": url, "path": str(out)}
-
-
-def _parse_retry_after(
-    value: Optional[str], default: float = 10.0, cap: float = 120.0
-) -> float:
-    """Parse a Retry-After header (seconds form). Falls back to a sane default."""
-    if not value:
-        return default
-    try:
-        return min(float(value), cap)
-    except (TypeError, ValueError):
-        return default

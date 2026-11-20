@@ -284,16 +284,61 @@ def _give_back_own_attempt() -> bool:
         return False
 
 
+# a failed first sync this quick is retried once (ECS allows 30 s after SIGTERM)
+EMERGENCY_RETRY_IF_UNDER_S = 10.0
+EMERGENCY_SYNC_BUDGET_S = (
+    18.0  # the retry ends by then: the cleanup and alert need the rest
+)
+
+
+def _emergency_sync() -> bool:
+    """The SIGTERM upload, retried once if the first try failed fast (task 1.2f: a brief S3 or
+    network blip must not lose up to 2 minutes of work). The retry runs in a thread with a hard
+    deadline (EMERGENCY_SYNC_BUDGET_S from SIGTERM), so the lock, NAT lease and stop alert still
+    happen inside ECS's 30 s window. Returns whether the work reached S3. Never raises.
+    """
+    start = time.monotonic()
+    if _sync_attempt(1):
+        return True
+    took = time.monotonic() - start
+    if took >= EMERGENCY_RETRY_IF_UNDER_S:
+        return False  # no time for a second full try
+    done: list = []
+    worker = threading.Thread(target=lambda: done.append(_sync_attempt(2)), daemon=True)
+    worker.start()
+    worker.join(max(0.0, EMERGENCY_SYNC_BUDGET_S - took))
+    if worker.is_alive():
+        # it may go on uploading for the few seconds until the task exits (S3 puts are atomic per
+        # object); the alert says unsynced, so the operator knows work may be missing
+        logger.error(
+            "OBSERV phase.emergency_sync_failed attempt=2 err=deadline status=error - the "
+            "retry did not finish in %.0f s; changes since the last sync may be lost",
+            EMERGENCY_SYNC_BUDGET_S,
+        )
+        return False
+    return bool(done and done[0])
+
+
+def _sync_attempt(attempt: int) -> bool:
+    started = time.monotonic()
+    try:
+        _final_sync(_current_phase_script)
+        logger.info("Emergency sync complete (attempt %d)", attempt)
+        return True
+    except Exception as e:  # noqa: BLE001 - the emergency path must reach its exit
+        logger.error(
+            "OBSERV phase.emergency_sync_failed attempt=%d took_s=%.1f err=%s status=error",
+            attempt,
+            time.monotonic() - started,
+            type(e).__name__,
+        )
+        return False
+
+
 def _handle_sigterm(_signum, _frame):
     """Emergency sync on spot termination — 30 second window."""
     logger.warning("SIGTERM received — performing emergency S3 sync")
-    synced = False
-    try:
-        _final_sync(_current_phase_script)
-        synced = True
-        logger.info("Emergency sync complete")
-    except Exception as e:
-        logger.error("Emergency sync failed: %s", e)
+    synced = _emergency_sync()
     # Each step on its own: a failed upload must not keep the lock (it would block the re-trigger
     # the alert asks for, up to the 2 h TTL) or the NAT lease. Then the batch re-queue (preserves
     # work) and, last, the stop alert (informational) in what is left of the 30 s window.

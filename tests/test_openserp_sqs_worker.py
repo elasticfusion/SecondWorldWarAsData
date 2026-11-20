@@ -275,4 +275,52 @@ def test_a_grok_stop_keeps_the_message_and_pauses(monkeypatch):
         "http://serp",
         object(),
     )
-    assert out == "retry" and slept == [w.GROK_STOP_PAUSE_S]
+    assert out == "defer" and slept == [w.GROK_STOP_PAUSE_S]
+
+
+def _defer_run(monkeypatch, send_fails=False, deferrals=None):
+    import openserp_worker as w
+
+    monkeypatch.setattr(w, "process_message", lambda *a: "defer")
+    sqs = MagicMock()
+    if send_fails:
+        sqs.send_message.side_effect = RuntimeError("AccessDenied")
+    body = '{"entity_type": "people", "entity_path": "people/x.json"}'
+    msg = {"ReceiptHandle": "r1", "Body": body}
+    if deferrals is not None:
+        msg["MessageAttributes"] = {"deferrals": {"StringValue": str(deferrals)}}
+    sqs.receive_message.side_effect = [{"Messages": [msg]}, {"Messages": []}]
+    w.run_worker(sqs, "qurl", object(), "http://s", object(), idle_exit_polls=1)
+    return w, sqs, body
+
+
+def test_an_outage_requeues_the_message_fresh_so_it_never_reaches_the_dlq(monkeypatch):
+    """Task 1.2f: each receive counts toward maxReceiveCount, so a Grok outage longer than a few
+    pauses used to move the whole queue into the DLQ. The message is sent again (receive count
+    0, delayed) and only then is the old one deleted."""
+    w, sqs, body = _defer_run(monkeypatch)
+    sqs.send_message.assert_called_once_with(
+        QueueUrl="qurl",
+        MessageBody=body,
+        DelaySeconds=w.DEFER_DELAY_S,
+        MessageAttributes={"deferrals": {"DataType": "Number", "StringValue": "1"}},
+    )
+    sqs.delete_message.assert_called_once_with(QueueUrl="qurl", ReceiptHandle="r1")
+
+
+def test_deferrals_are_counted_and_capped(monkeypatch, caplog):
+    import openserp_worker as w
+
+    _, sqs, _ = _defer_run(monkeypatch, deferrals=4)
+    attrs = sqs.send_message.call_args.kwargs["MessageAttributes"]
+    assert attrs["deferrals"]["StringValue"] == "5"
+    _, sqs, _ = _defer_run(monkeypatch, deferrals=w.MAX_DEFERRALS)
+    sqs.send_message.assert_not_called()
+    sqs.delete_message.assert_not_called()  # an ordinary, counted retry now (-> DLQ)
+    assert "OBSERV openserp_worker.defer_cap" in caplog.text
+
+
+def test_a_failed_requeue_keeps_the_original_message(monkeypatch, caplog):
+    _, sqs, _ = _defer_run(monkeypatch, send_fails=True)
+    sqs.delete_message.assert_not_called()
+    assert "OBSERV openserp_worker.requeue_failed" in caplog.text

@@ -40,15 +40,16 @@ def test_retry_after_is_honored(monkeypatch):
     monkeypatch.setattr(
         "src.utils.url_hygiene.resolved_host_is_safe", lambda h: ["1.2.3.4"]
     )
+    monkeypatch.setattr("time.sleep", lambda *_: None)
     throttled = MagicMock(status_code=503, headers={"Retry-After": "1"})
     ok = MagicMock(status_code=200, headers={})
     g = MagicMock(side_effect=[throttled, ok])
-    monkeypatch.setattr("src.utils.url_hygiene._pinned_get", g)
+    monkeypatch.setattr("src.utils.url_hygiene._pinned_get_once", g)
     resp = wayback._get_with_courtesy("https://archive.org/x", timeout=5)
     assert resp is ok
     assert (
         g.call_count == 2
-    )  # retried once after the 503 (via the pinned-get chokepoint)
+    )  # retried once after the 503, by the shared pinned-get retry
 
 
 def test_identifying_user_agent_sent(monkeypatch):

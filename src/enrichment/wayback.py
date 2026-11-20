@@ -38,7 +38,6 @@ _AVAILABILITY_API = "https://archive.org/wayback/available"
 # Be a good citizen: space archive.org calls out. Archive.org has no hard public
 # rate limit, but courtesy spacing avoids pressure during a corpus-wide pass.
 _MIN_INTERVAL = 2.0
-_MAX_RETRIES = 3
 
 _rate_lock = threading.Lock()
 _last_call: dict = (
@@ -139,49 +138,35 @@ def _get_with_courtesy(
     if vetted_tuple is None:
         return None
     url, host, vetted = vetted_tuple
-    for attempt in range(_MAX_RETRIES):
-        _throttle(host)
-        try:
-            resp = _pinned_get(url, host, vetted, timeout=timeout, headers=_HEADERS)
-        except requests.RequestException as exc:
-            logger.debug("wayback GET failed (%s): %s", exc, url)
-            return None
-        if resp.status_code in (429, 503):
-            # Respect Retry-After if present, else exponential backoff; then retry.
-            retry_after = resp.headers.get("Retry-After")
-            try:
-                delay = float(retry_after) if retry_after else 2.0 * (attempt + 1)
-            except ValueError:
-                delay = 2.0 * (attempt + 1)
-            logger.debug(
-                "wayback throttled (%d), backing off %.1fs (attempt %d/%d)",
-                resp.status_code,
-                delay,
-                attempt + 1,
-                _MAX_RETRIES,
-            )
-            time.sleep(min(delay, 30.0))
-            continue
-        # Byte-cap the archived body (stream=True) so a large snapshot can't OOM the task.
-        _MAX = 10 * 1024 * 1024
-        body = b""
-        try:
-            for chunk in resp.iter_content(8192):
-                body += chunk
-                if len(body) > _MAX:
-                    logger.debug(
-                        "wayback body exceeded %d bytes, truncating: %s", _MAX, url
-                    )
-                    break
-            resp._content = (
-                body  # noqa: SLF001 - materialize the capped body so .text works
-            )
-        except Exception as exc:  # noqa: BLE001 - read error -> treat as transient
-            logger.debug("wayback body read failed (%s): %s", exc, url)
-            return None
-        return resp
-    logger.debug("wayback gave up after %d throttled attempts: %s", _MAX_RETRIES, url)
-    return None
+    _throttle(host)
+    try:
+        # 429 / 5xx / network errors: the shared retry in _pinned_get (Retry-After honored)
+        resp = _pinned_get(url, host, vetted, timeout=timeout, headers=_HEADERS)
+    except requests.RequestException as exc:
+        logger.debug("wayback GET failed (%s): %s", exc, url)
+        return None
+    if resp.status_code in (429, 503):
+        logger.debug("wayback still throttled (%d): %s", resp.status_code, url)
+        resp.close()  # streamed: free the connection
+        return None
+    # Byte-cap the archived body (stream=True) so a large snapshot can't OOM the task.
+    _MAX = 10 * 1024 * 1024
+    body = b""
+    try:
+        for chunk in resp.iter_content(8192):
+            body += chunk
+            if len(body) > _MAX:
+                logger.debug(
+                    "wayback body exceeded %d bytes, truncating: %s", _MAX, url
+                )
+                break
+        resp._content = (
+            body  # noqa: SLF001 - materialize the capped body so .text works
+        )
+    except Exception as exc:  # noqa: BLE001 - read error -> treat as transient
+        logger.debug("wayback body read failed (%s): %s", exc, url)
+        return None
+    return resp
 
 
 def find_snapshot(url: str, timeout: int = 15) -> Optional[Tuple[str, str]]:

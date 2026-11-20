@@ -271,7 +271,71 @@ _SAFE_FETCH_UA = (
 _SAFE_FETCH_MAX_BYTES = 10 * 1024 * 1024  # 10MB cap on a fetched page/body
 
 
+PINNED_TRIES = 3  # one shared retry policy for every pinned fetch (task 1.2f)
+PINNED_RETRY_STATUSES = (429, 502, 503, 504)
+PINNED_MAX_WAIT_S = 30.0
+PINNED_FAST_FAIL_S = 10.0  # a network error is retried only if it failed this fast
+
+
+def _retry_wait(resp, attempt: int) -> float:
+    """Seconds before the next try: the server's Retry-After (seconds form) if it gives one,
+    else 2 s, 4 s; capped so one page never holds a step for long."""
+    # `is not None`: a requests.Response is falsy for every error status (bool() = .ok)
+    raw = (
+        (getattr(resp, "headers", None) or {}).get("Retry-After")
+        if resp is not None
+        else None
+    )
+    try:
+        wait = float(raw) if raw is not None else 2.0 * (attempt + 1)
+    except (TypeError, ValueError):
+        wait = 2.0 * (attempt + 1)
+    return max(0.0, min(wait, PINNED_MAX_WAIT_S))
+
+
 def _pinned_get(cleaned_url, host, vetted_ips, *, timeout, headers):
+    """``_pinned_get_once`` with the shared retry policy (task 1.2f): a 429/502/503/504 answer,
+    or a network error that failed fast (refused, reset: under PINNED_FAST_FAIL_S on every
+    vetted IP), is retried up to PINNED_TRIES times with Retry-After / 2 s, 4 s waits. A stall
+    (the caller's timeout used up) and a TLS failure are not retried, so a hostile or dead host
+    costs one try. The last answer (or error) goes to the caller, which decides what an outage
+    means for its record (src/utils/service_outage). Callers must not add their own retry loop
+    on top (DRY); a caller with its own fallback (url_fetch -> Wayback) uses _pinned_get_once.
+    """
+    import time
+
+    import requests
+
+    resp = None
+    for attempt in range(PINNED_TRIES):
+        last = attempt == PINNED_TRIES - 1
+        started = time.monotonic()
+        try:
+            resp = _pinned_get_once(
+                cleaned_url, host, vetted_ips, timeout=timeout, headers=headers
+            )
+        except (requests.ConnectionError, requests.Timeout) as e:
+            slow = time.monotonic() - started >= PINNED_FAST_FAIL_S
+            if last or slow or isinstance(e, requests.exceptions.SSLError):
+                raise
+            resp = None
+        else:
+            if resp.status_code not in PINNED_RETRY_STATUSES or last:
+                return resp
+            resp.close()  # streamed: free the connection before the retry
+        wait = _retry_wait(resp, attempt)
+        logger.info(
+            "OBSERV fetch.retry host=%s attempt=%d status=%s wait_s=%.0f",
+            host,
+            attempt + 1,
+            getattr(resp, "status_code", "error"),
+            wait,
+        )
+        time.sleep(wait)
+    raise AssertionError("unreachable")  # the last try returns or raises
+
+
+def _pinned_get_once(cleaned_url, host, vetted_ips, *, timeout, headers):
     """SSRF-safe GET that PINS the TCP connection to a VETTED resolved IP, closing the DNS-rebinding
     TOCTOU: ``resolved_host_is_safe`` vetted the IPs, but a plain ``requests.get(hostname_url)``
     re-resolves at connect time, so a short-TTL attacker name could answer public on the check and

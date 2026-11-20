@@ -30,12 +30,9 @@ def test_phase_handlers_delegate(monkeypatch):
     import lambda_handlers._handler_common as hc
     import lambda_handlers.phase1_handler as p1
     import lambda_handlers.phase2_handler as p2
-    import lambda_handlers.phase3_handler as p3
 
     monkeypatch.setattr(hc, "extract_s3_records", lambda e: [("B", "K")])
     monkeypatch.setattr(hc, "get_api_key", lambda c: "KEY")
     assert p1._extract_s3_records({}) == [("B", "K")]
     assert p2._extract_s3_records({}) == [("B", "K")]
-    assert p3._extract_s3_records({}) == [("B", "K")]
     assert p2._get_api_key({}) == "KEY"
-    assert p3._get_api_key({}) == "KEY"

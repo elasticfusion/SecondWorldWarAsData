@@ -914,6 +914,12 @@ _URL_FETCH_RETENTION_DAYS = (
 # (unlike a genuine fetch-miss which returns None): REJECT would poison cross-entity
 # positive reuse / permanently deny a legitimate deferred retry.
 _SKIP_SENTINEL = "\x00__SKIP__\x00"
+# A walled or rate-limited page with no archive copy (url_fetch, task 1.2f): retryable, so never
+# REJECT-cached, but remembered for RETRY_LATER_HOURS so the same URL found by other entities in
+# this run is not fetched (and Grok-verified) again while the wall or the rate limit lasts.
+_RETRY_SENTINEL = "\x00__RETRY__\x00"
+_RETRY_VERDICT = "RETRY_LATER"
+RETRY_LATER_HOURS = 1
 
 
 def _grok_summarize_html(
@@ -985,8 +991,8 @@ def _summarize_url_page(
     no_content = {
         url_fetch.SKIP: _SKIP_SENTINEL,
         url_fetch.DEFERRED: _SKIP_SENTINEL,
-        url_fetch.BLOCKED_NO_ARCHIVE: _SKIP_SENTINEL,
-        url_fetch.RATE_LIMITED: _SKIP_SENTINEL,
+        url_fetch.BLOCKED_NO_ARCHIVE: _RETRY_SENTINEL,
+        url_fetch.RATE_LIMITED: _RETRY_SENTINEL,
         url_fetch.DEAD: None,
     }
     if result.source in no_content:
@@ -1032,8 +1038,11 @@ def _url_verdict_cached(url: str) -> Optional[str]:
         return None
 
 
-def _cache_url_verdict(url: str, verdict: str) -> None:
-    """Cache a URL verdict ('REJECT' or a summary) for the retention window."""
+def _cache_url_verdict(
+    url: str, verdict: str, ttl_days: float = _URL_FETCH_RETENTION_DAYS
+) -> None:
+    """Cache a URL verdict ('REJECT', 'RETRY_LATER' or a summary) for ``ttl_days`` (default:
+    the retention window)."""
     if not url:
         return
     try:
@@ -1042,7 +1051,7 @@ def _cache_url_verdict(url: str, verdict: str) -> None:
         _get_backend().put(
             _make_key("openserp_url_verdict", url),
             verdict,
-            ttl_days=_URL_FETCH_RETENTION_DAYS,
+            ttl_days=ttl_days,
         )
     except Exception:  # noqa: BLE001
         pass
@@ -1083,7 +1092,7 @@ def process_positive_url(
     if not url:
         return None
     cached = _url_verdict_cached(url)
-    if cached == "REJECT":
+    if cached in ("REJECT", _RETRY_VERDICT):
         return None
     if cached:  # positive summary cached
         return {
@@ -1100,6 +1109,11 @@ def process_positive_url(
 
     prov: Dict[str, Any] = {}
     summary = _summarize_url_page(url, context, grok_client, provenance=prov)
+    if summary == _RETRY_SENTINEL:
+        # walled / rate-limited, no archive: not a negative, but not fetched again for an hour
+        _cache_url_verdict(url, _RETRY_VERDICT, ttl_days=RETRY_LATER_HOURS / 24)
+        _metric("urls_retry_later")
+        return None
     if summary == _SKIP_SENTINEL:
         # Already searched (reuse) or deferred (retry later) — NOT a negative. Do not
         # cache REJECT; a prior/positive summary (if any) is served from the shared

@@ -225,8 +225,11 @@ continues from where it stopped. Order: 1.2b, 1.1b, 1.2c, 1.2e, 1.2d, 1.2f, 1.1c
   The OpenSERP SQS worker keeps the message and pauses 5 min on a Grok stop. Mid-run only a 402
   stops for funding (a 403 that merely says "credit" is an ordinary error); funding deferrals are
   capped too (`queue.max_funding_deferrals`, 72). Left for 1.2f (review findings):
-  - the client's own wall-clock deadline (`_post_with_deadline`) raises `GrokAPIError`, not an
-    outage: a hung connection still reaches callers as an ordinary error;
+  - DONE (2026-11-20) the client's wall-clock deadline raises `requests.Timeout` (shared retries,
+    then `GrokUnreachable`); it also really returns at the deadline now (the old `with` pool
+    waited for the hung thread on exit). Accepted cost (LOW): a request abandoned at the deadline
+    may still be billed, and the retry re-posts it (at most 5 posts; the deadline fires only
+    for a connection that trickles past the 600 s read timeout);
   - the Phase 2 Batch API path (`batch_api` submit/poll/retrieve) does not use `_call_api`, so a
     Batch API outage is unchanged; Phase 2 stops are told to re-trigger (no Phase 2 deferral);
   - Phase 0 and Lambda callers now see a Grok stop as a plain failure (exit 1 / Lambda error),
@@ -305,16 +308,28 @@ continues from where it stopped. Order: 1.2b, 1.1b, 1.2c, 1.2e, 1.2d, 1.2f, 1.1c
     is a dead link), and after 5 such runs the image goes to needs_review (images schema 2.29
     `host_unavailable_runs`); the S3 watchdog bypass ends after the watchdog window; the
     merged-delete alert points to a key manifest (`manifests/merged_delete_left/<task>.json`),
-    never a pasteable command. Remaining: the emergency (SIGTERM) sync has no retry beyond the
-    client's; a citation whose search sources keep failing is retried every run with no cap
-    (per-citation deferral counter); `watch()` does not follow work into a thread pool (the
-    bibliography resolver is sequential today).
-  - `url_hygiene._pinned_get` (pages, images, Wayback) has no shared retry;
+    never a pasteable command. DONE (2026-11-20): the emergency (SIGTERM) sync is retried once
+    when it fails fast (`_emergency_sync`); a citation whose search sources were down in
+    `BACKEND_DOWN_RUN_CAP` (5) runs in a row is also queued for a human with the reason (count in
+    the search cache, 30-day TTL; it keeps being retried). Remaining: `watch()` does not follow
+    work into a thread pool (the bibliography resolver is sequential today).
+  - DONE (2026-11-20) `url_hygiene._pinned_get` has the shared retry (429/502/503/504, or a
+    network error that failed in under 10 s; not a stall or a TLS failure; 3 tries, Retry-After or
+    2 s/4 s, capped 30 s); the local loops in `source_retrieval` and `wayback` were removed (DRY);
+    `url_fetch` keeps ONE try (`_pinned_get_once`) because it falls back to Wayback itself;
   - NOAA: moved to its own task, 1.2g (owner 2026-11-18).
-  - retryable page fetches (walled / rate-limited) are no longer REJECT-cached and have no per-URL
-    backoff beyond the domain politeness gate: add a short negative TTL (e.g. 1 h);
-  - `lambda_handlers/phase3_handler.py` (not deployed) now fails its invocation when OpenSERP is
-    down (the stop is a BaseException): retire it or catch the stop;
+  - DONE (2026-11-20) a walled / rate-limited page with no archive is cached `RETRY_LATER` for
+    1 h (`openserp_enrichment.RETRY_LATER_HOURS`): not re-fetched or Grok-verified again by other
+    entities meanwhile, never REJECT;
+  - DONE (2026-11-20) `lambda_handlers/phase3_handler.py` deleted (not deployed, no caller);
+  - DONE (2026-11-20, AWS cases): every RunTask launcher checked - the trigger releases its lock
+    and re-raises (Phase 3 rows stay; SQS batches redeliver), the batch poller releases its
+    retrieve claim, ocr_merge alerts with the re-drive; the trigger queue's visibility timeout
+    was 300 s under a 900 s Lambda (now 1800 s) and had no redrive (a failing batch retried
+    silently 14 days; now 5 receives -> the alarmed trigger DLQ); the OpenSERP worker re-sends a
+    message stopped by a Grok/OpenSERP outage as a fresh delayed message (15 min; at most 96 times,
+    24 h, then ordinary counted retries), so an outage no longer pushes the queue into its DLQ. Left: the trigger queue has no per-record failure reporting
+    (one failing record returns the whole batch of up to 100);
   - ACCEPTED (owner 2026-11-18): each start-time OpenSERP stop still brings NAT up and waits up
     to 12 min for OpenSERP before stopping (bounded by the connectivity cap, 24).
 - **1.2g - troubleshoot NOAA weather** (owner 2026-11-18, its own task). NOAA 429 sleeps 60 s per
@@ -1932,7 +1947,8 @@ Findings:
   `_parse_batch_verdicts`, `search_person_images` and `search_military_awards` (used only by
   `scripts/utils/debug_searches.py`), `equipment._extract_media_with_openserp` chain,
   `situational_geocode`, `url_content_verdict.evaluate`, `phase3_retry.py` (copied by `Dockerfile:49`,
-  no caller), `lambda_handlers/phase3_handler.py`, `--no-references`, `enrich_all_people`.
+  no caller), ~~`lambda_handlers/phase3_handler.py`~~ (deleted 2026-11-20), `--no-references`,
+  `enrich_all_people`.
 - **LOW (was gap 24)** - `compute.yaml` labels `OpenSerpService` "Internal ALB for OpenSERP" and
   `openserp_manager`'s docstring mentions an ALB, but no load balancer exists. `_get_openserp_alb_dns`
   returns an IP.

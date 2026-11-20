@@ -58,11 +58,6 @@ class TestSmallHandlers:
 
         assert callable(handler)
 
-    def test_phase3_handler(self):
-        from lambda_handlers.phase3_handler import handler
-
-        assert callable(handler)
-
     def test_nat_manager(self):
         from lambda_handlers.nat_manager import handler
 

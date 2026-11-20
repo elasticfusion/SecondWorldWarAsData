@@ -106,7 +106,7 @@ class _DynamoBackend:
             service_outage.dynamodb_failed("search_cache_get", e)
             return None
 
-    def put(self, key: str, value: str, ttl_days: int = 30) -> None:
+    def put(self, key: str, value: str, ttl_days: float = 30) -> None:
         from src.utils import service_outage
 
         try:
@@ -114,7 +114,7 @@ class _DynamoBackend:
                 Item={
                     "cache_key": key,
                     "response": value,
-                    "ttl": int(time.time()) + (ttl_days * 86400),
+                    "ttl": int(time.time() + ttl_days * 86400),
                 }
             )
             service_outage.ok("dynamodb")
@@ -140,10 +140,8 @@ class _LocalBackend:
         except Exception:
             return None
 
-    def put(self, key: str, value: str, ttl_days: int = 30) -> None:
+    def put(self, key: str, value: str, ttl_days: float = 30) -> None:
         f = self._dir / f"{key}.json"
         f.write_text(
-            json.dumps(
-                {"response": value, "ttl": int(time.time()) + (ttl_days * 86400)}
-            )
+            json.dumps({"response": value, "ttl": int(time.time() + ttl_days * 86400)})
         )

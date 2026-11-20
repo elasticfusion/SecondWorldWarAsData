@@ -284,7 +284,13 @@ def test_sigterm_still_alerts_when_the_sync_fails(alerts, monkeypatch):
         ee._handle_sigterm(signal.SIGTERM, None)
     assert stop.value.code == 143
     # the lock and the NAT lease are released even though the upload failed
-    assert order == ["sync", "lock", "lease", "requeue"]
+    assert order == [
+        "sync",
+        "sync",
+        "lock",
+        "lease",
+        "requeue",
+    ]  # sync retried once (fast fail)
     a = _one(alerts, "task_stopped")
     assert a["synced"] is False and "upload failed" in a["note"]
 
@@ -375,3 +381,63 @@ def test_an_alert_that_raises_is_left_for_the_trigger_too(monkeypatch):
 def test_the_validation_note_names_the_real_log_marker():
     src = (ee.Path(ee.__file__).parent / "scripts" / "validate_phase3.py").read_text()
     assert "=== PHASE3 VALIDATION FAIL" in src
+
+
+# --- the emergency (SIGTERM) sync is retried once when it fails fast (task 1.2f) -------------
+
+
+def _sync_outcomes(monkeypatch, outcomes, took=0.0):
+    """_final_sync answers from ``outcomes`` (an exception raises), each taking ``took`` s."""
+    calls = []
+    now = {"t": 0.0}
+
+    def sync(_script):
+        calls.append(1)
+        now["t"] += took
+        out = outcomes[len(calls) - 1]
+        if isinstance(out, Exception):
+            raise out
+
+    monkeypatch.setattr(ee, "_final_sync", sync)
+    monkeypatch.setattr(ee.time, "monotonic", lambda: now["t"])
+    return calls
+
+
+def test_a_fast_failing_emergency_sync_is_retried(monkeypatch):
+    calls = _sync_outcomes(monkeypatch, [RuntimeError("s3 blip"), None])
+    assert ee._emergency_sync() is True and len(calls) == 2
+
+
+def test_a_slow_failing_emergency_sync_is_not_retried(monkeypatch, caplog):
+    calls = _sync_outcomes(
+        monkeypatch, [RuntimeError("slow"), None], took=ee.EMERGENCY_RETRY_IF_UNDER_S
+    )
+    assert ee._emergency_sync() is False and len(calls) == 1
+    assert "OBSERV phase.emergency_sync_failed attempt=1" in caplog.text
+
+
+def test_an_emergency_sync_that_fails_twice_reports_unsynced(monkeypatch):
+    calls = _sync_outcomes(monkeypatch, [RuntimeError("a"), RuntimeError("b")])
+    assert ee._emergency_sync() is False and len(calls) == 2
+
+
+def test_a_hung_retry_is_abandoned_at_the_deadline(monkeypatch, caplog):
+    """The cleanup (lock, NAT lease) and the stop alert must still fit in ECS's 30 s."""
+    import threading
+
+    release = threading.Event()
+    calls = []
+
+    def sync(_script):
+        calls.append(1)
+        if len(calls) == 1:
+            raise RuntimeError("blip")
+        release.wait(5)  # the retry hangs
+
+    monkeypatch.setattr(ee, "_final_sync", sync)
+    monkeypatch.setattr(ee, "EMERGENCY_SYNC_BUDGET_S", 0.2)
+    try:
+        assert ee._emergency_sync() is False
+        assert "err=deadline" in caplog.text
+    finally:
+        release.set()

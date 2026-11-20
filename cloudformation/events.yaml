@@ -184,8 +184,16 @@ Resources:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: !Sub ${EnvironmentName}-wwii-trigger-queue
-      VisibilityTimeout: 300
+      # task 1.2f: above the trigger Lambda's 900 s timeout, so a batch still being handled is not
+      # delivered to a second invocation (it was 300 s); 2x, not AWS's 6x, so a failed batch is
+      # retried after 30 min, not 90
+      VisibilityTimeout: 1800
       MessageRetentionPeriod: 1209600
+      # a batch that keeps failing (the handler raised 5 times) is kept in the trigger DLQ, which
+      # is alarmed (TriggerDLQAlarm), instead of being retried silently until it expires (14 d)
+      RedrivePolicy:
+        deadLetterTargetArn: !Sub arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-trigger-dlq
+        maxReceiveCount: 5
 
   TriggerQueuePolicy:
     Type: AWS::SQS::QueuePolicy
@@ -325,8 +333,9 @@ Resources:
       AlarmDescription: !Sub >-
         An event for the ${EnvironmentName}-wwii-trigger Lambda failed all its retries and is in
         the SQS queue ${EnvironmentName}-wwii-trigger-dlq (kept 14 days). Read it (aws sqs
-        receive-message), fix the cause from the Lambda logs, re-invoke the Lambda with the
-        event (aws lambda invoke), then delete the message.
+        receive-message), fix the cause from the Lambda logs, then re-drive it: a message from
+        the trigger queue (an SNS envelope) goes back with aws sqs start-message-move-task; an
+        async Lambda event is re-invoked as is (aws lambda invoke). Then delete the message.
       Namespace: AWS/SQS
       MetricName: ApproximateNumberOfMessagesVisible
       Dimensions:

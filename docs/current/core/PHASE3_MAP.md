@@ -501,8 +501,8 @@ receives, alarm on the DLQ in `events.yaml:635`), `phase3_enqueue_openserp.py` (
   (`openserp_worker.py:123-195`), so once the breaker opens every later entity is marked searched without a
   search (gap 2). `enrich_one_equipment` has no `record_scope` gate, so generic equipment is searched. Its
   `output/metrics/openserp_metrics.json` is written to the container's disk and lost at exit.
-  `lambda_handlers/phase3_handler.py` and `phase2_handler.py` (S3-event per-entity enrichment) are not
-  referenced by any template or script.
+  `lambda_handlers/phase2_handler.py` (S3-event per-entity enrichment) is not referenced by any
+  template or script; `phase3_handler.py` was deleted (task 1.2f, 2026-11-20).
 
 ---
 

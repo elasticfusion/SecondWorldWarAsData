@@ -85,7 +85,40 @@ def test_a_transient_page_fetch_is_not_a_90_day_reject(monkeypatch, source):
     monkeypatch.setattr(
         url_fetch, "fetch", lambda url: mock.Mock(source=getattr(url_fetch, source))
     )
-    assert oe._summarize_url_page("http://a", "ctx", object()) == oe._SKIP_SENTINEL
+    assert oe._summarize_url_page("http://a", "ctx", object()) == oe._RETRY_SENTINEL
+
+
+@pytest.mark.parametrize("source", ["BLOCKED_NO_ARCHIVE", "RATE_LIMITED"])
+def test_a_walled_page_is_not_fetched_or_verified_again_for_an_hour(
+    monkeypatch, tmp_path, source
+):
+    """Task 1.2f: a short negative TTL, so other entities that find the same URL in this run
+    do not re-fetch it (or pay for the Grok relevance check) while the wall lasts."""
+    import time
+
+    import src.enrichment.openserp_enrichment as oe
+    from src.utils import search_cache, url_fetch
+
+    backend = search_cache._LocalBackend(tmp_path)
+    monkeypatch.setattr(search_cache, "_get_backend", lambda: backend)
+    fetches, verifies = [], []
+    monkeypatch.setattr(
+        url_fetch,
+        "fetch",
+        lambda url: fetches.append(url) or mock.Mock(source=getattr(url_fetch, source)),
+    )
+    monkeypatch.setattr(
+        oe, "_verify_result", lambda *a, **k: verifies.append(1) or True
+    )
+    for _ in range(3):
+        assert oe.process_positive_url("http://a", "t", "s", "ctx", object()) is None
+    assert fetches == ["http://a"] and verifies == [1]
+    assert oe._url_verdict_cached("http://a") == oe._RETRY_VERDICT
+    later = time.time() + oe.RETRY_LATER_HOURS * 3600 + 5
+    monkeypatch.setattr(search_cache.time, "time", lambda: later)
+    assert (
+        oe._url_verdict_cached("http://a") is None
+    )  # retried after the hour, never REJECT
 
 
 def test_a_dead_page_is_a_negative(monkeypatch):
@@ -209,4 +242,4 @@ def test_the_worker_looks_again_after_a_service_stop(monkeypatch):
         "http://serp",
         object(),
     )
-    assert out == "retry" and resets == [1]
+    assert out == "defer" and resets == [1]

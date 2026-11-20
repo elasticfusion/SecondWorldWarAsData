@@ -126,13 +126,6 @@ def test_sends_browser_user_agent(tmp_path, monkeypatch):
     assert calls[-1]["host"] == "archive.org"
 
 
-def test_parse_retry_after():
-    assert sr._parse_retry_after("30") == 30.0
-    assert sr._parse_retry_after(None) == 10.0  # default
-    assert sr._parse_retry_after("garbage") == 10.0
-    assert sr._parse_retry_after("9999") == 120.0  # capped
-
-
 def test_pacer_spaces_same_domain(monkeypatch):
     slept = []
     monkeypatch.setattr(sr.time, "sleep", slept.append)
@@ -143,11 +136,23 @@ def test_pacer_spaces_same_domain(monkeypatch):
 
 
 def test_429_then_retry_succeeds(tmp_path, monkeypatch):
+    """The retry is the shared one in url_hygiene._pinned_get (task 1.2f), not a local loop."""
+    import time
+
+    from src.utils import url_hygiene as uh
+
     monkeypatch.setattr(sr.time, "sleep", lambda _s: None)  # don't actually sleep
+    monkeypatch.setattr(time, "sleep", lambda _s: None)
     r429 = _fake_resp(status=429, headers={"Retry-After": "1"})
+    r429.close = lambda: None
     r200 = _fake_resp(body=b"PDF")
-    calls = _patch_pinned(monkeypatch, r429, r200)
+    answers = iter([r429, r200])
+    tries = []
+    monkeypatch.setattr(
+        uh, "_pinned_get_once", lambda *a, **k: tries.append(a) or next(answers)
+    )
+    monkeypatch.setattr(uh, "resolved_host_is_safe", lambda h: ["93.184.216.34"])
     entry = {"resource_urls": ["https://archive.org/download/x/book.pdf"]}
     res = sr.retrieve_source(entry, tmp_path, blacklist=BL)
     assert res["status"] == "retrieved_pending_review"
-    assert len(calls) == 2  # retried (pinned again) after honoring Retry-After
+    assert len(tries) == 2  # retried (pinned again) after honoring Retry-After

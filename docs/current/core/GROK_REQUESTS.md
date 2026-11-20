@@ -201,7 +201,7 @@ A rejected result costs 1. A cached verdict (`openserp_verify`, `openserp_url_ve
 | `urlreview_ui_handler` Lambda (`compute.yaml:1226`) | `lambda_handlers/urlreview_ui_handler.py:176-200` -> `enrichment/fetch_review.py:253` `decide_exclude_scope` | chat, `exclude_scope`, temp 0.0: exclude one URL or the whole site when an operator excludes a find | wired; operator action, not a pipeline run. An error returns `SCOPE_URL` |
 | `openserp_worker.py` | `:298` (`GrokClient(...)`) | the Phase 3 OpenSERP requests through `enrich_one_<type>` (section 5) | dormant: nothing fills the queue |
 | `ecs_entrypoint.py` | `:4859` | builds a `GrokClient` only to write retrieved batch answers into the cache; makes no request | live |
-| `lambda_handlers/phase2_handler.py`, `phase3_handler.py` | `:28`, `:40` (`GrokClient(...)`) | per-entity enrichment from S3 events | dormant: not referenced by any template or script |
+| `lambda_handlers/phase2_handler.py` (`phase3_handler.py` deleted 2026-11-20) | `:28` (`GrokClient(...)`) | per-entity enrichment from S3 events | dormant: not referenced by any template or script |
 
 No other Lambda (including `batch_poller.py`) imports `GrokClient` or makes a chat request.
 
@@ -209,7 +209,7 @@ No other Lambda (including `batch_poller.py`) imports `GrokClient` or makes a ch
 | `urlreview_ui_handler` Lambda (`compute.yaml:1226`) | `lambda_handlers/urlreview_ui_handler.py:176-200` -> `enrichment/fetch_review.py:253` `decide_exclude_scope` | chat, `exclude_scope`, temp 0.0: exclude one URL or the whole site when an operator excludes a find | wired; operator action, not a pipeline run. Error returns `SCOPE_URL` |
 | `openserp_worker.py:298` | the Phase 3 OpenSERP requests through `enrich_one_<type>` | as section 5 | dormant (nothing fills the queue) |
 | `ecs_entrypoint.py:4910` | builds a `GrokClient` only to populate the cache from retrieved batch answers; makes no request | n/a | live |
-| `lambda_handlers/phase2_handler.py`, `phase3_handler.py` | `:28`, `:40` (`GrokClient(...)`) | per-entity enrichment from S3 events | dormant: not referenced by any template or script |
+| `lambda_handlers/phase2_handler.py` (`phase3_handler.py` deleted 2026-11-20) | `:28` (`GrokClient(...)`) | per-entity enrichment from S3 events | dormant: not referenced by any template or script |
 
 | `batch_poller` and other Lambdas | no chat request | n/a | n/a |
 
@@ -229,7 +229,7 @@ Callers found by grep and `trace_path`; none outside tests.
 | `extraction/chart_source_adapter.ingest_affirmed_chart` (`:321`) | chart vision (`chart_vision.yaml`) | no caller |
 | `extraction/date_summary.generate_date_summary` (`:140`) | `date_summary` (`date_summary.yaml`, temp 0.1) | no caller |
 | `extraction/grok_search_maps.search_maps_with_grok` (`:81`), `verify_map_with_vision` (`:202`) | `grok_search_maps` (`map_search.yaml`, temp 0.1), `vision_verification` | CLI only (`python3 -m src.extraction.grok_search_maps`) |
-| `lambda_handlers/phase2_handler.py`, `phase3_handler.py` | via `enrich_*` | no template or script |
+| `lambda_handlers/phase2_handler.py` (`phase3_handler.py` deleted 2026-11-20) | via `enrich_*` | no template or script |
 
 ---
 

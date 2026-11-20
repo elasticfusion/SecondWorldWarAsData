@@ -226,3 +226,15 @@ def test_a_task_may_reset_but_never_climb_a_spot_ladder():
     ]
     assert "dynamodb:DeleteItem" not in deny["Action"]  # spot_ladder.reset on success
     assert {"dynamodb:PutItem", "dynamodb:UpdateItem"} <= set(deny["Action"])
+
+
+def test_the_trigger_queue_keeps_a_failing_batch_in_the_alarmed_dlq():
+    """Task 1.2f: an SQS batch the trigger keeps failing on is moved to the alarmed DLQ (was:
+    retried silently for 14 days); the visibility timeout covers the Lambda's 900 s timeout.
+    """
+    queue = _resources("events.yaml")["TriggerQueue"]["Properties"]
+    timeout = _resources("compute.yaml")["TriggerFunction"]["Properties"]["Timeout"]
+    assert 2 * timeout <= queue["VisibilityTimeout"] <= 1800
+    assert queue["RedrivePolicy"]["maxReceiveCount"] == 5
+    src = (ROOT / "cloudformation" / "events.yaml").read_text(encoding="utf-8")
+    assert "${EnvironmentName}-wwii-trigger-dlq\n        maxReceiveCount" in src

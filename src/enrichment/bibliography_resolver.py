@@ -2096,6 +2096,37 @@ def _reuse_cached_resolution(data: Dict[str, Any], cached: Dict[str, Any]) -> No
             data[fld] = cached[fld]
 
 
+# runs with its search sources down (each within 30 days of the last) -> also human review (1.2f)
+BACKEND_DOWN_RUN_CAP = 5
+_OUTAGE_RUNS_TTL_DAYS = 30  # a count not bumped for this long starts again
+
+
+def _count_outage_run(f_name: str) -> int:
+    """One more run in which this citation's search sources were down; returns the count (in
+    the shared search cache, so it survives across runs and tasks: the bibliography schema has
+    no room for it). 0 if the cache cannot be used (then it is retried as before)."""
+    try:
+        from src.utils.search_cache import _get_backend, _make_key
+
+        backend = _get_backend()
+        key = _make_key("bibliography_outage_runs", f_name)
+        try:
+            runs = int(backend.get(key) or 0) + 1
+        except (TypeError, ValueError):
+            runs = 1  # a value that is not a count starts again
+        backend.put(key, str(runs), ttl_days=_OUTAGE_RUNS_TTL_DAYS)
+        return runs
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - not counted: the citation is retried as before
+        logger.warning(
+            "OBSERV bibliography.outage_count_failed file=%s err=%s status=warn",
+            f_name[:80],
+            type(e).__name__,
+        )
+        return 0
+
+
 def _queue_entry(f_name: str, data: Dict[str, Any]) -> Dict[str, Any]:
     """Build a human-disposition review-queue record for an unresolved citation."""
     return {
@@ -2409,6 +2440,20 @@ def _resolve_one_bib_file(
     status, was_deduped, nc_sample = result
     if status == "not_citation" and nc_sample and len(not_citation_samples) < 5:
         not_citation_samples.append(_CTRL.sub(" ", nc_sample)[:80])
+    if status == "backend_down" and not was_deduped:
+        runs = _count_outage_run(f.name)
+        if runs >= BACKEND_DOWN_RUN_CAP:
+            # its search sources were down in BACKEND_DOWN_RUN_CAP runs (each within 30 days of
+            # the last): a human looks now. It is still retried each run (resumable)
+            data = json.loads(f.read_text(encoding="utf-8"))
+            entry = _queue_entry(f.name, data)
+            entry["reason"] = (
+                f"its search sources were unavailable in {runs} runs - check the OBSERV "
+                "bibliography outage lines, then search by hand (it is still retried each run)"
+            )
+            review_queue.append(entry)
+            stats["queued"] += 1
+            stats["outage_capped"] = stats.get("outage_capped", 0) + 1
     if _account_bib_status(stats, status, was_deduped):
         # Real citation, unresolved online → human disposition.
         data = json.loads(f.read_text(encoding="utf-8"))
@@ -2532,12 +2577,14 @@ def _log_bib_resolution_summary(
     try:
         logger.info(
             "OBSERV bibliography.resolve_summary in=%d resolved=%d ref_identified=%d "
-            "not_found=%d backend_down=%d not_citation=%d queued=%d held=%d errors=%d",
+            "not_found=%d backend_down=%d outage_capped=%d not_citation=%d queued=%d held=%d "
+            "errors=%d",
             processed,
             stats["resolved"],
             stats["reference_identified"],
             stats["not_found"],
             stats.get("backend_down", 0),
+            stats.get("outage_capped", 0),
             stats["not_citation"],
             stats["queued"],
             stats["held_unprocessed"],
