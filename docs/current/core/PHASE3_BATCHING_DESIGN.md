@@ -62,10 +62,9 @@ needs to be maintained per round (the current six-enricher list is what drifts).
 
 ### 3.2 Vision (fixes a)
 
-- `BatchRequest` gains `kind` (`"text"` default, `"json"`, `"vision_json"`) so retrieval knows how to store
-  the answer. Today a batch answer is stored as the completion text. A vision method caches the parsed JSON
-  under its own key, so the retrieve step must parse (same `_sanitize_json_response` and
-  `_parse_image_json`) and write the same key the live method reads.
+- DONE (step 1): no `kind` field was needed. A batch stores the answer as TEXT under the request id, which is
+  the vision cache key, and the vision method parses a cached string on read (`_vision_read`; a live answer is
+  still cached parsed). Both retrieval paths (in-task and retrieve-only) are unchanged.
 - In batch mode a vision method, on a cache miss, fetches the image (same SSRF-safe
   `fetch_image_bytes_with_reason`), builds the same messages, queues the request, raises
   `BatchModeCollecting`. A fetch failure is NOT queued (it is the same error as live).

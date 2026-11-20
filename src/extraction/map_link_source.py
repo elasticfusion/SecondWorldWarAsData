@@ -25,6 +25,7 @@ from urllib.parse import urlparse
 logger = logging.getLogger(__name__)
 
 from src.utils.observe import observe_warn  # noqa: E402
+from src.grok_client import BatchModeCollecting
 
 # Hosts whose in-document map links we will follow. HyperWar/ibiblio is the curated corpus source;
 # same-host-as-the-document is also allowed. Everything else is skipped (defense-in-depth beyond the
@@ -85,6 +86,8 @@ def _vision_depicted(
             cache_type="in_doc_map_vision",
             image_timeout=image_timeout,
         )
+    except BatchModeCollecting:
+        raise  # queued for the batch, not an answer: the caller must not stamp or cache a verdict
     except Exception as e:  # noqa: BLE001 - a vision error must not crash the ingest
         logger.debug("in-doc map vision errored for %s: %s", img_url[:120], e)
         return None

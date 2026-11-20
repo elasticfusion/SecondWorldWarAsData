@@ -21,6 +21,14 @@ struct = `extract_structured`, vision = `extract_json_with_image[_base64]`). **B
 site re-raises `BatchModeCollecting`, so the request can be queued for the Batch API; other sites are
 live-only or leave the choice to the caller.
 
+Vision (since 2026-11-20, Group 2): `extract_json_with_image[_base64]` queue a cache miss in batch mode like any
+text request (`GrokClient._vision_json`; the image goes into the request as a data URL). The batch caches the
+answer as text under the request's key and the vision method parses it on read (an unparseable one is evicted).
+The direct callers that swallowed every exception now re-raise `BatchModeCollecting` (`map_link_source`,
+`image_captioner`, `unit_patch`, `chart_source_adapter`, `grok_search_maps`, `search_external_maps`,
+`video_vision`; `equipment` already did); the steps above
+them are audited in the rounds work (design: PHASE3_BATCHING_DESIGN.md).
+
 ---
 
 ## 1. Client mechanics (`src/grok_client.py`)

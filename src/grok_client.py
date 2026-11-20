@@ -355,6 +355,28 @@ class _RateLimiter:
             logger.info("Rate limiter: backing off %.0fs after 429", seconds)
 
 
+# A vision message's image counts as this many characters (~1500 tokens) in the credit estimate; its
+# base64 data URL (megabytes) is not text and is never counted or logged as such.
+_IMAGE_CHARS = 6000
+
+
+def _message_text(message: Dict[str, Any]) -> str:
+    """The text of a chat message: a string, or the text parts of a vision message."""
+    content = message.get("content", "")
+    if isinstance(content, list):
+        return " ".join(
+            str(p.get("text", "")) for p in content if p.get("type") == "text"
+        )
+    return str(content)
+
+
+def _message_images(message: Dict[str, Any]) -> int:
+    content = message.get("content", "")
+    if not isinstance(content, list):
+        return 0
+    return sum(1 for p in content if p.get("type") == "image_url")
+
+
 class BatchModeCollecting(Exception):
     """Raised in batch mode when a request is queued instead of sent."""
 
@@ -751,7 +773,10 @@ class GrokClient:
         out_allowance = int(os.getenv("GROK_EST_OUTPUT_TOKENS", "2000"))
         total = 0.0
         for req in self._batch_collector.requests:
-            chars = sum(len(str(m.get("content", ""))) for m in (req.messages or []))
+            chars = sum(
+                len(_message_text(m)) + _IMAGE_CHARS * _message_images(m)
+                for m in (req.messages or [])
+            )
             in_tokens = max(chars // 4, 1)
             model = self._get_model(getattr(req, "cache_type", "default"))
             total += credit_gate.estimate_cost_usd(
@@ -1048,7 +1073,7 @@ class GrokClient:
             return ""
         for msg in reversed(req.messages):
             if msg.get("role") == "user":
-                return str(msg.get("content", ""))[:200]
+                return _message_text(msg)[:200]
         return ""
 
     def _sanitize_content(self, content: str) -> str:
@@ -1791,12 +1816,30 @@ class GrokClient:
         model_used: str,
     ) -> None:
         """Queue a request for batch submission. Always raises BatchModeCollecting."""
+        self._queue_messages(
+            self._build_messages(prompt, system_prompt),
+            (prompt, system_prompt),
+            temperature,
+            cache_type,
+            cache_key,
+            model_used,
+        )
+
+    def _queue_messages(
+        self,
+        messages: list,
+        asked: Tuple[str, Optional[str]],
+        temperature: float,
+        cache_type: str,
+        cache_key: str,
+        model_used: str,
+    ) -> NoReturn:
+        """Queue ready-made chat ``messages`` (text or vision) under ``cache_key``; ``asked`` is
+        (prompt, system prompt) for the cache-key log. Always raises BatchModeCollecting.
+        """
         from src.utils.batch_api import BatchRequest
 
-        messages = []
-        if system_prompt:
-            messages.append({"role": "system", "content": system_prompt})
-        messages.append({"role": "user", "content": prompt})
+        prompt, system_prompt = asked
         self._observe_cache_key(
             "submit",
             cache_type,
@@ -1873,6 +1916,9 @@ class GrokClient:
         """
         Get JSON response from Grok API with base64 image input (vision).
 
+        In batch mode a cache miss is queued (``BatchModeCollecting``): the answer comes back as
+        text through the batch and is parsed when it is read from the cache.
+
         Args:
             prompt: User prompt
             image_base64: Base64-encoded image data
@@ -1884,49 +1930,18 @@ class GrokClient:
         Returns:
             Parsed JSON response
         """
-        use_cache = use_cache and not _cache_globally_disabled()
-        # Get cache for this type
-        cache = self._get_cache(cache_type)
-
-        # Check cache (use hash of image data in cache key)
         import hashlib
 
         image_hash = hashlib.sha256(image_base64.encode()).hexdigest()[:16]
-        cache_key = self._make_cache_key(
-            f"{prompt}:img_{image_hash}", temperature, self._get_model(cache_type)
+        return self._vision_json(
+            prompt,
+            f"{prompt}:img_{image_hash}",
+            lambda: f"data:{self._detect_image_type(image_base64)};base64,{image_base64}",
+            system_prompt,
+            temperature,
+            use_cache,
+            cache_type,
         )
-
-        if use_cache and cache_key in cache:
-            logger.info("Cache hit for image analysis")
-            return cache[cache_key]  # type: ignore[return-value]
-
-        # Build image data URL
-        content_type = self._detect_image_type(image_base64)
-        image_data_url = f"data:{content_type};base64,{image_base64}"
-
-        # Build and send messages
-        messages = self._build_vision_messages(prompt, image_data_url, system_prompt)
-        response = self._call_api(messages, temperature)
-
-        # Extract and parse content
-        content = response["choices"][0]["message"]["content"]
-        content = self._strip_markdown_wrapper(content)
-        content = self._sanitize_json_response(content)
-
-        try:
-            result = json.loads(content)
-        except json.JSONDecodeError as e:
-            clear_cmd = self._make_cache_clear_command(cache_type, prompt, temperature)
-            logger.error(f"💡 Clear cache: {clear_cmd}")
-            raise GrokAPIError(
-                f"Failed to parse JSON response: {e}\nContent: {content[:500]}"
-            ) from e
-
-        # Cache result
-        if use_cache:
-            cache[cache_key] = result
-
-        return result
 
     def extract_json_with_image(
         self,
@@ -1941,6 +1956,9 @@ class GrokClient:
         """
         Get JSON response from Grok API with image input (vision).
 
+        In batch mode a cache miss is queued (``BatchModeCollecting``), see
+        ``extract_json_with_image_base64``.
+
         Args:
             prompt: User prompt
             image_url: URL of image to analyze (will be downloaded and sent as base64)
@@ -1952,57 +1970,80 @@ class GrokClient:
         Returns:
             Parsed JSON response
         """
+        return self._vision_json(
+            prompt,
+            f"{prompt}:{image_url}",
+            lambda: self._fetch_image_as_data_url(image_url),
+            system_prompt,
+            temperature,
+            use_cache,
+            cache_type,
+        )
+
+    def _vision_json(
+        self,
+        prompt: str,
+        key_basis: str,
+        image_data_url: Callable[[], str],
+        system_prompt: Optional[str],
+        temperature: float,
+        use_cache: bool,
+        cache_type: str,
+    ) -> Dict[str, Any]:
+        """The one vision path: cache, else queue (batch mode) or ask live, then parse and cache.
+
+        A live answer is cached as the parsed object; a BATCH answer is cached by the batch as text
+        under the same key (``request_id`` = key), so a cached string is parsed here, on read. An
+        unparseable batch answer is evicted (the next pass asks again) and raises like a live one.
+        """
         use_cache = use_cache and not _cache_globally_disabled()
-        # Get cache for this type
         cache = self._get_cache(cache_type)
-
-        # Check cache (include image URL in cache key)
-        cache_key = self._make_cache_key(
-            f"{prompt}:{image_url}", temperature, self._get_model(cache_type)
-        )
-
+        model = self._get_model(cache_type)
+        cache_key = self._make_cache_key(key_basis, temperature, model)
         if use_cache and cache_key in cache:
-            logger.info(f"Cache hit for image analysis")
-            return cache[cache_key]  # type: ignore[return-value]
+            logger.info("Cache hit for image analysis")
+            return self._vision_read(cache, cache_key, cache_type, prompt, temperature)
 
-        # Download image and convert to base64.
-        image_data_url = self._fetch_image_as_data_url(image_url)
-
-        # Build messages with image
-        messages = []
-        if system_prompt:
-            messages.append({"role": "system", "content": system_prompt})
-
-        # User message with image (base64 data URL)
-        messages.append(
-            {
-                "role": "user",
-                "content": [  # type: ignore[dict-item]
-                    {"type": "text", "text": prompt},
-                    {"type": "image_url", "image_url": {"url": image_data_url}},
-                ],
-            }
+        messages = self._build_vision_messages(prompt, image_data_url(), system_prompt)
+        if self.batch_mode:
+            self._queue_messages(
+                messages,
+                (prompt, system_prompt),
+                temperature,
+                cache_type,
+                cache_key,
+                model,
+            )
+        response = self._call_api(messages, temperature, model)
+        content = self._sanitize_json_response(
+            self._strip_markdown_wrapper(response["choices"][0]["message"]["content"])
         )
-
-        # Call API
-        response = self._call_api(messages, temperature, self._get_model(cache_type))
-
-        # Extract content
-        content = response["choices"][0]["message"]["content"]
-
-        # Parse JSON
-        content = self._strip_markdown_wrapper(content)
-
-        # Sanitize
-        content = self._sanitize_json_response(content)
-
         result = self._parse_image_json(content, cache_type, prompt, temperature)
-
-        # Cache result
-        if use_cache:
+        if use_cache and not isinstance(
+            result, str
+        ):  # a cached str is read as batch text
             cache[cache_key] = result
+        return result  # type: ignore[no-any-return]
 
-        return result
+    def _vision_read(
+        self,
+        cache: Any,
+        cache_key: str,
+        cache_type: str,
+        prompt: str,
+        temperature: float,
+    ) -> Any:
+        """A cached vision answer: the parsed object (a live answer), or text (a batch answer),
+        parsed now."""
+        value = cache[cache_key]
+        if not isinstance(value, str):
+            return value
+        content = self._sanitize_json_response(self._strip_markdown_wrapper(value))
+        try:
+            return self._parse_image_json(content, cache_type, prompt, temperature)
+        except GrokAPIError:
+            cache.pop(cache_key, None)  # never read again; the next pass asks again
+            raise
 
     def _fetch_image_as_data_url(self, image_url: str) -> str:
         """SSRF-safe download of an image, returned as a base64 data URL."""

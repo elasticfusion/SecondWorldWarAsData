@@ -24,6 +24,7 @@ from typing import Any, Dict, List, Optional
 logger = logging.getLogger(__name__)
 
 from src.utils.observe import observe_warn  # noqa: E402
+from src.grok_client import BatchModeCollecting
 
 # source_type marker so downstream consumers + validation distinguish CHART-DERIVED (vision-inferred
 # command structure) events from prose-stated ones. Mirrors map_source_adapter.MAP_SOURCE_TYPE.
@@ -293,6 +294,8 @@ def _chart_vision_read(
             return {}
         depicted = result.get("depicted")
         return depicted if isinstance(depicted, dict) else {}
+    except BatchModeCollecting:
+        raise  # queued for the batch, not an error
     except Exception as e:  # noqa: BLE001
         observe_warn("chart_source", "vision_error", reason=str(e)[:120])
         return {}

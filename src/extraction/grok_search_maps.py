@@ -19,6 +19,7 @@ from src.grok_client import GrokClient
 logger = logging.getLogger(__name__)
 
 from src.utils.observe import observe_warn  # noqa: E402
+from src.grok_client import BatchModeCollecting
 
 
 def load_whitelisted_sites(
@@ -209,6 +210,8 @@ def verify_map_with_vision(
         if isinstance(result, dict):
             return result.get("is_relevant", False), result.get("reason", "Unknown")
 
+    except BatchModeCollecting:
+        raise  # queued for the batch, not a failure
     except Exception as e:
         logger.warning(f"Vision verification failed: {e}")
 

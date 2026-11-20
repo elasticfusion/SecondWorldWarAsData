@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Optional, Dict, Any, List
 import re
 
-from src.grok_client import GrokClient
+from src.grok_client import BatchModeCollecting, GrokClient
 
 logger = logging.getLogger(__name__)
 
@@ -501,6 +501,8 @@ def _verify_map_relevance(
         logger.info(f"   ⚠ No relevant maps found in {len(map_images)} image(s)")
         return False, False, None, None
 
+    except BatchModeCollecting:
+        raise  # queued for the batch, not a rejection
     except Exception as e:
         logger.warning(f"   ⚠ Verification failed: {e}")
         return False, False, None, None
