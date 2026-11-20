@@ -460,11 +460,38 @@ continues from where it stopped. Order: 1.2b, 1.1b, 1.2c, 1.2e, 1.2d, 1.2f, 1.1c
   - LOW - Spot rates are historical (highest daily rate actually charged in 7 days); a Spot price
     rise since the last Spot day is not seen. Documented; `spot_ladder.max_fraction_of_on_demand`
     is the margin if wanted.
-- **1.1d - EC2 Spot price ladder for the GPU OCR (AWS Batch, g5/g6)** (owner 2026-11-18, its own
-  task). Same rule per instance type: on reclaim, move up the instance types while the live Spot
-  price (`describe_spot_price_history`) stays at or below the original type's on-demand price
-  (Price List API); then the on-demand queue at the original type. Extends `ocr_spot_controller`
-  (today: Spot wait -> on-demand fallback, 48 h cap; no upsizing).
+- **DONE (2026-11-20, code + CloudFormation; not deployed) 1.1d - EC2 Spot price ladder for the
+  GPU OCR (AWS Batch)** (owner 2026-11-18, its own task). Same rule per instance type: on reclaim,
+  move up the instance types while the live Spot price (`describe_spot_price_history`) stays at or
+  below the original type's on-demand price (Price List API); then the on-demand queue at the
+  original type. Owner steering 2026-11-20: the instance classes are not fixed; any type that can
+  handle the workload will do, and the cap is the hourly price of the ORIGINAL on-demand type.
+  - Design (`src/utils/gpu_ladder.py`, `lambda_handlers/ocr_spot_controller.py`, `ocr.yaml`): AWS
+    Batch is told a queue, never an instance type, so each rung has its own Spot compute
+    environment + queue: `<env>-wwii-chandra-gpu` (rung 0 = the original type), `-gpu-r1..r3`, then
+    `-gpu-ondemand` (original type only). Rung types are the CloudFormation parameters
+    `GpuRung0Type..GpuRung3Type` (defaults g5.xlarge, g6.xlarge, g5.2xlarge, g6.2xlarge), passed to the
+    controller as `OCR_GPU_LADDER`. A rung is used only if `describe_instance_types` says it can run
+    the job (1 GPU with >= 22000 MiB, 4 vCPU, 15000 MiB) and its live Spot price (highest of the
+    latest price per AZ of the private subnets) is at or under the original on-demand price
+    (`OCR_MAX_FRACTION`, default and maximum 1.0). An over-limit rung is skipped, not the end of the
+    ladder (families are not monotone in price). Unreadable prices, or no rung left, mean on-demand.
+  - Reclaim: with the controller deployed the job definition does not retry `Host EC2*` on the same
+    queue (`EvaluateOnExit`), other failures keep 2 attempts. An EventBridge rule on Batch FAILED
+    events moves the job at once; the hourly run sweeps the last 12 h as a backstop. The rung is the
+    queue the job ran on, so no ladder state is stored; `ocrctl#<job>` claims make each move happen
+    once (the claim remembers every job it moved, so the hourly sweep never moves an old job again).
+    Only a move to on-demand alerts (it costs more; the alert says what to check); a Spot-to-Spot
+    move is logged. A RUNNABLE job whose rung's live Spot price rose over the limit moves at once.
+  - The merge rule (`events.yaml` `OcrJobSucceededRule`) matches the queues by prefix, and
+    `nat_manager` / the trigger's in-flight checks cover every rung.
+  - Residual: the cap is checked when a job is moved and while it waits RUNNABLE; a RUNNING job is
+    never killed for a later price rise. Batch's own ceiling for a rung is its type's on-demand price
+    (`SpotBidPercent`), so a larger type (g5.2xlarge) could in theory run above the original's price.
+    Each of the four Spot compute environments has its own `MaxvCpus`, so the Spot ceiling is the sum.
+  - OPEN: unverified against a live Batch (needs the deploy): that a failure with no matching
+    `EvaluateOnExit` rule is retried (AWS docs, from memory). The v5 compute environments and queues
+    replace the old ones on deploy.
 - **DONE (2026-11-19: the chain invokes the trigger with `{"source": "enrich-next"}`, which runs
   `_reconcile_phase3`; shared `ecs_entrypoint._invoke_trigger`) LOW - the end-of-run chain can pick
   a book that is already running.** Queue rows now stay while

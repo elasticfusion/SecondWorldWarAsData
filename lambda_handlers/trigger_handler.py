@@ -966,14 +966,23 @@ def _ocr_job_in_flight(book: str) -> bool:
     queue. Used to distinguish a legitimate in-flight claim from a silent drop
     (claim written but no job launched). Fails SAFE: on error, assume in flight
     (do not reclaim on uncertain state)."""
-    queues = [OCR_JOB_QUEUE, f"{ENV_NAME}-wwii-chandra-gpu-ondemand"]
+    from src.utils import gpu_ladder
+
+    queues = [OCR_JOB_QUEUE] + [
+        q for q in gpu_ladder.all_queues(ENV_NAME) if q != OCR_JOB_QUEUE
+    ]  # every Spot rung + on-demand: a job moved up the ladder is still in flight
     try:
         batch = _batch_client()
         for q in queues:
             for status in ("SUBMITTED", "PENDING", "RUNNABLE", "STARTING", "RUNNING"):
-                jobs = batch.list_jobs(jobQueue=q, jobStatus=status).get(
-                    "jobSummaryList", []
-                )
+                try:
+                    jobs = batch.list_jobs(jobQueue=q, jobStatus=status).get(
+                        "jobSummaryList", []
+                    )
+                except Exception as qe:  # noqa: BLE001
+                    if "does not exist" in str(qe):
+                        break  # a ladder deployed without its upper rungs
+                    raise
                 if any(book in j.get("jobName", "") for j in jobs):
                     return True
         return False

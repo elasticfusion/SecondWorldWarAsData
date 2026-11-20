@@ -209,10 +209,11 @@ def _ocr_jobs_in_flight() -> bool:
     from botocore.exceptions import ClientError
 
     batch = boto3.client("batch", region_name=os.getenv("AWS_REGION", "us-east-1"))
-    for queue in (
-        f"{ENV_NAME}-wwii-chandra-gpu",
-        f"{ENV_NAME}-wwii-chandra-gpu-ondemand",
-    ):
+    from src.utils import gpu_ladder
+
+    for queue in gpu_ladder.all_queues(
+        ENV_NAME
+    ):  # every Spot rung + the on-demand queue
         for status in ("SUBMITTED", "PENDING", "RUNNABLE", "STARTING", "RUNNING"):
             try:
                 if batch.list_jobs(jobQueue=queue, jobStatus=status).get(
