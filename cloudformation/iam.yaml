@@ -68,6 +68,20 @@ Resources:
                 Resource:
                   - !Ref CacheTableArn
                   - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${EnvironmentName}-wwii-*
+              - Sid: NoRoundApprovalWrites
+                # Group 2: the operator's batch-round approval rows (see the ECS task role)
+                Effect: Deny
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:BatchWriteItem
+                Resource:
+                  - !Ref CacheTableArn
+                Condition:
+                  ForAnyValue:StringLike:
+                    dynamodb:LeadingKeys:
+                      - rounds#*
               - Sid: SecretsManager
                 Effect: Allow
                 Action:
@@ -328,6 +342,22 @@ Resources:
                       - credit#holds#*
                       - credit#balance
                       - credit#hold_alerted
+              - Sid: NoRoundApprovalWrites
+                # Group 2: rounds#<phase>#<book> rows raise a run's soft batch-round cap and are
+                # written by an OPERATOR (scripts/approve_batch_rounds.py), never by a task that
+                # processes untrusted book text
+                Effect: Deny
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:BatchWriteItem
+                Resource:
+                  - !Ref CacheTableArn
+                Condition:
+                  ForAnyValue:StringLike:
+                    dynamodb:LeadingKeys:
+                      - rounds#*
               - Sid: NoLaunchStateWrites
                 # task 1.1b follow-up: the trigger trusts the Fargate price rows (Spot ladder
                 # limit) and its stop reports (re-sent by the hourly sweep); a task never

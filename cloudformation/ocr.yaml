@@ -572,6 +572,15 @@ Resources:
                       - credit#holds#*
                       - credit#balance
                       - credit#hold_alerted
+              - Sid: NoRoundApprovalWrites
+                # Group 2: operator-only batch-round approval rows (scripts/approve_batch_rounds.py)
+                Effect: Deny
+                Action: [dynamodb:PutItem, dynamodb:UpdateItem, dynamodb:DeleteItem, dynamodb:BatchWriteItem]
+                Resource: !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${EnvironmentName}-wwii-api-cache
+                Condition:
+                  ForAnyValue:StringLike:
+                    dynamodb:LeadingKeys:
+                      - rounds#*
               - Effect: Allow
                 Action: servicequotas:GetServiceQuota
                 Resource: '*'

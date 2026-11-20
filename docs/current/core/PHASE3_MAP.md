@@ -630,21 +630,33 @@ exist and none has `noaa_observed` (`validate_phase3.py:172-208`), on every run.
 
 ## 5. Batch mode
 
-`config.yaml` has `batch.phase3: false`, so Phase 3 makes live calls by default. With `--batch`:
+`config.yaml` has `batch.phase3: false`, so Phase 3 makes live calls by default. With `--batch`
+(Group 2 step 2, 2026-11-20; design: [PHASE3_BATCHING_DESIGN.md](PHASE3_BATCHING_DESIGN.md)):
 
-1. `GrokClient(batch_mode=True)`: a cache miss queues the request and raises `BatchModeCollecting`
-   (`grok_client.py:1710-1744`). It derives from `Exception`.
-2. At the end of `main()`, if requests were collected, `submit_batch(batch_name="phase3-<book>-<n>reqs")`. Fewer
-   than `batch.min_requests` (50, env `BATCH_MIN_REQUESTS`) are answered live (`_answer_small_batch_live`).
-3. `_run_batch_rerun` (`P3:697`) repeats six enrichers against the cache: people_groups, places,
-   `link_parent_place_ids`, bibliography, bibliography_resolve, equipment_images. A failed re-run is logged and does
-   not stop teardown. It does **not** re-run geocoding, OpenSERP, the document-media steps or NOAA.
-
-Effect on OpenSERP (latent, because batch is off): the collect pass still runs the OpenSERP group. `_verify_result`
-catches `BatchModeCollecting` as an ordinary exception and returns False, so `process_positive_url` caches
-`REJECT` for 90 days and the entity is stamped searched. The queued verifies are answered but the group is
-not re-run (gap 5). The multi-round poller hand-off in
-[batch_processing](../features/batch_processing/README.md) is Phase 2 only.
+1. `GrokClient(batch_mode=True)`: a cache miss (text or vision) queues the request and raises
+   `BatchModeCollecting` (`grok_client._queue_messages`). It derives from `Exception`.
+   `run_enrichment_step` records a step that raised it as `pending`, not `error`.
+2. `main()` runs every step once (`_run_enrichment_steps`), then `_run_batch_rounds`: submit what the pass
+   queued (`submit_batch`; fewer than `batch.min_requests` (50, env `BATCH_MIN_REQUESTS`) are answered
+   live, `_answer_small_batch_live`), run the WHOLE pass again on the answers, repeat until a pass queues
+   nothing. Every step is stamp-driven, so a repeat only does what is left. A later question that depends
+   on an earlier answer (the bibliography cascade) is simply the next round.
+3. Rounds use `src/utils/batch_rounds.BatchRounds` (shared with Phase 2): each round logs
+   `OBSERV batch.round`, repeats are flagged, and the round cap `batch.max_rounds` (default 8) is SOFT: at the
+   cap the run stops (exit 1, `incomplete` in `.phase_results.json`) with an alert that names the command
+   to allow more: `python3 scripts/approve_batch_rounds.py --phase phase3 --scope <book> --extra N`
+   (`src/utils/round_approval`; the next run of that phase and book gets `cap + N`; the approval expires after 7
+   days).
+4. A request submitted `batch.max_request_attempts` (default 3) times without an answer is SET ASIDE
+   (`BatchRounds.drop_stuck`): it leaves the batch, one alert names it, its step stays `pending` and its
+   record unstamped (`OBSERV phase3.steps_pending`), and the run ends without it. The next run asks again.
+5. Each round waits in the task up to `batch.phase3_in_task_wait_minutes` (default 1440). A round not
+   answered by then exits `HANDED_OFF_EXIT` (75) with `pending_batch` in the results file. The entrypoint
+   cannot resume a handed-off Phase 3 yet (`_settle_phase2_task` fails it loudly, `batch.phase3_handoff_unsupported`):
+   TODO Group 2 step 2c (lock release and re-acquire, attempt claim per round-trip, retrieve resume).
+6. Not yet safe to switch on (TODO Group 2 step 2b): steps that catch `BatchModeCollecting` as an ordinary
+   exception and then stamp or cache a verdict (`openserp_enrichment._verify_result` caches `REJECT` for 90 days, gap 5;
+   the callers listed in the step 2 audit). `batch.phase3` stays false until they are fixed.
 
 ---
 

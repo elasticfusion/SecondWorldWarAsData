@@ -11,13 +11,13 @@ import json
 import os
 import re
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Tuple
 
 from src.extraction.enrich_groups import enrich_all_groups
 from src.extraction.enrich_places import enrich_all_places
 from src.extraction.places import link_parent_place_ids
 from src.extraction.supplemental_advanced import enrich_bibliography
-from src.grok_client import GrokClient
+from src.grok_client import BatchModeCollecting, GrokClient
 from src.utils.config import load_config
 from src.utils.logger import setup_logging
 
@@ -232,6 +232,9 @@ def _enrich_places_and_geocode(
             "errors": geo_report.errors,
         }
         return enriched + geo_report.geocoded
+    except BatchModeCollecting:
+        source_stats["geocode"] = {"enriched": 0, "status": "pending"}
+        return enriched
     except Exception as e:  # noqa: BLE001 - geocoding must not abort Phase 3
         logger.error(
             "Geocoding step FAILED (places left un-geocoded): %s", e, exc_info=True
@@ -702,135 +705,14 @@ def _bibliography_resolve_config(config: dict) -> dict:
     }
 
 
-def _run_batch_rerun(args, config, grok_client) -> int:
-    """Re-run the batch-cached enrichers after a batch submission completes. Each enricher is
-    wrapped per-source fail-safe (mirroring main()'s _run_step) so one raising enricher can neither
-    abort the re-run nor the phase teardown. People enrichment moved to Phase 2 (not re-run here).
-    Returns the count enriched in this re-run pass."""
-    if args.people_only:
-        return 0
+def _run_enrichment_steps(args, config, grok_client, source_stats, max_workers) -> int:
+    """One pass over every Phase 3 step, in order. Returns the items enriched in this pass.
 
-    def _step(name: str, fn) -> int:
-        try:
-            n = fn()
-            logger.info(
-                "OBSERV phase3.batch_step name=%s enriched=%d status=ok", name, n
-            )
-            return n
-        except (
-            Exception
-        ) as e:  # noqa: BLE001 - a failing batch step must not abort the re-run
-            logger.error(
-                "OBSERV phase3.batch_step name=%s enriched=0 status=error error=%s",
-                name,
-                str(e)[:120],
-            )
-            return 0
-
-    groups_dir = args.output_dir / "people_groups"
-    places_dir = args.output_dir / "places"
-    bib_dir = args.output_dir / "bibliography"
-    supplemental_config = config.get("supplemental_material", {})
-    total = 0
-    total += _step(
-        "people_groups",
-        lambda: enrich_groups_data(groups_dir, grok_client, max_items=args.max_items),
-    )
-    total += _step(
-        "places",
-        lambda: enrich_all_places(places_dir, grok_client, max_places=args.max_items),
-    )
-    _step("link_parent_place_ids", lambda: link_parent_place_ids(places_dir) or 0)
-    total += _step(
-        "bibliography",
-        lambda: enrich_bibliography(bib_dir, supplemental_config, grok_client),
-    )
-
-    from src.enrichment.bibliography_resolver import resolve_bibliography_dir
-
-    resolve_config = _bibliography_resolve_config(config)
-    total += _step(
-        "bibliography_resolve",
-        lambda: resolve_bibliography_dir(
-            bib_dir, grok_client, resolve_config, max_items=args.max_items
-        ).get("resolved", 0),
-    )
-    # Equipment scope decisions queued on the collect pass (legacy records with no identity_scope)
-    # are now cached: decide them and vision-check their images.
-    total += _step(
-        "equipment_images",
-        lambda: _resolve_equipment_images(args.output_dir, grok_client, config),
-    )
-    return total
-
-
-def main():
-    """Main entry point."""
-    args = _parse_phase3_args()
-
-    # Load config for logging settings
-    base_dir = Path(__file__).parent
-    config = load_config(base_dir / "config.yaml")
-    log_config = config.get("logging", {})
-
-    # Setup logging with file output
-    logger = setup_logging(
-        level=args.log_level,
-        log_file=log_config.get("file"),
-        console=log_config.get("console", True),
-    )
-
-    if not args.output_dir.exists():
-        logger.error(f"Output directory not found: {args.output_dir}")
-        return 1
-
-    logger.info("Phase 3: starting enrichment (%s)", args.output_dir)
-
-    # NOTE: Phase 3 is intentionally a WHOLE-CORPUS, run-until-done job — it
-    # geocodes every place, fetches weather for every event, resolves every
-    # citation/archive reference, etc. Unlike Phase 2 (which is scoped to one book
-    # and must not silently fan out to the whole corpus), Phase 3 enriching the
-    # entire corpus is the entire point, so there is NO scoped-intent to protect and
-    # NO corpus-size ceiling here. Its safety against runaway cost is structural:
-    # it processes per entity type with an optional --max-items cap and SKIPS
-    # already-enriched records (idempotent + resumable), so re-runs converge and a
-    # partial run simply resumes. (A size tripwire here aborted every legitimate
-    # single-book run, since one book easily exceeds 50 total entity records.)
-
-    from src.utils.validation_stats import reset_stats as _reset_val_stats
-
-    _reset_val_stats()
-    from src.utils.entity_records import reset_corrupt_records
-
-    reset_corrupt_records()  # task 1.2f PART 2: corrupt records found this run hold the book
-    from src.utils.link_policy import log_policy
-
-    log_policy()  # task 1.9: what this run trusts and how far links are followed
-
-    # Notify: enrichment is starting (downloads complete, real work beginning)
-    _notify_enrichment_started()
-
-    if args.max_items:
-        logger.info(f"Limiting to {args.max_items} items per entity type")
-    if args.no_references:
-        logger.info("Reference following disabled")
-
-    # Initialize Grok client
-    grok_client = GrokClient(args.cache_dir, batch_mode=args.batch)
-    if args.batch:
-        logger.info(
-            "Batch mode enabled — collecting requests for xAI Batch API (50%% off)"
-        )
-
+    Under ``--batch`` a pass QUEUES what it cannot answer from the cache (``BatchModeCollecting``,
+    a step then leaves that record unstamped) and the rounds loop (``_run_batch_rounds``) repeats
+    the pass until nothing is queued: every step is stamp-driven, so a repeat only does what is
+    left."""
     total_enriched = 0
-    max_workers = config.get("concurrency", {}).get("max_enrichment_workers", 6)
-
-    # C3: per-source enrichment stats so "complete" reflects partial success +
-    # previously-swallowed failures surface to the operator (via .phase_results.json
-    # -> completion notification -> email + Slack). C2: a source that throws is
-    # LOGGED + recorded as errored, never silently swallowed and never aborts the
-    # rest of Phase 3.
-    source_stats: dict = {}
 
     def _run_step(name: str, fn) -> int:
         return run_enrichment_step(source_stats, name, fn)
@@ -941,52 +823,222 @@ def main():
                 ),
             )
 
+    return total_enriched
+
+
+def _write_phase_results(output_dir: Path, payload: dict) -> None:
+    """The one writer of ``.phase_results.json`` (the entrypoint reads it: notification, and for a
+    run that stops early ``pending_batch`` / ``incomplete``)."""
+    (output_dir / ".phase_results.json").write_text(
+        json.dumps(payload), encoding="utf-8"
+    )
+
+
+def _sources_with(source_stats: dict, status: str) -> list:
+    """The steps whose status is ``status`` ("error": raised; "pending": requests set aside)."""
+    return sorted(n for n, st in source_stats.items() if st.get("status") == status)
+
+
+def _results_note(args, enriched: int, source_stats: dict, **fields) -> None:
+    """The results file of a run that stops before its end (hand-off, round cap): what the
+    entrypoint reads, plus the steps' stats so a failed step is not lost."""
+    _write_phase_results(
+        args.output_dir,
+        {
+            "enriched": enriched,
+            "source_stats": source_stats,
+            "errored_sources": _sources_with(source_stats, "error"),
+            "pending_sources": _sources_with(source_stats, "pending"),
+            "corrupt_records": _corrupt_record_names(),
+            **fields,
+        },
+    )
+
+
+def _run_batch_rounds(
+    args, config, grok_client, source_stats, max_workers, enriched: int
+) -> Tuple[int, Optional[int]]:
+    """Submit the queued requests, repeat the whole pass on the answers, until a pass queues
+    nothing. Returns ``(enriched, stop_code)``. ``stop_code`` is None when no round is left to run;
+    a step that still has requests set aside is then ``pending`` and ``_exit_for_steps`` keeps its
+    book queued. Otherwise it is the exit code of a run that ends early:
+
+    - a round not answered within the in-task wait: ``HANDED_OFF_EXIT`` (75), ``pending_batch`` in
+      the results file (the entrypoint cannot resume Phase 3 yet: TODO Group 2 step 2c);
+    - over the round cap (alerted; a human can approve more): exit 1, ``incomplete`` in the results.
+
+    Requests submitted ``batch.max_request_attempts`` times without an answer are set aside.
+    """
+    import time as _time
+
+    from src.utils.batch_api import BatchCollector, BatchPending
+    from src.utils.batch_rounds import (
+        DEFAULT_MAX_ROUNDS,
+        BatchRounds,
+        HANDED_OFF_EXIT,
+        first_round_from_env,
+    )
+
+    book = os.environ.get("BOOK_NAME", "all")
+    batch_cfg = config.get("batch", {}) or {}
+    rounds = BatchRounds(
+        scope=book,
+        phase="phase3",
+        cap=int(batch_cfg.get("max_rounds", DEFAULT_MAX_ROUNDS)),
+        first=first_round_from_env(),
+        max_attempts=int(batch_cfg.get("max_request_attempts", 3)),
+    )
+    # The task waits for each round itself (24 h, as the single batch did before) until the
+    # entrypoint can resume a handed-off Phase 3 (lock release/re-acquire, attempt claim per
+    # round-trip: TODO Group 2 step 2c). Set ``batch.phase3_in_task_wait_minutes`` lower only then.
+    wait_minutes = float(batch_cfg.get("phase3_in_task_wait_minutes", 24 * 60))
+    started = _time.monotonic()
+    while True:
+        rounds.drop_stuck(grok_client._batch_collector)
+        queued = list(getattr(grok_client._batch_collector, "requests", None) or [])
+        if not queued:
+            break
+        if not rounds.admit(queued, grok_client):  # alerted: no more spend
+            logger.error("[phase3] over the batch round cap: stopped incomplete")
+            _results_note(
+                args,
+                enriched,
+                source_stats,
+                incomplete=f"batch rounds over cap ({rounds.cap})",
+            )
+            return enriched, 1
+        logger.info(
+            "[phase3] Batch round %d: submitting %d requests (waiting up to %.0f min)",
+            rounds.count,
+            len(queued),
+            wait_minutes,
+        )
+        suffix = f"-r{rounds.count}-{len(queued)}reqs"
+        try:
+            batch_id = grok_client.submit_batch(
+                batch_name=f"phase3-{book}"[: 128 - len(suffix)] + suffix,
+                max_wait_minutes=wait_minutes,
+            )
+        except BatchPending as e:
+            logger.info("[phase3] %s: handed to the poller", e)
+            _results_note(
+                args,
+                enriched,
+                source_stats,
+                pending_batch=e.batch_id,
+                pending_batch_name=e.batch_name,
+            )
+            return enriched, HANDED_OFF_EXIT
+        if not batch_id:
+            raise RuntimeError(
+                f"batch round {rounds.count}: {len(queued)} requests queued but not submitted"
+            )
+        grok_client.batch_mode = True  # the next pass queues what these answers unlock
+        grok_client._batch_collector = BatchCollector()
+        enriched += _run_enrichment_steps(
+            args, config, grok_client, source_stats, max_workers
+        )
+    rounds.complete(_time.monotonic() - started)
+    grok_client.batch_mode = False
+    grok_client._batch_collector = None
+    waiting = _sources_with(source_stats, "pending")
+    if waiting:
+        logger.error(
+            "OBSERV phase3.steps_pending steps=%s status=error - these steps still had requests "
+            "set aside after the last round (see the set-aside alert); their records are not "
+            "stamped and the next run asks again",
+            ",".join(waiting),
+        )
+    return enriched, None
+
+
+def main():
+    """Main entry point."""
+    args = _parse_phase3_args()
+
+    # Load config for logging settings
+    base_dir = Path(__file__).parent
+    config = load_config(base_dir / "config.yaml")
+    log_config = config.get("logging", {})
+
+    # Setup logging with file output
+    logger = setup_logging(
+        level=args.log_level,
+        log_file=log_config.get("file"),
+        console=log_config.get("console", True),
+    )
+
+    if not args.output_dir.exists():
+        logger.error(f"Output directory not found: {args.output_dir}")
+        return 1
+
+    logger.info("Phase 3: starting enrichment (%s)", args.output_dir)
+
+    # NOTE: Phase 3 is intentionally a WHOLE-CORPUS, run-until-done job — it
+    # geocodes every place, fetches weather for every event, resolves every
+    # citation/archive reference, etc. Unlike Phase 2 (which is scoped to one book
+    # and must not silently fan out to the whole corpus), Phase 3 enriching the
+    # entire corpus is the entire point, so there is NO scoped-intent to protect and
+    # NO corpus-size ceiling here. Its safety against runaway cost is structural:
+    # it processes per entity type with an optional --max-items cap and SKIPS
+    # already-enriched records (idempotent + resumable), so re-runs converge and a
+    # partial run simply resumes. (A size tripwire here aborted every legitimate
+    # single-book run, since one book easily exceeds 50 total entity records.)
+
+    from src.utils.validation_stats import reset_stats as _reset_val_stats
+
+    _reset_val_stats()
+    from src.utils.entity_records import reset_corrupt_records
+
+    reset_corrupt_records()  # task 1.2f PART 2: corrupt records found this run hold the book
+    from src.utils.link_policy import log_policy
+
+    log_policy()  # task 1.9: what this run trusts and how far links are followed
+
+    # Notify: enrichment is starting (downloads complete, real work beginning)
+    _notify_enrichment_started()
+
+    if args.max_items:
+        logger.info(f"Limiting to {args.max_items} items per entity type")
+    if args.no_references:
+        logger.info("Reference following disabled")
+
+    # Initialize Grok client
+    grok_client = GrokClient(args.cache_dir, batch_mode=args.batch)
+    if args.batch:
+        logger.info(
+            "Batch mode enabled — collecting requests for xAI Batch API (50%% off)"
+        )
+
+    max_workers = config.get("concurrency", {}).get("max_enrichment_workers", 6)
+
+    # C3: per-source enrichment stats so "complete" reflects partial success +
+    # previously-swallowed failures surface to the operator (via .phase_results.json
+    # -> completion notification -> email + Slack). C2: a source that throws is
+    # LOGGED + recorded as errored, never silently swallowed and never aborts the
+    # rest of Phase 3.
+    source_stats: dict = {}
+
+    total_enriched = _run_enrichment_steps(
+        args, config, grok_client, source_stats, max_workers
+    )
     logger.info("Phase 3 complete: %d total items enriched", total_enriched)
     grok_client.log_cache_stats()
 
-    # If batch mode, submit collected requests, wait, then re-run
-    if (
-        args.batch
-        and grok_client._batch_collector
-        and len(grok_client._batch_collector) > 0
-    ):
-        logger.info(
-            "Submitting %d requests to xAI Batch API (50%% off)...",
-            len(grok_client._batch_collector),
+    # Batch mode: submit what the pass queued, repeat the pass on the answers, until a pass queues
+    # nothing (rounds: a later question can depend on an earlier answer).
+    if args.batch:
+        total_enriched, stop_code = _run_batch_rounds(
+            args, config, grok_client, source_stats, max_workers, total_enriched
         )
-        book = os.environ.get("BOOK_NAME", "all")
-        batch_id = grok_client.submit_batch(
-            batch_name=f"phase3-{book}-{len(grok_client._batch_collector)}reqs"[:128]
-        )
-        if batch_id:
-            logger.info("Batch complete! Re-running enrichment with cached results...")
-            grok_client.batch_mode = False
-            # Accumulate the re-run into a SEPARATE counter (do NOT reset total_enriched — that
-            # discarded the first-pass tally and misreported completion). Wrap the whole re-run in
-            # a fail-safe so a raised enricher can never skip close_session / results-write /
-            # validation / referential-integrity below (the H3 fail-safety gap).
-            batch_enriched = 0
-            try:
-                batch_enriched = _run_batch_rerun(args, config, grok_client)
-            except (
-                Exception
-            ) as e:  # noqa: BLE001 - batch re-run must never abort the phase teardown
-                logger.error(
-                    "Batch re-run FAILED (continuing to teardown): %s", e, exc_info=True
-                )
-            total_enriched += batch_enriched
-            logger.info(
-                "[phase3] Batch re-run complete: %d items enriched (phase total %d)",
-                batch_enriched,
-                total_enriched,
-            )
+        if stop_code is not None:  # handed to the poller, or over the round cap
+            return stop_code
 
     from src.utils.http_pool import close_session
 
     close_session()
 
     # Write results for entrypoint notification
-    results_file = args.output_dir / ".phase_results.json"
     entity_counts = {}
     for subdir in [
         "people",
@@ -1005,31 +1057,29 @@ def main():
             entity_counts[subdir] = len(
                 [f for f in d.glob("*.json") if f.name != "index.json"]
             )
-    errored_sources = sorted(
-        n for n, s in source_stats.items() if s.get("status") == "error"
-    )
+    errored_sources = _sources_with(source_stats, "error")
     if errored_sources:
         logger.error(
             "Phase 3: %d enrichment source(s) FAILED: %s",
             len(errored_sources),
             ", ".join(errored_sources),
         )
-    results_file.write_text(
-        json.dumps(
-            {
-                "enriched": total_enriched,
-                "entity_counts": entity_counts,
-                # C3: per-source stats + explicit failure list so "complete"
-                # reflects partial success and previously-swallowed failures reach
-                # the operator via the completion notification (email + Slack).
-                "source_stats": source_stats,
-                "errored_sources": errored_sources,
-                # stored records found corrupt this run (entity_records.load_record): the
-                # book is held for the operator (EXIT_DATA_CORRUPT)
-                "corrupt_records": _corrupt_record_names(),
-            }
-        ),
-        encoding="utf-8",
+    _write_phase_results(
+        args.output_dir,
+        {
+            "enriched": total_enriched,
+            "entity_counts": entity_counts,
+            # C3: per-source stats + explicit failure list so "complete"
+            # reflects partial success and previously-swallowed failures reach
+            # the operator via the completion notification (email + Slack).
+            "source_stats": source_stats,
+            "errored_sources": errored_sources,
+            # steps that still had requests set aside after the last batch round
+            "pending_sources": _sources_with(source_stats, "pending"),
+            # stored records found corrupt this run (entity_records.load_record): the
+            # book is held for the operator (EXIT_DATA_CORRUPT)
+            "corrupt_records": _corrupt_record_names(),
+        },
     )
 
     from src.utils.validation_stats import write_validation_stats as _write_val_stats
@@ -1094,12 +1144,21 @@ def run_enrichment_step(source_stats: dict, name: str, fn) -> int:
         count = (
             result if isinstance(result, int) else getattr(result, "geocoded", 0) or 0
         )
-        source_stats[name] = {"enriched": count, "status": "ok"}
+        # rounds repeat the pass: the step's total is every pass's count
+        total = count + int(source_stats.get(name, {}).get("enriched", 0) or 0)
+        source_stats[name] = {"enriched": total, "status": "ok"}
         try:
             logger.info("OBSERV phase3.step name=%s enriched=%d status=ok", name, count)
         except Exception:  # noqa: BLE001 - observability never breaks the step
             pass
         return count
+    except BatchModeCollecting:
+        # requests were queued for the batch: not an answer and not a failure (the next round
+        # asks again; a step that is still pending when the rounds end is reported)
+        prev = int(source_stats.get(name, {}).get("enriched", 0) or 0)
+        source_stats[name] = {"enriched": prev, "status": "pending"}
+        logger.info("OBSERV phase3.step name=%s enriched=0 status=pending", name)
+        return 0
     except Exception as e:  # noqa: BLE001 - capture + surface, don't abort Phase 3
         logger.error("Enrichment source '%s' FAILED: %s", name, e, exc_info=True)
         source_stats[name] = _raised_step_stats(e)
@@ -1141,7 +1200,10 @@ def _exit_for_steps(source_stats: dict) -> int:
     # retry cannot repair the record (task 1.2f PART 2)
     if corrupt_records() or any(s.get("corrupt") for s in failed):
         return stop_cause.EXIT_DATA_CORRUPT
-    if failed:
+    # a step still ``pending`` at the END of the run had requests set aside by the rounds loop
+    # (nothing else leaves one pending): its records are unstamped, so the book is not finished
+    pending = [s for s in source_stats.values() if s.get("status") == "pending"]
+    if failed or pending:
         return stop_cause.EXIT_STEP_FAILED
     return 0
 

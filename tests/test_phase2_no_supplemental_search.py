@@ -217,9 +217,9 @@ def test_resolve_config_is_built_once_and_carries_every_search_flag():
         "use_openserp": True,
         "openserp_url": "http://o:1",
     }
-    # DRY: both Phase 3 call sites use the helper (no second inline dict)
+    # DRY: the one Phase 3 call site (the rounds repeat the same pass) uses the helper
     src = inspect.getsource(p3)
-    assert src.count("_bibliography_resolve_config(config)") == 2
+    assert src.count("_bibliography_resolve_config(config)") == 1
     assert '"search_archive_org": supplemental_config.get' not in src
 
 

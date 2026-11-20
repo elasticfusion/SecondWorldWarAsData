@@ -517,6 +517,17 @@ class BatchCollector:
                     str(req.request_id)[:40],
                 )
 
+    def discard(self, request_ids: Iterable[str]) -> int:
+        """Remove the queued requests with these ids (set aside by the rounds loop). Returns how
+        many were removed."""
+        gone = set(request_ids)
+        with self._lock:
+            before = len(self.requests)
+            self.requests = [r for r in self.requests if r.request_id not in gone]
+            for rid in gone:
+                self._seen.pop(rid, None)
+            return before - len(self.requests)
+
     def __len__(self) -> int:
         return len(self.requests)
 

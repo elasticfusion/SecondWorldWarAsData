@@ -80,6 +80,15 @@ Resources:
                     dynamodb:LeadingKeys:
                       - credit#holds#*
                       - credit#balance
+              - Sid: NoRoundApprovalWrites
+                # Group 2: operator-only batch-round approval rows (scripts/approve_batch_rounds.py)
+                Effect: Deny
+                Action: [dynamodb:PutItem, dynamodb:UpdateItem, dynamodb:DeleteItem, dynamodb:BatchWriteItem]
+                Resource: !Ref CacheTableArn
+                Condition:
+                  ForAnyValue:StringLike:
+                    dynamodb:LeadingKeys:
+                      - rounds#*
               - Effect: Allow
                 # task 1.1e: enumerate_pending asks the credit-check Lambda before dispatching
                 # Phase 2/3 work
@@ -226,6 +235,15 @@ Resources:
                       - credit#holds#*
                       - credit#balance
                       - credit#hold_alerted
+              - Sid: NoRoundApprovalWrites
+                # Group 2: operator-only batch-round approval rows (scripts/approve_batch_rounds.py)
+                Effect: Deny
+                Action: [dynamodb:PutItem, dynamodb:UpdateItem, dynamodb:DeleteItem, dynamodb:BatchWriteItem]
+                Resource: !Ref CacheTableArn
+                Condition:
+                  ForAnyValue:StringLike:
+                    dynamodb:LeadingKeys:
+                      - rounds#*
 
   # ---------------------------------------------------------------------------
   # The state machine (Standard). One execution = one looping drain pass (§17.5).

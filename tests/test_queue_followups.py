@@ -205,6 +205,21 @@ def test_a_step_failure_records_its_steps_and_says_which_attempt(phase3, monkeyp
     assert pq.failed_steps(phase3, "Utah") == ["geocode", "weather"]
 
 
+def test_a_step_with_requests_set_aside_is_named_and_recorded(phase3, monkeypatch):
+    """Batch rounds set a stuck request aside: the step is unfinished (not "errored"), but the
+    failure alert and the queue row must still name it, or the operator is told "unknown".
+    """
+    monkeypatch.setattr(
+        ee,
+        "_phase_results",
+        lambda: {"errored_sources": ["geocode"], "pending_sources": ["places"]},
+    )
+    assert ee._claim_enrich_attempt() is True
+    note = ee._defer_on_stop_cause(stop_cause.EXIT_STEP_FAILED)
+    assert note.endswith("Failed step(s): geocode, places") and "unknown" not in note
+    assert pq.failed_steps(phase3, "Utah") == ["geocode", "places"]
+
+
 def test_the_last_attempt_says_the_book_will_be_held(phase3, monkeypatch):
     many = [f"step_with_a_long_name_{i}" for i in range(9)]
     monkeypatch.setattr(ee, "_phase_results", lambda: {"errored_sources": many})

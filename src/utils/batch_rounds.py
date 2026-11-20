@@ -14,9 +14,16 @@ operator alert and automatic diagnostics:
 - a repeat is also flagged as soon as it happens (``batch.round_repeats``), before the cap.
 
 Extend ``diagnose`` as new non-convergence cases are found.
+
+The cap is SOFT (owner 2026-11-20): at the cap the run stops, and a human who has read the alert can
+allow more rounds (``scripts/approve_batch_rounds.py``, ``round_approval``). Optionally
+(``max_attempts``, Phase 3) a request submitted that many times without being answered is SET ASIDE:
+it leaves the batch, its step leaves the record unstamped, and one alert names it, so one request
+that never gets an answer cannot keep a run going.
 """
 
 import logging
+import shlex
 from collections import Counter
 from dataclasses import dataclass, field
 from typing import Any, Dict, Iterable, List, Optional, Set
@@ -74,6 +81,11 @@ class BatchRounds:
     cap: int = DEFAULT_MAX_ROUNDS
     rounds: List[Round] = field(default_factory=list)
     first: int = 1  # a resumed run continues the book's round count
+    phase: str = "phase2"  # "phase2" / "phase3": the alert text and the approval row
+    max_attempts: int = 0  # 0: never set a request aside
+    extra: int = 0  # rounds a human approved past the cap
+    asked: Counter = field(default_factory=Counter)  # request_id -> times submitted
+    set_aside: Dict[str, str] = field(default_factory=dict)  # request_id -> cache_type
 
     @property
     def count(self) -> int:
@@ -86,6 +98,7 @@ class BatchRounds:
         keys = {r.request_id: r.cache_type for r in requests}
         rnd = Round(self.count + 1, dict(Counter(keys.values())), keys)
         self.rounds.append(rnd)
+        self.asked.update(keys.keys())
         observe(
             "batch",
             "round",
@@ -105,10 +118,60 @@ class BatchRounds:
                 books=self.scope,
                 note="requests answered last round were asked again: see batch_rounds.diagnose",
             )
-        if rnd.number <= self.cap:
+        if rnd.number <= self.cap + self.extra:
+            return True
+        from src.utils import round_approval
+
+        self.extra = round_approval.approved_extra(self.phase, self.scope)
+        if rnd.number <= self.cap + self.extra:
             return True
         self.alert(client)
         return False
+
+    def drop_stuck(self, collector: Any) -> int:
+        """Set aside the queued requests already submitted ``max_attempts`` times without an
+        answer (they leave ``collector``); one alert names them. Returns how many were dropped.
+        """
+        if not self.max_attempts or not collector:
+            return 0
+        stuck = {
+            r.request_id: r.cache_type
+            for r in collector.requests
+            if self.asked[r.request_id] >= self.max_attempts
+        }
+        if not stuck:
+            return 0
+        collector.discard(stuck)
+        fresh = {k: v for k, v in stuck.items() if k not in self.set_aside}
+        self.set_aside.update(stuck)
+        if fresh:
+            kinds = Counter(fresh.values())
+            example = sorted(fresh)[0]
+            observe_error(
+                "batch",
+                "requests_set_aside",
+                requests=len(fresh),
+                by_kind=_compact(kinds),
+                attempts=self.max_attempts,
+                example=example[:40],
+                books=self.scope,
+                note="submitted without an answer too many times: set aside, their records stay unstamped",
+            )
+            publish_alert(
+                f"WWII Pipeline: {self._label()} batch requests set aside ({self.scope})"[
+                    :100
+                ],
+                f"{len(fresh)} request(s) were submitted {self.max_attempts} times without an "
+                f"answer and were set aside: {_compact(kinds)} (example key {example[:40]}). "
+                "Their records are NOT stamped, so the next run asks again. Look at the "
+                "batch.round_repeats / Batch result failed lines of this task: a request that "
+                "never gets a stored answer is a failed or unmapped result, or a prompt that "
+                "changes between rounds.",
+            )
+        return len(stuck)
+
+    def _label(self) -> str:
+        return "Phase 3" if self.phase == "phase3" else "Phase 2"
 
     def complete(self, seconds: float) -> None:
         """The book's rounds are done (a pass queued nothing): one summary line - the book's
@@ -163,14 +226,16 @@ class BatchRounds:
             "batch",
             "rounds_over_cap",
             rounds=self.count,
-            cap=self.cap,
+            cap=self.cap + self.extra,
             books=self.scope,
             repeated=d["repeated"],
             still_asking=",".join(d["still_asking"]),
             note="batch rounds did not converge: the run stopped without submitting more",
         )
         publish_alert(
-            f"WWII Pipeline: Phase 2 batch rounds over cap ({self.scope})"[:100],
+            f"WWII Pipeline: {self._label()} batch rounds over cap ({self.scope})"[
+                :100
+            ],
             _alert_text(self, d),
         )
 
@@ -192,11 +257,20 @@ def _compact(by_kind: Dict[str, int]) -> str:
 
 
 def _alert_text(rounds: BatchRounds, d: Dict[str, Any]) -> str:
+    label = rounds._label()  # pylint: disable=protected-access
     lines = [
-        f"Phase 2 for {rounds.scope} submitted {rounds.count - 1} batch rounds (cap "
-        f"{rounds.cap}) and still had requests queued for round {rounds.count}, which was NOT "
-        "sent. The phase failed: the book is incomplete (no dedup / Phase 3 on it) and is picked "
-        "up again on its next Phase 2 run.",
+        f"{label} for {rounds.scope} submitted {rounds.count - 1} batch rounds (cap "
+        f"{rounds.cap + rounds.extra}) and still had requests queued for round {rounds.count}, "
+        "which was NOT sent. The phase failed: the book is incomplete"
+        + (
+            " (no dedup / Phase 3 on it) and is picked up again on its next Phase 2 run."
+            if rounds.phase == "phase2"
+            else " and is picked up again on its next Phase 3 run."
+        ),
+        "",
+        "If the rounds are making progress (each asks NEW requests), allow more and re-run:",
+        f"  python3 scripts/approve_batch_rounds.py --phase {rounds.phase} "
+        f"--scope {shlex.quote(rounds.scope)} --extra 4",
         "",
         "Requests per round (round: total - by kind; the last was not sent):",
     ]

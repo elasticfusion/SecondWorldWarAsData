@@ -3560,7 +3560,10 @@ def _defer_on_stop_cause(returncode: int) -> str:
     from src.utils import stop_cause
 
     if returncode == stop_cause.EXIT_STEP_FAILED:
-        failed = [str(x) for x in (_phase_results().get("errored_sources") or [])]
+        results = _phase_results()
+        failed = [str(x) for x in (results.get("errored_sources") or [])]
+        # steps whose requests the batch rounds set aside: unfinished, named like a failure
+        failed += [str(x) for x in (results.get("pending_sources") or [])]
         steps = ", ".join(failed[:4]) + (
             f" (+{len(failed) - 4})" if len(failed) > 4 else ""
         )
@@ -5159,6 +5162,11 @@ def _build_results_section() -> str:
         for src, st in sorted(source_stats.items()):
             if st.get("status") == "error":
                 parts.append(f"\n  ✗ {src}: ERROR — {st.get('error', 'see logs')}")
+            elif st.get("status") == "pending":
+                parts.append(
+                    f"\n  ⚠ {src}: INCOMPLETE — requests were set aside after repeated batch "
+                    f"failures ({st.get('enriched', 0)} done); the book stays queued"
+                )
             else:
                 extra = ""
                 if "attempted" in st:  # geocode-style richer stats
@@ -5464,9 +5472,11 @@ def run_submit_only(phase_script: str, extra_args: list) -> None:
     _batch_mod.poll_batch = _orig_poll
     _batch_mod.retrieve_results = _orig_retrieve
 
-    if "phase2" in phase_script:
-        # Phase 2 runs its batch ROUNDS in the child, each waiting up to batch.in_task_wait_minutes
-        # (the stubs above do not reach the child process): settle from its exit status.
+    if "phase2" in phase_script or "phase3" in phase_script:
+        # Phase 2 and Phase 3 run their batch ROUNDS in the child, each waiting in the task (the
+        # stubs above do not reach the child process): settle from its exit status. Without this
+        # a finished Phase 3 would be run AGAIN below, non-batch, answering live what the rounds
+        # set aside.
         _settle_phase2_task(phase_script, result.returncode)
         return
 
@@ -5752,6 +5762,21 @@ def _settle_phase2_task(
     from src.utils.batch_rounds import HANDED_OFF_EXIT
     from src.utils.job_queue import update_job_status
 
+    if returncode == HANDED_OFF_EXIT and "phase3" in phase_script:
+        # Phase 3 waits for its rounds in the task (phase3_enrich_data._run_batch_rounds); a
+        # hand-off needs the lock release / re-acquire and per-round attempt claim of TODO Group 2
+        # step 2c, not built yet: fail loudly instead of enqueueing a batch nothing can resume.
+        from src.utils.observe import observe_error
+
+        observe_error(
+            "batch",
+            "phase3_handoff_unsupported",
+            batch=str(_phase_results().get("pending_batch") or "?"),
+            book=os.environ.get("BOOK_NAME", ""),
+            note="Phase 3 hand-off is not built: re-trigger Phase 3 for this book (the answered "
+            "requests are cached, so it resumes where it stopped)",
+        )
+        returncode = 1
     if retrieved_batch:
         update_job_status(
             retrieved_batch,

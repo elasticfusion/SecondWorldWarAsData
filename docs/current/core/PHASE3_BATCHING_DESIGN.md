@@ -122,6 +122,17 @@ of about 33k rows costs a fraction of a cent).
 
 ## 4. Order of work (each commit gated and reviewed)
 
+Open decision (owner): a book whose request is set aside exits EXIT_STEP_FAILED, so it is RETRIED up to
+`queue.phase3_max_attempts` (3) and then held; each retry can resubmit the same stuck request (its attempt count
+is per process) and wait up to 24 h per round. The alerts now name the step. A stuck request is usually
+deterministic, so holding at once (a human looks first) is cheaper; say which you want.
+
+Progress 2026-11-20: step 1 (vision) DONE; step 2a DONE (rounds loop in `phase3_enrich_data`, soft cap +
+approval, set-aside, `pending` step status, entrypoint settles Phase 3 from its exit status). Still open: 2b (audit
+every step against "collecting is not a verdict": a test harness that runs each step with a client that queues
+everything and asserts nothing is stamped or cached), 2c (Phase 3 hand-off to the poller).
+
+
 1. 3.2 vision in batch mode (client + retrieve) and the `kind` field, with tests on a fake xAI.
 2. 3.1 the rounds loop and the `BatchModeCollecting` helper, then move every step onto it (c, d), including
    the `REJECT` cache fix.
