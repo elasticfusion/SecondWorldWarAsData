@@ -87,11 +87,9 @@ def test_a_sweep_that_died_mid_report_is_retried_once_stale(
     assert row["status"] == "started" and "facts" in row
     monkeypatch.setattr(trigger, "_report_facts", real)
     assert trigger._sweep_failed_stop_reports() == 0  # in progress (not stale yet)
-    monkeypatch.setattr(
-        trigger.time,
-        "time",
-        lambda: row["started_at"] + trigger.STOP_REPORT_STALE_S + 1,
-    )
+    # a float, as time.time() returns (the row's number is a Decimal)
+    later = float(int(row["started_at"]) + trigger.STOP_REPORT_STALE_S + 1)
+    monkeypatch.setattr(trigger.time, "time", lambda: later)
     assert trigger._sweep_failed_stop_reports() == 1
     assert len(sent) == 2 and _failed_list(table) == set()
 
