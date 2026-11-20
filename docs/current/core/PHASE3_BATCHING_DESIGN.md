@@ -40,8 +40,12 @@ Phase 3 under `--batch` is a loop of passes over the SAME step list:
 3. At the end of the pass: 0 queued means done. Fewer than `batch.min_requests` are answered live and the
    next pass starts at once. Otherwise submit, hand the batch to the poller (`run_submit_only`), exit. The
    poller launches `run_retrieve_only`, which loads the answers into the cache and starts pass N+1.
-4. A cap, `batch.phase3_max_rounds` (default 6): past it the run stops with an alert naming the steps that
-   still had queued requests. Each pass logs `OBSERV phase3.round round=N queued=M by_kind=...`.
+4. A safety cap, `batch.phase3_max_rounds` (default 6). A ROUND is one pass over all steps plus one batch
+   submit-and-retrieve cycle, so the cap is at most 6 batch round-trips per Phase 3 run (each up to 24 h). More
+   than one round is needed only where a later question depends on an earlier answer; the deepest chain in
+   the code is the bibliography cascade (4 questions), so 6 is that plus margin. A run normally ends earlier,
+   when a pass queues nothing. Past the cap the run stops with an alert naming the steps that still had
+   queued requests. Each pass logs `OBSERV phase3.round round=N queued=M by_kind=...`.
 
 All steps are already stamp-driven and idempotent, so repeating the whole list is safe and no step list
 needs to be maintained per round (the current six-enricher list is what drifts).
@@ -56,27 +60,43 @@ needs to be maintained per round (the current six-enricher list is what drifts).
   `fetch_image_bytes_with_reason`), builds the same messages, queues the request, raises
   `BatchModeCollecting`. A fetch failure is NOT queued (it is the same error as live).
 - V1 (owner 2026-11-17) confirmed xAI Batch answers vision requests (1.3 MB image, about 2.5 h).
-- Open: batch file size. An image goes into the JSONL as a base64 data URL. Images are downscaled before
-  they are sent (to be measured against the V1 result), so a file of N images stays under xAI's limit.
-  A request that is still too large is answered live, counted and logged.
+- Images are sent at full size (owner 2026-11-20: no downscaling).
+- **Splitting (owner 2026-11-20).** Whether xAI limits a batch's request count or file size is NOT verified
+  (a search found no xAI figure; the V1 probe was one 1.3 MB request; our own guard is
+  `BATCH_MAX_REQUESTS`, 20000, `batch_api.py:530`). Rule, applied to every batch (text and vision):
+  if a batch exceeds our limits (request count, or total bytes: `batch.max_bytes`, to be set after the
+  first measurement) or xAI rejects the create/upload as too large, halve the request list, and halve each
+  half again, until every part fits; submit all parts; the round waits for all of them. A size rejection
+  is a definite refusal (nothing was created), so splitting is safe; an UNCERTAIN create (timeout after
+  the request may have reached xAI) is never re-split or retried, as today (no second billed batch). A
+  part is not split below `batch.min_requests` (50) unless forced; a leftover part under 50 is answered
+  live. The job queue tracks several batch ids per round.
 
-### 3.3 Identity, task 1.7 (fixes f)
+### 3.3 Identity and provenance, task 1.7 (fixes f)
 
-Two kinds of protection already exist: the result is aligned by request id, and `desync_possible`
-rejects a positional mix-up. The echo (BookID + RequestID inside the answer) adds proof for kinds whose
-answer is a JSON object. Proposal:
+Guarantee (owner condition 2026-11-20: provenance must be guaranteed). An answer is attached to a request
+only when xAI returns that request's own id with it. Verified 2026-11-11: results carry our `custom_id`
+(as `batch_request_id`), not in submission order, and `align_by_request_id` pairs by it. Phase 3 requires
+that and nothing weaker:
 
-- JSON-object kinds about ONE document get the full stamp (BookID + RequestID): `in_doc_map_vision`,
-  `people_group_source_recheck`. They join `BOOK_BOUND`.
-- Cross-book kinds (`group_enrichment`, `place_enrichment`, `bibliography_verify` ...) have no book: a
-  RequestID-only echo, when the answer is a JSON object.
-- One-word answers (`openserp_verify` YES/NO, link relevance, terrain gate, map-or-photo) cannot carry an
-  echo without turning them into JSON. They rely on alignment by request id. Changing them costs a
-  re-ask of every cached answer (the prompt is part of the key) for a small gain.
-- Cost: each cached answer of a kind that changes is asked once more. Count first: the production cache
-  table (`dev-wwii-api-cache`, 33,428 rows on 2026-11-20) holds NO Phase 3 kinds at the moment
-  (`group_enrichment`, `place_enrichment`, `bibliography_verify`, `openserp_verify` ... all absent: it was
-  restored to the Phase 2 snapshot). The count comes from the Group 0 baseline run, which fills them.
+- every result id is ours, once each: aligned. A request with no result is retried.
+- ids mixed or repeated: every request retried (`batch.align status=error`), as today.
+- NO result carries our id: today the code falls back to positional mapping. For Phase 3 that fallback is
+  refused (retry, alert), because a one-word answer cannot prove which request it answers.
+- each stored batch answer records its provenance: batch id, request id, model, served model
+  (`verify_served_models`), submitted-at. Today only the cache value is kept; the cache entry gains these
+  fields, and the Phase 3 result carries the batch id into the stamped record where the answer is used.
+
+On top of that, the in-answer echo (BookID + RequestID) for kinds whose answer is a JSON object:
+
+- document-bound JSON kinds get the full stamp: `in_doc_map_vision`, `people_group_source_recheck`
+  (they join `BOOK_BOUND`).
+- other JSON kinds (`group_enrichment`, `place_enrichment`, ...): RequestID only.
+- one-word answers (`openserp_verify`, link relevance, terrain gate, map-or-photo) are not changed to
+  JSON: id alignment above is their proof.
+- Cost: each cached answer of a changed kind is asked once more. The production cache table
+  (`dev-wwii-api-cache`, 33,428 rows on 2026-11-20) holds NO Phase 3 kinds now (restored to the Phase 2
+  snapshot), so the count comes from the Group 0 baseline run.
 
 ### 3.4 Attempt counting (fixes e)
 
@@ -103,12 +123,12 @@ of about 33k rows costs a fraction of a cent).
 **Test (from the TODO):** restore, run `--batch`: same verdicts as the baseline, fewer live requests,
 under-50 answered live, rounds logged. Needs your approval to deploy and for the Grok spend.
 
-## 5. Questions for the owner
+## 5. Owner answers (2026-11-20) and what is still open
 
-1. Rounds are capped at 6 (`batch.phase3_max_rounds`). Right, or higher?
-2. A request that is too large to batch (after downscaling) is answered live and logged. Acceptable as the
-   only exception besides the under-50 rule?
-3. Identity: the 3.3 split (full stamp for document-bound JSON kinds, RequestID-only for other JSON kinds,
-   alignment only for one-word answers). Agreed?
-4. Image downscaling before a batch changes what the model sees, and so the verdicts, versus the live
-   baseline. Acceptable, or should images go at full size and the over-limit ones live?
+1. Rounds: cap kept as a safety limit; defined above (a round = one pass + one batch cycle).
+2. Too-large batches: halve until each part fits, submit all (3.2). Limits to be verified.
+3. Identity split agreed IF provenance is guaranteed: 3.3.
+4. No downscaling; split instead.
+
+Open: the `batch.max_bytes` value and whether xAI has a request-count limit. Both are measured on the first
+real batch (a deliberate size probe is a Grok spend: needs your approval).
