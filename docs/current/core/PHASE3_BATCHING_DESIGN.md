@@ -40,12 +40,16 @@ Phase 3 under `--batch` is a loop of passes over the SAME step list:
 3. At the end of the pass: 0 queued means done. Fewer than `batch.min_requests` are answered live and the
    next pass starts at once. Otherwise submit, hand the batch to the poller (`run_submit_only`), exit. The
    poller launches `run_retrieve_only`, which loads the answers into the cache and starts pass N+1.
-4. A safety cap, `batch.phase3_max_rounds` (default 6). A ROUND is one pass over all steps plus one batch
-   submit-and-retrieve cycle, so the cap is at most 6 batch round-trips per Phase 3 run (each up to 24 h). More
-   than one round is needed only where a later question depends on an earlier answer; the deepest chain in
-   the code is the bibliography cascade (4 questions), so 6 is that plus margin. A run normally ends earlier,
-   when a pass queues nothing. Past the cap the run stops with an alert naming the steps that still had
-   queued requests. Each pass logs `OBSERV phase3.round round=N queued=M by_kind=...`.
+4. **No round cap** (owner 2026-11-20: run until the answers are in). A run ends when a pass queues
+   nothing. A fixed number would only stop a run that is still making progress. What stops a run that is
+   NOT making progress is a per-request limit: each request id is counted each time it is submitted without
+   an answer (failed, empty, truncated, unalignable). At `batch.max_request_attempts` (default 3) that
+   request is set aside: its step leaves the record unstamped, the run goes on without it, and one alert
+   names the request, its step and the last failure. The run therefore always ends: every round either
+   answers requests (cached, never asked again) or advances a set-aside counter. Money is bounded
+   separately by the credit preflight and the funding stop, as for any run. A ROUND is one pass over all
+   steps plus one batch submit-and-retrieve cycle; each logs
+   `OBSERV phase3.round round=N queued=M answered=K set_aside=J by_kind=...`.
 
 All steps are already stamp-driven and idempotent, so repeating the whole list is safe and no step list
 needs to be maintained per round (the current six-enricher list is what drifts).
@@ -125,7 +129,7 @@ under-50 answered live, rounds logged. Needs your approval to deploy and for the
 
 ## 5. Owner answers (2026-11-20) and what is still open
 
-1. Rounds: cap kept as a safety limit; defined above (a round = one pass + one batch cycle).
+1. Rounds: no cap; the run goes on until a pass queues nothing, and a request that fails 3 times is set aside with an alert (3.1).
 2. Too-large batches: halve until each part fits, submit all (3.2). Limits to be verified.
 3. Identity split agreed IF provenance is guaranteed: 3.3.
 4. No downscaling; split instead.
