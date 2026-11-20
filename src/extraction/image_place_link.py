@@ -79,8 +79,18 @@ def _grok_is_terrain(caption: str, grok_client: Any) -> Tuple[bool, str]:
             "(as opposed to a portrait of people, equipment, or a diagram/chart)?\n"
             "Answer with exactly one word: TERRAIN or OTHER."
         )
-        resp = (grok_client.chat_completion(prompt) or "").strip().upper()
-        return (resp.startswith("TERRAIN"), "grok")
+        from src.utils.grok_choice import ask_choice, can_reask, evictor
+
+        choice = ask_choice(
+            lambda: grok_client.chat_completion(prompt),
+            ("TERRAIN", "OTHER"),
+            evictor(grok_client, prompt),
+            what="image_place.terrain",
+            reask=can_reask(grok_client),
+        )
+        if choice is None:  # unusable twice: not linked (fail-safe), retried next run
+            return (False, "grok-unparsed")
+        return (choice == "TERRAIN", "grok")
     except Exception as e:  # noqa: BLE001
         observe_warn("image_place", "grok_error", reason=str(e)[:120])
         return (False, "grok-error")

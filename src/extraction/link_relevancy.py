@@ -60,10 +60,16 @@ def _grok_link_relevant(grok_client: Any, text: str, url: str, context: str) -> 
             f"Link text: {text!r}\nURL: {url}\nContext: {context[:400]!r}\n"
             "Answer with exactly one word: YES, NO, or UNKNOWN."
         )
-        resp = (grok_client.chat_completion(prompt) or "").strip().upper()
-        if resp.startswith("NO"):
-            return False
-        return True  # YES or UNKNOWN -> enqueue (safe default)
+        from src.utils.grok_choice import ask_choice, can_reask, evictor
+
+        choice = ask_choice(
+            lambda: grok_client.chat_completion(prompt),
+            ("YES", "NO", "UNKNOWN"),
+            evictor(grok_client, prompt),
+            what="link_relevancy",
+            reask=can_reask(grok_client),
+        )
+        return choice != "NO"  # YES, UNKNOWN or unusable -> enqueue (safe default)
     except Exception as e:  # noqa: BLE001
         logger.warning(
             "OBSERV link_asset.grok_error reason=%s (fail-safe=enqueue)", str(e)[:120]

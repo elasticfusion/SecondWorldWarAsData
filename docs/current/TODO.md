@@ -174,16 +174,16 @@ continues from where it stopped. Order: 1.2b, 1.1b, 1.2c, 1.2e, 1.2d, 1.2f, 1.1c
   `_reset_openserp_searched` deleted; people are searched and written one at a time. Phase 3
   resume inventory of the other steps (review 2026-11-18) - fix in each step's group:
   - bibliography_resolve: unresolved records retried every run (no `last_searched`); archive.org
-    and Gutendex candidate searches uncached; a NARA exception cached as a permanent miss
-    (`bibliography_resolver.py:1699`); `review_queue.json` written only at the end (`:2435`);
+    and Gutendex candidate searches uncached; ~~a NARA exception cached as a permanent miss~~
+    (DONE 2026-11-20); `review_queue.json` written only at the end (`:2435`);
     `max_items` counts skipped records (`:2424`);
   - claim-before-write (lost forever on a kill): in_doc_map_links (`map_link_source.py:219`, ties
     to 1.6), intra_corpus_links (`intra_corpus.py:212`), openserp_external_maps `mark_searched`
     before processing (`openserp_maps.py:718`, disabled in config);
-  - failures stored as terminal: hill geocode Grok exception -> `not_found`
-    (`hill_geocode.py:132`), unparseable geocode reply -> `not_found`
-    (`places_grok_geocode.py:538`), a transient page-fetch failure cached `REJECT` for 90 days
-    (`openserp_enrichment.process_positive_url`);
+  - DONE (2026-11-20) failures stored as terminal: hill geocode Grok exception and an
+    unparseable geocode reply (both now retriable, `ask_geocode`), a transient page fetch
+    (RETRY_LATER 1 h); a NARA exception is no longer negative-cached and a NARA 429/5xx or
+    network error is an outage (`backend_down`, never queued as "not found online");
   - disk-only state lost on a Spot reclaim: Nominatim cache, `cache/openserp_search_history.json`,
     in-doc maps written to `contentrepository/` (not in the 120 s sync);
   - link_asset_review writes duplicate PENDING review items on every re-run (`link_assets.py:201`);
@@ -217,7 +217,14 @@ continues from where it stopped. Order: 1.2b, 1.1b, 1.2c, 1.2e, 1.2d, 1.2f, 1.1c
   `VerifyFailed` on no usable verdict (not cached, entity left unsearched). Optional requests
   (book_metadata) catch the stop and go on; a transient stop expires after 5 min in long-lived
   processes. Still to do, per step group: the other Phase 3 raw `chat_completion` callers parse
-  text themselves - check each for a malformed answer being taken as an answer:
+  text themselves - check each for a malformed answer being taken as an answer. DONE
+  (2026-11-20): one-word verdicts go through `src/utils/grok_choice.ask_choice` (first word must
+  be a choice; otherwise the cached reply is evicted - `GrokClient.evict_completion` - and asked
+  once more, then the caller's safe default) in image_place_link, link_relevancy, fetch_review
+  (exclude scope), title_memberships and the four bibliography verifies (`_ask_yes`); the three
+  Grok geocoders share `places_grok_geocode.ask_geocode` (a Grok error is transient, an
+  unreadable reply is evicted, re-asked, then left retriable - never `geocode_not_found`, and
+  not counted as a geocoder outage). Cache keys are unchanged (no answers re-paid). Was:
   `extraction/image_place_link.py:82`, `extraction/link_relevancy.py:82`,
   `enrichment/fetch_review.py:253`, `enrichment/hill_geocode.py:124`,
   `enrichment/places_grok_geocode.py:529`, `enrichment/situational_geocode.py:338`,

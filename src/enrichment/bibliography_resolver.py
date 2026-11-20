@@ -1118,14 +1118,11 @@ Return ONLY "YES" or "NO"."""
     prompt = render_prompt("bibliography_verify", verify_prompt=verify_prompt)
 
     try:
-        response = grok_client.chat_completion(
-            prompt=prompt,
-            system_prompt="You verify whether search results match specific military document citations. Be strict.",
-            temperature=0.0,
-            use_cache=True,
-            cache_type="bibliography_verify",
+        accepted = _ask_yes(
+            grok_client,
+            prompt,
+            "You verify whether search results match specific military document citations. Be strict.",
         )
-        accepted = response.strip().upper().startswith("YES")
         logger.info(
             "Verify result: %s | query=%s | title=%s | url=%s",
             "ACCEPT" if accepted else "REJECT",
@@ -1629,11 +1626,19 @@ def _interpret_nara_response(resp, safe_q: str) -> Optional[Dict]:
     still succeed next run."""
     import time
 
+    from src.utils import service_outage
+
+    if resp.status_code == 429 or resp.status_code >= 500:
+        # an outage (task 1.2f): the citation is `backend_down` (retried next run), never
+        # queued for a human as "not found online"
+        service_outage.failed("nara", "search", f"HTTP {resp.status_code}")
     if resp.status_code == 429:
         logger.warning("NARA API rate limited (429) — backing off 60s")
         time.sleep(60)
         return None  # Don't cache — retry next run
     ctype = (resp.headers.get("Content-Type") or "").split(";")[0]
+    if resp.status_code == 200:
+        service_outage.ok("nara")
     if resp.status_code != 200:
         logger.info(
             "OBSERV nara.query status=%d content_type=%s q=%r",
@@ -1701,9 +1706,12 @@ def _search_nara(
         if not transient:
             cache_result("nara", cache_q, None)
         return None
-    except Exception as e:
-        logger.debug("NARA search failed: %s", e)
-        cache_result("nara", cache_q, None)
+    except Exception as e:  # noqa: BLE001 - one citation's search; the run goes on
+        # NOT negative-cached (task 1.2f): a network error or a bad answer is no evidence that
+        # NARA holds nothing; the citation is `backend_down` and retried next run
+        from src.utils import service_outage
+
+        service_outage.failed("nara", "search", type(e).__name__)
         return None
 
 
@@ -1904,19 +1912,38 @@ def _verify_nara_match(
     )
 
     try:
-        response = grok_client.chat_completion(
-            prompt=prompt,
-            system_prompt="You verify whether NARA catalog records match specific military document citations. Be strict about unit identity.",
-            temperature=0.0,
-            use_cache=True,
-            cache_type="bibliography_verify",
+        return _ask_yes(
+            grok_client,
+            prompt,
+            "You verify whether NARA catalog records match specific military document citations. Be strict about unit identity.",
         )
-        return response.strip().upper().startswith("YES")
     except Exception:
         return False  # Reject on failure rather than accept wrong documents
 
 
 # --- Verification ---
+
+
+def _ask_yes(grok_client: Any, prompt: str, system_prompt: str) -> bool:
+    """A strict YES/NO verification (cache ``bibliography_verify``, temperature 0): True only for
+    a YES. A reply that is neither is evicted and asked once more, then rejected - never kept as
+    THE answer, so a later run asks again (task 1.2f, src/utils/grok_choice)."""
+    from src.utils.grok_choice import ask_choice, can_reask, evictor
+
+    choice = ask_choice(
+        lambda: grok_client.chat_completion(
+            prompt=prompt,
+            system_prompt=system_prompt,
+            temperature=0.0,
+            use_cache=True,
+            cache_type="bibliography_verify",
+        ),
+        ("YES", "NO"),
+        evictor(grok_client, prompt, system_prompt, "bibliography_verify", 0.0),
+        what="bibliography_verify",
+        reask=can_reask(grok_client),
+    )
+    return choice == "YES"
 
 
 def _verify_match(candidate_title: str, verbatim: str, grok_client: Any) -> bool:
@@ -1946,14 +1973,11 @@ Return ONLY "YES" or "NO"."""
 
         prompt = _rp2("bibliography_verify", verify_prompt=verify_prompt)
         try:
-            response = grok_client.chat_completion(
-                prompt=prompt,
-                system_prompt="You verify whether search results match citations.",
-                temperature=0.0,
-                use_cache=True,
-                cache_type="bibliography_verify",
+            accepted = _ask_yes(
+                grok_client,
+                prompt,
+                "You verify whether search results match citations.",
             )
-            accepted = response.strip().upper().startswith("YES")
             logger.info(
                 "Verify title: %s | citation=%s | result=%s",
                 "ACCEPT" if accepted else "REJECT",
@@ -2018,14 +2042,11 @@ Return ONLY "YES" or "NO". Answer "NO" if the page is unrelated, a generic searc
 
         prompt = _rp3("bibliography_verify", verify_prompt=verify_prompt)
 
-        response = grok_client.chat_completion(
-            prompt=prompt,
-            system_prompt="You verify whether web page content matches a bibliography citation.",
-            temperature=0.0,
-            use_cache=True,
-            cache_type="bibliography_verify",
+        match = _ask_yes(
+            grok_client,
+            prompt,
+            "You verify whether web page content matches a bibliography citation.",
         )
-        match = response.strip().upper().startswith("YES")
         logger.info(
             "Verify URL content: %s | url=%s | citation=%s",
             "ACCEPT" if match else "REJECT",

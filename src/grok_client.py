@@ -702,6 +702,22 @@ class GrokClient:
             )
             self._get_cache(cache_type)[key] = json.dumps(body, ensure_ascii=False)
 
+    def evict_completion(
+        self,
+        prompt: str,
+        system_prompt: Optional[str] = None,
+        cache_type: str = "default",
+        temperature: float = 0.1,
+    ) -> bool:
+        """Drop the cached ``chat_completion`` answer to exactly this request (same key as
+        ``chat_completion`` computes: the prompt as given, no identity block), so the next ask
+        is live. For a caller whose cached reply could not be parsed (task 1.2f: an unusable
+        answer is never kept as THE answer). Returns True if one was removed."""
+        key = self._make_cache_key(
+            prompt, temperature, self._get_model(cache_type), system_prompt or ""
+        )
+        return self._get_cache(cache_type).pop(key, None) is not None
+
     def clear_cache_entry(
         self,
         prompt: str,

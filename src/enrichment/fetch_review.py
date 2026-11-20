@@ -251,29 +251,36 @@ def decide_exclude_scope(fetch_event: Dict[str, Any], grok_client: Any = None) -
     url = fetch_event.get("endpoint", "")
     summary = fetch_event.get("result_summary", "")
     try:
-        response = grok_client.chat_completion(
-            prompt=(
-                "A human reviewer is excluding a search result as not useful for a WWII history "
-                "corpus. Should the ENTIRE website (domain) be excluded from all future searches, "
-                "or ONLY this single URL?\n"
-                "Answer SITE only if the whole domain is categorically low-value or off-topic for "
-                "WWII primary/secondary sources (e.g. spam, shopping, unrelated wiki mirrors). "
-                "Answer URL if only this particular page is unsuitable but the domain may hold "
-                "other useful material.\n"
-                f"URL: {url[:300]}\n"
-                f"Result summary: {summary[:300]}\n"
-                'Return ONLY "SITE" or "URL".'
+        from src.utils.grok_choice import ask_choice, can_reask, evictor
+
+        prompt = (
+            "A human reviewer is excluding a search result as not useful for a WWII history "
+            "corpus. Should the ENTIRE website (domain) be excluded from all future searches, "
+            "or ONLY this single URL?\n"
+            "Answer SITE only if the whole domain is categorically low-value or off-topic for "
+            "WWII primary/secondary sources (e.g. spam, shopping, unrelated wiki mirrors). "
+            "Answer URL if only this particular page is unsuitable but the domain may hold "
+            "other useful material.\n"
+            f"URL: {url[:300]}\n"
+            f"Result summary: {summary[:300]}\n"
+            'Return ONLY "SITE" or "URL".'
+        )
+        system = "You decide the scope of a search-source exclusion."
+        choice = ask_choice(
+            lambda: grok_client.chat_completion(
+                prompt=prompt,
+                system_prompt=system,
+                temperature=0.0,
+                use_cache=True,
+                cache_type="exclude_scope",
             ),
-            system_prompt="You decide the scope of a search-source exclusion.",
-            temperature=0.0,
-            use_cache=True,
-            cache_type="exclude_scope",
+            ("SITE", "URL"),
+            evictor(grok_client, prompt, system, "exclude_scope", 0.0),
+            what="exclude_scope",
+            reask=can_reask(grok_client),
         )
-        scope = (
-            SCOPE_SITE
-            if str(response).strip().upper().startswith("SITE")
-            else SCOPE_URL
-        )
+        # unusable twice -> the narrow, reversible URL scope (fail closed)
+        scope = SCOPE_SITE if choice == "SITE" else SCOPE_URL
         logger.info(
             "OBSERV fetch_find.exclude_scope decided=%s source=grok url=%s",
             scope,

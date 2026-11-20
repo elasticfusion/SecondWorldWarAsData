@@ -48,3 +48,24 @@ def test_repeated_deadline_misses_stop_the_run_as_a_grok_outage(tmp_path, monkey
         with pytest.raises(G.GrokUnreachable):
             client._call_api([{"role": "user", "content": "x"}], 0.1, "grok-4.3")
     assert post.call_count == 5  # retried by the shared policy first
+
+
+def test_evict_completion_drops_exactly_the_cached_chat_answer(tmp_path, monkeypatch):
+    """Task 1.2f: a caller whose cached reply is unreadable evicts it, so the next ask is live
+    (the key is chat_completion's own: the prompt as given, no identity block)."""
+    client = _client(tmp_path, monkeypatch)
+    reply = {
+        "choices": [{"message": {"content": "not json"}, "finish_reason": "stop"}],
+        "model": client._get_model("places"),
+        "usage": {},
+    }
+    calls = []
+    monkeypatch.setattr(client, "_call_api", lambda *a, **k: calls.append(1) or reply)
+    ask = dict(prompt="where is Aachen", system_prompt="s", cache_type="places")
+    assert client.chat_completion(**ask) == "not json"
+    client.chat_completion(**ask)
+    assert len(calls) == 1  # the second was a cache hit
+    assert client.evict_completion("where is Aachen", "s", "places") is True
+    assert client.evict_completion("where is Aachen", "s", "places") is False
+    client.chat_completion(**ask)
+    assert len(calls) == 2  # asked live again

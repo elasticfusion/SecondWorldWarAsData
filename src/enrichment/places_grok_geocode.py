@@ -124,6 +124,11 @@ class GeocodeResult(BaseModel):
         default_factory=list,
         description="Identity URLs (OSM/Wikidata) for sameAs cross-walk",
     )
+    unparsed: bool = Field(
+        default=False,
+        description="True if Grok's reply could not be read as a geocode, even after one fresh "
+        "ask: NOT a not-found (retried next run, never stored as terminal) and NOT an outage",
+    )
     transient: bool = Field(
         default=False,
         description="True if this is a transient failure (API timeout/5xx/exception), NOT a genuine "
@@ -151,6 +156,8 @@ class GeocodeRunReport:
     unreadable: int = (
         0  # corrupt/unreadable place file (parse/OS error) — a real loss, not a skip
     )
+    # left retriable (geocode_error): an outage, a Grok error or an unreadable reply (task 1.2f)
+    retriable: int = 0
     details: List[dict] = field(default_factory=list)
 
     def to_dict(self) -> dict:
@@ -167,6 +174,7 @@ class GeocodeRunReport:
             "skip_has_coords": self.skip_has_coords,
             "skip_already_attempted": self.skip_already_attempted,
             "unreadable": self.unreadable,
+            "retriable": self.retriable,
             "details": self.details,
         }
 
@@ -526,32 +534,75 @@ def geocode_place(name: str, place: dict, grok_client: Any) -> GeocodeResult:
     structured-output path for terse geocode replies: it avoids a reasoning
     model wrapping the answer in prose that trips JSON parsing.)
     """
-    raw = grok_client.chat_completion(
-        prompt=_prompt_for(name, place),
-        system_prompt=_SYSTEM_PROMPT,
-        temperature=0.1,
-        cache_type="places",
-    )
-    return _parse_geocode_reply(raw)
+    return ask_geocode(grok_client, _prompt_for(name, place), _SYSTEM_PROMPT, "grok")
+
+
+def ask_geocode(
+    grok_client: Any, prompt: str, system_prompt: str, source: str
+) -> GeocodeResult:
+    """The ONE way a Grok geocoder asks and reads its answer (places, hills, situational areas;
+    task 1.2f). A Grok error is ``transient`` (the place is retried next run, never stored as
+    not-found; an outage itself stops the run, it is not an Exception). A reply that cannot be
+    read is evicted from the cache and asked once more; still unreadable, it is ``unparsed``:
+    retried next run, never a not-found."""
+    from src.grok_client import BatchModeCollecting
+    from src.utils.grok_choice import can_reask, evictor
+
+    evict = evictor(grok_client, prompt, system_prompt, "places", 0.1)
+    result = GeocodeResult(found=False, note="not asked", unparsed=True, source=source)
+    for attempt in (1, 2) if can_reask(grok_client) else (1,):
+        try:
+            raw = grok_client.chat_completion(
+                prompt=prompt,
+                system_prompt=system_prompt,
+                temperature=0.1,
+                cache_type="places",
+            )
+        except BatchModeCollecting:
+            raise  # queued for the batch: not an error
+        except Exception as exc:  # noqa: BLE001 - one place's error: retried next run
+            logger.warning("Geocode (%s) Grok call failed: %s", source, exc)
+            return GeocodeResult(
+                found=False, note=f"grok error: {exc}", source=source, transient=True
+            )
+        result = _parse_geocode_reply(raw)
+        result.source = source
+        if not result.unparsed:
+            return result
+        # never keep an unreadable reply as THE answer (it would be re-read every run)
+        if evict is not None:
+            evict()
+        logger.warning(
+            "OBSERV geocode.unparsed_reply source=%s attempt=%d status=warn - %s",
+            source,
+            attempt,
+            result.note,
+        )
+    return result
 
 
 def _parse_geocode_reply(raw: str) -> GeocodeResult:
     """Parse a Grok reply into a GeocodeResult, tolerating code fences/prose.
 
-    Extracts the first JSON object in the reply; a reply with no parseable JSON
-    is treated as a not-found result rather than raising, so one odd reply never
-    aborts a batch.
+    Extracts the first JSON object in the reply; a reply with no parseable JSON (or one that
+    is not a geocode) is ``unparsed`` rather than raising, so one odd reply never aborts a
+    batch - and is never read as "not found" (task 1.2f).
     """
+    from pydantic import ValidationError
+
     text = (raw or "").strip()
     start = text.find("{")
     end = text.rfind("}")
     if start == -1 or end == -1 or end <= start:
-        return GeocodeResult(found=False, confidence=0.0, note="no JSON in reply")
+        return GeocodeResult(found=False, note="no JSON in reply", unparsed=True)
     try:
         data = json.loads(text[start : end + 1])
-    except json.JSONDecodeError:
-        return GeocodeResult(found=False, confidence=0.0, note="unparseable reply")
-    return GeocodeResult.model_validate(data)
+        result = GeocodeResult.model_validate(data)
+    except (json.JSONDecodeError, ValidationError, TypeError):
+        return GeocodeResult(found=False, note="unparseable reply", unparsed=True)
+    # our own flags, never Grok's: a reply cannot mark itself an outage or unreadable
+    result.unparsed = result.transient = False
+    return result
 
 
 def _valid_wgs84(lat, lon) -> bool:
@@ -586,6 +637,12 @@ def _non_geocoded_status(place: dict, result: GeocodeResult) -> Optional[str]:
     """Handle the non-happy-path geocode outcomes (transient outage / not-found / low-confidence),
     folding the status into ``place``. Returns the status set, or None if the result is a confident
     hit that ``_apply_result`` should persist as coordinates."""
+    if getattr(result, "unparsed", False):
+        # Grok's reply could not be read, even after a fresh ask: non-terminal (retried next
+        # run), and not an outage (the geocoder-down streak ignores it)
+        place["enrichment_status"] = _STATUS_ERROR
+        place["geocode_source"] = result.source
+        return _STATUS_ERROR
     if getattr(result, "transient", False):
         # Transient API failure — non-terminal so a non-force re-run retries (never permanently
         # mark a real place not_found on a one-off outage).
@@ -746,6 +803,7 @@ def geocode_places_dir(
 
 
 GEOCODER_DOWN_STREAK = 5  # transient failures in a row: the geocoder is down
+_GROK_SOURCES = frozenset({"grok", "grok_hill", "situational"})
 
 
 def _geocode_all(places_dir, grok_client, write, force, limit, report, resolve, people):
@@ -762,7 +820,14 @@ def _geocode_all(places_dir, grok_client, write, force, limit, report, resolve, 
         _geocode_one_file(path, grok_client, write, force, report, resolve, people)
         if report.attempted > attempted:  # this place was geocoded (not skipped)
             # a transient result, or the geocoder raising (no status), both mean "not answered"
-            transient = report.details[-1].get("status") in (_STATUS_ERROR, None)
+            last = report.details[-1]
+            # the streak means "Nominatim is down": a Grok geocoder's error or unreadable reply
+            # is not that (a real Grok outage stops the run on its own)
+            transient = (
+                last.get("status") in (_STATUS_ERROR, None)
+                and not last.get("unparsed")
+                and last.get("source") not in _GROK_SOURCES
+            )
             streak = streak + 1 if transient else 0
         if streak >= GEOCODER_DOWN_STREAK:
             _alert_geocoder_down(streak)
@@ -801,20 +866,25 @@ def _log_geocode_summary(report: "GeocodeRunReport") -> None:
     try:
         logger.info(
             "OBSERV geocode.dir attempted=%d geocoded=%d not_found=%d low_conf=%d "
-            "errors=%d unreadable=%d skipped=%d skip_reasons={no_name:%d,non_geocodable:%d,"
-            "has_coords:%d,already_attempted:%d} status=%s",
+            "errors=%d unreadable=%d retriable=%d skipped=%d skip_reasons={no_name:%d,"
+            "non_geocodable:%d,has_coords:%d,already_attempted:%d} status=%s",
             report.attempted,
             report.geocoded,
             report.not_found,
             report.low_confidence,
             report.errors,
             report.unreadable,
+            report.retriable,
             report.skipped,
             report.skip_no_name,
             report.skip_non_geocodable,
             report.skip_has_coords,
             report.skip_already_attempted,
-            "warn" if (report.unreadable or report.errors) else "ok",
+            (
+                "warn"
+                if (report.unreadable or report.errors or report.retriable)
+                else "ok"
+            ),
         )
     except Exception:  # noqa: BLE001 - observability must never break the pass
         pass
@@ -841,7 +911,11 @@ def cascade_geocoder(*geocoders: Any) -> Any:
                 return result
             if result.found and result.confidence > MIN_GEOCODE_CONFIDENCE:
                 return result
-            if getattr(result, "transient", False) and transient_seen is None:
+            # an outage or an unreadable reply: both retriable, neither a not-found
+            retriable = getattr(result, "transient", False) or getattr(
+                result, "unparsed", False
+            )
+            if retriable and transient_seen is None:
                 transient_seen = result
             if best is None or result.confidence > best.confidence:
                 best = result
@@ -912,7 +986,13 @@ def _geocode_one_file(
     status = _apply_result(place, result)
     _tally(report, status)
     report.details.append(
-        {"name": name, "status": status, "confidence": result.confidence}
+        {
+            "name": name,
+            "status": status,
+            "confidence": result.confidence,
+            "unparsed": result.unparsed,
+            "source": result.source,
+        }
     )
     if write:
         _write_place(path, place)
@@ -926,6 +1006,8 @@ def _tally(report: GeocodeRunReport, status: str) -> None:
         report.not_found += 1
     elif status == _STATUS_LOW_CONF:
         report.low_confidence += 1
+    elif status == _STATUS_ERROR:
+        report.retriable += 1
 
 
 def _write_place(path: Path, place: dict) -> None:
