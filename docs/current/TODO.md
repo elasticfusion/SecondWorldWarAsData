@@ -1403,11 +1403,12 @@ bibliography JSON; Archive.org / Gutenberg finds through G3.
   search is asked once per window, an empty answer included (`openserp_cache_days`, 14), and a
   found listing is never searched for again, and a search that found none is stamped
   (`source_metadata.bookseller_searched_at`, not stamped during an outage) and not repeated within
-  `openserp_cache_days`, so resolved books are not rewritten every run. Left: the schema does not
-  pin the listing URL (`source_metadata` is free-form; add a pattern when `source_metadata` gets
-  a defined `bookseller` item). Still to do (the FEATURE items): build the affiliate
-  link from the stored listing (ASIN from the URL + the associate tag in config) and the
-  BookFinder link; ISBN/edition from Open Library. Was: LOW - a bookseller listing can be stored as an "online copy", and no book data is taken from it.
+  `openserp_cache_days`, so resolved books are not rewritten every run. Schema: bibliography 2.30 models
+  `source_metadata.bookseller` (url pattern `^https://www\.amazon\.com/dp/[A-Z0-9]{10}$`),
+  `findings[].kind` and `bookseller_searched_at` (additive; versions are soft-coded in
+  `ENTITY_SCHEMA_VERSIONS`, the pin, history snapshot and docs are the other steps). Owner
+  2026-11-20: the affiliate link, BookFinder link and Open Library ISBN/edition are future
+  features, not planned work. Was: LOW - a bookseller listing can be stored as an "online copy", and no book data is taken from it.
   Nothing in the resolver reads Amazon (or any bookseller) pages for ISBN, publisher or edition, and an
   Amazon listing that passes the title-level Grok check is stored like a digitized copy. Owner
   (2026-11-17): Amazon is wanted (affiliate links, below), so `amazon.com` was REMOVED from

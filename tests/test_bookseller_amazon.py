@@ -360,3 +360,113 @@ def test_another_records_resolution_never_replaces_a_records_own_copy(
     assert (
         reused is None and by_key[key] is own
     )  # a fresh resolution, now the one reused
+
+
+# --- the schema (bibliography 2.30) -----------------------------------------------------------
+
+
+def _record(meta):
+    return {
+        "BibliographyID": "01HX7YZABCDEFGHJKMNPQRSTVW",
+        "title": "The Siegfried Line Campaign",
+        "citation": {},
+        "source_metadata": meta,
+        "_schema_version": "2.30",
+    }
+
+
+def _valid(rec):
+    import jsonschema
+
+    from src.schemas.bibliography_output import BIBLIOGRAPHY_OUTPUT_SCHEMA
+
+    try:
+        jsonschema.Draft7Validator(BIBLIOGRAPHY_OUTPUT_SCHEMA).validate(rec)
+        return True
+    except jsonschema.ValidationError:
+        return False
+
+
+def test_a_bookseller_record_the_resolver_writes_is_schema_valid(
+    serp, monkeypatch, tmp_path
+):
+    """The resolver's real output goes through the real write guard and persists."""
+    from src.utils.file_lock import write_json_with_lock
+
+    monkeypatch.setattr(br, "_verify_openserp_match", lambda *a, **k: True)
+    serp.answers = [
+        _resp(
+            200,
+            [
+                {
+                    "url": "https://www.amazon.com/dp/B000ABC123?tag=x",
+                    "title": "The Siegfried Line Campaign",
+                }
+            ],
+        )
+    ]
+    entry = _record(None)
+    entry["citation"] = BOOK["citation"]
+    entry["mentions"] = [{"verbatim_reference": BOOK["verbatim_reference"]}]
+    br._find_bookseller(entry, mock.Mock(), CFG)
+    d = tmp_path / "bibliography"
+    d.mkdir()
+    assert write_json_with_lock(d / "bib_1.json", entry, entity="bibliography") is True
+    meta = entry["source_metadata"]
+    assert meta["bookseller"][0]["url"] == "https://www.amazon.com/dp/B000ABC123"
+    assert isinstance(meta["bookseller_searched_at"], int)
+
+
+@pytest.mark.parametrize(
+    "bad",
+    [
+        {"bookseller": [{"url": "https://evil.org/dp/B000ABC123", "source": "amazon", "kind": "bookseller"}]},
+        {"bookseller": [{"url": "https://www.amazon.com/dp/B000ABC123?tag=evil-20", "source": "amazon", "kind": "bookseller"}]},
+        {"bookseller": [{"url": "https://www.amazon.com/dp/B000ABC123", "source": "amazon", "kind": "copy"}]},
+        {"bookseller": [{"url": "https://www.amazon.com/dp/B000ABC123", "source": "amazon", "kind": "bookseller", "x": 1}]},
+        {"bookseller_searched_at": "yesterday"},
+        {"findings": [{"url": "u", "source": "s", "kind": "download"}]},
+        # a trailing newline / space / CR (Python's $ would let the newline through)
+        {"bookseller": [{"url": "https://www.amazon.com/dp/B000ABC123\n", "source": "amazon", "kind": "bookseller"}]},
+        {"bookseller": [{"url": "https://www.amazon.com/dp/B000ABC123 ", "source": "amazon", "kind": "bookseller"}]},
+        {"bookseller": [{"url": "https://www.amazon.com/dp/B000ABC123\r", "source": "amazon", "kind": "bookseller"}]},
+        # a bookseller FINDING is held to the same rule
+        {"findings": [{"url": "https://evil.org/x", "source": "amazon", "kind": "bookseller"}]},
+        {"findings": [{"url": "javascript:alert(1)", "source": "amazon", "kind": "bookseller"}]},
+        {"findings": [{"url": "https://www.amazon.com/dp/B000ABC123", "source": "ebay", "kind": "bookseller"}]},
+        {"findings": [{"source": "amazon", "kind": "bookseller"}]},
+    ],
+)  # fmt: skip
+def test_a_malformed_bookseller_never_reaches_the_record(bad):
+    assert not _valid(_record(bad))
+
+
+@pytest.mark.parametrize(
+    "ok",
+    [
+        None,
+        {},
+        {
+            "findings": [
+                {"url": "https://archive.org/details/x", "source": "archive_org"}
+            ]
+        },
+        {
+            "canonical_title": "x",
+            "anything": [1, 2],
+        },  # the open provenance keys stay open
+        {"bookseller": None, "bookseller_searched_at": None},
+        {
+            "findings": [
+                {
+                    "url": "https://www.amazon.com/dp/B000ABC123",
+                    "source": "amazon",
+                    "kind": "bookseller",
+                }
+            ]
+        },
+        {"findings": [{"url": None, "source": None, "kind": None}]},
+    ],
+)
+def test_existing_provenance_shapes_stay_valid(ok):
+    assert _valid(_record(ok))
