@@ -489,6 +489,9 @@ continues from where it stopped. Order: 1.2b, 1.1b, 1.2c, 1.2e, 1.2d, 1.2f, 1.1c
     never killed for a later price rise. Batch's own ceiling for a rung is its type's on-demand price
     (`SpotBidPercent`), so a larger type (g5.2xlarge) could in theory run above the original's price.
     Each of the four Spot compute environments has its own `MaxvCpus`, so the Spot ceiling is the sum.
+  - Owner 2026-11-20: the default ladder (g5.xlarge original, g6.xlarge, g5.2xlarge, g6.2xlarge) is
+    good enough for now; replacing the v5 compute environments and queues on deploy is approved.
+    The Group 1 test cycle is NOT yet approved (deploy + Phase 3 run wait for the owner).
   - OPEN: unverified against a live Batch (needs the deploy): that a failure with no matching
     `EvaluateOnExit` rule is retried (AWS docs, from memory). The v5 compute environments and queues
     replace the old ones on deploy.
@@ -680,6 +683,8 @@ whitelist fixes shipped in PR #707 since duplicates are recovered, not lost.
   BookID where it is about one document: map vision, document links, photo linking), so a swapped
   answer is rejected as in Phase 2 (`src/utils/request_identity`). Cost: each cached Phase 3 answer
   is asked once more (count them first).
+- **Design drafted 2026-11-20:** [PHASE3_BATCHING_DESIGN.md](core/PHASE3_BATCHING_DESIGN.md) (rounds loop, vision
+  in batch mode, identity split, attempt counting, validation script, order of work, four owner questions).
 - **Validation pass (owner 2026-11-18, after the Phase 3 list):** cached Phase 2 answers from
   batches before 2026-11-11 may be stored under another request's key; identity-checked kinds are
   caught on read (evicted, re-asked), others are not - check them.
