@@ -123,26 +123,71 @@ def _table():
         return None
 
 
-def _persist(record: Dict[str, Any]) -> None:
+def _persist(record: Dict[str, Any], once: bool = False) -> bool:
     """Write the fetch-provenance record. Fail-safe: never raise. DynamoDB in AWS mode,
-    append-only JSONL locally."""
+    append-only JSONL locally. ``once``: not written if a record with this id exists (a review
+    item queued by an earlier run keeps its review status). Returns whether it was written.
+    """
     try:
         table = _table()
         if table is not None:
+            kwargs: Dict[str, Any] = (
+                {"ConditionExpression": "attribute_not_exists(cache_key)"}
+                if once
+                else {}
+            )
             table.put_item(
                 Item={
                     "cache_key": f"{_KEY_PREFIX}{record['fetch_event_id']}",
                     "response": json.dumps(record),
-                }
+                },
+                **kwargs,
             )
-            return
+            return True
         # Local/test: append to output/_fetch_events/<provider>.jsonl
         provider = str(record.get("provider") or "unknown").replace("/", "_")
         _LOCAL_DIR.mkdir(parents=True, exist_ok=True)
-        with open(_LOCAL_DIR / f"{provider}.jsonl", "a", encoding="utf-8") as f:
+        path = _LOCAL_DIR / f"{provider}.jsonl"
+        if once and record["fetch_event_id"] in _local_ids(path):
+            return False
+        with open(path, "a", encoding="utf-8") as f:
             f.write(json.dumps(record) + "\n")
+        _local_ids(path).add(record["fetch_event_id"])
+        return True
     except Exception as e:  # noqa: BLE001 - recording must never block a fetch
-        logger.debug("fetch-provenance persist skipped: %s", e)
+        if type(e).__name__ == "ConditionalCheckFailedException":
+            return False  # recorded by an earlier run
+        if (
+            once
+        ):  # a review item that was not stored: say so (it is queued again next run)
+            logger.warning(
+                "OBSERV fetch_provenance.write_failed provider=%s err=%s status=warn - the "
+                "review item was not stored; the next run queues it again. Check the task "
+                "role's DynamoDB access to the api-cache table",
+                str(record.get("provider"))[:40],
+                type(e).__name__,
+            )
+        else:
+            logger.debug("fetch-provenance persist skipped: %s", e)
+        return False
+
+
+_LOCAL_SEEN: Dict[str, set] = {}
+
+
+def _local_ids(path: Path) -> set:
+    """The event ids already in a local JSONL file (read once per process, then kept)."""
+    key = str(path)
+    if key not in _LOCAL_SEEN:
+        seen: set = set()
+        if path.exists():
+            for line in path.read_text(encoding="utf-8").splitlines():
+                try:
+                    seen.add(json.loads(line).get("fetch_event_id"))
+                except (ValueError, AttributeError):
+                    continue
+        _LOCAL_SEEN[key] = seen
+    return _LOCAL_SEEN[key]
 
 
 def record_fetch_event(
@@ -158,10 +203,15 @@ def record_fetch_event(
     latency_ms: Optional[int] = None,
     error: Optional[str] = None,
     queried_at: Optional[str] = None,
+    once_key: Optional[tuple] = None,
 ) -> str:
     """Record a single fetch-provenance event (for callers that already hold a response, e.g.
-    wayback's courtesy wrapper). Returns the fetch_event_id. Fail-safe."""
-    fetch_event_id = str(ulid.new())
+    wayback's courtesy wrapper). Returns the fetch_event_id. Fail-safe. ``once_key``: the
+    event's identity - its id is derived from it and it is recorded once ever; a repeat
+    returns '' (task 1.2f: a re-run must not queue a second review item)."""
+    from src.utils.deterministic_ids import fetch_event_id as _fixed_id
+
+    fetch_event_id = _fixed_id(provider, *once_key) if once_key else str(ulid.new())
     record: Dict[str, Any] = {
         "fetch_event_id": fetch_event_id,
         "provider": provider,
@@ -178,8 +228,8 @@ def record_fetch_event(
         "kind": kind,
         "review_status": _initial_review_status(provider, kind, outcome),
     }
-    _persist(record)
-    return fetch_event_id
+    written = _persist(record, once=bool(once_key))
+    return fetch_event_id if written or not once_key else ""
 
 
 def recorded_fetch(

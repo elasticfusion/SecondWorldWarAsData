@@ -715,10 +715,10 @@ def _process_place_file(
     results = search_with_openserp(
         place_name, date, limit=search_limit, openserp_url=openserp_url
     )
-    history.mark_searched(place_name)
 
     if not results:
         logger.info("   ⚠ No results from OpenSERP")
+        history.mark_searched(place_name)  # an answer: nothing found
         return 0, 0, 0
 
     logger.info(f"   ✓ Found {len(results)} potential map(s) from OpenSERP")
@@ -747,6 +747,8 @@ def _process_place_file(
             imported += 1
         skipped_downloaded += skipped
 
+    # marked only now (task 1.2f): a run killed while processing the results searches again
+    history.mark_searched(place_name)
     return imported, 0, skipped_downloaded
 
 

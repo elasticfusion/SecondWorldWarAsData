@@ -133,7 +133,13 @@ def enqueue_doc_links(
     ULID-attributed (M6 chart ingest already reads origin_SourceSectionID from here). Same-document
     ``#anchor`` navigation is NOT enqueued. Returns a summary. Fail-safe.
     """
-    summary = {"links": 0, "enqueued": 0, "dropped": 0, "anchors": 0}
+    summary = {
+        "links": 0,
+        "enqueued": 0,
+        "already_queued": 0,
+        "dropped": 0,
+        "anchors": 0,
+    }
     try:
         from src.enrichment.source_retrieval import load_blacklist
         from src.extraction.link_relevancy import should_enqueue_link
@@ -166,10 +172,12 @@ def enqueue_doc_links(
     except Exception as e:  # noqa: BLE001 - enqueue must never crash the pipeline
         observe_warn("link_asset", "error", reason=str(e)[:120])
     logger.info(
-        "OBSERV link_asset.summary book=%s links=%d enqueued=%d dropped=%d anchors=%d",
+        "OBSERV link_asset.summary book=%s links=%d enqueued=%d already_queued=%d dropped=%d "
+        "anchors=%d",
         book,
         summary["links"],
         summary["enqueued"],
+        summary["already_queued"],
         summary["dropped"],
         summary["anchors"],
     )
@@ -198,7 +206,7 @@ def _enqueue_one(
     INCLUDING the originating source_section ULID (``origin_SourceSectionID``) so an affirmed asset's
     eventual entity link is ULID-attributed. Fail-safe."""
     try:
-        fp.record_fetch_event(
+        new = fp.record_fetch_event(
             provider="link-asset",
             endpoint=la.url,
             kind=fp.TEXTUAL,
@@ -215,7 +223,12 @@ def _enqueue_one(
             result_summary=(
                 f"{la.media_type} link ({verdict}) from {book} <{source_url}>: {la.text[:80]}"
             ),
+            # once per link per source section: a re-run does not queue it again (1.2f)
+            once_key=(book, source_section_id or source_url, la.url),
         )
+        if not new:
+            summary["already_queued"] += 1
+            return
         summary["enqueued"] += 1
         logger.info(
             "OBSERV link_asset.enqueued media=%s verdict=%s source_url=%s source_section=%s url=%s",

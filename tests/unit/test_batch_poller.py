@@ -61,7 +61,7 @@ def test_poll_no_pending_jobs(dynamodb_table):
     assert result == {"checked": 0}
 
 
-@patch("lambda_handlers.batch_poller.requests.get")
+@patch("src.utils.batch_api.requests.request")
 @patch("lambda_handlers.batch_poller._trigger_retrieve")
 def test_poll_batch_complete(mock_trigger, mock_get, dynamodb_table):
     from lambda_handlers.batch_poller import handler
@@ -88,7 +88,7 @@ def test_poll_batch_complete(mock_trigger, mock_get, dynamodb_table):
     assert item["status"] == "ready"
 
 
-@patch("lambda_handlers.batch_poller.requests.get")
+@patch("src.utils.batch_api.requests.request")
 def test_poll_batch_still_pending(mock_get, dynamodb_table):
     from lambda_handlers.batch_poller import handler
 
@@ -106,7 +106,7 @@ def test_poll_batch_still_pending(mock_get, dynamodb_table):
     assert result["complete"] == 0
 
 
-@patch("lambda_handlers.batch_poller.requests.get")
+@patch("src.utils.batch_api.requests.request")
 @patch("lambda_handlers.batch_poller._notify")
 def test_poll_batch_failed(mock_notify, mock_get, dynamodb_table):
     from lambda_handlers.batch_poller import handler
@@ -131,7 +131,7 @@ def test_poll_batch_failed(mock_notify, mock_get, dynamodb_table):
     assert item["status"] == "failed"
 
 
-@patch("lambda_handlers.batch_poller.requests.get")
+@patch("src.utils.batch_api.requests.request")
 def test_poll_api_error_stays_pending(mock_get, dynamodb_table):
     from lambda_handlers.batch_poller import handler
 
@@ -192,7 +192,7 @@ def test_submit_action_creates_networking_and_launches_task(
     assert "task_arn" in result
 
 
-@patch("lambda_handlers.batch_poller.requests.get")
+@patch("src.utils.batch_api.requests.request")
 @patch("lambda_handlers.batch_poller._trigger_retrieve")
 def test_poll_multiple_jobs(mock_trigger, mock_get, dynamodb_table):
     from lambda_handlers.batch_poller import handler

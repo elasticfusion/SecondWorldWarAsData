@@ -279,6 +279,67 @@ def _alias_names(place: dict, primary: str) -> list:
     return out
 
 
+SHARED_TTL_DAYS = (
+    365  # Nominatim answers for a name hardly change; a miss is retried sooner
+)
+SHARED_MISS_TTL_DAYS = 30
+
+
+def _shared_key(ident: str) -> str:
+    from src.utils.search_cache import _make_key
+
+    return _make_key("nominatim", ident)
+
+
+def _shared_get(ident: str) -> Optional[GeocodeResult]:
+    """The answer stored in the shared search cache (DynamoDB in AWS) by any earlier task, or
+    None. The local disk cache alone was lost with the task (task 1.2f)."""
+    try:
+        from src.utils.search_cache import _get_backend
+
+        raw = _get_backend().get(_shared_key(ident))
+        if not raw:
+            return None
+        result = GeocodeResult.model_validate(json.loads(raw))
+        result.transient = result.unparsed = False  # never cached as an outage
+        if result.found and not _plausible(result):
+            return None  # not trusted as coordinates: ask Nominatim again
+        return result
+    except (
+        Exception
+    ):  # noqa: BLE001 - unknown: ask Nominatim (the cache counts its outage)
+        return None
+
+
+def _plausible(result: GeocodeResult) -> bool:
+    """A found answer from the shared cache has real WGS84 coordinates."""
+    lat, lon = result.latitude, result.longitude
+    return (
+        isinstance(lat, (int, float))
+        and isinstance(lon, (int, float))
+        and not isinstance(lat, bool)
+        and not isinstance(lon, bool)
+        and -90 <= lat <= 90
+        and -180 <= lon <= 180
+    )
+
+
+def _shared_put(ident: str, result: GeocodeResult) -> None:
+    """Keep a real answer (found or not) for later tasks; an outage is never stored."""
+    if result.transient or result.unparsed:
+        return
+    try:
+        from src.utils.search_cache import _get_backend
+
+        _get_backend().put(
+            _shared_key(ident),
+            result.model_dump_json(),
+            ttl_days=SHARED_TTL_DAYS if result.found else SHARED_MISS_TTL_DAYS,
+        )
+    except Exception:  # noqa: BLE001 - kept on local disk; a later task asks again
+        pass
+
+
 def make_nominatim_geocoder(cache_dir: Path, session: Any = None):
     """Return a ``geocode_place(name, place, _client)`` callable using Nominatim.
 
@@ -295,13 +356,19 @@ def make_nominatim_geocoder(cache_dir: Path, session: Any = None):
 
     def _lookup(query: str, country_code: Optional[str]) -> GeocodeResult:
         """One cached Nominatim lookup for a single query string + optional scope."""
-        cache_file = _cache_path(cache_dir, f"{query}|{country_code or ''}")
+        ident = f"{query}|{country_code or ''}"
+        cache_file = _cache_path(cache_dir, ident)
         if cache_file.exists():
             try:
                 cached = json.loads(cache_file.read_text(encoding="utf-8"))
                 return GeocodeResult.model_validate(cached)
             except (OSError, json.JSONDecodeError, ValueError):
                 pass
+        shared = _shared_get(
+            ident
+        )  # an earlier task's answer (survives a Spot reclaim)
+        if shared is not None:
+            return shared
         try:
             raw = _query_nominatim(query, session, country_code)
         except (
@@ -322,6 +389,7 @@ def make_nominatim_geocoder(cache_dir: Path, session: Any = None):
             cache_file.write_text(result.model_dump_json(), encoding="utf-8")
         except OSError:
             pass
+        _shared_put(ident, result)
         return result
 
     def geocode_place(name: str, _place: dict, _client: Any = None) -> GeocodeResult:

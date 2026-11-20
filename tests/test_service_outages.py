@@ -243,3 +243,30 @@ def test_the_worker_looks_again_after_a_service_stop(monkeypatch):
         object(),
     )
     assert out == "defer" and resets == [1]
+
+
+# --- watch() follows work into thread pools (owner 2026-11-20) -----------------------------
+
+
+def test_an_outage_in_a_pool_thread_lands_in_the_submitters_watch():
+    from concurrent.futures import ThreadPoolExecutor
+
+    from src.utils import service_outage as so
+
+    with so.watch() as seen:
+        with ThreadPoolExecutor(max_workers=2) as plain:
+            plain.submit(so.failed, "gutendex", "search", "x").result()
+        assert seen == []  # a plain pool loses it (the gap)
+        with so.OutagePool(max_workers=4) as pool:
+            list(
+                pool.map(
+                    lambda s: so.failed(s, "search", "x"), ["nara", "gutendex", "nara"]
+                )
+            )
+    assert sorted(seen) == ["gutendex", "nara"]  # once each, from any thread
+
+
+def test_carry_outside_a_watch_changes_nothing():
+    from src.utils import service_outage as so
+
+    assert so.carry(lambda: so._scope.get())() is None

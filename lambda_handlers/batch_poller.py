@@ -12,14 +12,12 @@ import os
 from typing import Any
 
 import boto3
-import requests
 
 from src.utils.observe import observe_error
 
 logger = logging.getLogger(__name__)
 logger.setLevel(os.getenv("LOG_LEVEL", "INFO"))
 
-GROK_API_BASE = "https://api.x.ai/v1"
 ENV_NAME = os.getenv("ENV_NAME", "dev")
 REGION = os.getenv("AWS_REGION", "us-east-1")
 CLUSTER = os.getenv("ECS_CLUSTER", f"{ENV_NAME}-wwii-pipeline")
@@ -60,6 +58,9 @@ def handler(event, _context):
     results = {"checked": len(jobs), "complete": 0, "pending": 0, "failed": 0}
 
     for job in jobs:
+        if results.get("xai_unavailable"):
+            results["pending"] += 1  # xAI is away: the rest wait for the next poll
+            continue
         _poll_one_job(job, api_key, results)
 
     logger.info("Results: %s", results)
@@ -87,6 +88,9 @@ def _poll_one_job(job: dict, api_key: str, results: dict) -> None:
                 results["pending"] += 1  # retrieve failed, will retry next poll
         else:
             results["pending"] += 1  # another invocation handling it
+    elif status == "unavailable":
+        results["pending"] += 1
+        results["xai_unavailable"] = True
     elif status == "failed":
         _mark_failed(job["batch_id"])
         _notify(f"Batch {job['batch_id']} FAILED ({job.get('book', '?')})")
@@ -278,18 +282,44 @@ def _pollable(job: dict, table: Any) -> bool:
     return True
 
 
+POLL_TRIES = 2
+
+
+def _note_xai_unavailable(batch_id: str, stop: Exception) -> None:
+    """xAI did not answer the poll (an outage or no credit): the batch is NOT failed. Logged per
+    batch; the operator alert comes once per hour from the counted warning."""
+    from src.utils.observe import observe_warn_counted
+
+    observe_warn_counted(
+        "batch",
+        "xai_unavailable",
+        key=("funding" if getattr(stop, "funding", False) else "outage",),
+        every=4,
+        note=(
+            "xAI did not answer the batch status check (outage or no credit): the batch is "
+            "kept pending and polled again. Check status.x.ai and the xAI credit balance"
+        ),
+        batch_id=batch_id,
+        reason=str(stop)[:80],
+    )
+
+
 def _check_batch_status(api_key: str, batch_id: str, submitted_at: int = 0) -> str:
     """Check batch status via Grok API. Returns 'complete', 'pending', or 'failed'."""
     import time
 
+    from src.utils import batch_api
+
     try:
-        resp = requests.get(
-            f"{GROK_API_BASE}/batches/{batch_id}",
-            headers={"Authorization": f"Bearer {api_key}"},
-            timeout=15,
-        )
-        resp.raise_for_status()
-        batch = resp.json()
+        try:
+            # the shared xAI outage policy (task 1.2f); 2 tries: this Lambda polls again soon.
+            # stop=False: no process-wide Grok stop in a warm Lambda
+            batch = batch_api.get_batch(
+                api_key, batch_id, timeout=15, tries=POLL_TRIES, stop=False
+            )
+        except batch_api.XaiUnavailable as away:
+            _note_xai_unavailable(batch_id, away)
+            return "unavailable"  # the batch lives on at xAI: polled again next time
         state = batch.get("state", {})
         total = state.get("num_requests", 0)
         success = state.get("num_success", 0)
@@ -700,17 +730,15 @@ def _check_stalled(job: dict, api_key: str) -> None:
     # Get current progress from API
     total = int(job.get("request_count", 0))
     completed = 0
+    from src.utils import batch_api
+
     try:
-        resp = requests.get(
-            f"{GROK_API_BASE}/batches/{job['batch_id']}",
-            headers={"Authorization": f"Bearer {api_key}"},
-            timeout=10,
-        )
-        if resp.ok:
-            state = resp.json().get("state", {})
-            completed = state.get("num_success", 0) + state.get("num_error", 0)
-    except Exception:
-        pass
+        state = batch_api.get_batch(
+            api_key, job["batch_id"], timeout=10, tries=1, stop=False
+        ).get("state", {})
+        completed = state.get("num_success", 0) + state.get("num_error", 0)
+    except Exception as e:  # noqa: BLE001 - progress is optional here
+        logger.info("stall notice without progress: %s", type(e).__name__)
 
     _notify(
         f"⏳ Batch still waiting ({age_hours:.1f}h elapsed)\n"

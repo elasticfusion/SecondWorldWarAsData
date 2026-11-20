@@ -5,6 +5,7 @@ the trigger's error alarm fires on one error. A pipeline task may not write the 
 state (Fargate prices, stop reports) or climb a Spot ladder."""
 
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 import yaml
@@ -238,3 +239,78 @@ def test_the_trigger_queue_keeps_a_failing_batch_in_the_alarmed_dlq():
     assert queue["RedrivePolicy"]["maxReceiveCount"] == 5
     src = (ROOT / "cloudformation" / "events.yaml").read_text(encoding="utf-8")
     assert "${EnvironmentName}-wwii-trigger-dlq\n        maxReceiveCount" in src
+
+
+# --- the trigger queue returns only the records that fail (task 1.2f) -------------------------
+
+
+def _sqs(mid, body="{}"):
+    return {"messageId": mid, "eventSource": "aws:sqs", "body": body}
+
+
+def test_one_bad_record_goes_back_alone(trigger, monkeypatch):
+    seen = []
+
+    def process(event):
+        ids = [r["messageId"] for r in event["Records"]]
+        seen.append(ids)
+        if "bad" in ids:
+            raise RuntimeError("poison")
+
+    monkeypatch.setattr(trigger, "_process_records", process)
+    out = trigger.handler({"Records": [_sqs("a"), _sqs("bad"), _sqs("c")]}, None)
+    assert out == {"batchItemFailures": [{"itemIdentifier": "bad"}]}
+    assert seen[0] == ["a", "bad", "c"] and ["a"] in seen and ["c"] in seen
+
+
+def test_a_healthy_batch_is_handled_together(trigger, monkeypatch):
+    seen = []
+    monkeypatch.setattr(
+        trigger, "_process_records", lambda e: seen.append(len(e["Records"]))
+    )
+    assert trigger.handler({"Records": [_sqs("a"), _sqs("b")]}, None) == {
+        "batchItemFailures": []
+    }
+    assert seen == [2]  # one pass: the S3 events of an upload still debounce together
+
+
+def test_the_mapping_reports_batch_item_failures():
+    mapping = _resources("events.yaml")["TriggerEventSourceMapping"]["Properties"]
+    assert mapping["FunctionResponseTypes"] == ["ReportBatchItemFailures"]
+
+
+def test_a_single_failing_record_goes_back_without_a_second_try(trigger, monkeypatch):
+    calls, alerts = [], []
+    monkeypatch.setattr(
+        trigger,
+        "_process_records",
+        lambda e: calls.append(1) or (_ for _ in ()).throw(RuntimeError("x")),
+    )
+    monkeypatch.setattr(trigger, "observe_error", lambda s, e, **k: alerts.append(e))
+    out = trigger.handler({"Records": [_sqs("only")]}, None)
+    assert out == {"batchItemFailures": [{"itemIdentifier": "only"}]} and calls == [1]
+    assert alerts == [
+        "record_failed"
+    ]  # actionable, and the error alarm no longer sees it
+
+
+def test_records_without_ids_fail_the_whole_batch(trigger, monkeypatch):
+    def boom(e):
+        raise RuntimeError("x")
+
+    monkeypatch.setattr(trigger, "_process_records", boom)
+    with pytest.raises(RuntimeError):  # cannot be reported per record: SQS retries all
+        trigger.handler({"Records": [_sqs("a"), {"eventSource": "aws:sqs"}]}, None)
+
+
+def test_the_per_record_retry_stops_near_the_lambda_timeout(trigger, monkeypatch):
+    def boom(e):
+        if len(e["Records"]) > 1:
+            raise RuntimeError("batch")
+
+    monkeypatch.setattr(trigger, "_process_records", boom)
+    ctx = SimpleNamespace(get_remaining_time_in_millis=lambda: 1000)
+    out = trigger.handler({"Records": [_sqs("a"), _sqs("b")]}, ctx)
+    assert out == {
+        "batchItemFailures": [{"itemIdentifier": "a"}, {"itemIdentifier": "b"}]
+    }

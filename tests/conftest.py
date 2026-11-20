@@ -190,3 +190,29 @@ def _fresh_link_policy():
     link_policy.reset()
     yield
     link_policy.reset()
+
+
+@pytest.fixture(autouse=True)
+def _private_search_cache(monkeypatch, tmp_path_factory):
+    """src/utils/search_cache is the shared answer cache (DynamoDB in AWS): every test gets its
+    own empty local one, so no test reads or writes the real table or another test's answers.
+    """
+    from src.utils import search_cache
+
+    monkeypatch.setattr(
+        search_cache,
+        "_cache_backend",
+        search_cache._LocalBackend(tmp_path_factory.mktemp("search_cache")),
+    )
+
+
+@pytest.fixture(autouse=True)
+def _fresh_wikimedia_backoff():
+    """src/utils/wikimedia_client remembers a host's 429 back-off for the process: a test that
+    reached the real Wikimedia (integration) must not make a later test see 'backing off'.
+    """
+    from src.utils import wikimedia_client
+
+    wikimedia_client.reset_state()
+    yield
+    wikimedia_client.reset_state()

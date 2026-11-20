@@ -3484,6 +3484,17 @@ def _queue_followup(cause: str, reason: str) -> str:
     and return the sentence the stop alert ends with (what happens next). Other phases are not
     queue-managed here: "re-trigger". Never raises."""
     book = os.environ.get("BOOK_NAME", "")
+    source = os.environ.get("CONVERT_KEY") or os.environ.get("VIDEO_KEY") or ""
+    if _is_import(_current_phase_script) and source:
+        # a Phase 0 import has no queue row: name the upload to repeat (owner 2026-11-20)
+        return (
+            "Then re-upload the same file under the same name (it keeps its book slug) to "
+            f"s3://{BUCKET}/{source[:200]}"
+        )
+    if "phase0_ocr_crosscheck" in _current_phase_script and book:
+        from src.ingestion.ocr_chunk_manifest import redrive_command
+
+        return "Then re-drive the OCR merge: " + redrive_command(book)
     if not book or "phase3" not in _current_phase_script:
         return "Then re-trigger the phase for this book"
     from src.utils import pending_queue

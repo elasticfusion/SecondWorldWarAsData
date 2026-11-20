@@ -54,7 +54,7 @@ def test_check_stalled_notifies_once_per_hour():
     )
     with (
         mock.patch.object(BP, "_notify", lambda m: notes.append(m)),
-        mock.patch("requests.get", lambda *a, **k: resp),
+        mock.patch("requests.request", lambda *a, **k: resp),
         mock.patch(
             "lambda_handlers.batch_poller.boto3.resource",
             lambda *a, **k: mock.Mock(Table=lambda t: fake_table),

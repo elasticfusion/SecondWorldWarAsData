@@ -178,15 +178,19 @@ continues from where it stopped. Order: 1.2b, 1.1b, 1.2c, 1.2e, 1.2d, 1.2f, 1.1c
     (DONE 2026-11-20); `review_queue.json` written only at the end (`:2435`);
     `max_items` counts skipped records (`:2424`);
   - claim-before-write (lost forever on a kill): in_doc_map_links (`map_link_source.py:219`, ties
-    to 1.6), intra_corpus_links (`intra_corpus.py:212`), openserp_external_maps `mark_searched`
-    before processing (`openserp_maps.py:718`, disabled in config);
+    to 1.6), intra_corpus_links (`intra_corpus.py:212`), ~~openserp_external_maps `mark_searched`
+    before processing~~ (DONE 2026-11-20);
   - DONE (2026-11-20) failures stored as terminal: hill geocode Grok exception and an
     unparseable geocode reply (both now retriable, `ask_geocode`), a transient page fetch
     (RETRY_LATER 1 h); a NARA exception is no longer negative-cached and a NARA 429/5xx or
     network error is an outage (`backend_down`, never queued as "not found online");
-  - disk-only state lost on a Spot reclaim: Nominatim cache, `cache/openserp_search_history.json`,
-    in-doc maps written to `contentrepository/` (not in the 120 s sync);
-  - link_asset_review writes duplicate PENDING review items on every re-run (`link_assets.py:201`);
+  - DONE (2026-11-20) disk-only state lost with the task: Nominatim answers and the OpenSERP
+    map-search history now also live in the shared search cache (an outage is never stored); a
+    map search is marked only after its results (`openserp_maps`). In-doc maps written to
+    `contentrepository/`: moot, recycling maps is stopped (owner 2026-11-17, Group 8);
+  - DONE (2026-11-20) link_asset_review queued a duplicate PENDING item on every re-run: each
+    link of a source section now has a deterministic fetch_event_id recorded once
+    (`record_fetch_event(once_key=...)`, a conditional put: a reviewed item is never reset);
   - maps `index.json` saved only at the end of the step (`map_link_source.py:287`).
   - OpenSERP SQS worker path (`openserp_worker.py`) is not traced: its misses are not in the
     review log (call `_search_entity` there too);
@@ -237,12 +241,23 @@ continues from where it stopped. Order: 1.2b, 1.1b, 1.2c, 1.2e, 1.2d, 1.2f, 1.1c
     waited for the hung thread on exit). Accepted cost (LOW): a request abandoned at the deadline
     may still be billed, and the retry re-posts it (at most 5 posts; the deadline fires only
     for a connection that trickles past the 600 s read timeout);
-  - the Phase 2 Batch API path (`batch_api` submit/poll/retrieve) does not use `_call_api`, so a
-    Batch API outage is unchanged; Phase 2 stops are told to re-trigger (no Phase 2 deferral);
-  - Phase 0 and Lambda callers now see a Grok stop as a plain failure (exit 1 / Lambda error),
-    not a deferral: `md_correction.correct_markdown` ("never raises") and
-    `translation.normalize_markdown_to_english` let it through (phase0_convert, phase0_ingest,
-    phase0_video, ocr_merge_handler). Decide per caller: optional (go on) or stop-and-defer.
+  - DONE (owner 2026-11-20: "batches must use shared outage") every xAI Batch API call (upload,
+    create, poll, retrieve, the poller's status check) goes through `batch_api.xai_request`: a
+    network error / timeout / 429 / 5xx is retried (5 tries; 2 in the poller), then the run stops
+    as `GrokUnreachable` (402: `GrokFundsExhausted`); a batch already submitted is kept for the
+    poller (its in_task job and credit reservation stay), never marked failed; the poller keeps
+    a batch `pending` while xAI is away (no process-wide stop in the Lambda; the rest of that poll
+    cycle waits). Creating a batch is never retried after it may have reached xAI (no second
+    billed batch; `batch.create_uncertain` says to check the console); an outage after the submit
+    hands the batch to the poller (BatchPending); an in-task poll rides out ~4 min of errors.
+    Alert notes now keep their spaces (`observe._safe_note`, 500 chars) so commands and S3 keys
+    can be pasted; Slack markup in alert text is escaped (`slack_formatter`). Phase 2 stops are
+    still told to re-trigger (no Phase 2 deferral);
+  - DONE (owner 2026-11-20) Phase 0 and Lambda callers: the markdown repair is optional (a Grok
+    stop sends the document to human review); the translation is required - phase0_convert /
+    phase0_ocr_crosscheck / phase0_video exit 81/80 (`stop_cause.run_main`) and the alert names
+    the upload to repeat (or the OCR re-drive); the OCR merge Lambda frees its claim and alerts
+    `ocr_merge.grok_unavailable` with the re-drive command.
 - **1.2f - every external service is resumable** (owner 2026-11-18). Grok, NOAA weather,
   geocoding (Nominatim), archive.org, NARA, OpenSERP, HyperWar and any other fetch can fail at the
   service or the network level. For each: one shared retry policy (`src/utils/failure_taxonomy`
@@ -318,8 +333,9 @@ continues from where it stopped. Order: 1.2b, 1.1b, 1.2c, 1.2e, 1.2d, 1.2f, 1.1c
     never a pasteable command. DONE (2026-11-20): the emergency (SIGTERM) sync is retried once
     when it fails fast (`_emergency_sync`); a citation whose search sources were down in
     `BACKEND_DOWN_RUN_CAP` (5) runs in a row is also queued for a human with the reason (count in
-    the search cache, 30-day TTL; it keeps being retried). Remaining: `watch()` does not follow
-    work into a thread pool (the bibliography resolver is sequential today).
+    the search cache, 30-day TTL; it keeps being retried). DONE (owner 2026-11-20): `watch()` follows
+    work into a thread pool through `service_outage.OutagePool` / `carry` (only the watch scope is
+    carried, so cache scoping in existing pools is unchanged).
   - DONE (2026-11-20) `url_hygiene._pinned_get` has the shared retry (429/502/503/504, or a
     network error that failed in under 10 s; not a stall or a TLS failure; 3 tries, Retry-After or
     2 s/4 s, capped 30 s); the local loops in `source_retrieval` and `wayback` were removed (DRY);
@@ -335,8 +351,9 @@ continues from where it stopped. Order: 1.2b, 1.1b, 1.2c, 1.2e, 1.2d, 1.2f, 1.1c
     was 300 s under a 900 s Lambda (now 1800 s) and had no redrive (a failing batch retried
     silently 14 days; now 5 receives -> the alarmed trigger DLQ); the OpenSERP worker re-sends a
     message stopped by a Grok/OpenSERP outage as a fresh delayed message (15 min; at most 96 times,
-    24 h, then ordinary counted retries), so an outage no longer pushes the queue into its DLQ. Left: the trigger queue has no per-record failure reporting
-    (one failing record returns the whole batch of up to 100);
+    24 h, then ordinary counted retries), so an outage no longer pushes the queue into its DLQ. DONE (2026-11-20): the trigger queue reports per-record
+    failures (`ReportBatchItemFailures`; a failed batch is retried record by record, only the
+    failing ones go back);
   - ACCEPTED (owner 2026-11-18): each start-time OpenSERP stop still brings NAT up and waits up
     to 12 min for OpenSERP before stopping (bounded by the connectivity cap, 24).
 - **1.2g - troubleshoot NOAA weather** (owner 2026-11-18, its own task). NOAA 429 sleeps 60 s per

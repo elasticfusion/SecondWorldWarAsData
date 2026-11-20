@@ -9,7 +9,9 @@
   (``grok_models.ServiceUnreachable``: Phase 3 exits EXIT_CONNECTIVITY, the book is deferred and
   resumes on its own). Outside a phase task (a Lambda, a script) nothing is stopped.
 * ``ok(service)`` - the service answered: its failure streak starts again.
-* ``watch()`` - collect the outages of one work item (one citation, one image).
+* ``watch()`` - collect the outages of one work item (one citation, one image), including those
+  hit by work it hands to a thread pool: ``OutagePool`` (or ``carry``) runs each task in the
+  submitter's watch scope (owner 2026-11-20). Only that scope is carried, no other context.
 """
 
 from __future__ import annotations
@@ -19,7 +21,8 @@ import contextvars
 import logging
 import os
 import threading
-from typing import Dict, Iterator, List, Optional
+from concurrent.futures import Future, ThreadPoolExecutor
+from typing import Any, Callable, Dict, Iterator, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -52,6 +55,30 @@ def watch() -> Iterator[List[str]]:
         _scope.reset(token)
 
 
+def carry(fn: Callable[..., Any]) -> Callable[..., Any]:
+    """``fn`` bound to the CURRENT watch scope, to run in another thread: outages it reports land
+    in that scope (a pool thread does not inherit context variables). No scope: unchanged.
+    """
+    seen = _scope.get()
+
+    def run(*args: Any, **kwargs: Any) -> Any:
+        token = _scope.set(seen)
+        try:
+            return fn(*args, **kwargs)
+        finally:
+            _scope.reset(token)
+
+    return run
+
+
+class OutagePool(ThreadPoolExecutor):
+    """A ThreadPoolExecutor whose tasks report outages into the submitter's ``watch()`` scope
+    (``carry``); ``map`` goes through ``submit`` too."""
+
+    def submit(self, fn: Callable[..., Any], /, *args: Any, **kwargs: Any) -> Future:
+        return super().submit(carry(fn), *args, **kwargs)
+
+
 def _in_phase_task() -> bool:
     return os.environ.get("PIPELINE_PHASE", "").startswith("phase")
 
@@ -64,8 +91,10 @@ def failed(service: str, op: str, reason: str, stop_after: Optional[int] = None)
         streak = _streaks.get(service, 0) + 1
         _streaks[service] = streak
     seen = _scope.get()
-    if seen is not None and service not in seen:
-        seen.append(service)
+    if seen is not None:
+        with _lock:  # a watch scope may be shared by pool threads (carry)
+            if service not in seen:
+                seen.append(service)
     observe_warn_counted(
         service,
         "unavailable",

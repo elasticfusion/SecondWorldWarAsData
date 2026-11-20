@@ -28,7 +28,7 @@ def test_failfast_on_xai_cancellation():
             "num_error": 0,
         },
     }
-    with patch.object(ba.requests, "get", return_value=_resp(payload)):
+    with patch.object(ba.requests, "request", return_value=_resp(payload)):
         with pytest.raises(ba.BatchSubmissionError) as e:
             ba.poll_batch("k", "batch_x", interval=0, submitted_count=70)
     assert "not supported for batch" in str(e.value)
@@ -40,7 +40,7 @@ def test_failfast_on_submitted_but_zero_after_grace(monkeypatch):
     }
     monkeypatch.setattr(ba, "_SUBMIT_GRACE_SECS", 0)  # skip grace
     monkeypatch.setattr(ba.time, "sleep", lambda *_: None)
-    with patch.object(ba.requests, "get", return_value=_resp(payload)):
+    with patch.object(ba.requests, "request", return_value=_resp(payload)):
         with pytest.raises(ba.BatchSubmissionError):
             ba.poll_batch("k", "batch_x", interval=0, submitted_count=70)
 
@@ -49,6 +49,6 @@ def test_normal_completion_still_returns():
     payload = {
         "state": {"num_requests": 5, "num_pending": 0, "num_success": 5, "num_error": 0}
     }
-    with patch.object(ba.requests, "get", return_value=_resp(payload)):
+    with patch.object(ba.requests, "request", return_value=_resp(payload)):
         out = ba.poll_batch("k", "batch_x", interval=0, submitted_count=5)
     assert out["state"]["num_success"] == 5

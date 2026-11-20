@@ -985,6 +985,20 @@ class GrokClient:
             verify_served_models(ordered, "batch_retrieve")
         except BatchPending:
             raise
+        except (grok_models.GrokUnreachable, grok_models.GrokFundsExhausted):
+            if submitted_id:
+                # xAI outage AFTER the submit (task 1.2f): the batch lives on at xAI and is
+                # billed. Hand it to the poller like an unanswered batch (BatchPending: the
+                # reservation stays, the poller retrieves it and resumes the book) - a re-run
+                # would pay for the same requests again
+                logger.error(
+                    "OBSERV batch.outage_after_submit batch=%s status=error - handed to the "
+                    "batch poller; nothing is resubmitted",
+                    submitted_id,
+                )
+                self._hand_off(submitted_id, batch_name, count, jsonl_path)
+            credit_gate.release(est_cost, config=self._config)
+            raise
         except (Exception, grok_models.GrokModelUnavailable) as _batch_exc:
             credit_gate.release(est_cost, config=self._config)
             logger.warning(

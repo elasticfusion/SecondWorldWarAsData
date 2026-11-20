@@ -1875,7 +1875,21 @@ def handler(event, _context):
         logger.info("Phase-complete event: phase=%s -> driving next phase", completed)
         return _drive_next_phase(completed)
 
-    # Extract topics and S3 keys from SQS/SNS records
+    return _handle_records(event, _context)
+
+
+def _handle_records(event, context=None):
+    """SNS/SQS records: a trigger-queue batch reports its failing records (``_handle_sqs_batch``);
+    anything else is processed as one event."""
+    records = event.get("Records") or []
+    if records and all(r.get("eventSource") == "aws:sqs" for r in records):
+        return _handle_sqs_batch(records, context)
+    _process_records(event)
+    return None
+
+
+def _process_records(event) -> None:
+    """Extract topics and S3 keys from SQS/SNS records, keep the manifest, route each topic."""
     topics, s3_keys = _extract_records(event)
     logger.info("Trigger topics: %s, keys: %d", topics, len(s3_keys))
 
@@ -1884,6 +1898,71 @@ def handler(event, _context):
         _update_manifest(s3_keys)
 
     _route_topics(topics, s3_keys)
+
+
+SQS_FALLBACK_RESERVE_MS = (
+    60_000  # stop retrying records one by one this close to the timeout
+)
+
+
+def _handle_sqs_batch(records: list, context=None) -> dict:
+    """A batch from the trigger queue (task 1.2f): handled together (the S3 events of one upload
+    debounce into one launch); if that fails, each record is tried on its own and only the ones
+    that fail again go back to the queue (``ReportBatchItemFailures``: after 5 receives, to the
+    alarmed DLQ) - one bad record no longer returns the whole batch of up to 100. Launches are
+    lock- and claim-guarded, so re-processing a record that already launched starts nothing.
+    """
+    if not all(r.get("messageId") for r in records):
+        _process_records(
+            {"Records": records}
+        )  # cannot report per record: all or nothing
+        return {"batchItemFailures": []}
+    try:
+        _process_records({"Records": records})
+        return {"batchItemFailures": []}
+    except Exception as e:  # noqa: BLE001 - narrowed to the failing records below
+        if len(records) == 1:
+            _alert_record_failed(records[0], e)
+            return {"batchItemFailures": [{"itemIdentifier": records[0]["messageId"]}]}
+        logger.warning(
+            "OBSERV trigger.batch_failed records=%d err=%s status=warn - retrying each record "
+            "on its own",
+            len(records),
+            type(e).__name__,
+        )
+    failed = []
+    for i, record in enumerate(records):
+        if _near_timeout(context):
+            # out of time: the untried rest go back as they are (retried on their own later)
+            failed += [{"itemIdentifier": r["messageId"]} for r in records[i:]]
+            break
+        try:
+            _process_records({"Records": [record]})
+        except Exception as e:  # noqa: BLE001 - this record goes back to the queue
+            failed.append({"itemIdentifier": record["messageId"]})
+            _alert_record_failed(record, e)
+    return {"batchItemFailures": failed}
+
+
+def _near_timeout(context) -> bool:
+    try:
+        return context.get_remaining_time_in_millis() < SQS_FALLBACK_RESERVE_MS
+    except AttributeError:
+        return False  # no Lambda context (tests, local runs)
+
+
+def _alert_record_failed(record: dict, e: Exception) -> None:
+    observe_error(
+        "trigger",
+        "record_failed",
+        note=(
+            "a trigger-queue message failed and went back to the queue; it is retried, and after "
+            "5 receives moves to the alarmed trigger DLQ. Check the trigger Lambda logs for the "
+            "traceback"
+        ),
+        message=str(record.get("messageId", ""))[:64],
+        error=type(e).__name__,
+    )
 
 
 def _route_topics(topics, s3_keys) -> None:

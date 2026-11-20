@@ -179,6 +179,27 @@ def _safe(value: Any, limit: int = 200) -> str:
     return token
 
 
+NOTE_LIMIT = (
+    500  # room for a pasteable command (e.g. the OCR re-drive, ~250 characters)
+)
+
+
+def _safe_note(value: Any, limit: int = NOTE_LIMIT) -> str:
+    """The note: like ``_safe`` (one line - no newline or Unicode line separator can forge a
+    second OBSERV line - and bounded), but word spaces are KEPT as single spaces, so a command
+    or an S3 key in it can be pasted as written (task 1.2f: ``_`` for every space broke them).
+    The note is the line's last part, so spaces cannot break the key=value grammar."""
+    token = str(value)
+    for sep in ("\u2028", "\u2029", "\u0085"):
+        token = token.replace(sep, " ")
+    token = " ".join(token.split())
+    # caller text cannot pose as another OBSERV record to a viewer that greps for "OBSERV x.y"
+    token = token.replace("OBSERV ", "OBSERV_")
+    if len(token) > limit:
+        token = token[: limit - 3] + "..."
+    return token
+
+
 def _format_kv(fields: dict[str, Any]) -> str:
     """Render extra fields as ` key=value` tokens, each value sanitized to a single grep-safe token
     (no internal whitespace, bounded length) via `_safe` so the grammar stays parseable and a field
@@ -251,7 +272,7 @@ def observe(
         level = _STATUS_LEVEL[canon]
         line = f"OBSERV {_safe(scope, 80)}.{_safe(event, 80)} status={canon}{_format_kv(fields)}"
         if note:
-            line += f" — {_safe(note, 300)}"
+            line += f" — {_safe_note(note)}"
         logger.log(level, line)
         if canon == "error":
             # fail-safe; no-op unless configured

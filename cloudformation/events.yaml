@@ -245,6 +245,9 @@ Resources:
       BatchSize: 100
       MaximumBatchingWindowInSeconds: 60
       Enabled: true
+      # task 1.2f: only the records that fail go back (trigger_handler._handle_sqs_batch)
+      FunctionResponseTypes:
+        - ReportBatchItemFailures
 
   # --- Dedup Complete Topic (single event, stays direct SNS → Lambda) ---
   DedupCompleteTopic:

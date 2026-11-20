@@ -3,6 +3,7 @@
 import json
 import pathlib
 import tempfile
+from unittest import mock
 
 import pytest
 
@@ -153,7 +154,13 @@ def test_enqueue_records_pending_with_provenance(local_fp):
     s = enqueue_doc_links(
         content, BASE, "XChannel", grok_client=None, whitelist=["ibiblio.org"]
     )
-    assert s == {"links": 3, "enqueued": 2, "dropped": 0, "anchors": 1}
+    assert s == {
+        "links": 3,
+        "enqueued": 2,
+        "already_queued": 0,
+        "dropped": 0,
+        "anchors": 1,
+    }
     pend, events = _pending(fp, d)
     assert len(pend) == 2
     assert all(e["provider"] == "link-asset" for e in events)
@@ -208,3 +215,61 @@ def test_enqueue_carries_source_section_ulid(local_fp):
     )
     pend, _ = _pending(fp, d)
     assert pend and pend[0]["request_params"]["origin_SourceSectionID"] == sid
+
+
+def test_a_rerun_does_not_queue_the_same_link_again(local_fp):
+    """Task 1.2f: every Phase 3 re-run used to add a second PENDING review item per link."""
+    fp, d = local_fp
+    content = "[fn63](../../MoH_P-T.html#roosevelt) [chart](charts/x.jpg)"
+    kw = dict(grok_client=None, whitelist=["ibiblio.org"])
+    first = enqueue_doc_links(content, BASE, "XChannel", **kw)
+    again = enqueue_doc_links(content, BASE, "XChannel", **kw)
+    assert first["enqueued"] == 2 and again["enqueued"] == 0
+    assert again["already_queued"] == 2
+    assert len(_pending(fp, d)[0]) == 2
+    # the same link from another book is its own review item
+    assert enqueue_doc_links(content, BASE, "OtherBook", **kw)["enqueued"] == 2
+
+
+def test_a_queued_review_item_is_never_overwritten_in_dynamodb(monkeypatch):
+    import src.utils.fetch_provenance as fp
+
+    table = mock.Mock()
+    table.put_item.side_effect = [None, _ConditionalCheckFailed()]
+    monkeypatch.setattr(fp, "_table", lambda: table)
+    args = dict(provider="link-asset", endpoint="https://x.org/a", kind=fp.TEXTUAL)
+    first = fp.record_fetch_event(**args, once_key=("B", "S1", "https://x.org/a"))
+    again = fp.record_fetch_event(**args, once_key=("B", "S1", "https://x.org/a"))
+    assert first and again == ""
+    cond = table.put_item.call_args_list[0].kwargs["ConditionExpression"]
+    assert cond == "attribute_not_exists(cache_key)"
+    keys = {c.kwargs["Item"]["cache_key"] for c in table.put_item.call_args_list}
+    assert len(keys) == 1  # the same deterministic id both times
+
+
+class _ConditionalCheckFailed(Exception):
+    pass
+
+
+_ConditionalCheckFailed.__name__ = "ConditionalCheckFailedException"
+
+
+def test_a_pipe_in_a_url_cannot_collide_two_review_items():
+    from src.utils.deterministic_ids import fetch_event_id
+
+    assert fetch_event_id("B", "s|x", "u") != fetch_event_id("B", "s", "x|u")
+
+
+def test_a_review_item_that_was_not_stored_is_said(monkeypatch, caplog):
+    import src.utils.fetch_provenance as fp
+
+    table = mock.Mock()
+    table.put_item.side_effect = RuntimeError("ProvisionedThroughputExceeded")
+    monkeypatch.setattr(fp, "_table", lambda: table)
+    out = fp.record_fetch_event(
+        provider="link-asset",
+        endpoint="https://x.org/a",
+        kind=fp.TEXTUAL,
+        once_key=("B",),
+    )
+    assert out == "" and "OBSERV fetch_provenance.write_failed" in caplog.text

@@ -214,7 +214,7 @@ def test_one_actionable_warning_per_cause_not_per_lookup(wire, caplog):
     assert len(lines) == 1, lines
     assert "reason=rate_limited" in lines[0] and "count=1" in lines[0]
     assert (
-        "rate_limiting" in lines[0]
+        "rate limiting" in lines[0]
     )  # carries the action note (observe joins words with _)
     assert not any("backoff_active" in m for m in lines)
     assert WC._transient_counts[("wikipedia", "backoff_active")] == 30

@@ -36,7 +36,7 @@ def test_ordered_preserves_submission_order_across_pages():
     resp = MagicMock()
     resp.json.side_effect = pages
     resp.raise_for_status = lambda: None
-    with patch("src.utils.batch_api.requests.get", return_value=resp):
+    with patch("src.utils.batch_api.requests.request", return_value=resp):
         ordered = batch_api.retrieve_results_ordered("k", "batch_x")
     assert [r.content for r in ordered] == ["A", "B", "C"]  # order preserved
     # server rids are opaque; mapping to our keys is by POSITION, done by the caller.

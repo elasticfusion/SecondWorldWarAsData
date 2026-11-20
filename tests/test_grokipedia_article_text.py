@@ -560,7 +560,7 @@ def test_missing_playwright_warns_once_with_the_action(monkeypatch, caplog):
     msgs = [
         r.getMessage() for r in caplog.records if "playwright_missing" in r.getMessage()
     ]
-    assert len(msgs) == 1 and "playwright_install_chromium" in msgs[0]
+    assert len(msgs) == 1 and "playwright install chromium" in msgs[0]
 
 
 def test_situational_context_is_article_text_in_its_own_namespace(cache, web):
