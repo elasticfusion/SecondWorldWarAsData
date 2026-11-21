@@ -148,6 +148,14 @@ def _no_leftover_grok_stop(monkeypatch):
 
 
 @pytest.fixture(autouse=True)
+def _no_leftover_phase(monkeypatch):
+    """PIPELINE_PHASE decides how strictly a batch answer is paired with its request (Phase 3:
+    only by the id the batch returned). The entrypoint sets it in os.environ: one test's phase
+    must not decide how the next test's batch is read."""
+    monkeypatch.delenv("PIPELINE_PHASE", raising=False)
+
+
+@pytest.fixture(autouse=True)
 def _no_live_xai_balance(monkeypatch):
     """src/grok_client loads .env, which may hold the real xAI management key: no test may read
     the live credit balance (task 1.1c). Tests that need a balance pass keys and a fake session.

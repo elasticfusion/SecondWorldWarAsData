@@ -45,7 +45,9 @@ def test_a_miss_in_batch_mode_is_queued_with_the_image_and_never_called_live(
     assert req.cache_type == "in_doc_map_vision"
     assert [m["role"] for m in req.messages] == ["system", "user"]
     parts = req.messages[1]["content"]
-    assert parts[0] == {"type": "text", "text": "is it a map?"}
+    # an in_doc_map_vision request carries its RequestID: the prompt is asked with its block
+    assert parts[0]["type"] == "text" and parts[0]["text"].startswith("is it a map?")
+    assert "RequestID" in parts[0]["text"]
     assert parts[1]["image_url"]["url"].startswith("data:image/png;base64,")
     line = json.loads(req.to_jsonl())  # it serialises as one xAI batch line
     assert line["custom_id"] == req.request_id and line["body"]["messages"]

@@ -130,7 +130,7 @@ deterministic, so holding at once (a human looks first) is cheaper; say which yo
 Progress 2026-11-20: step 1 (vision) DONE; step 2a DONE (rounds loop in `phase3_enrich_data`, soft cap +
 approval, set-aside, `pending` step status, entrypoint settles Phase 3 from its exit status). 2b DONE (every step audited by three
 independent read-only reviews; about 30 handlers fixed; one test per fix). 2c DONE (hand-off, resume, no relaunch while a batch
-is live, in-task records for Phase 3). Still open: the first real run (needs your approval).
+is live, in-task records for Phase 3). 1.7 DONE (identity + strict alignment + trace script). Still open: the validation script (3.5), the Phase 2 deferral queue, and the first real run (needs your approval).
 
 
 1. 3.2 vision in batch mode (client + retrieve) and the `kind` field, with tests on a fake xAI.

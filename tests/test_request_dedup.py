@@ -84,7 +84,9 @@ def test_different_requests_are_not_held_up(grok):
             return grok.extract_json(p, cache_type="equipment_disambiguation")
 
         _together(ask, n=3)
-    assert sorted(calls) == ["A?", "B?", "C?"]
+    # equipment_disambiguation carries its RequestID (task 1.7): the prompt is asked with its block
+    assert sorted(c.split("\n\n")[0] for c in calls) == ["A?", "B?", "C?"]
+    assert all("RequestID" in c for c in calls)
 
 
 def test_if_the_first_request_fails_a_waiter_asks_itself(grok):

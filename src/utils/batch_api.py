@@ -294,8 +294,21 @@ def desync_possible(submitted: List[Any], ordered: List["BatchResult"]) -> bool:
     return not by_id and any(getattr(br, "is_substantive", False) for br in ordered)
 
 
+def strict_alignment(phase: str = "") -> bool:
+    """Phase 3 pairs an answer with a request ONLY by the id the batch returned with it (owner
+    2026-11-20: provenance guaranteed). ``phase`` is a phase script / PIPELINE_PHASE name; empty
+    reads PIPELINE_PHASE."""
+    import os as _os
+
+    return "phase3" in (phase or _os.environ.get("PIPELINE_PHASE", ""))
+
+
 def align_by_request_id(
-    submitted: List[Any], ordered: List["BatchResult"], *, batch_id: str = ""
+    submitted: List[Any],
+    ordered: List["BatchResult"],
+    *,
+    batch_id: str = "",
+    strict: bool = False,
 ) -> List["BatchResult"]:
     """``ordered`` rearranged into ``submitted``'s order by request id (the xAI results API
     returns OUR ``custom_id`` as each result's ``batch_request_id`` - verified 2026-11-11 on three
@@ -305,7 +318,9 @@ def align_by_request_id(
     * every result id is one of ours: aligned; a request with no result gets an error placeholder
       (it is then retried like any failed request, instead of failing the whole batch);
     * no result id is one of ours (server-assigned ids, as the API returned on 2026-10-14): the
-      order is left as is - the old positional behaviour - and said so;
+      order is left as is - the old positional behaviour - and said so. ``strict`` (Phase 3) refuses
+      that: a one-word answer cannot prove which request it answers, so every request gets an
+      error placeholder and is asked again, with an alert;
     * some are ours and some not, or an id repeats: nothing can be trusted - every request gets an
       error placeholder (all retried), loudly.
     """
@@ -313,12 +328,7 @@ def align_by_request_id(
     ids = [getattr(br, "request_id", "") for br in ordered]
     matched = [i for i in ids if i in set(ours)]
     if ordered and not matched:
-        logger.warning(
-            "OBSERV batch.align status=positional batch=%s: no result carries our request id; "
-            "mapping by position",
-            batch_id,
-        )
-        return ordered
+        return _no_ids_of_ours(ours, ordered, batch_id, strict)
     if len(matched) != len(ids) or len(set(matched)) != len(matched):
         logger.error(
             "OBSERV batch.align status=error batch=%s results=%d ours=%d distinct=%d: result ids "
@@ -330,6 +340,35 @@ def align_by_request_id(
         )
         return [BatchResult(request_id=i, error=RESULT_UNALIGNABLE) for i in ours]
     return _aligned(ours, ids, ordered, batch_id)
+
+
+def _no_ids_of_ours(
+    ours: list, ordered: List["BatchResult"], batch_id: str, strict: bool
+) -> List["BatchResult"]:
+    """No result carries one of our request ids. Phase 2 (``strict`` False): by position, as the
+    API once returned server ids. Phase 3 (``strict``): refused - an answer is used only when the
+    batch proved which request it answers - every request is asked again, with an alert.
+    """
+    if not strict:
+        logger.warning(
+            "OBSERV batch.align status=positional batch=%s: no result carries our request id; "
+            "mapping by position",
+            batch_id,
+        )
+        return ordered
+    from src.utils.observe import observe_error
+
+    observe_error(
+        "batch",
+        "align_positional_refused",
+        batch=batch_id,
+        results=len(ordered),
+        note="no result carried one of our request ids: by-position pairing is refused for "
+        "Phase 3 (an answer must be proven to belong to its request), so every request is "
+        "asked again next round. If this repeats, xAI changed the results format: check "
+        "retrieve_results_ordered",
+    )
+    return [BatchResult(request_id=i, error=RESULT_UNALIGNABLE) for i in ours]
 
 
 def _aligned(
@@ -389,6 +428,10 @@ class BatchMetrics:  # pylint: disable=too-many-instance-attributes
     # Ordered [our_cache_key, cache_type] pairs in SUBMISSION ORDER. The xAI results
     # API was thought not to echo custom_id (it does; aligned by id first), so retrieve maps results to these by position.
     submitted_request_ids: List[Any] = field(default_factory=list)
+    # provenance of the answers: the models that answered (served, as xAI reported) and when the
+    # batch was submitted; ``answer_provenance`` finds the batch of any cached answer from these files
+    served_models: Dict[str, int] = field(default_factory=dict)
+    submitted_at: int = 0
 
     def add_detail(self, detail: "RequestDetail") -> None:
         """Append a per-request detail record."""

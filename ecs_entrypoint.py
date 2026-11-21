@@ -6013,7 +6013,7 @@ def _populate_cache(grok_client, mapped: dict, batch_id: str) -> int:
     return populated
 
 
-def _map_batch_results_by_index(submitted, ordered_results, batch_id=""):
+def _map_batch_results_by_index(submitted, ordered_results, batch_id="", strict=False):
     """Map batch results to OUR cache keys by POSITION (the xAI results API does not
     echo our custom_id — only a server batch_request_id). ``submitted`` is the
     submission-ordered list of (our_request_id, cache_type); ``ordered_results`` is
@@ -6031,7 +6031,9 @@ def _map_batch_results_by_index(submitted, ordered_results, batch_id=""):
     from src.utils.observe import observe_error
 
     # each answer to its own request first (the API returns them out of order)
-    ordered_results = align_by_request_id(submitted, ordered_results, batch_id=batch_id)
+    ordered_results = align_by_request_id(
+        submitted, ordered_results, batch_id=batch_id, strict=strict
+    )
 
     def _on_desync(our_id, cache_type, br):
         observe_error(
@@ -6230,7 +6232,14 @@ def _cache_batch_answers(batch_id: str) -> int:
     cache_dir.mkdir(parents=True, exist_ok=True)
     grok_client = GrokClient(cache_dir)
 
-    mapped = _map_batch_results_by_index(submitted, ordered_results, batch_id)
+    from src.utils.batch_api import strict_alignment
+
+    mapped = _map_batch_results_by_index(
+        submitted,
+        ordered_results,
+        batch_id,
+        strict=strict_alignment(_current_phase_script),
+    )
     return _populate_cache(grok_client, mapped, batch_id)
 
 

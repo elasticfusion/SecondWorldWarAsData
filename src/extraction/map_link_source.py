@@ -25,7 +25,7 @@ from urllib.parse import urlparse
 logger = logging.getLogger(__name__)
 
 from src.utils.observe import observe_warn  # noqa: E402
-from src.grok_client import BatchModeCollecting
+from src.grok_client import BatchModeCollecting, book_scope
 from src.utils.batch_pending import Pending
 
 # Hosts whose in-document map links we will follow. HyperWar/ibiblio is the curated corpus source;
@@ -162,17 +162,18 @@ def ingest_in_doc_map_links(
             )
             summary["skipped"] += len(maps) - max_per_doc
             maps = maps[:max_per_doc]
-        for m in maps:
-            summary["links"] += 1
-            pending.call(  # a queued vision request: every link queues its own, raise once at the end
-                _ingest_one_link,
-                m,
-                grok_client,
-                context,
-                tuple(allowed_hosts),
-                image_timeout,
-                summary,
-            )
+        with book_scope(book):  # the vision answer must echo THIS document's BookID
+            for m in maps:
+                summary["links"] += 1
+                pending.call(  # a queued vision request: every link queues its own, raise once at the end
+                    _ingest_one_link,
+                    m,
+                    grok_client,
+                    context,
+                    tuple(allowed_hosts),
+                    image_timeout,
+                    summary,
+                )
     logger.info(
         "OBSERV map_link.summary links=%d fetched=%d verified=%d recycled=%d deduped=%d skipped=%d",
         summary["links"],

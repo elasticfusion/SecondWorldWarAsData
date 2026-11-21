@@ -65,9 +65,20 @@ them are audited in the rounds work (design: PHASE3_BATCHING_DESIGN.md).
   `source_section`. The prompt gets an "ANSWER IDENTITY" block with the BookID and a RequestID (a 16-hex hash of
   cache type, system prompt and prompt) and the JSON answer must echo both, live or cached. A `mismatch` is
   evicted and asked once more, then raises `GrokAPIError`. A `missing` echo is asked once more and then accepted
-  with a warning. A non-object answer is accepted with a warning. `chat_completion` and the vision methods never
-  carry identity. Phase 3 never sets `current_book` (a grep of `phase3_enrich_data.py` and `src/enrichment/*`
-  finds no `current_book.set` or `book_scope`), so no Phase 3 request is stamped.
+  with a warning. A non-object answer is accepted with a warning.
+  **Phase 3 (task 1.7, 2026-11-20).** The JSON-object kinds about no single book carry their RequestID alone
+  (`request_identity.REQUEST_BOUND`: `group_enrichment`, `place_enrichment`, `equipment_disambiguation`,
+  `license_check`, `openserp_verify`, `people_group_source_recheck`, `equipment_source_recheck`, and the vision kinds
+  `unit_patch_vision`, `vision_verification`, `external_maps_verification`); `in_doc_map_vision` (`DOC_BOUND`) also
+  carries the document's BookID (`map_link_source` runs each document under `book_scope`). A request-only kind whose
+  answer does not echo is accepted at once with one warning (no second paid call) and kept stamped; a mismatch
+  is evicted and raises as above. Vision answers are proven in `GrokClient._vision_proof`. One-word and free-text
+  answers (`bibliography_verify`, link relevancy, terrain, `default` vision captions) cannot carry an echo: their proof
+  is the request id the batch returns with each result, and Phase 3 refuses to pair answers by position when none
+  of the ids is ours (`batch_api.align_by_request_id(strict=True)`, alert `batch.align_positional_refused`; the
+  requests are asked again next round, never answered live). Each batch's metrics file records its request ids, round,
+  submit time and the models that answered, so `scripts/trace_grok_answer.py <request_id>` names the batch of any
+  cached answer (`src/utils/answer_provenance`). The records an answer was used for do not carry the batch id.
 - **Batch collection.** With `batch_mode=True` a cache miss is queued as a `BatchRequest` and the call raises
   `BatchModeCollecting` (`_queue_batch_request`, line 1710), which derives from `Exception`. `submit_batch`
   (line 750) first asks `_answer_without_batch`: nothing queued returns None; fewer than `batch.min_requests`

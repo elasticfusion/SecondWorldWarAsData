@@ -678,11 +678,16 @@ whitelist fixes shipped in PR #707 since duplicates are recovered, not lost.
 
 ### Group 2 - batching (owner rule: every Grok submission is batched)
 
-- **1.7 (moved here, owner 2026-11-18) - answer identity for Phase 3 batch requests.** When Phase 3
-  goes onto the Batch API, give every Phase 3 request a RequestID (and the source document's
-  BookID where it is about one document: map vision, document links, photo linking), so a swapped
-  answer is rejected as in Phase 2 (`src/utils/request_identity`). Cost: each cached Phase 3 answer
-  is asked once more (count them first).
+- **DONE (2026-11-20) 1.7 (moved here, owner 2026-11-18) - answer identity for Phase 3 batch requests.** Every
+  Phase 3 JSON-object kind carries a RequestID (BookID too for in-document map vision) and an answer that does
+  not echo it is not trusted; one-word kinds rely on the batch's returned id, and Phase 3 refuses positional
+  pairing. See GROK_REQUESTS.md "Request identity" and `tests/test_phase3_request_identity.py`. Cost: each
+  CACHED answer of a stamped kind is asked once more (its prompt, hence its key, changes). Count: the production
+  cache table (`dev-wwii-api-cache`, scanned 2026-11-20) holds none of these kinds (restored to the Phase 2
+  snapshot), so it costs nothing if this ships before the baseline run; the local `cache/grok_cache` holds
+  41 `group_enrichment` and 17 `place_enrichment` test answers. Open: the real rate at which Grok echoes the
+  id is known only from the first run (`OBSERV grok.identity_missing`); a kind it never echoes is accepted
+  with one warning per answer, not re-asked.
 - **Design drafted 2026-11-20:** [PHASE3_BATCHING_DESIGN.md](core/PHASE3_BATCHING_DESIGN.md) (rounds loop, vision
   in batch mode, identity split, attempt counting, validation script, order of work, four owner questions).
 - **Validation pass (owner 2026-11-18, after the Phase 3 list):** cached Phase 2 answers from
