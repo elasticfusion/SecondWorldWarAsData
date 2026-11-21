@@ -35,6 +35,12 @@ def grok(tmp_path, monkeypatch):
     return gc.GrokClient(DiskCacheBackend(tmp_path / "c"))
 
 
+def _rid(grok, kind, prompt="P", system=None, temperature=0.1):
+    """The RequestID extract_json gives a request-only kind: derived from its (unstamped) cache key."""
+    key = grok._make_cache_key(prompt, temperature, grok._get_model(kind), system or "")
+    return ri.stamp(prompt, system, kind, None, key)[2]
+
+
 def _reply(body):
     return {"choices": [{"message": {"content": json.dumps(body)}}]}
 
@@ -92,7 +98,7 @@ def test_request_only_verify(answer, status):
 
 
 def test_a_phase3_request_is_sent_with_its_id_and_the_answer_returned_without_it(grok):
-    _, _, rid = ri.stamp("P", None, "group_enrichment", None)
+    rid = _rid(grok, "group_enrichment")
     with mock.patch.object(
         grok, "_call_api", return_value=_reply({"unit": "3rd", "RequestID": rid})
     ) as api:
@@ -143,9 +149,7 @@ def test_the_cache_key_of_a_phase3_kind_names_its_identity(grok):
     with mock.patch.object(
         grok,
         "_call_api",
-        return_value=_reply(
-            {"a": 1, "RequestID": ri.stamp("P", None, "license_check", None)[2]}
-        ),
+        return_value=_reply({"a": 1, "RequestID": _rid(grok, "license_check")}),
     ):
         grok.extract_json("P", cache_type="license_check")
     assert grok.clear_cache_entry("P", "license_check") is True
@@ -507,3 +511,67 @@ def test_the_trace_script_survives_odd_metrics_and_cleans_terminal_output(
     # two batches match (the huge timestamp prints "unknown"); each is one clean line
     assert "\x1b" not in out and out.count("\n") == 2 and "batch b" in out
     assert "submitted unknown" in out
+
+
+# --- answers cached before the identity existed stay hits -----------------------------------------
+
+
+@pytest.mark.parametrize(
+    "kind", ["equipment_source_recheck", "equipment_disambiguation", "group_enrichment"]
+)
+def test_an_answer_cached_before_the_identity_existed_is_a_hit_not_a_paid_miss(
+    grok, kind
+):
+    """Production holds thousands of these (3385 source re-checks, 1882 disambiguations): the
+    stamped prompt must not move their cache key."""
+    legacy_key = grok._make_cache_key("P", 0.1, grok._get_model(kind), "")
+    grok._get_cache(kind)[legacy_key] = json.dumps(
+        {"canonical": "M4"}
+    )  # no identity in it
+    with (
+        mock.patch.object(grok, "_call_api") as api,
+        mock.patch.object(gc, "observe_warn"),
+    ):
+        assert grok.extract_json("P", cache_type=kind) == {"canonical": "M4"}
+    api.assert_not_called()
+    assert grok.cache_key_for("P", None, kind, 0.1) == legacy_key
+    # it is kept STAMPED now, so the next read is ok (no warning)
+    with (
+        mock.patch.object(grok, "_call_api") as api,
+        mock.patch.object(gc, "observe_warn") as warn,
+    ):
+        assert grok.extract_json("P", cache_type=kind) == {"canonical": "M4"}
+    api.assert_not_called() and warn.assert_not_called()
+
+
+def test_the_request_id_of_a_request_only_kind_is_stable_across_calls(grok):
+    sent = []
+
+    def fake(messages, *a, **k):
+        sent.append(messages[-1]["content"])
+        return _reply({"x": 1})
+
+    with (
+        mock.patch.object(grok, "_call_api", side_effect=fake),
+        mock.patch.object(gc, "observe_warn"),
+    ):
+        grok.extract_json("P", cache_type="license_check", use_cache=False)
+        grok.extract_json("P", cache_type="license_check", use_cache=False)
+    assert sent[0] == sent[1] and "RequestID" in sent[0]
+
+
+def test_an_answer_stored_for_a_request_only_kind_reads_back_as_ok(grok):
+    """store_json_answer must give the answer the RequestID extract_json will expect."""
+    grok.store_json_answer(
+        "P", None, "license_check", {"allowed": True}, temperature=0.1
+    )
+    with (
+        mock.patch.object(grok, "_call_api") as api,
+        mock.patch.object(gc, "observe_warn") as warn,
+        mock.patch.object(gc, "observe_error") as err,
+    ):
+        got = grok.extract_json("P", cache_type="license_check")
+    assert got == {"allowed": True}
+    api.assert_not_called()
+    warn.assert_not_called()
+    err.assert_not_called()

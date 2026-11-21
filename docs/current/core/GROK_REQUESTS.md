@@ -70,8 +70,9 @@ them are audited in the rounds work (design: PHASE3_BATCHING_DESIGN.md).
   (`request_identity.REQUEST_BOUND`: `group_enrichment`, `place_enrichment`, `equipment_disambiguation`,
   `license_check`, `openserp_verify`, `people_group_source_recheck`, `equipment_source_recheck`, and the vision kinds
   `unit_patch_vision`, `vision_verification`, `external_maps_verification`); `in_doc_map_vision` (`DOC_BOUND`) also
-  carries the document's BookID (`map_link_source` runs each document under `book_scope`). A request-only kind whose
-  answer does not echo is accepted at once with one warning (no second paid call) and kept stamped; a mismatch
+  carries the document's BookID (`map_link_source` runs each document under `book_scope`). A request-only kind keeps the
+  cache key of the unstamped request (answers cached before are still hits) and, whose
+  answer does not echo, is accepted at once with one warning (no second paid call) and kept stamped; a mismatch
   is evicted and raises as above. Vision answers are proven in `GrokClient._vision_proof`. One-word and free-text
   answers (`bibliography_verify`, link relevancy, terrain, `default` vision captions) cannot carry an echo: their proof
   is the request id the batch returns with each result, and Phase 3 refuses to pair answers by position when none

@@ -681,11 +681,10 @@ whitelist fixes shipped in PR #707 since duplicates are recovered, not lost.
 - **DONE (2026-11-20) 1.7 (moved here, owner 2026-11-18) - answer identity for Phase 3 batch requests.** Every
   Phase 3 JSON-object kind carries a RequestID (BookID too for in-document map vision) and an answer that does
   not echo it is not trusted; one-word kinds rely on the batch's returned id, and Phase 3 refuses positional
-  pairing. See GROK_REQUESTS.md "Request identity" and `tests/test_phase3_request_identity.py`. Cost: each
-  CACHED answer of a stamped kind is asked once more (its prompt, hence its key, changes). Count: the production
-  cache table (`dev-wwii-api-cache`, scanned 2026-11-20) holds none of these kinds (restored to the Phase 2
-  snapshot), so it costs nothing if this ships before the baseline run; the local `cache/grok_cache` holds
-  41 `group_enrichment` and 17 `place_enrichment` test answers. Open: the real rate at which Grok echoes the
+  pairing. See GROK_REQUESTS.md "Request identity" and `tests/test_phase3_request_identity.py`. Cost: NONE. A
+  request-only kind keeps the cache key of the unstamped request, so answers cached before are still hits (the
+  production table holds 3,385 `equipment_source_recheck` and 1,882 `equipment_disambiguation` Phase 2 answers: they
+  are read as "no echo", accepted and re-stamped, never re-asked). Open: the real rate at which Grok echoes the
   id is known only from the first run (`OBSERV grok.identity_missing`); a kind it never echoes is accepted
   with one warning per answer, not re-asked.
 - **Design drafted 2026-11-20:** [PHASE3_BATCHING_DESIGN.md](core/PHASE3_BATCHING_DESIGN.md) (rounds loop, vision
@@ -693,6 +692,14 @@ whitelist fixes shipped in PR #707 since duplicates are recovered, not lost.
 - **Validation pass (owner 2026-11-18, after the Phase 3 list):** cached Phase 2 answers from
   batches before 2026-11-11 may be stored under another request's key; identity-checked kinds are
   caught on read (evicted, re-asked), others are not - check them.
+  - DONE (2026-11-20) the tool: `scripts/validate_batch_answers.py` (`src/utils/answer_validation.py`, read-only
+    unless `--evict`). `--check echo` (offline) and `--check batches` (re-pairs each old batch's results from xAI
+    BY ID and compares them with the cache; needs `GROK_API_KEY`, retrieval spends nothing).
+  - RAN `--check echo` on `dev-wwii-api-cache` (2026-11-20): 8,102 identity-kind answers echo their identity, 0 are
+    proven wrong (no BookID of another book), 5,621 carry no echo (made before the stamp: unprovable by content,
+    mostly `equipment_source_recheck` 3,385 and `equipment_disambiguation` 1,882).
+  - OPEN (owner approval: it reads the xAI key): `--check batches --before 2026-11-11`, the only check that can
+    prove the 5,621 right or wrong. The `metrics#` rows it needs expire after 90 days.
 
 Every Grok-validation feature in G3 and later must be batched, so this comes before them. Reuse the
 existing batch code and the under-50 rule (`batch.min_requests`); Phase 2's multi-round hand-off; vision

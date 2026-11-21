@@ -682,6 +682,12 @@ class GrokClient:
         """The key ``extract_json``/``chat_completion`` store this request's answer under: prompt
         (with its identity block, for a book-bound kind), system prompt, temperature and the cache
         type's model. The one way to name an entry to evict or replace."""
+        if cache_type in request_identity.REQUEST_BOUND:
+            # a request-only kind keeps the key of the UNSTAMPED request (see extract_json), so
+            # answers cached before it carried an identity are still hits
+            return self._make_cache_key(
+                prompt, temperature, self._get_model(cache_type), system_prompt or ""
+            )
         prompt = self._identity(prompt, system_prompt, cache_type, book)[0]
         return self._make_cache_key(
             prompt, temperature, self._get_model(cache_type), system_prompt or ""
@@ -728,6 +734,11 @@ class GrokClient:
         if _cache_globally_disabled():
             return
         with book_scope(book):
+            if cache_key is None and cache_type in request_identity.REQUEST_BOUND:
+                # the key (and so the RequestID) extract_json gives a request-only kind
+                cache_key = self.cache_key_for(
+                    prompt, system_prompt, cache_type, temperature
+                )
             _, bid, rid = self._identity(
                 prompt, system_prompt, cache_type, None, cache_key
             )
@@ -2554,6 +2565,18 @@ class GrokClient:
         Other arguments: see ``_extract_json``.
         """
         with book_scope(book):
+            if cache_key is None and cache_type in request_identity.REQUEST_BOUND:
+                # A request-only kind (Phase 3, task 1.7) is cached under the key of the request
+                # AS IT WAS before it carried an identity: its prompt now ends in the identity
+                # block, which would change the key and make every answer cached so far (the
+                # equipment disambiguations and source re-checks of Phase 2 among them) a paid
+                # miss. The RequestID is derived from this key, so it stays stable.
+                cache_key = self._make_cache_key(
+                    prompt,
+                    temperature,
+                    self._get_model(cache_type),
+                    system_prompt or "",
+                )
             asked, bid, rid = self._identity(
                 prompt, system_prompt, cache_type, None, cache_key
             )
