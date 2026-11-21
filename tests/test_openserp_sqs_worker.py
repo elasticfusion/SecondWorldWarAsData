@@ -278,6 +278,35 @@ def test_a_grok_stop_keeps_the_message_and_pauses(monkeypatch):
     assert out == "defer" and slept == [w.GROK_STOP_PAUSE_S]
 
 
+def test_a_find_the_queue_would_not_store_defers_the_message(monkeypatch, caplog):
+    """The review queue (DynamoDB) refused a write: nothing is marked searched, the message is sent
+    again fresh (not retried into the DLQ), and the error says what to check."""
+    import openserp_worker as w
+    import src.enrichment.openserp_enrichment as oe
+
+    monkeypatch.setattr(w, "_safe_entity_path", lambda *a: True)
+
+    class Storage:
+        def read_json(self, path):
+            return {"name": "x"}
+
+        def write_json(self, *a):
+            raise AssertionError("an unsearched entity must not be written")
+
+    def boom(*a):
+        raise oe.FindNotStored("https://example.org/x")
+
+    monkeypatch.setattr(oe, "enrich_one_person", boom)
+    out = w.process_message(
+        {"entity_type": "people", "entity_path": "people/x.json"},
+        Storage(),
+        "http://serp",
+        object(),
+    )
+    assert out == "defer"
+    assert "OBSERV openserp_worker.find_not_stored status=error" in caplog.text
+
+
 def _defer_run(monkeypatch, send_fails=False, deferrals=None):
     import openserp_worker as w
 

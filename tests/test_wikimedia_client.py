@@ -456,7 +456,7 @@ class _Grok:
 def test_people_not_found_stamp(wire, monkeypatch, transient):
     import src.extraction.enrich_biographies as EB
 
-    def fake_steps(name, bio, grok, search_references_flag):
+    def fake_steps(name, bio, grok, search_references_flag, person_data):
         if transient:
             WC.mark_transient(WC.PEOPLE, name, "lookup")
         return False

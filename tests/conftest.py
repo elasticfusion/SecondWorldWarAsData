@@ -224,3 +224,30 @@ def _fresh_wikimedia_backoff():
     wikimedia_client.reset_state()
     yield
     wikimedia_client.reset_state()
+
+
+@pytest.fixture(autouse=True)
+def _private_fetch_events(monkeypatch, tmp_path_factory):
+    """fetch_provenance writes review-queue events to ``output/_fetch_events`` when AWS is off: every
+    test gets its own empty directory, so no test writes into the repo or sees another's finds, and
+    the in-process id cache starts empty."""
+    from src.utils import fetch_provenance as fp
+
+    monkeypatch.setattr(fp, "_LOCAL_DIR", tmp_path_factory.mktemp("fetch_events"))
+    monkeypatch.setattr(fp, "_LOCAL_SEEN", {})
+
+
+@pytest.fixture
+def queued_finds():
+    """A reader of the review-queue events this test queued (fetch_provenance local store)."""
+    import json
+
+    from src.utils import fetch_provenance as fp
+
+    def read(provider="openserp-find"):
+        path = fp._LOCAL_DIR / f"{provider}.jsonl"
+        if not path.exists():
+            return []
+        return [json.loads(x) for x in path.read_text().splitlines() if x.strip()]
+
+    return read

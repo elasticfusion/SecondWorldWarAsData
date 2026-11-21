@@ -23,6 +23,7 @@ from typing import Any, Dict, Iterator, List, Optional
 import requests
 
 from src.grok_client import BatchModeCollecting
+from src.utils import find_queue
 from src.utils.batch_pending import Pending
 from src.utils.file_lock import write_json_with_lock
 
@@ -138,6 +139,13 @@ _METRIC_KEYS = (
     "breaker_opened",
     "urls_fetched",
     "items_added",
+    # finds: pages queued for human review (Group 3), skipped because an earlier run queued them,
+    # and not stored (the queue write failed: asked again next run)
+    "finds_queued",
+    "finds_already_queued",
+    "finds_failed",
+    "finds_no_origin",  # an entity with no ULID: its finds are not queued
+    "finds_refused",  # a URL the queue will not take (unsafe or malformed)
     # write_failed counts enriched records whose persisted write FAILED (returned False) — the
     # enrichment is lost. Previously the count/_metric was incremented before an unchecked write,
     # so a failed persist read as a successful enrichment. Now the count is gated on the write.
@@ -250,7 +258,8 @@ def _emit_openserp_summary(snap: Dict[str, Any]) -> None:
     logger.info(
         "OBSERV openserp.summary eligible=%d searched=%d enriched=%d skipped_no_name=%d "
         "queries=%d results=%d zero=%d verify_yes=%d verify_no=%d breaker_opened=%d "
-        "items_added=%d hit_permille=%d search_permille=%d",
+        "items_added=%d finds_queued=%d finds_already_queued=%d finds_failed=%d "
+        "hit_permille=%d search_permille=%d",
         snap.get("entities_eligible", 0),
         snap["entities_searched"],
         snap["entities_enriched"],
@@ -262,6 +271,9 @@ def _emit_openserp_summary(snap: Dict[str, Any]) -> None:
         snap["verify_no"],
         snap["breaker_opened"],
         snap["items_added"],
+        snap["finds_queued"],
+        snap["finds_already_queued"],
+        snap["finds_failed"],
         int(snap["enrichment_rate"] * 1000),
         int(snap.get("search_rate", 0) * 1000),
     )
@@ -279,6 +291,13 @@ def _emit_openserp_anomalies(snap: Dict[str, Any]) -> None:
     """Emit OBSERV openserp.anomaly WARNINGs. Every check is INDEPENDENT (no elif): a breaker-open
     run can ALSO be 0-enriched and/or starved, and masking one behind another is exactly how the
     searched=1-of-14 signal was lost. Never raises."""
+    if snap["finds_failed"]:
+        logger.warning(
+            "OBSERV openserp.anomaly finds_failed=%d (pages found but not stored in the review "
+            "queue; asked again next run - check the task role's DynamoDB access to the api-cache "
+            "table and its throttling)",
+            snap["finds_failed"],
+        )
     if snap["breaker_opened"]:
         logger.warning(
             "OBSERV openserp.anomaly circuit_breaker_opened=%d "
@@ -671,7 +690,19 @@ def _search_entity(
     except VerifyFailed as e:
         _verify_failed(entity, name, e)
         return None
+    except FindNotStored as e:
+        logger.warning(
+            "OBSERV openserp.find_not_stored entity=%s name=%r err=%s status=warn - left "
+            "unsearched; the next run asks again",
+            entity,
+            str(name)[:60],
+            str(e)[:120],
+        )
+        return None
     return changed if _settle(output_root, trace, changed) else None
+
+
+FindNotStored = find_queue.FindNotStored  # one exception for every finder
 
 
 class VerifyFailed(Exception):
@@ -1203,6 +1234,76 @@ def process_positive_url(
     return result
 
 
+# --- The review queue (Group 3, owner 2026-11-17) ---
+#
+# A page OpenSERP finds and Grok confirms is NOT written into the entity's JSON. It is held in the
+# human URL-review queue (``find_queue.enqueue_find``, provider ``openserp-find``) with the entity
+# that asked for it; approval submits it to Phase 0, and the entity link comes from the new source.
+
+FIND_PROVIDER = "openserp-find"
+
+
+def _find_params(processed: Dict[str, Any], extra: Optional[Dict[str, Any]]) -> Dict:
+    keep = (
+        "title",
+        "summary",
+        "fetched_at",
+        "retrieved_from",
+        "archived_url",
+        "wayback_capture_timestamp",
+        "archive_capture_date",
+        "retrieved_at",
+    )
+    return {**{k: processed[k] for k in keep if k in processed}, **(extra or {})}
+
+
+def find_page(
+    url: str,
+    title: str,
+    snippet: str,
+    context: str,
+    grok_client: Any,
+    origin: Any,
+    extra: Optional[Dict[str, Any]] = None,
+) -> Optional[Dict[str, Any]]:
+    """Verify + fetch + summarize one discovered page (``process_positive_url``) and queue it for
+    human review. Returns the processed page when it was NEWLY queued, else None (already queued by
+    an earlier run, rejected by Grok, unfetchable). Raises ``FindNotStored`` when the queue write
+    failed, so the entity is not marked searched.
+    A URL already in the queue costs no Grok request and no fetch."""
+    if origin is None:  # an entity with no ULID (find_queue logged the error)
+        _metric("finds_no_origin")
+        return None
+    if not find_queue.is_queueable(
+        url
+    ):  # before any fetch or Grok request is spent on it
+        _metric("finds_refused")
+        return None
+    if find_queue.already_queued(FIND_PROVIDER, url, origin):
+        _metric("finds_already_queued")
+        return None
+    processed = process_positive_url(url, title, snippet, context, grok_client)
+    if not processed:
+        return None
+    status = find_queue.enqueue_find(
+        provider=FIND_PROVIDER,
+        url=url,
+        verdict=find_queue.RELEVANT,  # process_positive_url returns only a Grok-confirmed page
+        origin=origin,
+        summary=f"OpenSERP page for {origin.entity_type}: {title}",
+        params=_find_params(processed, extra),
+    )
+    if status == find_queue.ENQUEUED:
+        _metric("finds_queued")
+        return processed
+    if status == find_queue.FAILED:
+        _metric("finds_failed")  # find_queue logged the error
+        raise FindNotStored(find_queue.clean_for_log(url))
+    if status == find_queue.REFUSED:
+        _metric("finds_refused")
+    return None
+
+
 # --- Image Search ---
 
 
@@ -1490,8 +1591,12 @@ def search_event_content(
     openserp_url: str = "http://localhost:7001",
     grok_client: Any = None,
     max_results: int = 5,
+    *,
+    origin: Any,
 ) -> List[Dict[str, str]]:
-    """Search for primary sources related to an event, including non-English."""
+    """Search for primary sources related to an event, including non-English, and queue each
+    confirmed page for human review (``origin``: the source section that asked). Returns the pages
+    newly queued."""
     from src.utils.search_query_loader import render_search_queries as _rsq2
 
     queries = _rsq2("events", "primary_sources", event_name=event_name)
@@ -1510,17 +1615,18 @@ def search_event_content(
             url = r.get("url", "")
             title = r.get("title", "")
             if url and url not in seen_urls:
-                processed = process_positive_url(
+                seen_urls.add(url)  # one look per URL, however many queries return it
+                processed = find_page(
                     url,
                     title,
                     r.get("description", ""),
                     f"Content about {event_name}",
                     grok_client,
+                    origin,
+                    extra={"type": _classify_source(url, title)},
                 )
                 if processed:
-                    processed["type"] = _classify_source(url, title)
                     sources.append(processed)
-                    seen_urls.add(url)
                     if len(sources) >= max_results:
                         return sources
     return sources
@@ -1575,35 +1681,29 @@ def _apply_verified_images(
 def _apply_verified_web(
     candidate: Dict, data: Dict, name: str, grok_client: Any, max_web: int
 ) -> bool:
-    """Fetch + summarize each web result (name-initial gate) and append up to max_web awards."""
-    existing_award_urls = {
-        a.get("url") for a in (data.get("military_awards") or []) if isinstance(a, dict)
-    }
-    changed = False
+    """Queue each web page about this person (name-initial gate, Grok verify, fetch + summarize) for
+    human review, up to max_web new finds. Nothing is written to the person record: the page is
+    held in the queue, and ``military_awards[]`` is written only by an award extraction.
+    """
+    origin = find_queue.entity_origin("person", data, query=name)
+    queued = 0
     for r in candidate.get("web_results", []):
         url = r.get("url", "")
         title = r.get("title", "")
-        if (
-            not url
-            or url in existing_award_urls
-            or not _name_initial_matches(name, title)
-        ):
+        if not url or not _name_initial_matches(name, title):
             continue
-        processed = process_positive_url(
+        if find_page(
             url,
             title,
             r.get("description", ""),
             f"Military service of {name} in WWII",
             grok_client,
-        )
-        if processed:
-            data.setdefault("military_awards", []).append(processed)
-            existing_award_urls.add(url)
-            _metric("items_added")
-            changed = True
-            if len(data.get("military_awards", [])) >= max_web:
+            origin,
+        ):
+            queued += 1
+            if queued >= max_web:
                 break
-    return changed
+    return queued > 0
 
 
 # Non-award sites OpenSERP should also skip (low-value / excluded by the owner).
@@ -2074,7 +2174,6 @@ def _process_one_source_section(
 
     _record_eligible()
     op_name = operation["name"]
-    before = len(data.get("primary_sources") or [])
     changed = _search_entity(
         "source_section",
         f,
@@ -2096,10 +2195,9 @@ def _process_one_source_section(
         )
         return False
     if changed:
-        added_count = len(data.get("primary_sources") or []) - before
         enriched = True
         _metric("entities_enriched")
-        logger.info("  ✓ OpenSERP primary sources for %s: +%d", op_name, added_count)
+        logger.info("  ✓ OpenSERP primary sources for %s: queued for review", op_name)
     return enriched
 
 
@@ -2111,10 +2209,11 @@ def enrich_one_source_section(
     max_images: Optional[int] = None,  # noqa: ARG001 - unused
     max_web: Optional[int] = None,  # noqa: ARG001 - unused
 ) -> bool:
-    """Enrich ONE already-loaded source_section record in place (search + verify + apply).
+    """Search ONE already-loaded source_section record and queue the pages found for human review.
 
-    Returns True if primary_sources were added. Mirrors enrich_one_person: shared per-entity
-    unit for the batch driver (above) and the SQS worker; it does NOT read/write files or set
+    Returns True if a find was queued. The record is NOT changed (``primary_sources[]`` is no
+    longer written: a find is held in the queue until a human approves it). Shared per-entity unit
+    for the batch driver (above) and the SQS worker; it does NOT read/write files or set
     openserp_searched. entities_enriched/entities_searched + persistence stay in the driver.
     """
     operation = data.get("operation")
@@ -2122,17 +2221,14 @@ def enrich_one_source_section(
         return False  # null-over-fake: no operation -> nothing to search
     op_name = operation["name"]
     aliases = operation.get("aliases") or []
-    results = search_event_content(
-        op_name, aliases=aliases, openserp_url=openserp_url, grok_client=grok_client
+    queued = search_event_content(
+        op_name,
+        aliases=aliases,
+        openserp_url=openserp_url,
+        grok_client=grok_client,
+        origin=find_queue.entity_origin("source_section", data, query=op_name),
     )
-    existing = data.get("primary_sources") or []
-    existing_urls = {s.get("url") for s in existing if isinstance(s, dict)}
-    added = [r for r in results if r.get("url") not in existing_urls]
-    if not added:
-        return False
-    data["primary_sources"] = existing + added
-    _metric("items_added", len(added))
-    return True
+    return bool(queued)
 
 
 def _group_name_matches(group_name: str, result_title: str) -> bool:
@@ -2158,8 +2254,12 @@ def _group_openserp_category(
     openserp_url: str,
     grok_client: Any,
     max_results: int,
+    *,
+    origin: Any,
 ) -> List[Dict[str, Any]]:
-    """Run one people_groups.yaml query category (images|web_results|veterans_association)."""
+    """Run one people_groups.yaml query category (images|web_results|veterans_association).
+    Images are returned (verify-only). A textual page is queued for human review under ``origin``
+    and the pages newly queued are returned."""
     from src.utils.search_query_loader import render_search_queries
 
     queries = render_search_queries(
@@ -2177,9 +2277,18 @@ def _group_openserp_category(
             title = r.get("title", "")
             if not url or url in seen or not _group_name_matches(group_name, title):
                 continue
+            seen.add(
+                url
+            )  # one look per URL per category, however many queries return it
             if textual:
-                processed = process_positive_url(
-                    url, title, r.get("description", ""), context, grok_client
+                processed = find_page(
+                    url,
+                    title,
+                    r.get("description", ""),
+                    context,
+                    grok_client,
+                    origin,
+                    extra={"category": category},
                 )
                 if processed:
                     out.append(processed)
@@ -2291,19 +2400,30 @@ def _apply_group_categories(
     openserp_url: str,
     grok_client: Any,
 ) -> bool:
-    """Run each people_groups query category (images/web_results/veterans_association), dedup
-    against existing entries, and append new findings. Returns True if anything was added.
+    """Run each people_groups query category (images/web_results/veterans_association). Images are
+    appended (dedup against existing). Pages (web_results, veterans associations) are queued for
+    human review and written to no record. Returns True if anything was added or queued.
     """
     changed = False
+    origin = find_queue.entity_origin("people_group", data, query=name)
     for category, field in (
         ("images", "images"),
-        ("web_results", "web_results"),
-        ("veterans_association", "veterans_associations"),
+        ("web_results", None),
+        ("veterans_association", None),
     ):
         results = _group_openserp_category(
-            name, nationality, category, openserp_url, grok_client, max_results=3
+            name,
+            nationality,
+            category,
+            openserp_url,
+            grok_client,
+            max_results=3,
+            origin=origin,
         )
         if not results:
+            continue
+        if field is None:  # queued pages: held in the queue, not written here
+            changed = True
             continue
         existing = data.get(field) or []
         existing_urls = {r.get("url") for r in existing if isinstance(r, dict)}
@@ -2525,29 +2645,26 @@ def _enrich_place_images(
 def _enrich_place_sources(
     data: Dict, variants: list, primary: str, openserp_url: str, grok_client: Any
 ) -> bool:
-    """Textual sources: search each variant, fetch + summarize + pos/neg-cache each hit."""
+    """Textual sources: search each variant, fetch + summarize each hit, and queue it for human
+    review. Nothing is written to the place record (``web_results[]`` is no longer written).
+    """
     from src.utils.search_query_loader import render_search_queries
 
-    existing_src_urls = {
-        s.get("url") for s in (data.get("web_results") or []) if isinstance(s, dict)
-    }
+    origin = find_queue.entity_origin("place", data, query=primary)
     changed = False
     for variant in variants:
         for q in render_search_queries("places", "sources", name=variant):
             for r in _search_openserp(q, openserp_url):
                 url = r.get("url", "")
-                if not url or url in existing_src_urls:
+                if not url:
                     continue
-                processed = process_positive_url(
+                if find_page(
                     url,
                     r.get("title", ""),
                     r.get("description", ""),
                     f"{primary} in World War II",
                     grok_client,
-                )
-                if processed:
-                    data.setdefault("web_results", []).append(processed)
-                    existing_src_urls.add(url)
-                    _metric("items_added")
+                    origin,
+                ):
                     changed = True
     return changed

@@ -53,7 +53,7 @@ def test_apply_path_counts_items_and_fetches(monkeypatch):
     monkeypatch.setattr(oe, "_url_verdict_cached", lambda url: None)
     monkeypatch.setattr(oe, "_cache_url_verdict", lambda *a, **k: None)
     monkeypatch.setattr(oe, "_name_initial_matches", lambda *a, **k: True)
-    data: dict = {}
+    data: dict = {"PersonID": "01HJOHN"}
     candidate = {
         "image_results": [{"url": "http://img/1", "title": "John Doe"}],
         "web_results": [
@@ -64,6 +64,10 @@ def test_apply_path_counts_items_and_fetches(monkeypatch):
         candidate, data, "John Doe", grok_client=object(), max_images=5, max_web=5
     )
     assert changed is True
+    assert (
+        "military_awards" not in data and data["images"]
+    )  # the page is queued, not written
     snap = oe.get_metrics()
-    assert snap["items_added"] == 2  # one image + one award
-    assert snap["urls_fetched"] == 1  # the award URL was actually fetched
+    assert snap["items_added"] == 1  # the image
+    assert snap["finds_queued"] == 1  # the page
+    assert snap["urls_fetched"] == 1  # the page URL was actually fetched

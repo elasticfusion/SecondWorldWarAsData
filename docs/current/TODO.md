@@ -827,6 +827,18 @@ rejected item stays rejected; an approved item starts Phase 0.
 
 #### Step: OpenSERP group (PHASE3_MAP §3)
 
+- **DONE (Group 3 step B, 2026-11-21) - queue routing: `openserp_enrichment.find_page` verifies, fetches and
+  summarizes a page, then queues it through `find_queue.enqueue_find` (provider `openserp-find`, origin = the
+  entity's ULID via `find_queue.entity_origin`, once per (entity, URL), no Grok request or fetch for a URL
+  already queued). The inline writes of `web_results[]` (places, groups), `veterans_associations[]`,
+  `primary_sources[]` and web-page `military_awards[]` are gone; Grok-suggested biography URLs go the same
+  way (provider `llm-find`) instead of `biography_sources[]`. Metrics `finds_queued` / `finds_already_queued` /
+  `finds_failed` are in the summary line, and `finds_failed` raises an anomaly. A record with no ULID queues nothing (an error names it); a page the queue
+  cannot store leaves the entity unsearched (SQS: deferred), so the next run asks again. Records written by earlier
+  runs keep their old entries (no migration). Left: the people web search is still gated on
+  `military_awards` being empty (now only an award extraction fills it): replace it with a queue/marker check;
+  `entities_enriched` is not counted in a batch round-2 pass where every page was already queued. STILL OPEN in this step: keep the fetched page for Phase 0
+  (below), the (URL, entity) relevance cache, the OpenSERP search-response cache, the checksum re-check.**
 - **HIGH *refactor* - DECISION (owner 2026-11-17): a page OpenSERP finds and Grok confirms goes to the
   human URL-review queue; approval submits it to Phase 0.** Today `process_positive_url`
   (`src/enrichment/openserp_enrichment.py:808`) returns `{url, title, summary, fetched_at, source}` (plus

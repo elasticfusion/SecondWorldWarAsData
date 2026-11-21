@@ -223,6 +223,15 @@ def process_message(
         time.sleep(GROK_STOP_PAUSE_S)
         oe.reset_circuit()  # look again after the pause (an open breaker would stop forever)
         return "defer"
+    except oe.FindNotStored as e:
+        # the review queue (DynamoDB) refused the write: nothing is marked searched; send it again
+        logger.error(
+            "OBSERV openserp_worker.find_not_stored status=error path=%s err=%s - deferred; check "
+            "the task role's DynamoDB access to the api-cache table",
+            entity_path,
+            str(e)[:120],
+        )
+        return "defer"
     except (
         Exception
     ) as e:  # noqa: BLE001 - a transient OpenSERP/Grok error -> redeliver

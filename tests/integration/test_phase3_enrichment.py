@@ -92,8 +92,8 @@ class TestEnrichPersonBiography:
                 return_value=None,
             ),
             patch(
-                "src.extraction.enrich_biographies._validate_and_store_urls",
-                return_value=False,
+                "src.extraction.enrich_biographies._queue_suggested_urls",
+                return_value=0,
             ),
         ):
             enrich_person_biography(

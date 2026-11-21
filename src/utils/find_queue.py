@@ -66,10 +66,62 @@ class Origin:
         return self.entity_id or f"{self.book}|{self.source_url}"
 
 
+# The ULID field and the name field of each kind of entity that asks for finds. The people_groups
+# schema calls its id ``GroupID``; some code writes ``PeopleGroupID``: both are read.
+_ENTITY_ID_FIELDS = {
+    "person": ("PersonID",),
+    "people_group": ("GroupID", "PeopleGroupID"),
+    "place": ("PlaceID",),
+    "source_section": ("SourceSectionID",),
+}
+_ENTITY_NAME_FIELDS = {
+    "person": "name",
+    "people_group": "group_name",
+    "place": "current_name",
+    "source_section": "name",
+}
+
+
+def entity_origin(
+    entity_type: str, data: Dict[str, Any], query: str = ""
+) -> Optional[Origin]:
+    """The Origin of a find asked for by this entity record: its ULID. A record with no ULID has
+    no origin (None): an approved find could not be linked back to it, and a name is not an
+    identity, so its finds are NOT queued. Logged as an error naming the record."""
+    entity_id = next(
+        (str(data[f]) for f in _ENTITY_ID_FIELDS[entity_type] if data.get(f)), ""
+    )
+    if entity_id:
+        return Origin(entity_type=entity_type, entity_id=entity_id, query=query)
+    name = data.get(_ENTITY_NAME_FIELDS[entity_type]) or ""
+    if entity_type == "source_section":
+        name = (data.get("operation") or {}).get("name") or name
+    logger.error(
+        "OBSERV find_queue.entity_without_id entity=%s name=%r status=error - the record has no "
+        "ULID, so its finds are not queued (they could not be linked back to it); give the "
+        "record a ULID",
+        entity_type,
+        _text(name, 60),
+    )
+    return None
+
+
 def _text(value: Any, limit: int) -> str:
     """Untrusted text for a stored field: no control characters, no ``->`` (the review reads the
     acquisition URL after the first ``->`` of a summary), capped."""
     return scrub(value or "").replace("->", "- >")[:limit]
+
+
+def is_queueable(url: str) -> bool:
+    """Whether ``enqueue_find`` could ever take this URL (a clean, SSRF-safe http(s) URL)."""
+    from src.utils.url_hygiene import clean_url
+
+    return bool(clean_url(url))
+
+
+def clean_for_log(value: Any, limit: int = 120) -> str:
+    """Untrusted text made safe for a log line or an exception message."""
+    return _text(value, limit)
 
 
 def already_queued(
@@ -131,6 +183,12 @@ def _event_params(
         "source_url": _text(origin.source_url, 500) or None,
         "query": _text(origin.query, 200) or None,
     }
+
+
+class FindNotStored(Exception):
+    """A confirmed find could not be written to the review queue (after retries). NOT a search
+    result: the caller leaves its entity unsearched (not marked, not written), so the next run asks
+    again; a find already queued costs nothing then."""
 
 
 def _note_outcome(failed: bool) -> None:
