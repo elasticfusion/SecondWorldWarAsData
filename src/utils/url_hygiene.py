@@ -175,8 +175,11 @@ def is_clean_url(url: str) -> bool:
 
 
 # Characters no stored or logged text may contain: ASCII/C1 controls, the Unicode line and paragraph
-# separators, and the bidi overrides. ONE definition for URLs, stored find text and answer text.
-CONTROL_CHARS = re.compile("[\x00-\x1f\x7f-\x9f\u2028\u2029\u202a-\u202e\u2066-\u2069]")
+# separators, the bidi marks and overrides, and the invisible marks that carry no letter. U+200C/U+200D (zero-width non-joiner/joiner) are
+# NOT here: Persian, Indic scripts and emoji sequences need them. ONE definition for URLs, stored find text and answer text.
+CONTROL_CHARS = re.compile(
+    "[\x00-\x1f\x7f-\x9f\u2028\u2029\u202a-\u202e\u2066-\u2069\u200b\u200e\u200f\u061c\u2060\ufeff]"
+)
 _URL_CONTROL = CONTROL_CHARS
 
 

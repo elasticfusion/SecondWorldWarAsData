@@ -26,10 +26,11 @@ logger = logging.getLogger(__name__)
 from src.utils.observe import observe_warn  # noqa: E402
 from src.grok_client import BatchModeCollecting
 from src.utils.batch_pending import Pending
+from src.utils.url_hygiene import CONTROL_CHARS
 
 # Strip C0 controls (incl. \n AND \r) from any untrusted-at-rest text before it enters a
 # log line — prevents OBSERV log-line forging (repo convention; matches grok_client).
-_CTRL = re.compile(r"[\x00-\x1f\x7f]")
+_CTRL = CONTROL_CHARS
 
 
 def _looks_like_citation(entry: Dict[str, Any]) -> bool:

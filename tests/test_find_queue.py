@@ -265,3 +265,60 @@ def test_retries_stop_after_finds_fail_in_a_row(monkeypatch):
         _enqueue(url="https://example.org/ok") == fq.ENQUEUED
     )  # and it closes on success
     assert fq._consecutive_failures == 0
+
+
+def test_zero_width_and_direction_marks_are_removed():
+    assert fq._text("a\u200bb\u200ec\u2060d\ufeffe\u061cf", 50) == "a b c d e f"
+
+
+def test_nested_params_and_keys_are_cleaned(store):
+    fq.enqueue_find(
+        provider="openserp-find",
+        url="https://example.org/a",
+        verdict=fq.RELEVANT,
+        origin=GROUP,
+        summary="s",
+        params={"k\n->": {"a\u2028": ["x\n", 1, None], "deep": {"d": {"e": {"f": 1}}}}},
+    )
+    (e,) = _events(store)
+    flat = json.dumps(e["request_params"])
+    assert "\\n" not in flat and "\\u2028" not in flat and "->" not in flat
+    nested = next(v for k, v in e["request_params"].items() if k.startswith("k"))
+    assert [v for k, v in nested.items() if k.startswith("a")][0] == ["x ", 1, None]
+    assert nested["deep"]["d"]["e"] == "dict"  # deeper than the cap: only its type
+
+
+def test_the_failure_log_reports_the_tries_actually_made(monkeypatch, caplog):
+    from unittest import mock
+
+    monkeypatch.setattr(fq.time, "sleep", lambda s: None)
+    table = mock.Mock()
+    table.put_item.side_effect = RuntimeError("throttled")
+    table.get_item.return_value = {}
+    monkeypatch.setattr(fp, "_table", lambda: table)
+    fq._consecutive_failures = fq._BREAKER_AFTER  # breaker open
+    caplog.clear()
+    assert _enqueue() == fq.FAILED
+    assert "after 1 try(ies)" in caplog.text
+
+
+def test_an_unexpected_error_counts_toward_the_breaker(monkeypatch):
+    def boom(*a, **k):
+        raise RuntimeError("x")
+
+    monkeypatch.setattr(fq, "_record_with_retry", boom)
+    assert _enqueue() == fq.FAILED
+    assert fq._consecutive_failures == 1
+
+
+def test_joiners_in_real_text_are_kept():
+    persian = "می\u200cخواهم"  # needs the zero-width non-joiner
+    assert fq._text(persian, 50) == persian
+    assert fq._text("👨\u200d👩", 50) == "👨\u200d👩"
+
+
+def test_dicts_and_lists_are_capped_and_deep_scalars_reduced():
+    out = fq._clean_value({str(i): i for i in range(80)})
+    assert len(out) == 50
+    assert len(fq._clean_value(list(range(80)))) == 50
+    assert fq._clean_value([[[1]]]) == [[["int"]]]

@@ -21,10 +21,10 @@ Search calls are NOT finds: ``fetch_provenance.recorded_fetch`` records them as 
 from __future__ import annotations
 
 import logging
-import re
+import threading
 import time
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple
 
 from src.utils import fetch_provenance as fp
 from src.utils.url_hygiene import CONTROL_CHARS
@@ -42,6 +42,7 @@ _WRITE_ATTEMPTS = 3
 _RETRY_BASE_S = 0.5
 _BREAKER_AFTER = 3  # finds that failed in a row before retries stop (one try per find)
 _consecutive_failures = 0
+_breaker_lock = threading.Lock()
 
 
 @dataclass(frozen=True)
@@ -101,15 +102,28 @@ def _refusal(provider: str, verdict: str, url: str) -> Optional[str]:
     return clean_url(url) or None
 
 
+def _clean_value(v: Any, depth: int = 0) -> Any:
+    """Untrusted text cleaned wherever it sits: strings, and the keys and values of dicts and lists
+    (to a shallow depth; anything deeper is reduced to its type name)."""
+    if isinstance(v, str):
+        return _text(v, 500)
+    if depth >= 3:
+        return type(v).__name__
+    if isinstance(v, dict):
+        return {
+            _text(k, 100): _clean_value(x, depth + 1) for k, x in list(v.items())[:50]
+        }
+    if isinstance(v, (list, tuple)):
+        return [_clean_value(x, depth + 1) for x in v[:50]]
+    return v
+
+
 def _event_params(
     verdict: str, origin: Origin, params: Optional[Dict[str, Any]]
 ) -> Dict[str, Any]:
     return {
         # every text value is untrusted (link text, titles): same cleanup as the summary
-        **{
-            k: _text(v, 500) if isinstance(v, str) else v
-            for k, v in (params or {}).items()
-        },
+        **{_text(k, 100): _clean_value(v) for k, v in (params or {}).items()},
         "relevancy": verdict,
         "origin_entity_type": origin.entity_type or None,
         "origin_entity_id": origin.entity_id or None,
@@ -119,26 +133,33 @@ def _event_params(
     }
 
 
+def _note_outcome(failed: bool) -> None:
+    """Count finds that failed in a row (a stored or already-recorded find resets the count)."""
+    global _consecutive_failures
+    with _breaker_lock:
+        _consecutive_failures = _consecutive_failures + 1 if failed else 0
+
+
 def _record_with_retry(
     provider: str, clean: str, event_args: Dict[str, Any], key: tuple
-) -> str:
+) -> Tuple[str, int]:
     """Write the find's event, retrying a failed write. Returns ENQUEUED, ALREADY_QUEUED (the event
-    exists: written by an earlier run) or FAILED (still not stored after the retries).
+    exists: written by an earlier run) or FAILED (still not stored after the retries), and the number
+    of tries made (one while the breaker is open).
     """
-    global _consecutive_failures
     # during an outage stop retrying after a few finds fail in a row: one try each, no stall
     attempts = _WRITE_ATTEMPTS if _consecutive_failures < _BREAKER_AFTER else 1
     for attempt in range(1, attempts + 1):
         if fp.record_fetch_event(once_key=key, **event_args):
-            _consecutive_failures = 0
-            return ENQUEUED
+            _note_outcome(False)
+            return ENQUEUED, attempt
         if fp.event_recorded(provider, key):
-            _consecutive_failures = 0
-            return ALREADY_QUEUED  # the event exists: an earlier run queued it
+            _note_outcome(False)
+            return ALREADY_QUEUED, attempt  # the event exists: an earlier run queued it
         if attempt < attempts:
             time.sleep(_RETRY_BASE_S * attempt)
-    _consecutive_failures += 1
-    return FAILED
+    _note_outcome(True)
+    return FAILED, attempts
 
 
 def enqueue_find(
@@ -162,7 +183,7 @@ def enqueue_find(
     try:
         if legacy_key and fp.event_recorded(provider, legacy_key):
             return ALREADY_QUEUED
-        status = _record_with_retry(
+        status, tries = _record_with_retry(
             provider,
             clean,
             dict(
@@ -176,6 +197,7 @@ def enqueue_find(
             (origin.key, clean),
         )
     except Exception as e:  # noqa: BLE001 - queueing must never crash a step
+        _note_outcome(True)  # an unexpected error counts toward the breaker too
         logger.error(
             "OBSERV find_queue.error provider=%s err=%s status=error - the find was not queued; "
             "it is tried again next run. Check the task role's access to the api-cache table",
@@ -186,11 +208,11 @@ def enqueue_find(
     if status == FAILED:
         logger.error(
             "OBSERV find_queue.write_failed provider=%s url=%s status=error - the review item "
-            "could not be stored after %d tries; it is tried again next run. Check the task role's "
+            "could not be stored after %d try(ies); it is tried again next run. Check the task role's "
             "DynamoDB access to the api-cache table and its throttling",
             provider,
             _text(clean, 120),
-            _WRITE_ATTEMPTS,
+            tries,
         )
     elif status == ENQUEUED:
         logger.info(
