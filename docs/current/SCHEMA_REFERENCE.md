@@ -1,7 +1,7 @@
 # JSON Schema Reference
 
-**Last Updated:** 2026-11-16
-**Schema Version:** per-entity (see `ENTITY_SCHEMA_VERSIONS` in `src/schemas/__init__.py`; as of 2026-11-16: places 2.30, equipment 2.30, people_groups 2.29, bibliography 2.29, images 2.28, people 2.27, casualties 2.27, maps 2.26, source_section 2.26, events/dates/weather/logistics 2.25, map_features 2.24) — there is no single global number
+**Last Updated:** 2026-11-20
+**Schema Version:** per-entity (see `ENTITY_SCHEMA_VERSIONS` in `src/schemas/__init__.py`; as of 2026-11-16: places 2.30, equipment 2.30, people_groups 2.29, bibliography 2.30, images 2.29, people 2.27, casualties 2.27, maps 2.26, source_section 2.26, events/dates/weather/logistics 2.25, map_features 2.24) — there is no single global number
 
 > **Equipment 2.29+ (2026-11-07):** `identity_scope` (specific | generic | unresolved) decides enrichment: generic mentions are kept but never searched; named vessels are resolved to one ship by date (`identity_resolution`). Images are Phase 3 only, and an image counts as attached only when `images[].vision_check == "verified"` (`vision_verified: true`).
 
@@ -598,6 +598,11 @@ Note: Images use `Sub-eventID` (hyphen) and `Sub-event_Name` (hyphen). No `event
   },
   "search_status": "resolved|not_found|pending|null",
   "search_source": "...|null",
+  "source_metadata": {
+    "findings": [{"url": "...", "source": "archive_org|gutenberg|nara_catalog|...", "kind": "bookseller|null"}],
+    "bookseller": [{"url": "https://www.amazon.com/dp/<ASIN>", "source": "amazon", "kind": "bookseller"}],
+    "bookseller_searched_at": 1789000000
+  },
   "download_status": "pending|downloaded|extracted|gated|skipped|error|null",
   "download_path": "...|null",
   "mentions": [
@@ -617,7 +622,7 @@ Note: Images use `Sub-eventID` (hyphen) and `Sub-event_Name` (hyphen). No `event
 }
 ```
 
-Note: `BibliographyID` and `title` are required. Bibliography uses `Sub-eventID` (hyphen) in mentions. The output `availability` enum is `online|offline|archive|unknown`. The extraction-time schema (`src/json_schemas.py`) uses `MaterialID` per item, while the consolidated output uses `BibliographyID`.
+Note: `source_metadata` is open (provenance keys vary by source); `findings`, `bookseller` and `bookseller_searched_at` are modeled (2.30). A `bookseller` listing is a pointer to buy, never an online copy: it is not in `resource_urls`, and its URL must be the canonical `https://www.amazon.com/dp/<10-char ASIN>`. `BibliographyID` and `title` are required. Bibliography uses `Sub-eventID` (hyphen) in mentions. The output `availability` enum is `online|offline|archive|unknown`. The extraction-time schema (`src/json_schemas.py`) uses `MaterialID` per item, while the consolidated output uses `BibliographyID`.
 
 ---
 

@@ -66,3 +66,39 @@ def test_nara_genuine_not_found_is_negative_cached():
     assert any(
         v is None for (_, _, v) in cache_calls
     ), f"genuine not-found was NOT negative-cached: {cache_calls}"
+
+
+def _watched(resp_or_exc):
+    from src.utils import service_outage
+
+    with service_outage.watch() as outages:
+        if isinstance(resp_or_exc, Exception):
+            session = MagicMock()
+            session.request.side_effect = resp_or_exc
+            with (
+                patch.object(br, "get_session", return_value=session),
+                patch.object(br, "_nara_rate_limit", lambda: None),
+                patch("src.utils.search_cache.get_cached", return_value=None),
+                patch("src.utils.search_cache.cache_result") as cached,
+            ):
+                br._search_nara("Some Title 1944", "key", MagicMock(), "verbatim")
+            return list(outages), cached.call_args_list
+        _, calls = _run_search(resp_or_exc)
+        return list(outages), calls
+
+
+def test_a_nara_5xx_is_an_outage_so_the_citation_is_backend_down():
+    """Task 1.2f: a NARA outage marks the citation `backend_down` (retried next run), so it is
+    never queued for a human as "not found online"."""
+    outages, _ = _watched(_Resp(503))
+    assert outages == ["nara"]
+
+
+def test_a_nara_network_error_is_an_outage_and_never_negative_cached():
+    outages, cache_calls = _watched(RuntimeError("connection reset"))
+    assert outages == ["nara"] and cache_calls == []
+
+
+def test_a_nara_invalid_query_shell_is_not_an_outage():
+    outages, _ = _watched(_Resp(200, html=True))
+    assert outages == []

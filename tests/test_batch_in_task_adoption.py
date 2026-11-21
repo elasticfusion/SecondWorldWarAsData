@@ -29,24 +29,24 @@ def test_a_phase2_batch_is_recorded_in_task_at_submit(ecs):
     )
 
 
-def test_nothing_is_recorded_outside_ecs_or_phase2(monkeypatch):
+def test_nothing_is_recorded_outside_ecs_or_the_rounds_phases(monkeypatch):
     monkeypatch.delenv("ECS_TASK_ID", raising=False)
     monkeypatch.delenv("ECS_CONTAINER_METADATA_URI_V4", raising=False)
     monkeypatch.setenv("PIPELINE_PHASE", "phase2_extract")
     with mock.patch.object(jq, "enqueue_job") as put:
         jq.record_in_task("b-1", "n", 1)
         monkeypatch.setenv("ECS_TASK_ID", "t-1")
-        monkeypatch.setenv("PIPELINE_PHASE", "phase3_enrich_data")
+        monkeypatch.setenv("PIPELINE_PHASE", "phase1_parse")  # no batch rounds
         jq.record_in_task("b-1", "n", 1)
     put.assert_not_called()
 
 
 def test_the_retrieved_mark_never_creates_a_row_for_other_phases(monkeypatch):
     monkeypatch.setenv("ECS_TASK_ID", "t-1")
-    monkeypatch.setenv("PIPELINE_PHASE", "phase3_enrich_data")
-    with mock.patch.object(jq, "update_job_status") as upd:
+    monkeypatch.setenv("PIPELINE_PHASE", "phase1_parse")
+    with mock.patch.object(jq, "_get_table") as table:
         jq.mark_retrieved_in_task("b-1")
-    upd.assert_not_called()
+    table.assert_not_called()
 
 
 @pytest.fixture

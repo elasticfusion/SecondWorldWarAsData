@@ -116,14 +116,22 @@ def drain_enrichment_futures(futures, total: int, noun: str) -> int:
     import logging as _logging
     from concurrent.futures import as_completed
 
+    from src.grok_client import BatchModeCollecting
+    from src.utils.batch_pending import Pending
+
     log = _logging.getLogger(__name__)
     enriched = 0
     processed = 0
+    pending = (
+        Pending()
+    )  # batch rounds: every item queues its request, the step raises once
     for future in as_completed(futures):
         processed += 1
         try:
             if future.result():
                 enriched += 1
+        except BatchModeCollecting as e:
+            pending.note(e)
         except Exception as e:  # noqa: BLE001 - one failure must not abort the drain
             log.warning("Failed to enrich %s %s: %s", noun, futures[future].stem, e)
         if processed % 10 == 0 or processed == total:
@@ -134,6 +142,7 @@ def drain_enrichment_futures(futures, total: int, noun: str) -> int:
                 total,
                 enriched,
             )
+    pending.raise_if_queued()
     return enriched
 
 

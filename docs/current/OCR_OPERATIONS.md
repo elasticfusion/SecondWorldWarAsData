@@ -293,7 +293,7 @@ publishes      contentrepository/{book}/chapterN/chapterN-{meta.yaml,content.md}
 |-----------|--------|
 | Compute | AWS Batch, GPU Spot (g5.xlarge/2xlarge, g6.xlarge/2xlarge; 24GB-VRAM floor, g4dn excluded because Chandra OOMs on 16GB) |
 | Scaling | 0 instances when idle; up to `MaxvCpus` (default 280) on the main environment and `OnDemandMaxvCpus` (default 96) on the on-demand fallback queue `{env}-wwii-chandra-gpu-ondemand` |
-| Spot fallback | `ocr-spot-controller` Lambda (hourly): a job RUNNABLE on the spot queue longer than `OCR_SPOT_WAIT_SECS` (1 h) is resubmitted to the on-demand queue; on-demand time is capped at 48 h per job, then it is terminated and alerted |
+| Spot price ladder (1.1d) | One Spot queue per rung: `{env}-wwii-chandra-gpu` (the original type, `GpuRung0Type`), `-gpu-r1..r3` (`GpuRung1Type..3`). A job that is reclaimed (`Host EC2*`, via the Batch FAILED event, with an hourly sweep as backstop) or RUNNABLE longer than `OCR_SPOT_WAIT_SECS` (1 h) moves to the first later rung that can run the job and whose live Spot price is at or under the original type's on-demand price; otherwise to the on-demand queue (original type only). On-demand time is capped at 48 h per job, then it is terminated and alerted. See `src/utils/gpu_ladder.py` |
 | Cost | ~$0.35/hr per instance, ~$0.02 per 50-page chunk |
 | Networking | Reuses existing NAT + VPC endpoints (nat_manager Lambda) |
 | Logs | CloudWatch: `/aws/batch/dev-wwii-chandra` (14-day retention) |

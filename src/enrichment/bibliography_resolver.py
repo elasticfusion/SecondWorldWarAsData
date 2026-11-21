@@ -24,6 +24,8 @@ from src.enrichment.local_holdings import build_holdings_index, find_local_holdi
 logger = logging.getLogger(__name__)
 
 from src.utils.observe import observe_warn  # noqa: E402
+from src.grok_client import BatchModeCollecting
+from src.utils.batch_pending import Pending
 
 # Strip C0 controls (incl. \n AND \r) from any untrusted-at-rest text before it enters a
 # log line — prevents OBSERV log-line forging (repo convention; matches grok_client).
@@ -180,8 +182,7 @@ def resolve_bibliography_entry(
     # block the online-copy search (OpenSERP/archive.org/Gutenberg). Re-running Phase 3 should
     # therefore re-attempt those. A genuinely resolved entry carries resource_urls.
     if entry.get("resource_urls"):
-        entry["search_status"] = "resolved"
-        return entry
+        return _already_has_a_copy(entry, grok_client, config or {})
 
     # Best resolution: we ALREADY HOLD the cited source (e.g. MS # B-405 ->
     # B405.pdf). Short-circuit before any online search. Distinguish PROCESSED
@@ -221,7 +222,125 @@ def resolve_bibliography_entry(
     result = resolver(entry, citation, grok_client, cfg)
 
     _apply_result(entry, result)
+    _maybe_bookseller(entry, doc_type, nara_ok, grok_client, cfg)
     return entry
+
+
+def _already_has_a_copy(entry: Dict, grok_client: Any, config: Dict) -> Dict:
+    """An entry with an online copy is resolved; a book still gets its bookseller listing."""
+    entry["search_status"] = "resolved"
+    doc_type = ((entry.get("citation") or {}).get("document_type") or "").lower()
+    nara_ok = _is_nara_searchable(entry, _entry_verbatim(entry))
+    _maybe_bookseller(entry, doc_type, nara_ok, grok_client, config)
+    return entry
+
+
+def _maybe_bookseller(
+    entry: Dict, doc_type: str, nara_ok: bool, grok_client: Any, config: Dict
+) -> None:
+    """The listing search is OPTIONAL: whatever happens in it, the resolution already made stays."""
+    if not _wants_bookseller(entry, doc_type, nara_ok, config) or grok_client is None:
+        return  # (no Grok client: a listing is never kept unverified)
+    try:
+        _find_bookseller(entry, grok_client, config)
+    except BatchModeCollecting:
+        raise  # queued for the batch: not an answer, not a failure
+    except Exception as e:  # noqa: BLE001 - optional step
+        observe_warn(
+            "bibliography",
+            "bookseller_failed",
+            note="the Amazon listing search failed for this record; its resolution is kept and "
+            "the search is repeated next run. Check the OpenSERP service",
+            error=type(e).__name__,
+        )
+
+
+def _needs_bookseller(entry: Dict, config: Dict) -> bool:
+    """``_wants_bookseller`` for an entry that is not being resolved now (already has a copy)."""
+    doc_type = ((entry.get("citation") or {}).get("document_type") or "").lower()
+    return _wants_bookseller(
+        entry, doc_type, _is_nara_searchable(entry, _entry_verbatim(entry)), config
+    )
+
+
+def _wants_bookseller(entry: Dict, doc_type: str, nara_ok: bool, config: Dict) -> bool:
+    """A published work (a book, or an untyped citation that is not an archival record and has a
+    real title) gets a bookseller listing search; archival records and articles do not. Gated on
+    ``search_amazon`` (default on) and on OpenSERP (the only way a listing is found); done once
+    per window: not again when a listing was found, or searched for within ``openserp_cache_days``
+    (``source_metadata.bookseller_searched_at``: no rewrite and no repeat verify every run).
+    """
+    if not config.get("search_amazon", True) or not config.get("use_openserp"):
+        return False
+    meta = entry.get("source_metadata") or {}
+    if meta.get("bookseller") or _searched_recently(meta.get("bookseller_searched_at")):
+        return False
+    return doc_type in BOOK_TYPES or _untyped_published_work(entry, doc_type, nara_ok)
+
+
+def _untyped_published_work(entry: Dict, doc_type: str, nara_ok: bool) -> bool:
+    """An untyped, non-archival citation that has a real title (not 'Unknown': prose, interviews
+    and 'Ibid.' variants are not books)."""
+    if doc_type or nara_ok:
+        return False
+    citation = entry.get("citation") or {}
+    return any(
+        t and t != "Unknown" for t in (citation.get("title"), citation.get("alt_title"))
+    )
+
+
+def _searched_recently(stamp: Any) -> bool:
+    """True if a listing search ran within the OpenSERP answer window."""
+    import time
+
+    from src.utils.search_cache import scraped_ttl_days
+
+    try:
+        return time.time() - float(stamp) < scraped_ttl_days() * 86400
+    except (TypeError, ValueError):
+        return False
+
+
+def _find_bookseller(entry: Dict, grok_client: Any, config: Dict) -> None:
+    """Amazon, like archive.org and Gutenberg: candidates -> verify -> keep - but the finding is a
+    BOOKSELLER listing, never an online copy: it is recorded under ``source_metadata.bookseller``
+    (and as a ``kind: bookseller`` finding), never in ``resource_urls``, and it does not change
+    ``search_status`` (there is no expectation of a download). The search is stamped
+    (``bookseller_searched_at``) unless a service was down during it."""
+    import time
+
+    from src.extraction.supplemental_search import search_amazon_candidates
+    from src.utils import service_outage
+
+    citation = entry.get("citation") or {}
+    verbatim = _entry_verbatim(entry)
+    title = _pick_meaningful_title(
+        citation.get("alt_title") or "", citation.get("title") or "", verbatim
+    )
+    author = _joined_author(citation.get("author") or "")
+    with service_outage.watch() as outages:
+        cands = search_amazon_candidates(
+            title, author or None, config.get("openserp_url", "http://localhost:7001")
+        )
+    urls = _collect_verified_candidates(
+        verbatim[:300] or title, cands, grok_client, entry, max_findings=1
+    )
+    meta = entry.get("source_metadata")
+    if not isinstance(meta, dict):
+        meta = entry["source_metadata"] = {}
+    if urls:
+        listing = {"url": urls[0], "source": "amazon", "kind": "bookseller"}
+        meta["bookseller"] = [listing]
+        meta.setdefault("findings", []).append(dict(listing))
+        logger.info("OBSERV bib.bookseller_found source=amazon url=%s", urls[0][:120])
+    else:
+        logger.info(
+            "OBSERV bib.bookseller_none source=amazon candidates=%d outage=%s",
+            len(cands),
+            bool(outages),
+        )
+    if not outages:
+        meta["bookseller_searched_at"] = int(time.time())
 
 
 def _enrich_from_biblio_note(entry: Dict[str, Any], citation: Dict[str, Any]) -> None:
@@ -703,7 +822,14 @@ def _find_in_nara(
     to the right RG. Retries with the expanded alt_title. (_search_nara iterates + verifies.)
     """
     nara_key = config.get("nara_api_key")
-    if not (nara_key and _is_nara_searchable(entry, verbatim)):
+    if not _is_nara_searchable(entry, verbatim):
+        return []
+    if not nara_key:
+        # D8b: no NARA key - leave the archive-path record unresolved for the next run (an
+        # outage, never "not found"); the wrapper alerts that the key did not load
+        from src.utils import service_outage
+
+        service_outage.failed("nara", "no_api_key", "NARA_API_KEY not set")
         return []
     rg = _lookup_record_group(verbatim or search_text or title)
     rg_num = rg[1] if rg else None
@@ -817,12 +943,6 @@ def _find_in_llm(
     """
     if not config.get("llm_search", True) or grok_client is None:
         return []
-    if getattr(grok_client, "batch_mode", False):
-        # Batch COLLECT pass: a Grok call is only queued (BatchModeCollecting), so the search and
-        # its verify would be swallowed as "no URL" and the verify failure would raise a false
-        # bib.verify_url_error. Defer: Phase 3's batch re-run turns batch_mode off and this runs
-        # then (the entry stays unresolved - retried, never stored unverified).
-        return []
     from src.extraction.supplemental_search import search_llm
 
     url = search_llm(search_title, author or None, grok_client)
@@ -923,7 +1043,7 @@ def _search_openserp_archive(
         _mark_backend_down(entry)
         return None
 
-    from src.utils.search_cache import cache_result, get_cached
+    from src.utils.search_cache import cache_result, get_cached, scraped_ttl_days
 
     cached = get_cached("openserp_archive", ref)
     if cached == "NOT_FOUND":
@@ -955,6 +1075,8 @@ def _search_openserp_archive(
             cache_result("openserp_archive", ref, url)
             logger.info("Found online copy: %s", url)
             return url
+    except BatchModeCollecting:
+        raise  # queued for the batch: not an answer, not a failure
     except Exception as e:
         logger.warning("OpenSERP unreachable, disabling for this run: %s", e)
         _openserp_down = True
@@ -965,7 +1087,8 @@ def _search_openserp_archive(
     # If every query was non-200 (e.g. 503 while OpenSERP scales 0->1), that's TRANSIENT — don't
     # poison the negative cache for 7d.
     if saw_200:
-        cache_result("openserp_archive", ref, None)
+        # a scraped engine: an empty 200 may be throttling, so a shorter window than the APIs
+        cache_result("openserp_archive", ref, None, negative_days=scraped_ttl_days())
     else:
         logger.info(
             "OBSERV bib.openserp_all_transient ref=%s (no 200, not negative-cached)",
@@ -1111,14 +1234,11 @@ Return ONLY "YES" or "NO"."""
     prompt = render_prompt("bibliography_verify", verify_prompt=verify_prompt)
 
     try:
-        response = grok_client.chat_completion(
-            prompt=prompt,
-            system_prompt="You verify whether search results match specific military document citations. Be strict.",
-            temperature=0.0,
-            use_cache=True,
-            cache_type="bibliography_verify",
+        accepted = _ask_yes(
+            grok_client,
+            prompt,
+            "You verify whether search results match specific military document citations. Be strict.",
         )
-        accepted = response.strip().upper().startswith("YES")
         logger.info(
             "Verify result: %s | query=%s | title=%s | url=%s",
             "ACCEPT" if accepted else "REJECT",
@@ -1127,6 +1247,8 @@ Return ONLY "YES" or "NO"."""
             url[:100],
         )
         return accepted
+    except BatchModeCollecting:
+        raise  # queued for the batch: not an answer, not a failure
     except Exception:
         return False
 
@@ -1622,11 +1744,19 @@ def _interpret_nara_response(resp, safe_q: str) -> Optional[Dict]:
     still succeed next run."""
     import time
 
+    from src.utils import service_outage
+
+    if resp.status_code == 429 or resp.status_code >= 500:
+        # an outage (task 1.2f): the citation is `backend_down` (retried next run), never
+        # queued for a human as "not found online"
+        service_outage.failed("nara", "search", f"HTTP {resp.status_code}")
     if resp.status_code == 429:
         logger.warning("NARA API rate limited (429) — backing off 60s")
         time.sleep(60)
         return None  # Don't cache — retry next run
     ctype = (resp.headers.get("Content-Type") or "").split(";")[0]
+    if resp.status_code == 200:
+        service_outage.ok("nara")
     if resp.status_code != 200:
         logger.info(
             "OBSERV nara.query status=%d content_type=%s q=%r",
@@ -1694,9 +1824,14 @@ def _search_nara(
         if not transient:
             cache_result("nara", cache_q, None)
         return None
-    except Exception as e:
-        logger.debug("NARA search failed: %s", e)
-        cache_result("nara", cache_q, None)
+    except BatchModeCollecting:
+        raise  # queued for the batch: not an answer, not a failure
+    except Exception as e:  # noqa: BLE001 - one citation's search; the run goes on
+        # NOT negative-cached (task 1.2f): a network error or a bad answer is no evidence that
+        # NARA holds nothing; the citation is `backend_down` and retried next run
+        from src.utils import service_outage
+
+        service_outage.failed("nara", "search", type(e).__name__)
         return None
 
 
@@ -1897,19 +2032,40 @@ def _verify_nara_match(
     )
 
     try:
-        response = grok_client.chat_completion(
-            prompt=prompt,
-            system_prompt="You verify whether NARA catalog records match specific military document citations. Be strict about unit identity.",
-            temperature=0.0,
-            use_cache=True,
-            cache_type="bibliography_verify",
+        return _ask_yes(
+            grok_client,
+            prompt,
+            "You verify whether NARA catalog records match specific military document citations. Be strict about unit identity.",
         )
-        return response.strip().upper().startswith("YES")
+    except BatchModeCollecting:
+        raise  # queued for the batch: not an answer, not a failure
     except Exception:
         return False  # Reject on failure rather than accept wrong documents
 
 
 # --- Verification ---
+
+
+def _ask_yes(grok_client: Any, prompt: str, system_prompt: str) -> bool:
+    """A strict YES/NO verification (cache ``bibliography_verify``, temperature 0): True only for
+    a YES. A reply that is neither is evicted and asked once more, then rejected - never kept as
+    THE answer, so a later run asks again (task 1.2f, src/utils/grok_choice)."""
+    from src.utils.grok_choice import ask_choice, can_reask, evictor
+
+    choice = ask_choice(
+        lambda: grok_client.chat_completion(
+            prompt=prompt,
+            system_prompt=system_prompt,
+            temperature=0.0,
+            use_cache=True,
+            cache_type="bibliography_verify",
+        ),
+        ("YES", "NO"),
+        evictor(grok_client, prompt, system_prompt, "bibliography_verify", 0.0),
+        what="bibliography_verify",
+        reask=can_reask(grok_client),
+    )
+    return choice == "YES"
 
 
 def _verify_match(candidate_title: str, verbatim: str, grok_client: Any) -> bool:
@@ -1939,14 +2095,11 @@ Return ONLY "YES" or "NO"."""
 
         prompt = _rp2("bibliography_verify", verify_prompt=verify_prompt)
         try:
-            response = grok_client.chat_completion(
-                prompt=prompt,
-                system_prompt="You verify whether search results match citations.",
-                temperature=0.0,
-                use_cache=True,
-                cache_type="bibliography_verify",
+            accepted = _ask_yes(
+                grok_client,
+                prompt,
+                "You verify whether search results match citations.",
             )
-            accepted = response.strip().upper().startswith("YES")
             logger.info(
                 "Verify title: %s | citation=%s | result=%s",
                 "ACCEPT" if accepted else "REJECT",
@@ -1954,6 +2107,8 @@ Return ONLY "YES" or "NO"."""
                 verbatim[:80],
             )
             return accepted
+        except BatchModeCollecting:
+            raise  # queued for the batch: not an answer, not a failure
         except Exception:
             return True
 
@@ -2011,14 +2166,11 @@ Return ONLY "YES" or "NO". Answer "NO" if the page is unrelated, a generic searc
 
         prompt = _rp3("bibliography_verify", verify_prompt=verify_prompt)
 
-        response = grok_client.chat_completion(
-            prompt=prompt,
-            system_prompt="You verify whether web page content matches a bibliography citation.",
-            temperature=0.0,
-            use_cache=True,
-            cache_type="bibliography_verify",
+        match = _ask_yes(
+            grok_client,
+            prompt,
+            "You verify whether web page content matches a bibliography citation.",
         )
-        match = response.strip().upper().startswith("YES")
         logger.info(
             "Verify URL content: %s | url=%s | citation=%s",
             "ACCEPT" if match else "REJECT",
@@ -2026,6 +2178,8 @@ Return ONLY "YES" or "NO". Answer "NO" if the page is unrelated, a generic searc
             citation[:80],
         )
         return match
+    except BatchModeCollecting:
+        raise  # queued for the batch: not an answer, not a failure
     except Exception as e:
         # Anti-swallow: a verification error (Grok failure, parse/decode crash) means we could NOT
         # confirm the page matches the citation. Accepting on failure would stamp an UNVERIFIED
@@ -2089,6 +2243,25 @@ def _reuse_cached_resolution(data: Dict[str, Any], cached: Dict[str, Any]) -> No
             data[fld] = cached[fld]
 
 
+# runs with its search sources down (each within 30 days of the last) -> also human review (1.2f)
+BACKEND_DOWN_RUN_CAP = 5
+_OUTAGE_RUNS_TTL_DAYS = 30  # a count not bumped for this long starts again
+
+
+def _count_outage_run(f_name: str) -> int:
+    """One more run in which this citation's search sources were down; returns the count
+    (search_cache.bump_counter: it survives runs and tasks). 0 if it cannot be kept (then the
+    citation is retried as before)."""
+    from src.utils.search_cache import bump_counter
+
+    runs = bump_counter("bibliography_outage_runs", f_name, _OUTAGE_RUNS_TTL_DAYS)
+    if not runs:
+        logger.warning(
+            "OBSERV bibliography.outage_count_failed file=%s status=warn", f_name[:80]
+        )
+    return runs
+
+
 def _queue_entry(f_name: str, data: Dict[str, Any]) -> Dict[str, Any]:
     """Build a human-disposition review-queue record for an unresolved citation."""
     return {
@@ -2107,15 +2280,39 @@ def _process_bib_file(
 ) -> Optional[Tuple[str, bool, str]]:
     """Resolve one bibliography file in place. Returns (status, was_deduped) or
     None if the file should be skipped/errored (caller records the stat)."""
-    data = json.loads(f.read_text(encoding="utf-8"))
+    from src.utils.entity_records import load_record
+
+    data = load_record(f, "bibliography_resolve")  # corrupt: alerted, the book is held
+    if data is None:
+        return None
+    return _process_bib_record(f, data, grok_client, config, resolved_by_key)
+
+
+def _fully_resolved(data: Dict[str, Any], config: Dict) -> bool:
+    """Resolved with an actual online copy (resource_urls), and no listing search still to do."""
+    return bool(
+        data.get("search_status") == "resolved"
+        and data.get("resource_urls")
+        and not _needs_bookseller(data, config)
+    )
+
+
+def _process_bib_record(
+    f: Path,
+    data: Dict[str, Any],
+    grok_client: Any,
+    config: Optional[Dict],
+    resolved_by_key: Dict[str, Dict[str, Any]],
+) -> Optional[Tuple[str, bool, str]]:
+    """Resolve one loaded bibliography record (``data``, from ``f``) in place."""
     # Skip only records with an actual online copy (resource_urls). A record marked
     # "resolved" by a prior RG-IDENTIFY pass but with ZERO resource_urls has no digitized
     # copy yet — re-process it so the online sources (NARA catalog / OpenSERP / archive.org /
     # Gutenberg) get a chance to find one.
-    if data.get("search_status") == "resolved" and data.get("resource_urls"):
+    if _fully_resolved(data, config or {}):
         return ("skipped", False, "")
 
-    cached = _resolve_or_reuse(data, grok_client, config, resolved_by_key)
+    cached = _resolve_watched(data, grok_client, config, resolved_by_key)
 
     from src.utils.file_lock import write_json_with_lock
 
@@ -2157,6 +2354,28 @@ def _process_bib_file(
     return (account_status, cached is not None, "")
 
 
+def _resolve_watched(
+    data: Dict[str, Any],
+    grok_client: Any,
+    config: Optional[Dict],
+    resolved_by_key: Dict[str, Dict[str, Any]],
+) -> Any:
+    """``_resolve_or_reuse`` noting any source that did not answer (archive.org, Gutendex,
+    OpenSERP, NARA without its key): then a miss is an outage, not "not found online" - retried
+    next run, never queued for a human (task 1.2f, src/utils/service_outage)."""
+    from src.utils import service_outage
+
+    with service_outage.watch() as outages:
+        cached = _resolve_or_reuse(data, grok_client, config, resolved_by_key)
+    if outages:
+        _mark_backend_down(data)
+        # an identical citation later in the run must search again, not reuse this miss
+        key = _citation_key(data)
+        if key and resolved_by_key.get(key) is data:
+            del resolved_by_key[key]
+    return cached
+
+
 def _consume_backend_down(data: Dict[str, Any], status: str) -> str:
     """Pop the internal `_backend_down` marker (set when OpenSERP was unavailable while resolving
     this entry) so it is NEVER persisted (the bibliography schema is additionalProperties=False),
@@ -2167,7 +2386,7 @@ def _consume_backend_down(data: Dict[str, Any], status: str) -> str:
         backend_down = bool(data.pop("_backend_down", False))
     except Exception:  # noqa: BLE001 - defensive
         backend_down = False
-    if backend_down and status == "not_found":
+    if backend_down and status in ("not_found", "reference_identified"):
         return "backend_down"
     return status
 
@@ -2182,8 +2401,14 @@ def _resolve_or_reuse(
     it. Returns the cached record used (or None if this was a fresh resolution)."""
     key = _citation_key(data)
     cached = resolved_by_key.get(key) if key else None
-    if cached is not None:
+    if cached is not None and not data.get("resource_urls"):
         _reuse_cached_resolution(data, cached)
+    elif cached is not None:
+        # already has its own copy: another record's resolution never replaces it; it is
+        # resolved on its own and is a fresh resolution, not a reuse
+        resolve_bibliography_entry(data, grok_client, config)
+        resolved_by_key[key] = data
+        return None
     else:
         resolve_bibliography_entry(data, grok_client, config)
         if key:
@@ -2340,6 +2565,23 @@ def _account_bib_status(stats: Dict[str, int], status: str, was_deduped: bool) -
     )
 
 
+def _queue_if_outage_capped(f, stats: Dict, review_queue: List) -> None:
+    """A citation whose search sources were down in BACKEND_DOWN_RUN_CAP runs (each within 30 days
+    of the last) goes to a human now. It is still retried each run (resumable)."""
+    runs = _count_outage_run(f.name)
+    if runs < BACKEND_DOWN_RUN_CAP:
+        return
+    data = json.loads(f.read_text(encoding="utf-8"))
+    entry = _queue_entry(f.name, data)
+    entry["reason"] = (
+        f"its search sources were unavailable in {runs} runs - check the OBSERV "
+        "bibliography outage lines, then search by hand (it is still retried each run)"
+    )
+    review_queue.append(entry)
+    stats["queued"] += 1
+    stats["outage_capped"] = stats.get("outage_capped", 0) + 1
+
+
 def _resolve_one_bib_file(
     f,
     grok_client: Any,
@@ -2354,17 +2596,21 @@ def _resolve_one_bib_file(
     """
     try:
         result = _process_bib_file(f, grok_client, config, resolved_by_key)
-    except (json.JSONDecodeError, OSError):
-        stats["errors"] += 1
-        return
+    except BatchModeCollecting:
+        raise  # queued for the batch: not an answer, not a failure
     except Exception as e:  # resolver failure — count, keep going
         logger.warning("Failed to resolve %s: %s", f.name, e)
+        stats["errors"] += 1
+        return
+    if result is None:  # unreadable record (load_record alerted it)
         stats["errors"] += 1
         return
 
     status, was_deduped, nc_sample = result
     if status == "not_citation" and nc_sample and len(not_citation_samples) < 5:
         not_citation_samples.append(_CTRL.sub(" ", nc_sample)[:80])
+    if status == "backend_down" and not was_deduped:
+        _queue_if_outage_capped(f, stats, review_queue)
     if _account_bib_status(stats, status, was_deduped):
         # Real citation, unresolved online → human disposition.
         data = json.loads(f.read_text(encoding="utf-8"))
@@ -2416,24 +2662,36 @@ def resolve_bibliography_dir(
         config["holdings_index"] = build_holdings_index()
     logger.info("Local holdings index: %d source docs", len(config["holdings_index"]))
 
+    worked = 0  # records actually resolved this run: max_items counts these, not skipped ones
+    pending = Pending()
     for f in sorted(bib_dir.glob("*.json")):
         if f.name in skip_files:
             continue
-        if max_items and processed >= max_items:
+        if max_items and worked >= max_items:
             break
         processed += 1
-        _resolve_one_bib_file(
-            f,
-            grok_client,
-            config,
-            resolved_by_key,
-            stats,
-            not_citation_samples,
-            review_queue,
-        )
+        skipped_before, queued_before = stats["skipped"], len(review_queue)
+        with (
+            pending.item()
+        ):  # a queued request: visit every record, raise once at the end
+            _resolve_one_bib_file(
+                f,
+                grok_client,
+                config,
+                resolved_by_key,
+                stats,
+                not_citation_samples,
+                review_queue,
+            )
+        if stats["skipped"] == skipped_before:
+            worked += 1
+        if len(review_queue) > queued_before:
+            # kept as it grows: a task killed mid-pass does not lose the human queue
+            _write_review_queue(bib_dir, review_queue)
 
     _write_review_queue(bib_dir, review_queue)
     _log_bib_resolution_summary(stats, processed, not_citation_samples)
+    pending.raise_if_queued()  # batch rounds: the step is pending, the next pass has the answers
     return stats
 
 
@@ -2442,10 +2700,12 @@ def _write_review_queue(bib_dir: Path, review_queue: List[Dict[str, Any]]) -> No
     if not review_queue:
         return
     try:
-        (bib_dir / "review_queue.json").write_text(
-            json.dumps(review_queue, indent=2, ensure_ascii=False),
-            encoding="utf-8",
+        target = bib_dir / "review_queue.json"
+        tmp = target.with_suffix(".json.tmp")
+        tmp.write_text(
+            json.dumps(review_queue, indent=2, ensure_ascii=False), encoding="utf-8"
         )
+        tmp.replace(target)  # atomic: a kill mid-write never leaves half a file
     except OSError as e:
         logger.warning("Failed to write bibliography review_queue.json: %s", e)
 
@@ -2488,12 +2748,14 @@ def _log_bib_resolution_summary(
     try:
         logger.info(
             "OBSERV bibliography.resolve_summary in=%d resolved=%d ref_identified=%d "
-            "not_found=%d backend_down=%d not_citation=%d queued=%d held=%d errors=%d",
+            "not_found=%d backend_down=%d outage_capped=%d not_citation=%d queued=%d held=%d "
+            "errors=%d",
             processed,
             stats["resolved"],
             stats["reference_identified"],
             stats["not_found"],
             stats.get("backend_down", 0),
+            stats.get("outage_capped", 0),
             stats["not_citation"],
             stats["queued"],
             stats["held_unprocessed"],

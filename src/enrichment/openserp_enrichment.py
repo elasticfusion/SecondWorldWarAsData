@@ -9,15 +9,21 @@ All results verified by Grok before acceptance.
 Requires OpenSERP service running (ECS Fargate or localhost:7001).
 """
 
+import contextlib
+import contextvars
+import functools
 import json
 import logging
+import os
 import threading
 import datetime as _dt
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterator, List, Optional
 
 import requests
 
+from src.grok_client import BatchModeCollecting
+from src.utils.batch_pending import Pending
 from src.utils.file_lock import write_json_with_lock
 
 # Circuit breaker: skip all OpenSERP searches after N consecutive failures
@@ -30,13 +36,17 @@ _circuit_open = False
 _circuit_lock = threading.Lock()
 
 
+_last_url = ""  # the OpenSERP base URL in use (for the breaker's health re-check)
+
+
 def reset_circuit() -> None:
     """Reset the OpenSERP circuit breaker (call at the start of an enrichment run
     so breaker state never leaks across books/runs in a long-lived process)."""
-    global _consecutive_failures, _circuit_open
+    global _consecutive_failures, _circuit_open, _last_url
     with _circuit_lock:
         _consecutive_failures = 0
         _circuit_open = False
+        _last_url = ""
 
 
 def _breaker_is_open() -> bool:
@@ -49,16 +59,33 @@ def _breaker_record_failure() -> bool:
     global _consecutive_failures, _circuit_open
     with _circuit_lock:
         _consecutive_failures += 1
-        if _consecutive_failures >= _CIRCUIT_BREAKER_THRESHOLD:
-            if not _circuit_open:
-                logger.warning(
-                    "OpenSERP circuit breaker OPEN — %d consecutive empty/failed "
-                    "responses, skipping remaining searches",
-                    _consecutive_failures,
-                )
-                _metric("breaker_opened")
-            _circuit_open = True
+        streak = _consecutive_failures
+    if streak < _CIRCUIT_BREAKER_THRESHOLD:
         return _circuit_open
+    # Failing searches are not proof OpenSERP is down: 5 bad queries (odd entity names from a
+    # book's text) must not stop the phase. Ask OpenSERP itself (security review, task 1.2f).
+    if _last_url and _openserp_reachable(_last_url):
+        with _circuit_lock:
+            _consecutive_failures = 0
+        logger.warning(
+            "OBSERV openserp.queries_failing status=warn streak=%d - OpenSERP is healthy, so "
+            "these are per-query failures; the entities are retried next run",
+            streak,
+        )
+        return False
+    with _circuit_lock:
+        if not _circuit_open:
+            logger.warning(
+                "OpenSERP circuit breaker OPEN — %d consecutive failed responses",
+                streak,
+            )
+            _metric("breaker_opened")
+        _circuit_open = True
+    # OpenSERP is down mid-run: stop the phase (owner decision D8c) rather than skip the rest
+    _stop_openserp_down(
+        f"{streak} consecutive failed searches and the health check failed"
+    )
+    return True
 
 
 def _breaker_record_success() -> None:
@@ -103,6 +130,11 @@ _METRIC_KEYS = (
     "zero_result_queries",
     "verify_yes",
     "verify_no",
+    # verify_failed counts results Grok gave no usable verdict for (task 1.2e): not a NO, not
+    # cached; the entity is left unsearched so the next run asks again
+    "verify_failed",
+    # verify_reasked counts answers of the wrong shape that were evicted and asked once more
+    "verify_reasked",
     "breaker_opened",
     "urls_fetched",
     "items_added",
@@ -350,8 +382,11 @@ def _drop_excluded_domains(results: List[Dict]) -> List[Dict]:
 def _search_openserp(query: str, openserp_url: str, limit: int = 5) -> List[Dict]:
     """Run an OpenSERP search. Returns list of {url, title, description}."""
     if _breaker_is_open():
-        logger.info("OpenSERP circuit breaker SKIP: %s", query[:60])
-        return []
+        # OpenSERP was found down: nothing may be searched (and stamped) until it is back
+        _trace_query(query, "error")
+        _stop_openserp_down("the circuit breaker is open")
+    global _last_url
+    _last_url = openserp_url
 
     _metric("queries_issued")
     try:
@@ -383,18 +418,23 @@ def _search_openserp(query: str, openserp_url: str, limit: int = 5) -> List[Dict
         if resp.status_code == 200:
             data = resp.json()
             if not data:
-                _breaker_record_failure()
+                # a genuine "nothing found" is an answer, not an OpenSERP failure: it must not
+                # open the breaker (which would leave every later entity unsearched, 1.2d)
+                _breaker_record_success()
                 _metric("zero_result_queries")
+                _trace_query(query, "empty")
                 return []
             # Handle both flat list and {"results": [...]} formats
             results = data if isinstance(data, list) else data.get("results", [])
             if results:
                 _breaker_record_success()
             else:
-                _breaker_record_failure()
+                _breaker_record_success()
                 _metric("zero_result_queries")
+                _trace_query(query, "empty")
                 return []
             logger.info("OpenSERP [%s]: %d results", query[:60], len(results))
+            _trace_query(query, "results", len(results))
             _metric("results_returned", len(results))
             mapped = [
                 {
@@ -411,7 +451,294 @@ def _search_openserp(query: str, openserp_url: str, limit: int = 5) -> List[Dict
     except Exception as e:
         logger.warning("OpenSERP [%s]: %s", query[:60], e)
         _breaker_record_failure()
+    _trace_query(query, "error")
     return []
+
+
+# --- per-entity search trace and the review log (task 1.2d, owner 2026-11-18) -----------------
+# Owner rules: (1) OpenSERP found nothing -> log for later review, mark searched, move on;
+# (2) Grok rejected every candidate -> log WITH the Grok prompt (it may need revising), mark
+# searched, move on; (3) Grok failed -> handled by the shared client (task 1.2e). OpenSERP
+# itself unavailable is none of these: the entity is NOT marked searched (it was not searched).
+
+_trace: contextvars.ContextVar = contextvars.ContextVar("openserp_trace", default=None)
+_review_lock = threading.Lock()
+_PROMPT_CAP = 2000
+
+
+def _new_trace(entity: str, f: Any, data: Dict, name: Any) -> Dict[str, Any]:
+    ids = {k: v for k, v in data.items() if k.endswith("ID") and isinstance(v, str)}
+    return {
+        "entity": entity,
+        "file": getattr(f, "name", str(f)),
+        "ids": ids,
+        "name": str(name)[:200],
+        "queries": [],
+        "verdicts": [],
+    }
+
+
+@contextlib.contextmanager
+def _tracing(trace: Dict[str, Any]) -> Iterator[Dict[str, Any]]:
+    """Collect this entity's queries and verdicts into ``trace`` while the block runs."""
+    token = _trace.set(trace)
+    try:
+        yield trace
+    finally:
+        _trace.reset(token)
+
+
+def _trace_query(query: str, status: str, count: int = 0) -> None:
+    t = _trace.get()
+    if t is not None:
+        t["queries"].append({"query": query[:300], "status": status, "results": count})
+
+
+def _trace_verdict(
+    title: str, url: str, verdict: str, prompt: str, model: str, cached: bool
+) -> None:
+    t = _trace.get()
+    if t is not None:
+        t["verdicts"].append(
+            {
+                "title": title[:200],
+                "url": url[:300],
+                "verdict": verdict,
+                "cached": cached,
+                "model": model,
+                "prompt": prompt[:_PROMPT_CAP],
+            }
+        )
+
+
+def _trace_batch(results, to_verify, answers, title_key, url_key, prompt, grok_client):
+    """Record a batched verify's verdicts in the entity trace (one shared prompt)."""
+    model = _model_for(grok_client, "openserp_verify_batch")
+    for n, idx in enumerate(to_verify):
+        _trace_verdict(
+            str(results[idx].get(title_key, "") or ""),
+            str(results[idx].get(url_key, "") or ""),
+            answers[n],
+            prompt,
+            model,
+            cached=False,
+        )
+
+
+def _model_for(grok_client: Any, cache_type: str) -> str:
+    try:
+        return str(grok_client._get_model(cache_type))
+    except Exception:  # noqa: BLE001 - provenance only
+        return ""
+
+
+def search_outcome(trace: Dict[str, Any], changed: bool) -> str:
+    """found | unavailable | empty | excluded | rejected | nothing_new for one entity's search.
+
+    unavailable (a query errored or the breaker was open, and no query returned results): NOT
+    searched - do not mark it. With results, the verdicts decide even if another query errored. empty: every query returned nothing. excluded: results, but all were filtered out
+    (excluded domains, name gate) before any verdict. rejected: Grok said NO to every candidate.
+    nothing_new: something was accepted but nothing new was added."""
+    if changed:
+        return "found"
+    statuses = {q["status"] for q in trace["queries"]}
+    if "error" in statuses and "results" not in statuses:
+        return "unavailable"  # part of the search did not happen and nothing came back
+    if not trace["queries"] or statuses <= {"empty"}:
+        return "empty"
+    verdicts = trace["verdicts"]
+    if not verdicts:
+        return "excluded"
+    if all(v["verdict"] == "NO" for v in verdicts):
+        return "rejected"
+    return "nothing_new"
+
+
+def _review_path(output_root: Path) -> Path:
+    """output/review/openserp_misses/<book or _all>/<UTC date>-<task>.jsonl (one prefix per book;
+    output/ is synced to S3 by the ECS wrapper)."""
+    book = _path_part(os.environ.get("BOOK_NAME", ""), "_all")
+    task = _path_part(os.environ.get("ECS_TASK_ID", ""), "local")
+    day = _dt.datetime.now(_dt.timezone.utc).strftime("%Y-%m-%d")
+    return output_root / "review" / "openserp_misses" / book / f"{day}-{task}.jsonl"
+
+
+def _path_part(value: str, default: str) -> str:
+    """``value`` as one safe path segment: [A-Za-z0-9._-] only, capped; dots-only or empty ->
+    ``default`` (never '.', '..' or a separator)."""
+    safe = "".join(
+        c if (c.isascii() and c.isalnum()) or c in "._-" else "_" for c in value
+    )[:120]
+    return safe if safe.strip(".") else default
+
+
+def miss_record(trace: Dict[str, Any], outcome: str) -> Dict[str, Any]:
+    """The review-log record of one empty / excluded / rejected search (the verdicts, with the
+    Grok prompt and model, only for a rejection)."""
+    return {
+        "outcome": outcome,
+        "at": _dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds"),
+        **{
+            k: v
+            for k, v in trace.items()
+            if not (outcome != "rejected" and k == "verdicts")
+        },
+    }
+
+
+def _record_miss(output_root: Path, trace: Dict[str, Any], outcome: str) -> None:
+    """Append an empty / excluded / rejected search to the review log. Never raises (the search
+    result is already decided); a failed append is logged."""
+    record = miss_record(trace, outcome)
+    try:
+        path = _review_path(output_root)
+        with _review_lock:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            with open(path, "a", encoding="utf-8") as fh:
+                fh.write(json.dumps(record, ensure_ascii=False) + "\n")
+        _metric(f"review_{outcome}")
+        logger.info(
+            "OBSERV openserp.review_logged status=ok outcome=%s entity=%s name=%s file=%s",
+            outcome,
+            trace.get("entity"),
+            trace.get("name", "")[:60],
+            path.name,
+        )
+    except Exception as e:  # noqa: BLE001 - the review log must not stop enrichment
+        logger.warning(
+            "OBSERV openserp.review_log_failed status=warn entity=%s err=%s",
+            trace.get("entity"),
+            type(e).__name__,
+        )
+
+
+UNAVAILABLE_RUN_CAP = 5  # days on which an entity's searches only errored -> logged
+_UNAVAILABLE_TTL_DAYS = 30
+
+
+def _count_unavailable_run(trace: Dict[str, Any]) -> int:
+    """One more DAY on which this entity's searches only errored (OpenSERP unavailable); counted
+    in the shared search cache (the record schemas have no room for it), at most once a day (a
+    worker redelivery is not another run). At UNAVAILABLE_RUN_CAP days the entity is logged for
+    a human - it is still retried, never dropped (task 1.2f). Returns the count (0 if unkept).
+    """
+    from src.utils.search_cache import bump_counter
+
+    ident = (
+        f"{trace.get('entity')}|{json.dumps(trace.get('ids') or {}, sort_keys=True)}"
+    )
+    runs = bump_counter(
+        "openserp_unavailable_days", ident, _UNAVAILABLE_TTL_DAYS, once_per_day=True
+    )
+    if runs == UNAVAILABLE_RUN_CAP:  # once, on the day it is reached
+        logger.error(
+            "OBSERV openserp.entity_never_searched status=error entity=%s name=%s days=%d - its "
+            "searches only errored on %d different days; still retried. Check the OpenSERP "
+            "service and its engines (and this entity's name) for what keeps failing",
+            trace.get("entity"),
+            " ".join(str(trace.get("name", "")).split())[:60],
+            runs,
+            runs,
+        )
+    return runs
+
+
+def _settle(output_root: Path, trace: Dict[str, Any], changed: bool) -> bool:
+    """After one entity's search: True if it counts as searched (mark it), else False (OpenSERP
+    was unavailable: leave it for the next run). Empty / excluded / rejected go to the review
+    log."""
+    outcome = search_outcome(trace, changed)
+    if outcome == "unavailable":
+        _metric("entities_unavailable")
+        _count_unavailable_run(trace)
+        return False
+    if outcome in ("empty", "excluded", "rejected"):
+        _record_miss(output_root, trace, outcome)
+    return True
+
+
+def _search_entity(
+    entity: str, f: Any, data: Dict, name: Any, output_root: Path, search: Any
+) -> Optional[bool]:
+    """Run ``search()`` (one entity's searches + verification) traced, then settle it: the
+    changed flag to mark-and-write with, or None to leave the entity unsearched (Grok gave no
+    verdict - VerifyFailed - or OpenSERP was unavailable). Misses go to the review log.
+    """
+    trace = _new_trace(entity, f, data, name)
+    try:
+        with _tracing(trace):
+            changed = bool(search())
+    except VerifyFailed as e:
+        _verify_failed(entity, name, e)
+        return None
+    return changed if _settle(output_root, trace, changed) else None
+
+
+class VerifyFailed(Exception):
+    """Grok gave no usable verdict for a search result (a malformed answer the shared client
+    could not repair or re-ask into shape). NOT a "NO": nothing is cached, and the entity is not
+    marked searched, so the next run asks again (owner rule 3, task 1.2e). A Grok OUTAGE is not
+    this: the shared client stops the run (grok_models.GrokUnreachable)."""
+
+
+_VERDICT_SYSTEM = (
+    'You verify search result relevance. Reply with JSON only: {"relevant": "YES"} or '
+    '{"relevant": "NO"}.'
+)
+
+
+def _ask_verdicts(
+    prompt: str, system_prompt: str, grok_client: Any, cache_type: str, parse: Any
+):
+    """One Grok request through the shared client's JSON path (repair, re-ask), parsed with
+    ``parse`` (None = no usable verdict). A well-formed answer of the wrong shape is cached by
+    the client, so it is evicted and asked once more; still none: VerifyFailed (nothing cached,
+    the next run asks again). Run-stopping Grok conditions (outage, no credits, model gone) are
+    BaseExceptions and pass through."""
+    for attempt in (1, 2):
+        try:
+            answer = grok_client.extract_json(
+                prompt,
+                system_prompt=system_prompt,
+                temperature=0.0,
+                use_cache=True,
+                cache_type=cache_type,
+            )
+        except BatchModeCollecting:
+            raise  # queued for the batch: not an answer, not a failure
+        except Exception as e:  # noqa: BLE001 - any client error: no verdict, not a NO
+            raise VerifyFailed(f"{cache_type}: {type(e).__name__}") from e
+        verdict = parse(answer)
+        if verdict is not None:
+            return verdict
+        try:  # do not keep (or re-read next run) an answer that holds no verdict
+            grok_client.clear_cache_entry(
+                prompt, cache_type, temperature=0.0, system_prompt=system_prompt
+            )
+        except Exception:  # noqa: BLE001 - the re-ask below still happens
+            pass
+        if attempt == 1:
+            _metric("verify_reasked")
+    raise VerifyFailed(f"{cache_type}: no usable verdict after a re-ask")
+
+
+def _single_verify_prompt(context: str, title: str, snippet: str, url: str) -> str:
+    """The one-result relevance prompt (also recorded for a cached verdict in the review log)."""
+    return (
+        "Is this search result relevant to the context?\n"
+        f'Context: "{context[:200]}"\n'
+        f'Result title: "{title[:200]}"\n'
+        f'Result snippet: "{snippet[:300]}"\n'
+        f"Result URL: {url[:200]}\n"
+        'Return ONLY {"relevant": "YES"} or {"relevant": "NO"}.'
+    )
+
+
+def _one_verdict(answer: Any) -> Optional[str]:
+    """ "YES"/"NO" from a single-verdict JSON answer, or None if it holds no clear verdict."""
+    value = answer.get("relevant") if isinstance(answer, dict) else None
+    value = str(value or "").strip().upper()
+    return value if value in ("YES", "NO") else None
 
 
 def _verify_result(
@@ -423,53 +750,41 @@ def _verify_result(
 ) -> bool:
     """Use Grok to verify a search result is relevant (cached, batch-friendly).
 
-    FAIL-CLOSED: with no grok_client, or on any Grok error, return False (reject) rather than
-    accepting an unverified result. The judgment uses the title, the result snippet, AND the
-    URL (not the title alone) for a stronger signal."""
+    No grok_client: reject (fail-closed). A real YES/NO is cached (90 days, search_cache) and
+    returned. No usable verdict: VerifyFailed (not cached, not a NO - task 1.2e). The judgment
+    uses the title, the result snippet, AND the URL (not the title alone) for a stronger
+    signal."""
     if not grok_client:
         # No verifier available -> cannot confirm relevance -> reject (fail-closed).
         return False
     from src.utils.search_cache import cache_result, get_cached
 
     cache_key = f"{expected_context[:50]}|{candidate_title[:50]}|{url[:60]}"
+    prompt = _single_verify_prompt(expected_context, candidate_title, snippet, url)
+    model = _model_for(grok_client, "openserp_verify")
     cached = get_cached("openserp_verify", cache_key)
-    if cached == "YES":
-        return True
-    if cached == "NO" or cached == "NOT_FOUND":
-        return False
+    if cached in ("YES", "NO", "NOT_FOUND"):
+        verdict = "YES" if cached == "YES" else "NO"
+        _trace_verdict(candidate_title, url, verdict, prompt, model, cached=True)
+        return verdict == "YES"
 
     try:
-        response = grok_client.chat_completion(
-            prompt=(
-                "Is this search result relevant to the context?\n"
-                f'Context: "{expected_context[:200]}"\n'
-                f'Result title: "{candidate_title[:200]}"\n'
-                f'Result snippet: "{snippet[:300]}"\n'
-                f"Result URL: {url[:200]}\n"
-                'Return ONLY "YES" or "NO".'
-            ),
-            system_prompt="You verify search result relevance.",
-            temperature=0.0,
-            use_cache=True,
-            cache_type="openserp_verify",
+        answer = _ask_verdicts(
+            prompt, _VERDICT_SYSTEM, grok_client, "openserp_verify", _one_verdict
         )
-        answer = "YES" if response.strip().upper().startswith("YES") else "NO"
-        cache_result("openserp_verify", cache_key, answer)
-        _metric("verify_yes" if answer == "YES" else "verify_no")
-        logger.info(
-            "Grok verify [%s]: %s — '%s'",
-            answer,
-            expected_context[:40],
-            candidate_title[:50],
-        )
-        return answer == "YES"
-    except Exception:
-        # Verifier errored -> cannot confirm -> reject (fail-closed). NOT cached, so a later
-        # run with a healthy Grok can still verify it.
-        logger.warning(
-            "Grok verify errored (fail-closed reject): %s", candidate_title[:50]
-        )
-        return False
+    except VerifyFailed:
+        _metric("verify_failed")
+        raise
+    _trace_verdict(candidate_title, url, answer, prompt, model, cached=False)
+    cache_result("openserp_verify", cache_key, answer)
+    _metric("verify_yes" if answer == "YES" else "verify_no")
+    logger.info(
+        "Grok verify [%s]: %s — '%s'",
+        answer,
+        expected_context[:40],
+        candidate_title[:50],
+    )
+    return answer == "YES"
 
 
 def _prefilter_verify_cache(
@@ -492,10 +807,20 @@ def _prefilter_verify_cache(
         cache_key = f"{expected_context[:50]}|{title[:50]}|{url[:60]}"
         cache_keys.append(cache_key)
         cached = get_cached("openserp_verify", cache_key)
-        if cached == "YES":
-            verdicts[i] = True
-        elif cached in ("NO", "NOT_FOUND"):
-            verdicts[i] = False
+        if cached in ("YES", "NO", "NOT_FOUND"):
+            verdicts[i] = cached == "YES"
+            # a cached verdict counts in the entity's outcome too (a resumed run is mostly
+            # cache hits); its prompt is the one-result prompt that decided it
+            _trace_verdict(
+                title,
+                url,
+                "YES" if cached == "YES" else "NO",
+                _single_verify_prompt(
+                    expected_context, title, str(r.get("description", "") or ""), url
+                ),
+                "",
+                cached=True,
+            )
         else:
             to_verify.append(i)
     return cache_keys, to_verify
@@ -523,9 +848,9 @@ def _build_batch_verify_prompt(
         "For EACH numbered search result below, decide if it is relevant to the context.\n"
         f'Context: "{expected_context[:200]}"\n\n'
         "Results:\n" + "\n".join(lines) + "\n\n"
-        f'Return ONLY a JSON array of exactly {len(to_verify)} strings, each "YES" or "NO", '
-        "in the same order as the numbered results (index 0 first). "
-        'Example for 2 results: ["YES", "NO"]'
+        f'Return ONLY {{"verdicts": [...]}} with exactly {len(to_verify)} strings, each "YES" '
+        'or "NO", in the same order as the numbered results (index 0 first). '
+        'Example for 2 results: {"verdicts": ["YES", "NO"]}'
     )
 
 
@@ -581,27 +906,21 @@ def _verify_results_batch(
     )
 
     try:
-        response = grok_client.chat_completion(
-            prompt=prompt,
-            system_prompt="You verify search result relevance. Reply with a JSON YES/NO array.",
-            temperature=0.0,
-            use_cache=True,
-            cache_type="openserp_verify_batch",
+        answers = _ask_verdicts(
+            prompt,
+            'You verify search result relevance. Reply with JSON only: {"verdicts": [...]}.',
+            grok_client,
+            "openserp_verify_batch",
+            lambda a: _parse_batch_verdicts(a, len(to_verify)),
         )
-        answers = _parse_batch_verdicts(response)
-    except Exception:
-        # Verifier errored -> cannot confirm -> reject uncached (fail-closed). NOT cached, so a
-        # later run with a healthy Grok can still verify them.
-        logger.warning(
-            "Grok batch verify errored (fail-closed reject %d results): %s",
-            len(to_verify),
-            expected_context[:40],
-        )
-        return verdicts
+    except VerifyFailed:
+        # no usable answer: NOT a NO and nothing cached - the next run asks again (task 1.2e)
+        _metric("verify_failed", len(to_verify))
+        raise
 
+    _trace_batch(results, to_verify, answers, title_key, url_key, prompt, grok_client)
     for n, idx in enumerate(to_verify):
-        # Fail-closed on a missing/short/malformed index.
-        answer = answers[n] if n < len(answers) else "NO"
+        answer = answers[n]
         verdicts[idx] = answer == "YES"
         cache_result("openserp_verify", cache_keys[idx], answer)
         _metric("verify_yes" if answer == "YES" else "verify_no")
@@ -614,35 +933,16 @@ def _verify_results_batch(
     return verdicts
 
 
-def _parse_batch_verdicts(response: Any) -> List[str]:
-    """Parse a batched-verify Grok response into a list of "YES"/"NO" strings (fail-closed).
-
-    ONLY a well-formed JSON array of verdicts is accepted; any entry that is not an unambiguous
-    YES becomes "NO". Any non-JSON/malformed response returns [] (so the caller treats EVERY
-    result as NO). We deliberately do not token-scan prose — out-of-order YES/NO tokens could
-    misalign verdicts to results, and a verifier must never accept on ambiguous output.
+def _parse_batch_verdicts(answer: Any, expected: int) -> Optional[List[str]]:
+    """The "YES"/"NO" list from a batched-verify JSON answer ({"verdicts": [...]}), or None
+    unless it holds exactly ``expected`` clear verdicts. A partial or ambiguous answer is not
+    turned into NOs (that would cache false rejections): the caller treats it as no answer.
     """
-    if not response:
-        return []
-    text = str(response).strip()
-    # ONLY accept a well-formed JSON array of verdicts. Anything else is fail-closed:
-    # return [] so the caller treats every result as NO (reject). We deliberately do NOT
-    # token-scan prose for YES/NO — out-of-order tokens could misalign verdicts to results,
-    # and a verifier must never accept on ambiguous output.
-    try:
-        import re as _re
-
-        m = _re.search(r"\[.*\]", text, _re.DOTALL)
-        if m:
-            arr = json.loads(m.group(0))
-            if isinstance(arr, list):
-                return [
-                    "YES" if str(x).strip().upper().startswith("YES") else "NO"
-                    for x in arr
-                ]
-    except Exception:  # noqa: BLE001 - malformed -> fail-closed ([] => all NO)
-        pass
-    return []
+    raw = answer.get("verdicts") if isinstance(answer, dict) else answer
+    if not isinstance(raw, list) or len(raw) != expected:
+        return None
+    verdicts = [str(x).strip().upper() for x in raw]
+    return verdicts if all(v in ("YES", "NO") for v in verdicts) else None
 
 
 # --- Positive-URL page processing (fetch -> summarize -> 90-day retention) ---------------
@@ -656,6 +956,12 @@ _URL_FETCH_RETENTION_DAYS = (
 # (unlike a genuine fetch-miss which returns None): REJECT would poison cross-entity
 # positive reuse / permanently deny a legitimate deferred retry.
 _SKIP_SENTINEL = "\x00__SKIP__\x00"
+# A walled or rate-limited page with no archive copy (url_fetch, task 1.2f): retryable, so never
+# REJECT-cached, but remembered for RETRY_LATER_HOURS so the same URL found by other entities in
+# this run is not fetched (and Grok-verified) again while the wall or the rate limit lasts.
+_RETRY_SENTINEL = "\x00__RETRY__\x00"
+_RETRY_VERDICT = "RETRY_LATER"
+RETRY_LATER_HOURS = 1
 
 
 def _grok_summarize_html(
@@ -720,19 +1026,19 @@ def _summarize_url_page(
     from src.utils import url_fetch, url_registry
 
     result = url_fetch.fetch(url)
-    if result.source in (url_fetch.SKIP, url_fetch.DEFERRED):
-        # SKIP = already searched (reuse the shared verdict); DEFERRED = in-progress
-        # elsewhere / domain cooldown (retry later). Neither is a negative — signal the
-        # caller NOT to cache REJECT (that would poison cross-entity positive reuse or
-        # permanently deny a legitimate deferred retry).
-        return _SKIP_SENTINEL
-    if result.source in (
-        url_fetch.DEAD,
-        url_fetch.BLOCKED_NO_ARCHIVE,
-        url_fetch.RATE_LIMITED,
-    ):
-        # gone / walled-with-no-archive / rate-limited -> no content this run.
-        return None
+    # No content this run. SKIP = already searched (reuse the shared verdict); DEFERRED =
+    # in-progress elsewhere / domain cooldown; walled / rate-limited / transient with no archive
+    # are RETRYABLE in url_fetch (task 1.2f). None of these is a negative: the caller must not
+    # cache REJECT. Only DEAD (confirmed gone, no archive) is a real negative.
+    no_content = {
+        url_fetch.SKIP: _SKIP_SENTINEL,
+        url_fetch.DEFERRED: _SKIP_SENTINEL,
+        url_fetch.BLOCKED_NO_ARCHIVE: _RETRY_SENTINEL,
+        url_fetch.RATE_LIMITED: _RETRY_SENTINEL,
+        url_fetch.DEAD: None,
+    }
+    if result.source in no_content:
+        return no_content[result.source]
     html = result.content
     summary: Optional[str] = None
     try:
@@ -740,16 +1046,31 @@ def _summarize_url_page(
             summary = _grok_summarize_html(
                 html, url, context, grok_client, result, provenance
             )
+    except BatchModeCollecting:
+        # QUEUED for the batch: not a summary and not a failure. The page is NOT stamped searched
+        # and no REJECT is cached (that would stand for 90 days); the claim is given back so the
+        # next round is not deferred, and the pass is repeated on the answer.
+        url_registry.release(
+            result.url
+        )  # the CLAIMED key (fetch claims the cleaned input URL)
+        raise
     except Exception as e:  # noqa: BLE001 - best-effort; never block enrichment
         logger.debug("URL summarize failed for %s: %s", url, e)
 
-    # Finalize the registry entry AFTER summarizing (finalize-after-write #2): searched,
-    # 90-day TTL, with the HTTP status for future filter decisions. relevant = we got a
-    # usable summary.
+    _finalize_url(url, result, bool(summary), context)
+    return summary
+
+
+def _finalize_url(url: str, result: Any, relevant: bool, context: str) -> None:
+    """Finalize the registry entry AFTER summarizing (finalize-after-write #2): searched, 90-day
+    TTL, with the HTTP status for future filter decisions. relevant = we got a usable summary.
+    """
+    from src.utils import url_registry
+
     try:
         url_registry.finalize_searched(
             result.final_url or url,
-            relevant=bool(summary),
+            relevant=relevant,
             context=context[:200],
             source="openserp",
             first_wayback_ts=(result.wayback_ts or ""),
@@ -757,7 +1078,6 @@ def _summarize_url_page(
         )
     except Exception:  # noqa: BLE001
         pass
-    return summary
 
 
 def _url_verdict_cached(url: str) -> Optional[str]:
@@ -774,8 +1094,11 @@ def _url_verdict_cached(url: str) -> Optional[str]:
         return None
 
 
-def _cache_url_verdict(url: str, verdict: str) -> None:
-    """Cache a URL verdict ('REJECT' or a summary) for the retention window."""
+def _cache_url_verdict(
+    url: str, verdict: str, ttl_days: float = _URL_FETCH_RETENTION_DAYS
+) -> None:
+    """Cache a URL verdict ('REJECT', 'RETRY_LATER' or a summary) for ``ttl_days`` (default:
+    the retention window)."""
     if not url:
         return
     try:
@@ -784,7 +1107,7 @@ def _cache_url_verdict(url: str, verdict: str) -> None:
         _get_backend().put(
             _make_key("openserp_url_verdict", url),
             verdict,
-            ttl_days=_URL_FETCH_RETENTION_DAYS,
+            ttl_days=ttl_days,
         )
     except Exception:  # noqa: BLE001
         pass
@@ -825,7 +1148,7 @@ def process_positive_url(
     if not url:
         return None
     cached = _url_verdict_cached(url)
-    if cached == "REJECT":
+    if cached in ("REJECT", _RETRY_VERDICT):
         return None
     if cached:  # positive summary cached
         return {
@@ -842,6 +1165,11 @@ def process_positive_url(
 
     prov: Dict[str, Any] = {}
     summary = _summarize_url_page(url, context, grok_client, provenance=prov)
+    if summary == _RETRY_SENTINEL:
+        # walled / rate-limited, no archive: not a negative, but not fetched again for an hour
+        _cache_url_verdict(url, _RETRY_VERDICT, ttl_days=RETRY_LATER_HOURS / 24)
+        _metric("urls_retry_later")
+        return None
     if summary == _SKIP_SENTINEL:
         # Already searched (reuse) or deferred (retry later) — NOT a negative. Do not
         # cache REJECT; a prior/positive summary (if any) is served from the shared
@@ -1425,15 +1753,43 @@ def _mark_openserp_searched(data: Dict) -> None:
     data["openserp_searched_at"] = int(_time.time())
 
 
+def _verify_failed(entity: str, name: Any, error: Exception) -> None:
+    """An entity whose search results Grok could not verify: left UNSEARCHED (not marked, not
+    written), so the next run asks again. Counted per run, logged on the first and every 25th.
+    """
+    from src.utils.observe import observe_warn_counted
+
+    observe_warn_counted(
+        "openserp",
+        "verify_failed",
+        key=("verify_failed", entity),
+        every=25,
+        note="Grok gave no usable verdict for a search result; this entity is left unsearched "
+        "and retried next run. Many of these: check the verify prompt and the Grok logs",
+        entity=entity,
+        name=str(name)[:80],
+        error=str(error)[:120],
+    )
+
+
 def _reset_and_check_reachable(openserp_url: str) -> bool:
     """Shared driver prelude: reset the circuit breaker (don't inherit a prior book/run's state) and
     check OpenSERP reachability. Returns True to proceed, False (with a loud warning) to skip. Every
     enrich_*_with_openserp driver opens with this identical guard."""
     reset_circuit()  # H3: don't inherit breaker state from a prior book/run
     if not _openserp_reachable(openserp_url):
-        logger.warning("OpenSERP not reachable at %s — skipping", openserp_url)
-        return False
+        _stop_openserp_down(f"health check failed at {openserp_url}")
     return True
+
+
+def _stop_openserp_down(detail: str) -> None:
+    """OpenSERP is down at the start of a step or mid-run (owner decision D8c, task 1.2f): stop
+    the whole phase - nothing is stamped, the book is deferred (connectivity) and resumes when
+    OpenSERP is back. Raises grok_models.ServiceUnreachable (a run-stopping BaseException).
+    """
+    from src.utils import grok_models
+
+    grok_models.stop_run(grok_models.ServiceUnreachable, "openserp", detail)
 
 
 def _iter_loadable_records(directory: Path):
@@ -1445,15 +1801,16 @@ def _iter_loadable_records(directory: Path):
 
 
 def _iter_loadable_files(files):
-    """(file, parsed_data) for each non-SKIP file in ``files`` that parses as JSON."""
+    """(file, record) for each non-SKIP file in ``files`` that is a readable record (a corrupt
+    one is alerted and holds the book: entity_records.load_record)."""
+    from src.utils.entity_records import load_record
+
     for f in files:
         if f.name in SKIP_FILES:
             continue
-        try:
-            data = json.loads(f.read_text(encoding="utf-8"))
-        except Exception:
-            continue
-        yield f, data
+        data = load_record(f, "openserp")
+        if data is not None:
+            yield f, data
 
 
 def enrich_people_with_openserp(
@@ -1464,23 +1821,13 @@ def enrich_people_with_openserp(
 ) -> int:
     """Add images and academic sources to people files. Returns count enriched.
 
-    Two-pass approach:
-    1. Search OpenSERP for all people, collect candidate results
-    2. Verify candidates with Grok (cached — repeat runs are free)
-    3. Write verified results to files
+    One person at a time: search OpenSERP, verify with Grok (cached), then mark and write that
+    person before the next (task 1.2d). It used to search EVERY person before writing any, so a
+    run killed midway (Spot, an outage) repeated all those searches on the re-run.
     """
     if not _reset_and_check_reachable(openserp_url):
         return 0
 
-    # Pass 1: Collect candidates from OpenSERP
-    candidates = _collect_people_candidates(people_dir, openserp_url, max_items)
-
-    logger.info(
-        "OpenSERP people: %d candidates collected, verifying with Grok...",
-        len(candidates),
-    )
-
-    # Pass 2: Verify and write
     from src.utils.config import load_config
 
     cfg = load_config().get("openserp", {})
@@ -1488,36 +1835,56 @@ def enrich_people_with_openserp(
     max_web = cfg.get("max_web_results_per_entity", 5)
 
     enriched = 0
-    for c in candidates:
-        data = c["data"]
-        name = c["name"]
-        changed = _verify_and_apply(c, data, name, grok_client, max_images, max_web)
+    pending = Pending()
+    for person in _collect_people_candidates(people_dir, openserp_url, max_items):
+        f, data, name = person["file"], person["data"], person["name"]
+        changed = pending.call(
+            _search_entity,
+            "people",
+            f,
+            data,
+            name,
+            people_dir.parent,
+            lambda f=f, name=name, data=data: _verify_and_apply(
+                _collect_person_candidates(f, name, data, openserp_url),
+                data,
+                name,
+                grok_client,
+                max_images,
+                max_web,
+            ),
+        )
+        if changed is None:
+            continue
 
         _mark_openserp_searched(data)
-        if write_json_with_lock(c["file"], data, entity="people"):
+        if write_json_with_lock(f, data, entity="people"):
             if changed:
                 enriched += 1
                 _metric("entities_enriched")
                 logger.info("  ✓ OpenSERP enriched: %s", name)
 
     logger.info("OpenSERP people enrichment: %d enriched", enriched)
+    pending.raise_if_queued()  # batch rounds: the step is pending, the next pass has the answers
     return enriched
 
 
 def _collect_people_candidates(
     people_dir: Path, openserp_url: str, max_items: Optional[int]
 ) -> List[Dict]:
-    """Pass 1 of people enrichment: iterate people files, skip the index/recently-searched/
-    nameless ones, and build an OpenSERP candidate bundle per eligible person."""
-    candidates: List[Dict] = []
+    """The people to search this run, as {file, data, name}: the index, recently searched and
+    nameless ones skipped. No search happens here (the driver searches one person at a time).
+    """
+    from src.utils.entity_records import load_record
+
+    people: List[Dict] = []
     for f in sorted(people_dir.glob("*.json")):
         if f.name in SKIP_FILES:
             continue
-        if max_items and len(candidates) >= max_items:
+        if max_items and len(people) >= max_items:
             break
-        try:
-            data = json.loads(f.read_text(encoding="utf-8"))
-        except Exception:
+        data = load_record(f, "openserp_people")  # corrupt: alerted, the book is held
+        if data is None:
             continue
 
         if _openserp_recently_searched(data):
@@ -1527,9 +1894,8 @@ def _collect_people_candidates(
         if not _usable_entity_name(name):
             continue
         _record_eligible()
-
-        candidates.append(_collect_person_candidates(f, name, data, openserp_url))
-    return candidates
+        people.append({"file": f, "data": data, "name": name})
+    return people
 
 
 def enrich_equipment_with_openserp(
@@ -1543,30 +1909,30 @@ def enrich_equipment_with_openserp(
         return 0
 
     enriched = 0
+    pending = Pending()
     for f in sorted(equipment_dir.glob("*.json")):
         if f.name in SKIP_FILES:
             continue
-        if max_items and enriched >= max_items:
+        # queued requests count too: a batch round must not queue more than --max-items entities
+        if max_items and enriched + pending.queued >= max_items:
             break
-        if _process_equipment_file(f, openserp_url, grok_client):
+        if pending.call(_process_equipment_file, f, openserp_url, grok_client):
             enriched += 1
 
     logger.info("OpenSERP equipment enrichment: %d enriched", enriched)
+    pending.raise_if_queued()  # batch rounds: the step is pending, the next pass has the answers
     return enriched
 
 
 def _load_equipment_record(f) -> Optional[dict]:
-    """Load one equipment record; a corrupt file is a LOSS (loud OBSERV), not a silent skip."""
-    try:
-        return json.loads(f.read_text(encoding="utf-8"))
-    except Exception as exc:  # noqa: BLE001
+    """Load one equipment record; a corrupt file is alerted and holds the book
+    (entity_records.load_record), never a silent skip."""
+    from src.utils.entity_records import load_record
+
+    data = load_record(f, "openserp_equipment")
+    if data is None:
         _metric("records_unreadable")
-        logger.warning(
-            "OBSERV openserp.equipment_unreadable file=%s err=%s status=warn",
-            f.name,
-            type(exc).__name__,
-        )
-        return None
+    return data
 
 
 def _process_equipment_file(f, openserp_url: str, grok_client: Any) -> bool:
@@ -1588,7 +1954,16 @@ def _process_equipment_file(f, openserp_url: str, grok_client: Any) -> bool:
         return False  # generic / unresolved / undecided equipment is never searched (owner rule)
     _record_eligible()
 
-    changed = enrich_one_equipment(data, openserp_url, grok_client)
+    changed = _search_entity(
+        "equipment",
+        f,
+        data,
+        name,
+        Path(f).parent.parent,
+        lambda: enrich_one_equipment(data, openserp_url, grok_client),
+    )
+    if changed is None:
+        return False
     _mark_openserp_searched(data)
     if not write_json_with_lock(f, data, entity="equipment"):
         _metric("write_failed")
@@ -1659,12 +2034,16 @@ def enrich_source_sections_with_openserp(
     from src.utils.source_sections import iter_section_files
 
     enriched = 0
+    pending = Pending()
     n_records = 0
     for f, data in _iter_loadable_files(iter_section_files(output_root)):
         n_records += 1
-        if max_items and enriched >= max_items:
+        # queued requests count too: a batch round must not queue more than --max-items entities
+        if max_items and enriched + pending.queued >= max_items:
             break
-        if _process_one_source_section(f, data, openserp_url, grok_client):
+        if pending.call(
+            _process_one_source_section, f, data, openserp_url, grok_client
+        ):
             enriched += 1
 
     logger.info(
@@ -1676,6 +2055,7 @@ def enrich_source_sections_with_openserp(
             "%s; Phase 3 must download output/content/ (see no_parsed_docs) before this step",
             output_root,
         )
+    pending.raise_if_queued()  # batch rounds: the step is pending, the next pass has the answers
     return enriched
 
 
@@ -1695,7 +2075,16 @@ def _process_one_source_section(
     _record_eligible()
     op_name = operation["name"]
     before = len(data.get("primary_sources") or [])
-    changed = enrich_one_source_section(data, openserp_url, grok_client)
+    changed = _search_entity(
+        "source_section",
+        f,
+        data,
+        op_name,
+        Path(f).parent.parent,
+        lambda: enrich_one_source_section(data, openserp_url, grok_client),
+    )
+    if changed is None:
+        return False
     enriched = False
     _mark_openserp_searched(data)
     if not write_json_with_lock(f, data, entity="source_section"):
@@ -1819,8 +2208,10 @@ def enrich_groups_with_openserp(
         return 0
 
     enriched = 0
+    pending = Pending()
     for f, data in _iter_loadable_records(groups_dir):
-        if max_items and enriched >= max_items:
+        # queued requests count too: a batch round must not queue more than --max-items entities
+        if max_items and enriched + pending.queued >= max_items:
             break
 
         name = data.get("group_name", "")
@@ -1831,9 +2222,23 @@ def enrich_groups_with_openserp(
             continue
         _record_eligible()
 
-        changed = enrich_one_group(
-            data, openserp_url, grok_client, output_root=groups_dir.parent
+        changed = pending.call(
+            _search_entity,
+            "people_groups",
+            f,
+            data,
+            name,
+            groups_dir.parent,
+            functools.partial(
+                enrich_one_group,
+                data,
+                openserp_url,
+                grok_client,
+                output_root=groups_dir.parent,
+            ),
         )
+        if changed is None:
+            continue
 
         _mark_openserp_searched(data)
         if write_json_with_lock(f, data, entity="people_groups"):
@@ -1843,6 +2248,7 @@ def enrich_groups_with_openserp(
                 logger.info("  ✓ OpenSERP enriched group: %s", name)
 
     logger.info("OpenSERP people_groups enrichment: %d enriched", enriched)
+    pending.raise_if_queued()  # batch rounds: the step is pending, the next pass has the answers
     return enriched
 
 
@@ -1934,6 +2340,8 @@ def _apply_group_unit_patch(
             data["unit_patch"] = patch
             _metric("items_added", 1)
             return True
+    except BatchModeCollecting:
+        raise  # queued for the batch: not an answer, not a failure
     except Exception as e:  # noqa: BLE001 - never block group enrichment
         logger.debug("unit patch acquisition failed for %s: %s", name, e)
     return False
@@ -2016,8 +2424,10 @@ def enrich_places_with_openserp(
         return 0
 
     enriched = 0
+    pending = Pending()
     for f, data in _iter_loadable_records(places_dir):
-        if max_items and enriched >= max_items:
+        # queued requests count too: a batch round must not queue more than --max-items entities
+        if max_items and enriched + pending.queued >= max_items:
             break
 
         variants = place_name_variants(data)
@@ -2028,7 +2438,17 @@ def enrich_places_with_openserp(
             continue
 
         primary = variants[0]
-        changed = enrich_one_place(data, openserp_url, grok_client)
+        changed = pending.call(
+            _search_entity,
+            "places",
+            f,
+            data,
+            primary,
+            places_dir.parent,
+            functools.partial(enrich_one_place, data, openserp_url, grok_client),
+        )
+        if changed is None:
+            continue
 
         _mark_openserp_searched(data)
         if write_json_with_lock(f, data, entity="places"):
@@ -2038,6 +2458,7 @@ def enrich_places_with_openserp(
                 logger.info("  ✓ OpenSERP enriched place: %s", primary)
 
     logger.info("OpenSERP places enrichment: %d enriched", enriched)
+    pending.raise_if_queued()  # batch rounds: the step is pending, the next pass has the answers
     return enriched
 
 

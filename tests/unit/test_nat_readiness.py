@@ -339,7 +339,8 @@ def test_a_waiter_repairs_a_blackholed_route_and_reports_verified_readiness():
     ):
         out = nm._await_other_instance(ec2, "us-east-1")
     repoint.assert_called_once_with(ec2, "nat-1")
-    assert out == {"status": "ready", "missing": []}
+    # the NAT id is returned too: a task that then finds no internet names it in its failover
+    assert out == {"status": "ready", "missing": [], "nat": "nat-1"}
 
 
 def test_a_waiter_never_reports_ready_without_a_route():

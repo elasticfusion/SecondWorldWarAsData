@@ -136,3 +136,91 @@ def mock_config():
         "maps": {"enabled": False},
         "external_maps": {"enabled": False},
     }
+
+
+@pytest.fixture(autouse=True)
+def _no_leftover_grok_stop(monkeypatch):
+    """A run-stopping Grok/service condition (src/utils/grok_models.stop_run) is process-global:
+    one test's stop must not make later tests' Grok calls raise (task 1.2e/1.2f)."""
+    from src.utils import grok_models
+
+    monkeypatch.setattr(grok_models, "_stopped", {})
+
+
+@pytest.fixture(autouse=True)
+def _no_leftover_phase(monkeypatch):
+    """PIPELINE_PHASE decides how strictly a batch answer is paired with its request (Phase 3:
+    only by the id the batch returned). The entrypoint sets it in os.environ: one test's phase
+    must not decide how the next test's batch is read."""
+    monkeypatch.delenv("PIPELINE_PHASE", raising=False)
+
+
+@pytest.fixture(autouse=True)
+def _no_live_xai_balance(monkeypatch):
+    """src/grok_client loads .env, which may hold the real xAI management key: no test may read
+    the live credit balance (task 1.1c). Tests that need a balance pass keys and a fake session.
+    """
+    from src.utils import grok_balance
+
+    monkeypatch.delenv(grok_balance.MANAGEMENT_KEY_ENV, raising=False)
+    monkeypatch.setattr(grok_balance, "_team", {})
+    monkeypatch.setattr(grok_balance, "_management_key", {})
+
+
+@pytest.fixture(autouse=True)
+def _fresh_service_state(monkeypatch):
+    """Outage streaks (src/utils/service_outage) and the wrapper's cached S3 client are
+    process-global: one test's failures or patched boto3 must not leak into the next."""
+    import sys
+
+    from src.utils import service_outage
+
+    service_outage.reset()
+    ee = sys.modules.get("ecs_entrypoint")
+    if ee is not None and hasattr(ee, "_s3"):
+        monkeypatch.setattr(ee, "_s3", {})
+    if ee is not None and hasattr(ee, "_synced_at"):
+        # what this "task" synced: a record removed later is deleted from S3 (task 1.5)
+        monkeypatch.setattr(ee, "_synced_at", {})
+        monkeypatch.setattr(ee, "_synced_etag", {})
+    if ee is not None and hasattr(ee, "_attempt_of"):
+        monkeypatch.setattr(ee, "_attempt_of", {})  # this task's Phase 3 attempt number
+        monkeypatch.setattr(ee, "_phase_failed", False)
+    yield
+    service_outage.reset()
+
+
+@pytest.fixture(autouse=True)
+def _fresh_link_policy():
+    """src/utils/link_policy keeps the process's trusted-source list: re-read per test."""
+    from src.utils import link_policy
+
+    link_policy.reset()
+    yield
+    link_policy.reset()
+
+
+@pytest.fixture(autouse=True)
+def _private_search_cache(monkeypatch, tmp_path_factory):
+    """src/utils/search_cache is the shared answer cache (DynamoDB in AWS): every test gets its
+    own empty local one, so no test reads or writes the real table or another test's answers.
+    """
+    from src.utils import search_cache
+
+    monkeypatch.setattr(
+        search_cache,
+        "_cache_backend",
+        search_cache._LocalBackend(tmp_path_factory.mktemp("search_cache")),
+    )
+
+
+@pytest.fixture(autouse=True)
+def _fresh_wikimedia_backoff():
+    """src/utils/wikimedia_client remembers a host's 429 back-off for the process: a test that
+    reached the real Wikimedia (integration) must not make a later test see 'backing off'.
+    """
+    from src.utils import wikimedia_client
+
+    wikimedia_client.reset_state()
+    yield
+    wikimedia_client.reset_state()

@@ -6,6 +6,8 @@ recorded without guessing coordinates, and that runs are idempotent and bounded.
 """
 
 import json
+
+import pytest
 from pathlib import Path
 
 from src.enrichment.places_grok_geocode import (
@@ -224,7 +226,63 @@ def test_error_recorded_and_batch_continues(tmp_path: Path) -> None:
             raise RuntimeError("api down")
 
     report = geocode_places_dir(places, _Boom(), write=False)
-    assert report.errors == 2  # both attempted, both errored, no crash
+    # both attempted, no crash; a Grok error is transient (task 1.2f): left retriable, never
+    # stored as geocode_not_found
+    assert report.attempted == 2 and report.not_found == 0
+    assert [d["status"] for d in report.details] == ["geocode_error"] * 2
+    assert report.retriable == 2  # counted (and the OBSERV summary is status=warn)
+
+
+class _Scripted:
+    """chat_completion answers from a list; records evictions."""
+
+    def __init__(self, *replies):
+        self.replies = list(replies)
+        self.evicted = []
+
+    def chat_completion(self, **_):
+        return self.replies.pop(0)
+
+    def evict_completion(self, prompt, system_prompt, cache_type, temperature):
+        self.evicted.append(cache_type)
+        return True
+
+
+def test_an_unreadable_reply_is_evicted_and_asked_once_more() -> None:
+    from src.enrichment.places_grok_geocode import ask_geocode
+
+    good = '{"found": true, "latitude": 50.77, "longitude": 6.08, "confidence": 0.9}'
+    client = _Scripted("I think it is near Aachen", good)
+    result = ask_geocode(client, "p", "s", "grok")
+    assert result.found and result.latitude == 50.77 and client.evicted == ["places"]
+
+
+def test_a_reply_unreadable_twice_is_left_retriable_not_not_found(tmp_path) -> None:
+    from src.enrichment.places_grok_geocode import ask_geocode
+
+    client = _Scripted("no idea", '{"found": "maybe", "latitude": "north"}')
+    result = ask_geocode(client, "p", "s", "grok")
+    assert result.unparsed and not result.found and client.evicted == ["places"] * 2
+    place: dict = {}
+    from src.enrichment.places_grok_geocode import _non_geocoded_status
+
+    assert _non_geocoded_status(place, result) == "geocode_error"  # non-terminal
+
+
+def test_unreadable_replies_do_not_look_like_a_geocoder_outage(tmp_path, monkeypatch):
+    import src.enrichment.places_grok_geocode as pg
+
+    places = tmp_path / "places"
+    places.mkdir()
+    for i in range(pg.GEOCODER_DOWN_STREAK + 1):
+        _place_file(
+            places, f"p{i}.json", {"PlaceID": f"P{i}", "current_name": f"Town{i}"}
+        )
+    alerts = []
+    monkeypatch.setattr(pg, "_alert_geocoder_down", alerts.append)
+    client = _Scripted(*["no JSON"] * 2 * (pg.GEOCODER_DOWN_STREAK + 1))
+    report = geocode_places_dir(places, client, write=False)
+    assert alerts == [] and report.attempted == pg.GEOCODER_DOWN_STREAK + 1
 
 
 def test_parse_reply_tolerates_prose_and_fences() -> None:
@@ -241,3 +299,61 @@ def test_parse_reply_tolerates_prose_and_fences() -> None:
     assert result.latitude == 50.77
     # A reply with no JSON is a not-found, not a crash.
     assert _parse_geocode_reply("I don't know that place.").found is False
+
+
+def test_the_cascade_keeps_an_unreadable_grok_reply_retriable() -> None:
+    """Phase 3's cascade (Nominatim -> hill -> Grok): a Nominatim miss then an unreadable Grok
+    reply is geocode_error (retried), never a terminal geocode_not_found."""
+    from src.enrichment.places_grok_geocode import (
+        _apply_result,
+        cascade_geocoder,
+        geocode_place,
+    )
+
+    def nominatim_miss(name, place, client):
+        return GeocodeResult(found=False, confidence=0.0, source="osm")
+
+    geocode = cascade_geocoder(nominatim_miss, geocode_place)
+    result = geocode("Hill 400", {}, _Scripted("sorry", "still sorry"))
+    assert result.unparsed and _apply_result({}, result) == "geocode_error"
+
+
+def test_grok_errors_do_not_look_like_a_nominatim_outage(tmp_path, monkeypatch):
+    import src.enrichment.places_grok_geocode as pg
+
+    places = tmp_path / "places"
+    places.mkdir()
+    for i in range(pg.GEOCODER_DOWN_STREAK + 1):
+        _place_file(
+            places, f"p{i}.json", {"PlaceID": f"P{i}", "current_name": f"Town{i}"}
+        )
+    alerts = []
+    monkeypatch.setattr(pg, "_alert_geocoder_down", alerts.append)
+
+    class _Boom:
+        def chat_completion(self, **_):
+            raise RuntimeError("bad request")
+
+    geocode_places_dir(places, _Boom(), write=False)
+    assert alerts == []
+
+
+def test_a_batch_collect_is_not_a_geocode_error() -> None:
+    from src.enrichment.places_grok_geocode import ask_geocode
+    from src.grok_client import BatchModeCollecting
+
+    class _Collecting:
+        batch_mode = True
+
+        def chat_completion(self, **_):
+            raise BatchModeCollecting("k")
+
+    with pytest.raises(BatchModeCollecting):
+        ask_geocode(_Collecting(), "p", "s", "grok")
+
+
+def test_a_reply_cannot_set_our_own_flags() -> None:
+    from src.enrichment.places_grok_geocode import _parse_geocode_reply
+
+    r = _parse_geocode_reply('{"found": false, "unparsed": true, "transient": true}')
+    assert r.unparsed is False and r.transient is False  # an honest not-found

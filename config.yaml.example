@@ -28,6 +28,17 @@ api:
     model_map: {}
     max_retries: 3
     timeout: 60
+    # Live xAI prepaid credit (task 1.1c, src/utils/grok_balance; needs the management key secret
+    # <env>-wwii-pipeline/xai-management-key). Under the floor a Phase 2/3 run does not start (the
+    # book is deferred "funding" and resumes after a top-up); at or under the alert line a running
+    # task alerts every hour and goes on. Checked every balance_check_minutes during a run.
+    # Phase 0 imports are gated too when their title-page Grok request is on. A deployment that
+    # does not use prepaid xAI credit (or has no management key) sets balance_check: false.
+    # xAI auto top-up (console) can keep the balance above both lines: that is the operator's call.
+    balance_check: true
+    credit_floor_usd: 50
+    credit_alert_usd: 10
+    balance_check_minutes: 15
   calls_per_minute: 20                 # Conservative rate limit
   nara_api_key: ""
   noaa_api_token: ""
@@ -65,6 +76,24 @@ logistics:
 casualties:
   enabled: true
 
+# Trusted sources and link following (task 1.9, owner 2026-11-17; src/utils/link_policy, logged at
+# the start of each Phase 3 run). A cited document from a trusted source is queued for ingestion
+# with no URL Grok check and no human URL review; its CONTENT is still Grok-classified, and its
+# links to untrusted sites follow the review rule. A trusted record found by a search still needs
+# the Grok check that it is the cited document. match: host/path/ prefix (the exact host, www.
+# ignored - other subdomains are other sites; the path is case-sensitive and ends in /). Adding
+# a source is a config edit.
+trusted_sources:
+  - {name: hyperwar, match: ["ibiblio.org/hyperwar/"], forms: [html, pdf]}
+  - {name: nara, match: ["catalog.archives.gov/id/", "catalog.archives.gov/medialz/"]}
+
+links:
+  # how far a followed link's own links are followed (hops) and how many per page, for links on
+  # the parent page's own site and elsewhere (ceilings: 3 hops, 200 per page)
+  follow:
+    same_domain: {max_hops: 1, max_per_page: 20}
+    external: {max_hops: 1, max_per_page: 20}
+
 supplemental_material:
   enabled: true
   extract_citations: true              # Phase 2: parse citations into structured bibliography entries
@@ -73,11 +102,14 @@ supplemental_material:
   llm_search: true                     # Phase 3: Grok "LLM search" fallback (content-verified)
   search_gutenberg: true               # Phase 3: Gutendex API (free; independent of OpenSERP)
   search_archive_org: true             # Phase 3: archive.org API (free; independent of OpenSERP)
+  search_amazon: true                  # Phase 3: a bookseller listing (Amazon, via OpenSERP site: search) for books; a pointer, never an online copy
   use_openserp: true                   # Phase 3 ONLY: OpenSERP service is scaled up on demand
   verify_archive_urls: false           # Skip verification pass
   extract_isbn: false                  # Skip — uses API calls
   determine_copyright: false           # Skip — uses API calls
   max_materials_per_chapter: 500       # Limit scope
+  search_cache_days: 90                # a source (archive.org, Gutendex) is asked the same question at most once per this many days; an EMPTY answer is kept too
+  openserp_cache_days: 14              # the same for OpenSERP (a scraped engine: an empty answer may only mean it was throttled)
 
 concurrency:
   enabled: false
@@ -91,6 +123,26 @@ enrichment:
 
 extraction:
   window_paragraphs: 3                 # people/groups/places/equipment discovery: paragraphs per request (env WINDOW_PARAGRAPHS)
+
+# Per-book phase queues (src/utils/pending_queue.py). Each Phase 3 start counts an attempt on the
+# book's pending#enrich# row; the row is removed on success, so a failed or stopped run is retried by
+# the hourly reconcile. A book is never dropped (owner 2026-11-18): past phase3_max_attempts it is
+# deferred "failure" and held until `python3 scripts/resume_book.py <book>`. A stop for Grok funds or
+# connectivity uses no attempt and holds EVERY book; the reconcile retries after defer_retry_minutes.
+queue:
+  phase3_max_attempts: 3
+  defer_retry_minutes: 50              # under the hourly reconcile, so its next run retries
+  max_connectivity_deferrals: 24       # connectivity stops (since the last resume) before the book is held
+  max_funding_deferrals: 72            # funding stops (since the last resume) before the book is held
+
+# Fargate Spot price ladder (src/utils/spot_ladder.py, owner 2026-11-18). Every task starts on Spot at
+# its task-definition size. Each reclaim of a book's task doubles vCPU and memory for its next launch,
+# still on Spot, while that Spot price is at or under the ORIGINAL size's on-demand price x the
+# fraction below; then it launches on-demand at the original size. Rates: lambda_handlers/
+# price_refresh.py (daily; Spot from Cost Explorer, on-demand from the Price List API).
+spot_ladder:
+  max_fraction_of_on_demand: 1.0       # may be lowered, never raised above 1.0
+  max_price_age_days: 3                # older rates: never upsize
 
 batch:
   phase2: true                         # 50% off extraction

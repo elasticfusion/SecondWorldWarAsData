@@ -49,6 +49,32 @@ Parameters:
     Default: EC2
     AllowedValues: [EC2, SPOT]
     Description: Compute type - EC2 (on-demand) or SPOT
+  # --- The Spot price ladder (task 1.1d, src/utils/gpu_ladder) ---
+  # One Spot compute environment + queue per rung (Batch cannot be told an instance type, only a
+  # queue). Rung 0 is the ORIGINAL type: its on-demand hourly price is the cap for every rung, and
+  # the on-demand fallback holds this type only. Any type that can run the job works (one GPU of
+  # 24 GB-class memory, 4 vCPU, 15000 MiB: the job definition); the controller re-checks each type
+  # against describe_instance_types before using it, so an unsuitable type here is never used.
+  GpuRung0Type:
+    Type: String
+    Default: g5.xlarge
+    AllowedPattern: '^[a-z0-9]{2,12}\.[a-z0-9]{3,12}$'
+    Description: ORIGINAL instance type (rung 0), the cap is its on-demand hourly price
+  GpuRung1Type:
+    Type: String
+    Default: g6.xlarge
+    AllowedPattern: '^[a-z0-9]{2,12}\.[a-z0-9]{3,12}$'
+    Description: Spot rung 1 (a different capacity pool, used while its Spot price is at or under the cap)
+  GpuRung2Type:
+    Type: String
+    Default: g5.2xlarge
+    AllowedPattern: '^[a-z0-9]{2,12}\.[a-z0-9]{3,12}$'
+    Description: Spot rung 2
+  GpuRung3Type:
+    Type: String
+    Default: g6.2xlarge
+    AllowedPattern: '^[a-z0-9]{2,12}\.[a-z0-9]{3,12}$'
+    Description: Spot rung 3
 
 Conditions:
   IsSpot: !Equals [!Ref ComputeType, SPOT]
@@ -190,7 +216,7 @@ Resources:
       # custom-named resource. Changing the name lets CFN create the new CE,
       # repoint the queue's !Ref, then delete the old one.
       ComputeEnvironmentName: !Sub
-        - ${EnvironmentName}-wwii-chandra-gpu-${TypeLower}-v4
+        - ${EnvironmentName}-wwii-chandra-gpu-${TypeLower}-v5
         - TypeLower: !If [IsSpot, spot, ec2]
       Type: MANAGED
       State: ENABLED
@@ -207,15 +233,11 @@ Resources:
         MinvCpus: 0
         DesiredvCpus: 0
         InstanceTypes:
-          # 24GB-VRAM floor (g5/g6 only). EMPIRICAL: Chandra needs ~9-10GB GPU
-          # per page REGARDLESS of page size — a 16GB g4dn OOMs on essentially
-          # any page (observed on B406 11-page AND B400 6-page/small). g4dn is
-          # therefore broken capacity for this model, not cheaper capacity, so
-          # it is excluded from ALL Chandra pools. g5 and g6 (~23GB) both fit.
-          - g5.xlarge
-          - g5.2xlarge
-          - g6.xlarge
-          - g6.2xlarge
+          # Rung 0, the ORIGINAL type (see GpuRung0Type). 24GB-VRAM floor, EMPIRICAL: Chandra needs
+          # ~9-10GB GPU per page REGARDLESS of page size - a 16GB g4dn OOMs on essentially any page
+          # (B406 11-page AND B400 6-page) - so such a type is broken capacity for this model, not
+          # cheaper capacity.
+          - !Ref GpuRung0Type
         Subnets: !Ref PrivateSubnetIds
         SecurityGroupIds:
           - !Ref SecurityGroupId
@@ -240,6 +262,126 @@ Resources:
         - ComputeEnvironment: !Ref ChandraComputeEnv
           Order: 1
 
+  # --- Spot rung 1 (task 1.1d): its own compute environment + queue ---
+  ChandraComputeEnvR1:
+    Type: AWS::Batch::ComputeEnvironment
+    Condition: IsSpot
+    Properties:
+      ComputeEnvironmentName: !Sub ${EnvironmentName}-wwii-chandra-gpu-spot-r1-v5
+      Type: MANAGED
+      State: ENABLED
+      ComputeResources:
+        Type: SPOT
+        AllocationStrategy: SPOT_CAPACITY_OPTIMIZED
+        BidPercentage: !Ref SpotBidPercent
+        MaxvCpus: !Ref MaxvCpus
+        MinvCpus: 0
+        DesiredvCpus: 0
+        InstanceTypes:
+          - !Ref GpuRung1Type
+        Subnets: !Ref PrivateSubnetIds
+        SecurityGroupIds:
+          - !Ref SecurityGroupId
+        InstanceRole: !GetAtt BatchInstanceProfile.Arn
+        LaunchTemplate:
+          LaunchTemplateId: !Ref ChandraLaunchTemplate
+          Version: $Latest
+        Ec2Configuration:
+          - ImageType: ECS_AL2023_NVIDIA
+        Tags:
+          Name: !Sub ${EnvironmentName}-wwii-chandra-r1
+
+  ChandraJobQueueR1:
+    Type: AWS::Batch::JobQueue
+    Condition: IsSpot
+    Properties:
+      JobQueueName: !Sub ${EnvironmentName}-wwii-chandra-gpu-r1
+      State: ENABLED
+      Priority: 1
+      ComputeEnvironmentOrder:
+        - ComputeEnvironment: !Ref ChandraComputeEnvR1
+          Order: 1
+
+  # --- Spot rung 2 (task 1.1d): its own compute environment + queue ---
+  ChandraComputeEnvR2:
+    Type: AWS::Batch::ComputeEnvironment
+    Condition: IsSpot
+    Properties:
+      ComputeEnvironmentName: !Sub ${EnvironmentName}-wwii-chandra-gpu-spot-r2-v5
+      Type: MANAGED
+      State: ENABLED
+      ComputeResources:
+        Type: SPOT
+        AllocationStrategy: SPOT_CAPACITY_OPTIMIZED
+        BidPercentage: !Ref SpotBidPercent
+        MaxvCpus: !Ref MaxvCpus
+        MinvCpus: 0
+        DesiredvCpus: 0
+        InstanceTypes:
+          - !Ref GpuRung2Type
+        Subnets: !Ref PrivateSubnetIds
+        SecurityGroupIds:
+          - !Ref SecurityGroupId
+        InstanceRole: !GetAtt BatchInstanceProfile.Arn
+        LaunchTemplate:
+          LaunchTemplateId: !Ref ChandraLaunchTemplate
+          Version: $Latest
+        Ec2Configuration:
+          - ImageType: ECS_AL2023_NVIDIA
+        Tags:
+          Name: !Sub ${EnvironmentName}-wwii-chandra-r2
+
+  ChandraJobQueueR2:
+    Type: AWS::Batch::JobQueue
+    Condition: IsSpot
+    Properties:
+      JobQueueName: !Sub ${EnvironmentName}-wwii-chandra-gpu-r2
+      State: ENABLED
+      Priority: 1
+      ComputeEnvironmentOrder:
+        - ComputeEnvironment: !Ref ChandraComputeEnvR2
+          Order: 1
+
+  # --- Spot rung 3 (task 1.1d): its own compute environment + queue ---
+  ChandraComputeEnvR3:
+    Type: AWS::Batch::ComputeEnvironment
+    Condition: IsSpot
+    Properties:
+      ComputeEnvironmentName: !Sub ${EnvironmentName}-wwii-chandra-gpu-spot-r3-v5
+      Type: MANAGED
+      State: ENABLED
+      ComputeResources:
+        Type: SPOT
+        AllocationStrategy: SPOT_CAPACITY_OPTIMIZED
+        BidPercentage: !Ref SpotBidPercent
+        MaxvCpus: !Ref MaxvCpus
+        MinvCpus: 0
+        DesiredvCpus: 0
+        InstanceTypes:
+          - !Ref GpuRung3Type
+        Subnets: !Ref PrivateSubnetIds
+        SecurityGroupIds:
+          - !Ref SecurityGroupId
+        InstanceRole: !GetAtt BatchInstanceProfile.Arn
+        LaunchTemplate:
+          LaunchTemplateId: !Ref ChandraLaunchTemplate
+          Version: $Latest
+        Ec2Configuration:
+          - ImageType: ECS_AL2023_NVIDIA
+        Tags:
+          Name: !Sub ${EnvironmentName}-wwii-chandra-r3
+
+  ChandraJobQueueR3:
+    Type: AWS::Batch::JobQueue
+    Condition: IsSpot
+    Properties:
+      JobQueueName: !Sub ${EnvironmentName}-wwii-chandra-gpu-r3
+      State: ENABLED
+      Priority: 1
+      ComputeEnvironmentOrder:
+        - ComputeEnvironment: !Ref ChandraComputeEnvR3
+          Order: 1
+
   # --- On-demand fallback CE + queue (Option B controller target) ---
   # Always on-demand (EC2), separate from the primary SPOT queue. The custom
   # controller resubmits spot-starved jobs here (roomy 768 G/VT on-demand quota),
@@ -249,7 +391,7 @@ Resources:
   ChandraOnDemandComputeEnv:
     Type: AWS::Batch::ComputeEnvironment
     Properties:
-      ComputeEnvironmentName: !Sub ${EnvironmentName}-wwii-chandra-gpu-ondemand-v4
+      ComputeEnvironmentName: !Sub ${EnvironmentName}-wwii-chandra-gpu-ondemand-v5
       Type: MANAGED
       State: ENABLED
       # No ServiceRole -> AWSServiceRoleForBatch SLR (current best practice).
@@ -260,11 +402,9 @@ Resources:
         MinvCpus: 0
         DesiredvCpus: 0
         InstanceTypes:
-          # 24GB floor — g4dn (16GB) excluded (OOMs Chandra; see spot CE note).
-          - g5.xlarge
-          - g5.2xlarge
-          - g6.xlarge
-          - g6.2xlarge
+          # The ORIGINAL type only (owner 1.1d): the on-demand fallback is never priced above the
+          # original type's on-demand hourly price.
+          - !Ref GpuRung0Type
         Subnets: !Ref PrivateSubnetIds
         SecurityGroupIds:
           - !Ref SecurityGroupId
@@ -321,8 +461,16 @@ Resources:
           # AttemptDurationSeconds below — is the primary failure detector.
           - Name: OCR_NO_PROGRESS_SECS
             Value: "900"
-      RetryStrategy:
-        Attempts: 2
+      # Task 1.1d: with the OCR spot controller, a Spot RECLAIM ("Host EC2 ... terminated") is not
+      # retried on the same queue: the job fails and the controller resubmits it one rung up the
+      # price ladder (or on-demand). Every other failure keeps the 2 attempts.
+      RetryStrategy: !If
+        - HasLambdaCode
+        - Attempts: 2
+          EvaluateOnExit:
+            - Action: EXIT
+              OnStatusReason: 'Host EC2*'
+        - Attempts: 2
       Timeout:
         # Loose absolute backstop / cost circuit-breaker only. Healthy-but-slow
         # dense scanned chunks legitimately exceed 1h; the progress-watchdog
@@ -401,6 +549,9 @@ Resources:
                 Resource:
                   - !Sub arn:aws:batch:${AWS::Region}:${AWS::AccountId}:job-queue/${EnvironmentName}-wwii-chandra-gpu
                   - !Sub arn:aws:batch:${AWS::Region}:${AWS::AccountId}:job-queue/${EnvironmentName}-wwii-chandra-gpu-ondemand
+                  - !Sub arn:aws:batch:${AWS::Region}:${AWS::AccountId}:job-queue/${EnvironmentName}-wwii-chandra-gpu-r1
+                  - !Sub arn:aws:batch:${AWS::Region}:${AWS::AccountId}:job-queue/${EnvironmentName}-wwii-chandra-gpu-r2
+                  - !Sub arn:aws:batch:${AWS::Region}:${AWS::AccountId}:job-queue/${EnvironmentName}-wwii-chandra-gpu-r3
                   - !Sub arn:aws:batch:${AWS::Region}:${AWS::AccountId}:job-definition/${EnvironmentName}-wwii-chandra:*
               # TerminateJob targets a job by its server-assigned job ID (job/*), which cannot be
               # restricted by queue/name; scope it to this account+region's Batch jobs.
@@ -410,8 +561,37 @@ Resources:
               - Effect: Allow
                 Action: [dynamodb:GetItem, dynamodb:PutItem, dynamodb:UpdateItem, dynamodb:DeleteItem, dynamodb:Scan]
                 Resource: !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${EnvironmentName}-wwii-api-cache
+              - Sid: NoCreditGateWrites
+                # task 1.1e: the trigger trusts these items for launch decisions; this role has no reason to write them
+                Effect: Deny
+                Action: [dynamodb:PutItem, dynamodb:UpdateItem, dynamodb:DeleteItem, dynamodb:BatchWriteItem]
+                Resource: !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${EnvironmentName}-wwii-api-cache
+                Condition:
+                  ForAnyValue:StringLike:
+                    dynamodb:LeadingKeys:
+                      - credit#holds#*
+                      - credit#balance
+                      - credit#hold_alerted
+              - Sid: NoRoundApprovalWrites
+                # Group 2: operator-only batch-round approval rows (scripts/approve_batch_rounds.py)
+                Effect: Deny
+                Action: [dynamodb:PutItem, dynamodb:UpdateItem, dynamodb:DeleteItem, dynamodb:BatchWriteItem]
+                Resource: !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${EnvironmentName}-wwii-api-cache
+                Condition:
+                  ForAnyValue:StringLike:
+                    dynamodb:LeadingKeys:
+                      - rounds#*
               - Effect: Allow
                 Action: servicequotas:GetServiceQuota
+                Resource: '*'
+              # 1.1d ladder: read-only price/shape lookups. None supports resource-level scoping.
+              - Sid: LadderPriceReads
+                Effect: Allow
+                Action:
+                  - pricing:GetProducts
+                  - ec2:DescribeSpotPriceHistory
+                  - ec2:DescribeSubnets
+                  - ec2:DescribeInstanceTypes
                 Resource: '*'
               - Effect: Allow
                 Action: sns:Publish
@@ -425,7 +605,7 @@ Resources:
       Runtime: python3.12
       Handler: lambda_handlers.ocr_spot_controller.handler
       Role: !GetAtt OcrSpotControllerRole.Arn
-      Timeout: 120
+      Timeout: 180
       MemorySize: 256
       Code:
         S3Bucket: !Ref LambdaCodeBucket
@@ -434,7 +614,13 @@ Resources:
         Variables:
           ENV_NAME: !Ref EnvironmentName
           CACHE_TABLE: !Sub ${EnvironmentName}-wwii-api-cache
-          OCR_SPOT_QUEUE: !Sub ${EnvironmentName}-wwii-chandra-gpu
+          # 1.1d: ladder types in order (rung 0 = ORIGINAL type, its on-demand price is the cap).
+          OCR_GPU_LADDER: !If
+            - IsSpot
+            - !Join [',', [!Ref GpuRung0Type, !Ref GpuRung1Type, !Ref GpuRung2Type, !Ref GpuRung3Type]]
+            - !Ref GpuRung0Type
+          OCR_MAX_FRACTION: '1.0'
+          PRIVATE_SUBNET_IDS: !Join [',', !Ref PrivateSubnetIds]
           OCR_ONDEMAND_QUEUE: !Sub ${EnvironmentName}-wwii-chandra-gpu-ondemand
           OCR_JOB_DEF: !Sub ${EnvironmentName}-wwii-chandra
           # Publishes free-form alerts to phase2-complete -> fans to EMAIL (direct)
@@ -451,6 +637,35 @@ Resources:
       Targets:
         - Arn: !GetAtt OcrSpotControllerFunction.Arn
           Id: ocr-spot-controller
+
+  # 1.1d: a Spot reclaim (status reason 'Host EC2*') is handled the moment Batch reports it;
+  # the hourly schedule above is the backstop sweep.
+  OcrSpotControllerFailedRule:
+    Type: AWS::Events::Rule
+    Condition: HasLambdaCode
+    Properties:
+      Name: !Sub ${EnvironmentName}-wwii-ocr-spot-failed
+      Description: On a Chandra GPU job FAILED, let the controller climb the Spot price ladder
+      EventPattern:
+        source: [aws.batch]
+        detail-type: [Batch Job State Change]
+        detail:
+          status: [FAILED]
+          jobQueue:
+            - prefix: !Sub arn:aws:batch:${AWS::Region}:${AWS::AccountId}:job-queue/${EnvironmentName}-wwii-chandra-gpu
+      State: ENABLED
+      Targets:
+        - Arn: !GetAtt OcrSpotControllerFunction.Arn
+          Id: ocr-spot-controller-failed
+
+  OcrSpotControllerFailedPermission:
+    Type: AWS::Lambda::Permission
+    Condition: HasLambdaCode
+    Properties:
+      FunctionName: !Ref OcrSpotControllerFunction
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt OcrSpotControllerFailedRule.Arn
 
   OcrSpotControllerInvokePermission:
     Type: AWS::Lambda::Permission

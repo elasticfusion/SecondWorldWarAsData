@@ -29,7 +29,7 @@ from __future__ import annotations
 import logging
 from typing import Any, List, Optional
 
-from src.enrichment.places_grok_geocode import GeocodeResult, _parse_geocode_reply
+from src.enrichment.places_grok_geocode import GeocodeResult, ask_geocode
 
 logger = logging.getLogger(__name__)
 
@@ -334,20 +334,8 @@ def make_situational_geocoder(session: Any = None):
     def geocode(name: str, place: dict, grok_client: Any) -> GeocodeResult:
         context, ctx_source = encyclopedia_context(name, session)
         prompt = _prompt_for(name, context, _anchors(place))
-        try:
-            raw = grok_client.chat_completion(
-                prompt=prompt,
-                system_prompt=_SYSTEM_PROMPT,
-                temperature=0.1,
-                cache_type="places",
-            )
-        except Exception as exc:  # noqa: BLE001 - surface as miss, keep batch alive
-            logger.warning("Situational geocode failed for %s: %s", name, exc)
-            return GeocodeResult(
-                found=False, note=f"grok error: {exc}", source="situational"
-            )
-        result = _parse_geocode_reply(raw)
-        result.source = "situational"
+        # shared ask/read (task 1.2f): errors and unreadable replies are never a not-found
+        result = ask_geocode(grok_client, prompt, _SYSTEM_PROMPT, "situational")
         if result.found:
             # These are areas, not points — cap confidence and always flag.
             result.confidence = min(result.confidence, 0.5)

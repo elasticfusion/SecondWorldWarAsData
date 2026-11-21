@@ -1509,4 +1509,9 @@ def _write_phase_results(
 
 
 if __name__ == "__main__":
-    main()
+    import sys as _sys
+
+    from src.utils.stop_cause import run_main
+
+    # a Grok outage or no credits stops the run with its own exit code (task 1.2e)
+    _sys.exit(run_main(main))

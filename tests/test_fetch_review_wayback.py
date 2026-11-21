@@ -44,7 +44,7 @@ def test_positive_snapshot_emits_pending_textual_event(_local_store):
     ev = json.loads((_local_store / "wayback.jsonl").read_text().splitlines()[0])
     assert ev["kind"] == fp.TEXTUAL
     assert ev["outcome"] == fp.HIT
-    assert ev["review_status"] == fp.PENDING  # enqueued for human review
+    assert ev["review_status"] is None  # a lookup is provenance, never a review item
     assert "19960101" in ev["result_summary"]
 
 
@@ -62,7 +62,7 @@ def test_no_snapshot_emits_miss(_local_store):
 
 def test_list_pending_surfaces_textual_finds(_local_store):
     fp.record_fetch_event(
-        provider="wayback",
+        provider="openserp-find",
         endpoint="https://archive.org/wayback/available",
         kind=fp.TEXTUAL,
         outcome=fp.HIT,

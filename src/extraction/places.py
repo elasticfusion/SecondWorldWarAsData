@@ -384,8 +384,27 @@ def extract_places(
             if not place_name:
                 continue
 
-            # Find or create place file
-            place_file = _find_or_create_place(place_name, mention, places_dir, index)
+            # Find or create place file; a record the schema guard refuses skips this mention
+            # only (task 1.8), loudly - the other places of the event are still written
+            try:
+                place_file = _find_or_create_place(
+                    place_name, mention, places_dir, index
+                )
+            except RuntimeError as e:
+                from src.utils.observe import observe_warn
+
+                observe_warn(
+                    "places",
+                    "record_refused",
+                    note=(
+                        "a new place record failed its schema and was not written; check the "
+                        "places schema against the extractor's fields (the task log has the "
+                        "validation error)"
+                    ),
+                    place=str(place_name)[:80],
+                    error=str(e)[:120],
+                )
+                continue
 
             # Add event mention to place file
             _add_event_mention(
@@ -463,14 +482,17 @@ def _new_place_filename(place_name: str, place_id: str, places_dir: Path) -> str
     from src.extraction.batch_parallel import (
         _safe_entity_filename,
         _contained_entity_path,
+        entity_id_suffix,
     )
 
     safe_name = place_name.replace(" ", "_").replace("/", "_")[:120]
+    stem = _safe_entity_filename(safe_name, "place")[:-5]
     filename = _safe_entity_filename(
-        f"{safe_name}_{place_id[:8]}.json", f"place_{place_id[:12]}"
+        f"{stem}_{entity_id_suffix(place_id, places_dir, stem)}.json",
+        f"place_{place_id[-12:]}",
     )
     if _contained_entity_path(places_dir, filename) is None:
-        filename = f"place_{place_id[:12]}.json"
+        filename = f"place_{place_id}.json"
     return filename
 
 
@@ -560,7 +582,11 @@ def _find_or_create_place(
         # then register it in the locked index before releasing (so the next waiter sees it).
         place_data = _build_new_place_record(place_name, mention)
         filename = _new_place_filename(place_name, place_data["PlaceID"], places_dir)
-        write_json_with_lock(places_dir / filename, place_data)
+        if not write_json_with_lock(places_dir / filename, place_data):
+            # the schema guard refused the record: never index a file that does not exist
+            raise RuntimeError(
+                f"place record for {place_name!r} was refused by its schema"
+            )
 
         disk_index[place_key] = filename
         save(disk_index)
@@ -626,7 +652,7 @@ def link_parent_place_ids(places_dir: Path) -> int:
         key=lambda item: priority.get(item[1].get("geography_type", ""), 3),
     )
 
-    updated = 0
+    updated = refused = 0
     for pf, data in ordered:
         hierarchy = data.get("hierarchy")
         if not hierarchy or not isinstance(hierarchy, dict):
@@ -636,11 +662,25 @@ def link_parent_place_ids(places_dir: Path) -> int:
         parent_id = _find_parent_id(hierarchy, name_to_id, data.get("PlaceID", ""))
         if parent_id:
             hierarchy["parent_place_id"] = parent_id
-            write_json_with_lock(pf, data)
-            updated += 1
+            # entity="places": the version and _last_updated stamp, so change detection sees
+            # the new parent (task 1.10); a refused write is not counted as linked
+            if write_json_with_lock(pf, data, entity="places"):
+                updated += 1
+            else:
+                refused += 1
+                logger.warning(
+                    "OBSERV places.parent_link_refused place=%s status=warn - the schema guard "
+                    "refused the record; check its fields against the places schema",
+                    pf.name,
+                )
 
     logger.info("Linked parent_place_id for %d places", updated)
-    logger.info("OBSERV places.parent_link linked=%d", updated)
+    logger.info(
+        "OBSERV places.parent_link linked=%d refused=%d status=%s",
+        updated,
+        refused,
+        "warn" if refused else "ok",
+    )
     return updated
 
 

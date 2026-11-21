@@ -69,7 +69,7 @@ def test_ingest_recycles_relevant_map(tmp_path, monkeypatch):
                 },
             }
 
-    monkeypatch.setattr(MLS, "_content_is_new", lambda url: True)
+    monkeypatch.setattr(MLS, "_claim_map", lambda url: "won")
     docs = [
         {
             "book": "XChannel",
@@ -139,7 +139,7 @@ def test_ingest_deduped(tmp_path, monkeypatch):
         def extract_json_with_image(self, **k):
             return {"is_relevant": True, "depicted": {"description": "x"}}
 
-    monkeypatch.setattr(MLS, "_content_is_new", lambda url: False)  # already seen
+    monkeypatch.setattr(MLS, "_claim_map", lambda url: "duplicate")  # already seen
     docs = [
         {
             "book": "X",
@@ -173,7 +173,7 @@ def test_ingest_trusts_only_configured_hosts_not_the_documents_own(
     import src.extraction.search_external_maps as SEM
 
     monkeypatch.setattr(SEM, "_build_verification_prompt", lambda *a, **k: "P")
-    monkeypatch.setattr(MLS, "_content_is_new", lambda url: True)
+    monkeypatch.setattr(MLS, "_claim_map", lambda url: "won")
 
     class _GC:
         def extract_json_with_image(self, **k):
@@ -199,3 +199,21 @@ def test_ingest_trusts_only_configured_hosts_not_the_documents_own(
         _docs(), _GC(), allowed_hosts=("archive.example",)
     )
     assert out["recycled"] == 1
+
+
+def test_the_url_index_is_saved_after_each_document(tmp_path, monkeypatch):
+    """A task stopped midway keeps the maps it already persisted (task 1.2f)."""
+    from src.extraction import map_link_source as mls
+
+    saves = []
+    monkeypatch.setattr(mls, "_save_url_index", lambda p, idx: saves.append(dict(idx)))
+    monkeypatch.setattr(
+        mls, "_persist_one_map", lambda m, b, d, idx, *a: idx.__setitem__(m["url"], "M")
+    )
+    docs = [
+        {"book": "B", "maps": [{"url": "u1"}]},
+        {"book": "B", "maps": [{"url": "u2"}]},
+    ]
+    mls.persist_map_entities(docs, tmp_path)
+    assert saves[0] == {"u1": "M"} and saves[-1] == {"u1": "M", "u2": "M"}
+    assert len(saves) == 3  # one per document + the final

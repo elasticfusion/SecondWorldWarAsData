@@ -21,6 +21,14 @@ struct = `extract_structured`, vision = `extract_json_with_image[_base64]`). **B
 site re-raises `BatchModeCollecting`, so the request can be queued for the Batch API; other sites are
 live-only or leave the choice to the caller.
 
+Vision (since 2026-11-20, Group 2): `extract_json_with_image[_base64]` queue a cache miss in batch mode like any
+text request (`GrokClient._vision_json`; the image goes into the request as a data URL). The batch caches the
+answer as text under the request's key and the vision method parses it on read (an unparseable one is evicted).
+The direct callers that swallowed every exception now re-raise `BatchModeCollecting` (`map_link_source`,
+`image_captioner`, `unit_patch`, `chart_source_adapter`, `grok_search_maps`, `search_external_maps`,
+`video_vision`; `equipment` already did); the steps above
+them are audited in the rounds work (design: PHASE3_BATCHING_DESIGN.md).
+
 ---
 
 ## 1. Client mechanics (`src/grok_client.py`)
@@ -57,9 +65,21 @@ live-only or leave the choice to the caller.
   `source_section`. The prompt gets an "ANSWER IDENTITY" block with the BookID and a RequestID (a 16-hex hash of
   cache type, system prompt and prompt) and the JSON answer must echo both, live or cached. A `mismatch` is
   evicted and asked once more, then raises `GrokAPIError`. A `missing` echo is asked once more and then accepted
-  with a warning. A non-object answer is accepted with a warning. `chat_completion` and the vision methods never
-  carry identity. Phase 3 never sets `current_book` (a grep of `phase3_enrich_data.py` and `src/enrichment/*`
-  finds no `current_book.set` or `book_scope`), so no Phase 3 request is stamped.
+  with a warning. A non-object answer is accepted with a warning.
+  **Phase 3 (task 1.7, 2026-11-20).** The JSON-object kinds about no single book carry their RequestID alone
+  (`request_identity.REQUEST_BOUND`: `group_enrichment`, `place_enrichment`, `equipment_disambiguation`,
+  `license_check`, `openserp_verify`, `people_group_source_recheck`, `equipment_source_recheck`, and the vision kinds
+  `unit_patch_vision`, `vision_verification`, `external_maps_verification`); `in_doc_map_vision` (`DOC_BOUND`) also
+  carries the document's BookID (`map_link_source` runs each document under `book_scope`). A request-only kind keeps the
+  cache key of the unstamped request (answers cached before are still hits) and, whose
+  answer does not echo, is accepted at once with one warning (no second paid call) and kept stamped; a mismatch
+  is evicted and raises as above. Vision answers are proven in `GrokClient._vision_proof`. One-word and free-text
+  answers (`bibliography_verify`, link relevancy, terrain, `default` vision captions) cannot carry an echo: their proof
+  is the request id the batch returns with each result, and Phase 3 refuses to pair answers by position when none
+  of the ids is ours (`batch_api.align_by_request_id(strict=True)`, alert `batch.align_positional_refused`; the
+  requests are asked again next round, never answered live). Each batch's metrics file records its request ids, round,
+  submit time and the models that answered, so `scripts/trace_grok_answer.py <request_id>` names the batch of any
+  cached answer (`src/utils/answer_provenance`). The records an answer was used for do not carry the batch id.
 - **Batch collection.** With `batch_mode=True` a cache miss is queued as a `BatchRequest` and the call raises
   `BatchModeCollecting` (`_queue_batch_request`, line 1710), which derives from `Exception`. `submit_batch`
   (line 750) first asks `_answer_without_batch`: nothing queued returns None; fewer than `batch.min_requests`
@@ -181,7 +201,7 @@ SQS worker (`openserp_worker.py`) through `enrich_one_<type>`.
 | openserp_external_maps | `extraction/openserp_maps.py:124` (`_analyze_license_with_grok`) | Licence of a map image from its page text | json, `license_check`, `license_check.yaml`, temp 0.0 | `external_maps.enabled` (false) | no handler at the call |
 | openserp_external_maps | `extraction/search_external_maps.py:414` (`_verify_single_image`) | Is a candidate image a relevant map for the place | vision (URL), `external_maps_verification`, `map_vision.yaml` | `external_maps.enabled` (false) | no handler at the call |
 | image_person_link | none | Calls `ImageCaptioner.caption(None, ...)`, which returns a context-only result without a request | n/a | `images.link_people` | n/a |
-| link_asset_review | `extraction/link_relevancy.py:82` (`_grok_link_relevant`) | Is a document link relevant to a WWII corpus: YES, NO or UNKNOWN | chat, default cache, inline | non-whitelisted links, `links.review_external` | fail-safe: an error or UNKNOWN enqueues the link for human review |
+| link_asset_review | `extraction/link_relevancy.py` (`grok_link_verdict`) | Is a document link relevant to a WWII corpus: YES, NO or UNKNOWN | chat, default cache, inline | EVERY link, trusted sources too (owner 2026-11-17), `links.review_external` | only YES is queued (`find_queue.enqueue_find`); NO is dropped; UNKNOWN, an unusable reply, an error or no client is `undecided`: not queued, nothing recorded, asked again next run |
 | image_place_link | `extraction/image_place_link.py:82` (`_grok_is_terrain`) | One-word terrain gate on a caption | chat, default cache, inline | ambiguous captions, `images.link_places` | `(False, "grok-error")` |
 | equipment_images | `extraction/equipment.py:617` (`_verify_media_with_vision`) via `equipment_images._ask_vision` | Does this image show the named equipment | vision (base64), `vision_verification`, `equipment_vision.yaml`, temp 0.0 | per pending image of SPECIFIC equipment until `equipment.images_per_record` (3) verified; 3 undecided answers set `needs_review` | no verdict leaves the image unchecked and alerts |
 
@@ -201,7 +221,7 @@ A rejected result costs 1. A cached verdict (`openserp_verify`, `openserp_url_ve
 | `urlreview_ui_handler` Lambda (`compute.yaml:1226`) | `lambda_handlers/urlreview_ui_handler.py:176-200` -> `enrichment/fetch_review.py:253` `decide_exclude_scope` | chat, `exclude_scope`, temp 0.0: exclude one URL or the whole site when an operator excludes a find | wired; operator action, not a pipeline run. An error returns `SCOPE_URL` |
 | `openserp_worker.py` | `:298` (`GrokClient(...)`) | the Phase 3 OpenSERP requests through `enrich_one_<type>` (section 5) | dormant: nothing fills the queue |
 | `ecs_entrypoint.py` | `:4859` | builds a `GrokClient` only to write retrieved batch answers into the cache; makes no request | live |
-| `lambda_handlers/phase2_handler.py`, `phase3_handler.py` | `:28`, `:40` (`GrokClient(...)`) | per-entity enrichment from S3 events | dormant: not referenced by any template or script |
+| `lambda_handlers/phase2_handler.py` (`phase3_handler.py` deleted 2026-11-20) | `:28` (`GrokClient(...)`) | per-entity enrichment from S3 events | dormant: not referenced by any template or script |
 
 No other Lambda (including `batch_poller.py`) imports `GrokClient` or makes a chat request.
 
@@ -209,7 +229,7 @@ No other Lambda (including `batch_poller.py`) imports `GrokClient` or makes a ch
 | `urlreview_ui_handler` Lambda (`compute.yaml:1226`) | `lambda_handlers/urlreview_ui_handler.py:176-200` -> `enrichment/fetch_review.py:253` `decide_exclude_scope` | chat, `exclude_scope`, temp 0.0: exclude one URL or the whole site when an operator excludes a find | wired; operator action, not a pipeline run. Error returns `SCOPE_URL` |
 | `openserp_worker.py:298` | the Phase 3 OpenSERP requests through `enrich_one_<type>` | as section 5 | dormant (nothing fills the queue) |
 | `ecs_entrypoint.py:4910` | builds a `GrokClient` only to populate the cache from retrieved batch answers; makes no request | n/a | live |
-| `lambda_handlers/phase2_handler.py`, `phase3_handler.py` | `:28`, `:40` (`GrokClient(...)`) | per-entity enrichment from S3 events | dormant: not referenced by any template or script |
+| `lambda_handlers/phase2_handler.py` (`phase3_handler.py` deleted 2026-11-20) | `:28` (`GrokClient(...)`) | per-entity enrichment from S3 events | dormant: not referenced by any template or script |
 
 | `batch_poller` and other Lambdas | no chat request | n/a | n/a |
 
@@ -229,7 +249,7 @@ Callers found by grep and `trace_path`; none outside tests.
 | `extraction/chart_source_adapter.ingest_affirmed_chart` (`:321`) | chart vision (`chart_vision.yaml`) | no caller |
 | `extraction/date_summary.generate_date_summary` (`:140`) | `date_summary` (`date_summary.yaml`, temp 0.1) | no caller |
 | `extraction/grok_search_maps.search_maps_with_grok` (`:81`), `verify_map_with_vision` (`:202`) | `grok_search_maps` (`map_search.yaml`, temp 0.1), `vision_verification` | CLI only (`python3 -m src.extraction.grok_search_maps`) |
-| `lambda_handlers/phase2_handler.py`, `phase3_handler.py` | via `enrich_*` | no template or script |
+| `lambda_handlers/phase2_handler.py` (`phase3_handler.py` deleted 2026-11-20) | via `enrich_*` | no template or script |
 
 ---
 

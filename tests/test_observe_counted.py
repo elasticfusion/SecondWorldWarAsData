@@ -15,7 +15,7 @@ def test_first_then_every_nth_with_counts(caplog, monkeypatch):
     lines = [r.message for r in caplog.records if "OBSERV t.e" in r.message]
     assert len(lines) == 3  # count 1, 4, 8
     assert "count=1" in lines[0] and "count=4" in lines[1] and "count=8" in lines[2]
-    assert all("do_X" in m for m in lines)
+    assert all("do X" in m for m in lines)
 
 
 def test_keys_are_independent_and_totals_reported():

@@ -89,9 +89,11 @@ def _one_hop(session, url: str, timeout: int):
         return None
     try:
         # Pin the connection to a vetted IP (DNS-rebind defense); per-hop (no auto-redirect).
-        from src.utils.url_hygiene import _pinned_get
+        # ONE try (_pinned_get_once): a 429/503/transient hop falls back to Wayback at once
+        # (_follow_live) instead of re-hitting the host behind the per-domain fetch gate
+        from src.utils.url_hygiene import _pinned_get_once
 
-        resp = _pinned_get(
+        resp = _pinned_get_once(
             url,
             host,
             vetted,

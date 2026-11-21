@@ -120,13 +120,44 @@ class _Heartbeat:
             self._thread.join(timeout=2)
 
 
+# pause on a Grok stop for the shared client's stop window
+from src.utils.grok_models import (  # noqa: E402
+    TRANSIENT_STOP_SECONDS as GROK_STOP_PAUSE_S,
+)
+
+
+def _record_miss(storage: Any, trace: dict, outcome: str, entity_path: str) -> None:
+    """Keep this miss in the review log (S3, one prefix per book) like the directory driver does:
+    ``review/openserp_misses/<book>/<task>-<hash of the entity>.json``. Never raises."""
+    import hashlib
+
+    import src.enrichment.openserp_enrichment as oe
+
+    try:
+        book = oe._path_part(os.environ.get("BOOK_NAME", ""), "_all")
+        task = oe._path_part(os.environ.get("ECS_TASK_ID", ""), "local")
+        tag = hashlib.sha256(entity_path.encode()).hexdigest()[:12]
+        storage.write_json(
+            f"review/openserp_misses/{book}/{task}-{tag}.json",
+            oe.miss_record(trace, outcome),
+        )
+        oe._metric(f"review_{outcome}")
+    except Exception as e:  # noqa: BLE001 - the review log must not stop the worker
+        logger.warning(
+            "OBSERV openserp_worker.review_log_failed status=warn err=%s",
+            type(e).__name__,
+        )
+
+
 def process_message(
     body: dict,
     storage: Any,
     openserp_url: str,
     grok_client: Any,
 ) -> str:
-    """Process one work message. Returns 'done' (delete), 'skip' (delete), or 'retry' (do NOT delete)."""
+    """Process one work message. Returns 'done' (delete), 'skip' (delete), 'retry' (do NOT delete:
+    counted toward the DLQ), or 'defer' (a Grok/OpenSERP outage: re-queued as a fresh message so
+    an outage never pushes work into the DLQ - deferred, never dropped)."""
     entity_type = body.get("entity_type", "")
     entity_path = body.get("entity_path", "")
     dispatch = _DISPATCH.get(entity_type)
@@ -166,13 +197,47 @@ def process_message(
     import src.enrichment.openserp_enrichment as oe
 
     enrich_one = getattr(oe, fn_name)
+    from src.utils.grok_models import GrokFundsExhausted, GrokUnreachable
+
+    trace = oe._new_trace(
+        entity_label,
+        entity_path,
+        data,
+        data.get("current_name") or data.get("name") or "",
+    )
     try:
-        changed = enrich_one(data, openserp_url, grok_client)
+        with oe._tracing(
+            trace
+        ):  # the same per-entity trace as the directory driver (1.2d)
+            changed = enrich_one(data, openserp_url, grok_client)
+    except (GrokUnreachable, GrokFundsExhausted) as e:
+        # Grok down or no credits (task 1.2e): keep the message, pause before the next one so
+        # the worker does not burn through the queue (and into the DLQ) while Grok is out
+        logger.error(
+            "OBSERV openserp_worker.service_stopped status=error kind=%s path=%s - pausing "
+            "%ds; the message is redelivered",
+            type(e).__name__,
+            entity_path,
+            GROK_STOP_PAUSE_S,
+        )
+        time.sleep(GROK_STOP_PAUSE_S)
+        oe.reset_circuit()  # look again after the pause (an open breaker would stop forever)
+        return "defer"
     except (
         Exception
     ) as e:  # noqa: BLE001 - a transient OpenSERP/Grok error -> redeliver
         logger.warning("enrich failed for %s (%s) -> retry", entity_path, e)
         return "retry"
+
+    outcome = oe.search_outcome(trace, changed)
+    if outcome == "unavailable":
+        # a query errored and none answered: NOT searched (it was marked searched without a
+        # search before); sent again fresh, so an OpenSERP outage never moves it to the DLQ
+        oe._metric("entities_unavailable")
+        oe._count_unavailable_run(trace)
+        return "defer"
+    if outcome in ("empty", "excluded", "rejected"):
+        _record_miss(storage, trace, outcome, entity_path)
 
     # Mark + persist (write-then-delete: the message is deleted only after a successful write).
     data["openserp_searched"] = True
@@ -194,6 +259,55 @@ def process_message(
     return "done"
 
 
+DEFER_DELAY_S = 900  # SQS's longest per-message delay
+MAX_DEFERRALS = (
+    96  # 24 h of 15-min deferrals; then ordinary retries (-> the alarmed DLQ)
+)
+_DEFERRALS_ATTR = "deferrals"
+
+
+def _deferrals(message: dict) -> int:
+    attr = (message.get("MessageAttributes") or {}).get(_DEFERRALS_ATTR) or {}
+    try:
+        return max(0, int(attr.get("StringValue", 0)))
+    except (TypeError, ValueError):
+        return 0
+
+
+def _requeue(sqs: Any, queue_url: str, message: dict, receipt: str) -> None:
+    """Task 1.2f: an outage (Grok, OpenSERP) is not this message's fault. Send it again as a
+    new, delayed message (receive count 0) and delete the old one, so an outage cannot move the
+    queue into the DLQ. Bounded: after MAX_DEFERRALS (24 h) the message is kept as an ordinary,
+    counted retry, so one that ALWAYS stops the service ends in the alarmed DLQ. If the send
+    fails, the old message is kept the same way."""
+    n = _deferrals(message)
+    if n >= MAX_DEFERRALS:
+        logger.error(
+            "OBSERV openserp_worker.defer_cap status=error deferrals=%d - deferred for 24 h; "
+            "now counted toward the DLQ. Check Grok/OpenSERP, then redrive the DLQ",
+            n,
+        )
+        return
+    try:
+        sqs.send_message(
+            QueueUrl=queue_url,
+            MessageBody=message.get("Body", ""),
+            DelaySeconds=DEFER_DELAY_S,
+            MessageAttributes={
+                _DEFERRALS_ATTR: {"DataType": "Number", "StringValue": str(n + 1)}
+            },
+        )
+    except Exception as e:  # noqa: BLE001 - kept: an ordinary, counted redelivery
+        logger.error(
+            "OBSERV openserp_worker.requeue_failed err=%s status=error - the message redelivers "
+            "and counts toward the DLQ; check the worker role's sqs:SendMessage",
+            type(e).__name__,
+        )
+        return
+    sqs.delete_message(QueueUrl=queue_url, ReceiptHandle=receipt)
+    logger.info("OBSERV openserp_worker.deferred delay_s=%d status=ok", DEFER_DELAY_S)
+
+
 def run_worker(
     sqs: Any,
     queue_url: str,
@@ -212,6 +326,7 @@ def run_worker(
             MaxNumberOfMessages=1,
             WaitTimeSeconds=20,
             VisibilityTimeout=visibility,
+            MessageAttributeNames=[_DEFERRALS_ATTR],
         )
         msgs = resp.get("Messages", [])
         if not msgs:
@@ -242,6 +357,8 @@ def run_worker(
         if verdict in ("done", "skip"):
             sqs.delete_message(QueueUrl=queue_url, ReceiptHandle=receipt)
             completed += 1
+        elif verdict == "defer":
+            _requeue(sqs, queue_url, m, receipt)
         # 'retry' -> do NOT delete; visibility lapses -> redelivery (-> DLQ after maxReceiveCount)
     return completed
 

@@ -20,6 +20,7 @@ from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
 
 from src.utils import artifact_store
+from src.grok_client import BatchModeCollecting
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +69,8 @@ def _vision_is_patch(
             cache_type="unit_patch_vision",
         )
         return bool(isinstance(result, dict) and result.get("is_patch") is True)
+    except BatchModeCollecting:
+        raise  # queued for the batch, not a rejection
     except Exception as e:  # noqa: BLE001 - fail-closed
         logger.debug("patch vision verify errored (reject) for %s: %s", image_url, e)
         return False

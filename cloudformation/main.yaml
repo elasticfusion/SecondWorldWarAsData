@@ -111,6 +111,7 @@ Resources:
         PrivateSubnet1Id: !GetAtt NetworkStack.Outputs.PrivateSubnet1Id
         PrivateSubnet2Id: !GetAtt NetworkStack.Outputs.PrivateSubnet2Id
         PublicSubnet1Id: !GetAtt NetworkStack.Outputs.PublicSubnet1Id
+        PublicSubnet2Id: !GetAtt NetworkStack.Outputs.PublicSubnet2Id
         LambdaSGId: !GetAtt NetworkStack.Outputs.LambdaSGId
         OpenSerpSGId: !GetAtt NetworkStack.Outputs.OpenSerpSGId
         LambdaExecutionRoleArn: !GetAtt IAMStack.Outputs.LambdaExecutionRoleArn

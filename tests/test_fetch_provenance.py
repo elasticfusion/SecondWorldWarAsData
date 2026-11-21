@@ -80,10 +80,12 @@ def test_non_2xx_is_miss(_local_store):
     assert _read_events(_local_store, "nominatim")[0]["outcome"] == fp.MISS
 
 
-def test_textual_event_is_pending_review(_local_store):
+def test_a_textual_find_event_is_pending_review(_local_store):
     sess = _FakeSession(_FakeResp(200))
-    fp.recorded_fetch("wayback", "https://archive.org/x", kind=fp.TEXTUAL, session=sess)
-    e = _read_events(_local_store, "wayback")[0]
+    fp.recorded_fetch(
+        "openserp-find", "https://example.org/x", kind=fp.TEXTUAL, session=sess
+    )
+    e = _read_events(_local_store, "openserp-find")[0]
     assert e["kind"] == fp.TEXTUAL
     assert e["review_status"] == fp.PENDING
 
@@ -125,7 +127,7 @@ def test_record_fetch_event_direct(_local_store):
     assert fid
     e = _read_events(_local_store, "wayback")[0]
     assert e["result_summary"] == "snapshot 19960101"
-    assert e["review_status"] == fp.PENDING
+    assert e["review_status"] is None  # a lookup, not a find
 
 
 def test_persist_never_raises(_local_store, monkeypatch):

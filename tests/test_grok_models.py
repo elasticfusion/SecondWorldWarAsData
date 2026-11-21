@@ -120,6 +120,52 @@ def test_the_configured_models():
     assert G.default_model({}) == G.DEFAULT_MODEL == "grok-4.3"
 
 
+def test_an_env_override_of_the_configured_model_warns_once(monkeypatch, caplog):
+    """GROK_MODEL replacing a different api.grok.model is reported once per process (a stale
+    .env asked a retired model, 2026-11-17); the override itself still applies."""
+    monkeypatch.setattr(G, "_override_reported", set())
+    monkeypatch.setenv("GROK_MODEL", "grok-4.20-0309-reasoning")
+    cfg = {"api": {"grok": {"model": "grok-4.3"}}}
+    with caplog.at_level("WARNING"):
+        assert G.default_model(cfg) == "grok-4.20-0309-reasoning"
+        G.default_model(cfg)
+    lines = [
+        r.getMessage() for r in caplog.records if "model_env_override" in r.getMessage()
+    ]
+    assert len(lines) == 1
+    assert "env_model=grok-4.20-0309-reasoning" in lines[0]
+    assert "config_model=grok-4.3" in lines[0]
+    assert "status=warn" in lines[0]
+
+
+def test_an_env_model_equal_to_the_config_is_silent(monkeypatch, caplog):
+    monkeypatch.setattr(G, "_override_reported", set())
+    monkeypatch.setenv("GROK_MODEL", "grok-4.3")
+    with caplog.at_level("WARNING"):
+        assert G.default_model({"api": {"grok": {"model": "grok-4.3"}}}) == "grok-4.3"
+    assert not [r for r in caplog.records if "model_env_override" in r.getMessage()]
+
+
+def test_no_env_model_is_silent(monkeypatch, caplog):
+    monkeypatch.setattr(G, "_override_reported", set())
+    monkeypatch.delenv("GROK_MODEL", raising=False)
+    with caplog.at_level("WARNING"):
+        assert G.default_model({"api": {"grok": {"model": "grok-4.3"}}}) == "grok-4.3"
+    assert not [r for r in caplog.records if "model_env_override" in r.getMessage()]
+
+
+def test_the_env_example_does_not_pin_a_model():
+    """config.yaml is the one place the model is set: the template must not set GROK_MODEL."""
+    from pathlib import Path
+
+    lines = (
+        (Path(__file__).resolve().parents[1] / ".env.example")
+        .read_text(encoding="utf-8")
+        .splitlines()
+    )
+    assert not [line for line in lines if line.strip().startswith("GROK_MODEL=")]
+
+
 def test_the_shipped_config_names_no_retired_model():
     """grok-3-mini / grok-2 are not served: the shipped config must not name them (the preflight
     would stop every phase)."""

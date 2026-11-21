@@ -130,12 +130,14 @@ def test_retrieve_only_failure_uses_safe_sync_and_still_audits(monkeypatch):
     src = inspect.getsource(ecs_entrypoint.run_retrieve_only)
     i_safe = src.index("_final_sync_failed_phase(phase_script)")
     i_audit = src.index("_audit_failed_phase2(phase_script, result.returncode)")
-    i_status = src.index('update_job_status(batch_id, "failed")')
+    i_status = src.rindex('update_job_status(batch_id, "failed")')
     assert i_safe < i_audit < i_status
-    run_src = inspect.getsource(ecs_entrypoint.run_phase)
+    # the one failure path (run_phase and a settled Phase 3 batch run share it)
+    run_src = inspect.getsource(ecs_entrypoint._fail_run)
     assert run_src.index("_final_sync_failed_phase(phase_script)") < run_src.index(
-        "_audit_failed_phase2(phase_script, result.returncode)"
+        "_audit_failed_phase2(phase_script, returncode)"
     )
+    assert "_fail_run(" in inspect.getsource(ecs_entrypoint.run_phase)
 
 
 def test_final_sync_success_is_not_observed(monkeypatch):

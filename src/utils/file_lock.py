@@ -372,18 +372,11 @@ def _record_record_quality(
 
 
 def _is_non_entity_file(filepath: Path) -> bool:
-    """True for metadata/index/report/tracking files that carry no entity schema."""
-    return filepath.name in (
-        "index.json",
-        "duplicate_report.json",
-        "not_duplicates.json",
-        "not_people.json",
-        "not_related.json",
-        "related_groups_report.json",
-        "review_queue.json",
-        "not_groups.json",
-        "coords.json",
-    ) or filepath.name.startswith(".")
+    """True for metadata/index/report/tracking files that carry no entity schema: the ONE list
+    of record files, src/utils/entity_records.is_record_file (DRY)."""
+    from src.utils.entity_records import is_record_file
+
+    return not is_record_file(filepath)
 
 
 def _stamp_entity(filepath: Path, explicit: Optional[str] = None) -> Optional[str]:

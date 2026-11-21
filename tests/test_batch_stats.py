@@ -144,7 +144,7 @@ def test_the_poll_loop_records_each_change_and_a_timeout(monkeypatch):
         }
         return r
 
-    monkeypatch.setattr(batch_api.requests, "get", fake_get)
+    monkeypatch.setattr(batch_api.requests, "request", fake_get)
     monkeypatch.setattr(batch_api.time, "sleep", lambda s: None)
     monkeypatch.setattr(batch_api, "_check_batch_submission_ok", lambda *a, **k: None)
     calls = []
@@ -253,11 +253,12 @@ def test_the_submit_hook_never_fails_a_submitted_batch(monkeypatch, caplog):
 
 def test_the_pollers_status_is_unaffected_by_a_statistics_failure(monkeypatch):
     import lambda_handlers.batch_poller as BP
+    from src.utils import batch_api
 
     r = mock.Mock()
     r.json.return_value = {
         "state": {"num_requests": 2, "num_success": 2, "num_error": 0}
     }
-    monkeypatch.setattr(BP.requests, "get", lambda *a, **k: r)
+    monkeypatch.setattr(batch_api.requests, "request", lambda *a, **k: r)
     monkeypatch.setattr(bs, "record_progress", mock.Mock(side_effect=RuntimeError("x")))
     assert BP._check_batch_status("k", "batch_x", submitted_at=T0) == "complete"

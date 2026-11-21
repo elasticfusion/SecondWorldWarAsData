@@ -14,6 +14,18 @@ logger.setLevel(os.getenv("LOG_LEVEL", "INFO"))
 
 ENV_NAME = os.getenv("ENV_NAME", "dev")
 PUBLIC_SUBNET = os.getenv("PUBLIC_SUBNET_ID", "")
+# NAT placement in AZ order (task 1.2c, owner 2026-11-18: one zonal NAT, failing over to the
+# other AZ when its AZ fails). PUBLIC_SUBNET_IDS lists them; PUBLIC_SUBNET_ID alone still works.
+PUBLIC_SUBNETS = [
+    s.strip()
+    for s in (os.getenv("PUBLIC_SUBNET_IDS", "") or PUBLIC_SUBNET).split(",")
+    if s.strip()
+]
+AZ_STATE_KEY = "nat#azstate"  # NOT under nat#lease#: it must not count as NAT demand
+BAD_SUBNET_MINUTES = int(os.getenv("NAT_BAD_SUBNET_MINUTES", "60"))
+PENDING_STUCK_SECONDS = 300  # a NAT is normally available in 1-2 min
+NAT_WAIT_ATTEMPTS = 18  # x 10 s = 3 min, capped by what is left of the Lambda's 300 s
+FAILOVER_MIN_INTERVAL_S = 600  # tasks reporting no egress cannot ping-pong the NAT
 PRIVATE_SUBNETS = [
     s.strip() for s in os.getenv("PRIVATE_SUBNET_IDS", "").split(",") if s.strip()
 ]
@@ -53,7 +65,7 @@ def _lease_table():
 
     region = os.getenv("AWS_REGION", "us-east-1")
     return boto3.resource("dynamodb", region_name=region).Table(
-        f"{ENV_NAME}-wwii-api-cache"
+        os.getenv("CACHE_TABLE", f"{ENV_NAME}-wwii-api-cache")
     )
 
 
@@ -105,13 +117,16 @@ def _nat_demand_present() -> bool:
 def _nat_live_lease_present(now: int) -> bool:
     """Demand check 1: any live nat#lease# entry (filtering expired TTLs). Raises on error so
     the caller's fail-safe (keep NAT on uncertainty) applies."""
-    resp = _lease_table().scan(
-        FilterExpression="begins_with(cache_key, :p)",
-        ExpressionAttributeValues={":p": "nat#lease#"},
-        ProjectionExpression="cache_key, #t",
-        ExpressionAttributeNames={"#t": "ttl"},
-    )
-    for item in resp.get("Items", []):
+    from src.utils.ddb_scan import scan_prefix
+
+    for (
+        item
+    ) in scan_prefix(  # all pages: a lease beyond the first 1 MB page counts (task 1.2)
+        _lease_table(),
+        "nat#lease#",
+        projection="cache_key, #t",
+        names={"#t": "ttl"},
+    ):
         ttl = item.get("ttl")
         if ttl is None or int(ttl) > now:
             logger.info("NAT demand: live lease present — keeping NAT")
@@ -164,16 +179,15 @@ def _grok_batch_pending() -> bool:
 
         now = int(time.time())
         max_age = int(os.getenv("NAT_BATCH_DEMAND_MAX_HOURS", "8")) * 3600
-        resp = _get_table().scan(
-            FilterExpression="begins_with(cache_key, :p) AND #s IN (:pending, :ready)",
-            ExpressionAttributeNames={"#s": "status"},
-            ExpressionAttributeValues={
-                ":p": "batch_job#",
-                ":pending": "pending",
-                ":ready": "ready",
-            },
-        )
-        for item in resp.get("Items", []):
+        from src.utils.ddb_scan import scan_prefix
+
+        for item in scan_prefix(  # all pages (task 1.2)
+            _get_table(),
+            "batch_job#",
+            names={"#s": "status"},
+            extra_filter="#s IN (:pending, :ready)",
+            values={":pending": "pending", ":ready": "ready"},
+        ):
             submitted = int(item.get("submitted_at", now))
             if now - submitted <= max_age:
                 return True  # a live (non-zombie) batch needs NAT
@@ -195,10 +209,11 @@ def _ocr_jobs_in_flight() -> bool:
     from botocore.exceptions import ClientError
 
     batch = boto3.client("batch", region_name=os.getenv("AWS_REGION", "us-east-1"))
-    for queue in (
-        f"{ENV_NAME}-wwii-chandra-gpu",
-        f"{ENV_NAME}-wwii-chandra-gpu-ondemand",
-    ):
+    from src.utils import gpu_ladder
+
+    for queue in gpu_ladder.all_queues(
+        ENV_NAME
+    ):  # every Spot rung + the on-demand queue
         for status in ("SUBMITTED", "PENDING", "RUNNABLE", "STARTING", "RUNNING"):
             try:
                 if batch.list_jobs(jobQueue=queue, jobStatus=status).get(
@@ -235,10 +250,15 @@ def handler(event, _context):
 
     action = event.get("action", "status")
     region = os.getenv("AWS_REGION", "us-east-1")
+    remaining = getattr(_context, "get_remaining_time_in_millis", None)
+    _DEADLINE[0] = time.time() + remaining() / 1000.0 if remaining else 0.0
     ec2 = boto3.client("ec2", region_name=region)
 
     if action == "create":
         return _create_all(ec2, region)
+    if action == "failover":
+        # a task found no egress through a NAT reported ready (its AZ may be down)
+        return _create_all(ec2, region, failover_from=str(event.get("nat_id", "")))
     if action == "delete":
         return _delete_all(ec2, region, force=bool(event.get("force")))
     if action == "verify":
@@ -338,16 +358,19 @@ def _await_other_instance(ec2, region) -> dict:
         except Exception as e:  # noqa: BLE001 - reported as not ready below
             logger.error("Route repair failed for %s: %s", nat_id, e)
     ready, missing = _verify_ready(ec2, region)
-    return {"status": "ready" if ready else "not_ready", "missing": missing}
+    # no "failover" key: a failover request that waited here was not acted on, and is resent
+    return {
+        "status": "ready" if ready else "not_ready",
+        "missing": missing,
+        "nat": nat_id or "",
+    }
 
 
-def _create_all(ec2, region):
-    """Create all networking components. Each is validated before creation."""
-    import boto3
-
+def _create_all(ec2, region, failover_from: str = ""):
+    """Create all networking components. Each is validated before creation. ``failover_from``: a
+    NAT that tasks cannot egress through - replaced in another AZ (task 1.2c)."""
     # Acquire lock
-    table_name = os.getenv("CACHE_TABLE", "dev-wwii-api-cache")
-    table = boto3.resource("dynamodb", region_name=region).Table(table_name)
+    table = _az_table()
     try:
         table.put_item(
             Item={
@@ -362,37 +385,7 @@ def _create_all(ec2, region):
         return _await_other_instance(ec2, region)
 
     try:
-        # 1. VPC Endpoints (fastest to create)
-        _ensure_endpoints(ec2, region)
-
-        # 2. NAT Gateway (slowest — 1-2 min)
-        already_existed = bool(_find_nat(ec2))
-        _ensure_nat(ec2)
-
-        if not already_existed:
-            _notify("Networking UP — NAT, VPC endpoints ready")
-        # Stamp a NAT lease FLOOR: a gateway-level lease with a 4h TTL so the
-        # scheduled teardown won't reclaim NAT for at least NAT_LEASE_HOURS even
-        # across the brief Phase1->Phase2 gap or the human dedup wait before Phase
-        # 3 re-requests. Per-task leases still add demand on top; this is only a
-        # minimum floor. TTL self-expires so a crashed run can't pin NAT forever.
-        try:
-            lease_hours = int(os.getenv("NAT_LEASE_HOURS", "4"))
-            table.put_item(
-                Item={
-                    "cache_key": "nat#lease#gateway",
-                    "response": str(int(time.time())),
-                    "ttl": int(time.time()) + lease_hours * 3600,
-                }
-            )
-            logger.info("Stamped %dh NAT gateway lease floor", lease_hours)
-        except Exception as e:  # pragma: no cover - defensive
-            logger.warning("Failed to stamp NAT gateway lease: %s", e)
-        # Return ACCURATE readiness — never blind 'ready'. Compute must not be
-        # requested until egress is verified (NAT available + all required
-        # endpoints available), else GPU instances boot but can't register.
-        ready, missing = _verify_ready(ec2, region)
-        return {"status": "ready" if ready else "not_ready", "missing": missing}
+        return _create_locked(ec2, region, table, failover_from)
     except Exception as e:
         _notify(f"Networking FAILED — {e}")
         logger.error("Create failed: %s", e)
@@ -404,7 +397,65 @@ def _create_all(ec2, region):
             logger.warning("Failed to release lock: %s", e)
 
 
-# === DELETE ===
+def _create_locked(ec2, region, table, failover_from: str) -> dict:
+    """_create_all's work, under the nat-manager lock."""
+    outcome = ""
+    try:
+        # 1. VPC Endpoints (fastest to create)
+        _ensure_endpoints(ec2, region)
+
+        # 2. NAT Gateway (slowest — 1-2 min)
+        outcome = _failover_nat(ec2, table, failover_from) if failover_from else ""
+        already_existed = bool(_find_nat(ec2))
+        _ensure_nat(ec2, table)
+
+        if not already_existed:
+            _notify("Networking UP — NAT, VPC endpoints ready")
+        _stamp_lease_floor(table)
+        # Return ACCURATE readiness — never blind 'ready'. Compute must not be
+        # requested until egress is verified (NAT available + all required
+        # endpoints available), else GPU instances boot but can't register.
+        ready, missing = _verify_ready(ec2, region)
+        result = {
+            "status": "ready" if ready else "not_ready",
+            "missing": missing,
+            "nat": _find_nat(ec2) or "",
+        }
+    except NatNotReady as e:
+        result = _not_ready(e)
+    if outcome:
+        # also when not ready: the old NAT is gone even if the new one is not up yet
+        result["failover"] = outcome
+    return result
+
+
+def _not_ready(e: "NatNotReady") -> dict:
+    """The NAT's AZ looks unhealthy (it was replaced or its subnet marked bad): the caller (the
+    task's readiness loop) retries, and the next attempt uses the other AZ. No NAT in any AZ is
+    an operator alert."""
+    logger.warning("OBSERV nat.not_ready status=warn reason=%s", e)
+    if e.alert:
+        _notify(f"Networking FAILED — {e}")
+    return {"status": "not_ready", "missing": ["nat"], "reason": str(e)}
+
+
+def _stamp_lease_floor(table) -> None:
+    """A NAT lease FLOOR: a gateway-level lease with a 4h TTL so the scheduled teardown won't
+    reclaim NAT for at least NAT_LEASE_HOURS even across the brief Phase1->Phase2 gap or the human
+    dedup wait before Phase 3 re-requests. Per-task leases still add demand on top; this is only a
+    minimum floor. TTL self-expires so a crashed run can't pin NAT forever."""
+    try:
+        lease_hours = int(os.getenv("NAT_LEASE_HOURS", "4"))
+        table.put_item(
+            Item={
+                "cache_key": "nat#lease#gateway",
+                "response": str(int(time.time())),
+                "ttl": int(time.time()) + lease_hours * 3600,
+            }
+        )
+        logger.info("Stamped %dh NAT gateway lease floor", lease_hours)
+    except Exception as e:  # pragma: no cover - defensive
+        logger.warning("Failed to stamp NAT gateway lease: %s", e)
 
 
 def _delete_all(ec2, region, force=False):
@@ -441,10 +492,11 @@ def _delete_all(ec2, region, force=False):
     return {"status": "deleted"}
 
 
-def _delete_nat_gateway(ec2) -> bool:
-    """Delete the NAT gateway (if present) and release its EIPs. Returns True if a NAT was
-    deleted. Preserves the exact order: delete NAT -> wait -> release EIPs."""
-    nat_id = _find_nat(ec2)
+def _delete_nat_gateway(ec2, nat_id: str = "") -> bool:
+    """Delete the NAT gateway (``nat_id``, else the tagged one) and release its EIPs. Returns
+    True if a NAT was deleted. Preserves the exact order: delete NAT -> wait -> release EIPs.
+    """
+    nat_id = nat_id or (_find_nat(ec2) or "")
     if not nat_id:
         return False
     # Get EIP allocation before deleting NAT
@@ -469,9 +521,6 @@ def _delete_nat_gateway(ec2) -> bool:
     return True
 
 
-# === NAT Gateway ===
-
-
 def _find_nat(ec2):
     """Find existing NAT Gateway by tag."""
     resp = ec2.describe_nat_gateways(
@@ -484,33 +533,346 @@ def _find_nat(ec2):
     return gws[0]["NatGatewayId"] if gws else None
 
 
-def _ensure_nat(ec2):
-    """Create NAT if it doesn't exist, wait for available, update route."""
-    nat_id = _find_nat(ec2)
-    if nat_id:
-        # Verify it's not transitioning to deleted
-        resp = ec2.describe_nat_gateways(NatGatewayIds=[nat_id])
-        state = (
-            resp["NatGateways"][0]["State"] if resp.get("NatGateways") else "deleted"
-        )
-        if state in ("deleting", "deleted", "failed"):
-            logger.info("NAT %s is %s, creating new one", nat_id, state)
-            nat_id = None
+class NatNotReady(RuntimeError):
+    """The NAT is not usable yet: its AZ was marked bad and the next attempt places it in another,
+    or (``alert``) it could not be created anywhere - an operator alert."""
 
-    if not nat_id:
-        nat_id = _create_nat(ec2)
+    def __init__(self, message: str, alert: bool = False):
+        super().__init__(message)
+        self.alert = alert
 
-    # Wait for available
+
+def _nat_info(ec2) -> dict:
+    """The tagged NAT that is pending/available ({} if none). A FAILED one (its AZ may be down)
+    marks its subnet bad first; AWS keeps failed NATs visible for about an hour."""
+    resp = ec2.describe_nat_gateways(
+        Filter=[
+            {"Name": "tag:Name", "Values": [NAT_TAG]},
+            {"Name": "state", "Values": ["available", "pending", "failed"]},
+        ]
+    )
+    live: dict = {}
+    for gw in resp.get("NatGateways", []):
+        if gw.get("State") == "failed":
+            _note_failed_nat(gw)
+        elif not live:
+            live = {
+                "id": gw["NatGatewayId"],
+                "state": gw.get("State", ""),
+                "subnet": gw.get("SubnetId", ""),
+                "created": gw.get("CreateTime"),
+            }
+    return live
+
+
+_failed_seen: set = set()
+
+
+def _note_failed_nat(gw: dict) -> None:
+    """Mark a failed NAT's subnet bad ONCE per NAT: AWS shows a failed NAT for about an hour, and
+    re-marking on every call (or cold start) would stretch the bad window."""
+    if gw["NatGatewayId"] in _failed_seen:
+        return
+    _failed_seen.add(gw["NatGatewayId"])
+    table = _az_table()
+    seen = list(_az_state(table).get("failed_nats") or [])
+    if gw["NatGatewayId"] in seen:
+        return
+    _set_az_state(table, failed_nats=(seen + [gw["NatGatewayId"]])[-20:])
+    _mark_bad(
+        table,
+        gw.get("SubnetId", ""),
+        f"NAT {gw['NatGatewayId']} failed: "
+        f"{gw.get('FailureCode', '')} {gw.get('FailureMessage', '')}".strip(),
+    )
+
+
+def _age_seconds(created) -> float:
+    try:
+        return time.time() - created.timestamp()
+    except AttributeError:
+        return 0.0
+
+
+def _ensure_nat(ec2, table=None):
+    """Create NAT if it doesn't exist, wait for available, update route. A NAT stuck pending, or
+    one that does not become available in time, is deleted and its subnet marked bad; the next
+    attempt places it in another AZ (task 1.2c). Raises NatNotReady then."""
+    table = table if table is not None else _az_table()
+    nat = _nat_info(ec2)
+    if (
+        nat
+        and nat["state"] == "pending"
+        and _age_seconds(nat["created"]) > PENDING_STUCK_SECONDS
+    ):
+        if not _fail_subnet(ec2, table, nat, "NAT stuck pending"):
+            # never create a second NAT while the stuck one may still exist (two would bill)
+            raise NatNotReady(f"could not delete the stuck NAT {nat['id']}")
+        nat = {}
+    if not nat:
+        nat = _create_nat_with_failover(ec2, table)
+
+    # Wait for available, within what is left of this Lambda (endpoints may have taken minutes)
+    from botocore.exceptions import WaiterError
+
+    attempts = _wait_attempts_left()
     waiter = ec2.get_waiter("nat_gateway_available")
-    waiter.wait(NatGatewayIds=[nat_id], WaiterConfig={"Delay": 10, "MaxAttempts": 18})
-    logger.info("NAT available: %s", nat_id)
+    try:
+        waiter.wait(
+            NatGatewayIds=[nat["id"]],
+            WaiterConfig={"Delay": 10, "MaxAttempts": attempts},
+        )
+    except WaiterError as e:
+        _after_wait_timeout(ec2, table, nat, attempts, e)
+    logger.info("NAT available: %s (%s)", nat["id"], nat["subnet"])
 
-    _update_route(ec2, nat_id)
+    _update_route(ec2, nat["id"])
+    _note_subnet_in_use(table, nat["subnet"])
+    _release_orphan_eips(ec2)  # a replaced NAT's EIP is free once its deletion finished
 
 
-def _create_nat(ec2):
-    """Create NAT Gateway with fresh EIP (new IP each time for reputation isolation)."""
-    # Release any orphaned EIPs first (prevents AddressLimitExceeded)
+def _after_wait_timeout(ec2, table, nat: dict, attempts: int, error: Exception) -> None:
+    """The waiter gave up. Available after all: return (use it). Failed, or still pending after
+    the full 3 minutes: delete it, mark its subnet bad, raise. Otherwise (the Lambda ran out of
+    time, or the state is unknown) keep it - the next call keeps waiting, and replaces it only
+    once it has been pending > PENDING_STUCK_SECONDS - and raise."""
+    state = _nat_state(ec2, nat["id"])
+    if state == "available":
+        return
+    if state == "failed" or (state == "pending" and attempts >= NAT_WAIT_ATTEMPTS):
+        _fail_subnet(ec2, table, nat, "NAT failed or not available in 3 minutes")
+        raise NatNotReady(
+            f"NAT {nat['id']} not available in {nat['subnet']}"
+        ) from error
+    raise NatNotReady(
+        f"NAT {nat['id']} still pending ({state or 'unknown'})"
+    ) from error
+
+
+_DEADLINE = [0.0]  # this invocation's end (handler), so waits fit in the Lambda's time
+
+
+def _wait_attempts_left() -> int:
+    """NAT waiter attempts (10 s each) that fit before this Lambda's deadline, keeping 40 s for
+    the route and readiness checks. Full NAT_WAIT_ATTEMPTS when the deadline is unknown.
+    """
+    if not _DEADLINE[0]:
+        return NAT_WAIT_ATTEMPTS
+    return max(1, min(NAT_WAIT_ATTEMPTS, int((_DEADLINE[0] - time.time() - 40) // 10)))
+
+
+def _nat_state(ec2, nat_id: str) -> str:
+    try:
+        gws = ec2.describe_nat_gateways(NatGatewayIds=[nat_id]).get("NatGateways", [])
+        return gws[0].get("State", "") if gws else "deleted"
+    except Exception:  # noqa: BLE001 - unknown: treat as not failed
+        return ""
+
+
+# create_nat_gateway errors that point at the subnet or its AZ (anything else - limits,
+# throttling, permissions - is not the AZ's fault and goes to the "Networking FAILED" alert)
+AZ_ERROR_CODES = (
+    "InsufficientFreeAddressesInSubnet",
+    "InvalidSubnetID.NotFound",
+    "InvalidSubnet",
+    "Unsupported",
+    "ServerInternal",
+    "InternalError",
+    "ServiceUnavailable",
+    "Unavailable",
+)
+
+
+def _az_error(e: Exception) -> str:
+    """The error code if ``e`` points at the subnet or its AZ, else ''."""
+    code = (getattr(e, "response", None) or {}).get("Error", {}).get("Code", "")
+    return code if code in AZ_ERROR_CODES else ""
+
+
+def _create_nat_with_failover(ec2, table) -> dict:
+    """Create the NAT in the first subnet not marked bad; a create error marks that subnet bad
+    and tries the next. The first subnet is the primary AZ; any other is a failover, alerted.
+    """
+    state = _az_state(table)
+    errors = []
+    for subnet in _subnet_order(state):
+        try:
+            nat_id = _create_nat(ec2, subnet)
+        except (
+            Exception
+        ) as e:  # noqa: BLE001 - an AZ error tries the next AZ; others raise
+            code = _az_error(e)
+            if not code:
+                raise
+            errors.append(f"{subnet}: {code}")
+            _mark_bad(table, subnet, f"create_nat_gateway failed: {code}")
+            continue
+        if subnet != PUBLIC_SUBNETS[0]:
+            _alert_failover(table, subnet, state)
+        return {"id": nat_id, "state": "pending", "subnet": subnet, "created": None}
+    raise NatNotReady(
+        f"NAT could not be created in any subnet ({'; '.join(errors)}); the task retries, "
+        "check AWS Health for the region",
+        alert=True,
+    )
+
+
+def _failover_nat(ec2, table, nat_id: str) -> str:
+    """Tasks have no egress through ``nat_id``: delete it and mark its subnet bad, so _ensure_nat
+    creates the replacement in another AZ. Only if it is still the current NAT, and at most once
+    per FAILOVER_MIN_INTERVAL_S (several tasks may report the same outage). Returns the outcome:
+    "done", or "skipped" (already replaced / recent failover). Raises NatNotReady if the delete
+    failed (the claim is released, so the next request can retry)."""
+    nat = _nat_info(ec2)
+    if not nat or nat["id"] != nat_id:
+        logger.info("OBSERV nat.failover_skipped status=ok reason=already_replaced")
+        return "skipped"
+    if not _claim_failover(table):
+        logger.info("OBSERV nat.failover_skipped status=ok reason=recent_failover")
+        return "skipped"
+    if not _fail_subnet(ec2, table, nat, "tasks have no internet through it"):
+        _set_az_state(table, last_failover=0)
+        raise NatNotReady(f"could not delete NAT {nat['id']} for the failover")
+    return "done"
+
+
+def _claim_failover(table) -> bool:
+    """Atomically take the failover slot (one per FAILOVER_MIN_INTERVAL_S across instances)."""
+    now = int(time.time())
+    try:
+        table.update_item(
+            Key={"cache_key": AZ_STATE_KEY},
+            UpdateExpression="SET last_failover = :now",
+            ConditionExpression="attribute_not_exists(last_failover) OR last_failover < :cut",
+            ExpressionAttributeValues={
+                ":now": now,
+                ":cut": now - FAILOVER_MIN_INTERVAL_S,
+            },
+        )
+        return True
+    except Exception as e:  # noqa: BLE001 - the guard, or DynamoDB down
+        code = (getattr(e, "response", None) or {}).get("Error", {}).get("Code", "")
+        if code != "ConditionalCheckFailedException":
+            logger.warning(
+                "OBSERV nat.failover_claim_failed status=warn err=%s", code or e
+            )
+        return False
+
+
+def _fail_subnet(ec2, table, nat: dict, reason: str) -> bool:
+    """Mark the NAT's subnet bad and delete the NAT. False if the delete failed."""
+    _mark_bad(table, nat["subnet"], f"{reason} ({nat['id']})")
+    # counted: if AWS later shows this NAT as failed, it does not mark the subnet bad again
+    seen = list(_az_state(table).get("failed_nats") or [])
+    _set_az_state(table, failed_nats=(seen + [nat["id"]])[-20:])
+    try:
+        _delete_nat_gateway(ec2, nat["id"])
+        return True
+    except Exception as e:  # noqa: BLE001 - reported to the caller
+        logger.warning(
+            "OBSERV nat.delete_failed status=warn nat=%s err=%s", nat["id"], e
+        )
+        return False
+
+
+# --- AZ state (one item, nat#azstate) ---------------------------------------------------------
+
+
+def _az_table():
+    """The api-cache table (the same one the lease lookups use)."""
+    return _lease_table()
+
+
+def _az_state(table) -> dict:
+    try:
+        return table.get_item(Key={"cache_key": AZ_STATE_KEY}).get("Item") or {}
+    except Exception as e:  # noqa: BLE001 - no state: primary first
+        logger.warning(
+            "OBSERV nat.azstate_unreadable status=warn err=%s", type(e).__name__
+        )
+        return {}
+
+
+def _set_az_state(table, **fields) -> None:
+    try:
+        # read strictly: an unreadable item must not be overwritten with only ``fields``
+        current = table.get_item(Key={"cache_key": AZ_STATE_KEY}).get("Item") or {}
+        item = {
+            **current,
+            **fields,
+            "cache_key": AZ_STATE_KEY,
+            "ttl": int(time.time()) + 7 * 86400,
+        }
+        table.put_item(Item=item)
+    except Exception as e:  # noqa: BLE001 - placement still works, without memory
+        logger.warning(
+            "OBSERV nat.azstate_write_failed status=warn err=%s", type(e).__name__
+        )
+
+
+def _mark_bad(table, subnet: str, reason: str) -> None:
+    if not subnet:
+        return
+    found = _az_state(table).get("bad")
+    bad = dict(found) if isinstance(found, dict) else {}
+    bad[subnet] = {
+        "until": int(time.time()) + BAD_SUBNET_MINUTES * 60,
+        "reason": reason[:200],
+    }
+    _set_az_state(table, bad=bad)
+    logger.warning(
+        "OBSERV nat.subnet_marked_bad status=warn subnet=%s minutes=%d reason=%s",
+        subnet,
+        BAD_SUBNET_MINUTES,
+        reason,
+    )
+
+
+def _bad_until(state: dict, subnet: str) -> int:
+    """When ``subnet``'s bad mark ends (0 if none or unreadable)."""
+    try:
+        return int(((state.get("bad") or {}).get(subnet) or {}).get("until", 0))
+    except (AttributeError, TypeError, ValueError):
+        return 0
+
+
+def _subnet_order(state: dict) -> list:
+    """Subnets not marked bad, in AZ order; then the bad ones, the one marked bad longest ago
+    first (if every AZ looks bad, still try)."""
+    now = time.time()
+    good = [s for s in PUBLIC_SUBNETS if _bad_until(state, s) <= now]
+    rest = sorted(
+        (s for s in PUBLIC_SUBNETS if s not in good), key=lambda s: _bad_until(state, s)
+    )
+    return good + rest
+
+
+def _alert_failover(table, subnet: str, state: dict) -> None:
+    primary = PUBLIC_SUBNETS[0]
+    reason = ((state.get("bad") or {}).get(primary) or {}).get("reason", "unknown")
+    _set_az_state(table, failed_over=True)
+    _notify(
+        f"NAT failover — the NAT was created in {subnet} because the primary subnet {primary} "
+        f"is marked unavailable ({reason}). Egress resumes when it is ready (a few minutes); "
+        f"{primary} is tried again after {BAD_SUBNET_MINUTES} minutes. Check AWS Health for "
+        "an Availability Zone event; nothing to do if it is an AWS outage"
+    )
+
+
+def _note_subnet_in_use(table, subnet: str) -> None:
+    if subnet == (PUBLIC_SUBNETS[0] if PUBLIC_SUBNETS else subnet) and _az_state(
+        table
+    ).get("failed_over"):
+        _set_az_state(table, failed_over=False)
+        logger.info(
+            "OBSERV nat.failback status=ok subnet=%s - the NAT is back in the primary subnet",
+            subnet,
+        )
+
+
+def _release_orphan_eips(ec2) -> None:
+    """Release every unassociated VPC EIP (each costs money): a replaced NAT's, once its
+    deletion has finished, or one left by a failed create."""
     try:
         eips = ec2.describe_addresses(Filters=[{"Name": "domain", "Values": ["vpc"]}])
         for addr in eips.get("Addresses", []):
@@ -520,20 +882,34 @@ def _create_nat(ec2):
     except Exception as e:
         logger.warning("EIP cleanup failed: %s", e)
 
+
+def _create_nat(ec2, subnet: str = ""):
+    """Create NAT Gateway with fresh EIP (new IP each time for reputation isolation)."""
+    _release_orphan_eips(ec2)  # first (prevents AddressLimitExceeded)
+
     eip_alloc = ec2.allocate_address(Domain="vpc")["AllocationId"]
 
-    resp = ec2.create_nat_gateway(
-        SubnetId=PUBLIC_SUBNET,
-        AllocationId=eip_alloc,
-        TagSpecifications=[
-            {
-                "ResourceType": "natgateway",
-                "Tags": [{"Key": "Name", "Value": NAT_TAG}],
-            }
-        ],
-    )
+    try:
+        resp = ec2.create_nat_gateway(
+            SubnetId=subnet or PUBLIC_SUBNETS[0],
+            AllocationId=eip_alloc,
+            TagSpecifications=[
+                {
+                    "ResourceType": "natgateway",
+                    "Tags": [{"Key": "Name", "Value": NAT_TAG}],
+                }
+            ],
+        )
+    except Exception:
+        try:  # an unused EIP costs money: release it before the next AZ is tried
+            ec2.release_address(AllocationId=eip_alloc)
+        except (
+            Exception
+        ) as e:  # noqa: BLE001 - the next create's orphan cleanup retries it
+            logger.warning("Failed to release EIP %s: %s", eip_alloc, e)
+        raise
     nat_id = resp["NatGateway"]["NatGatewayId"]
-    logger.info("Created NAT: %s", nat_id)
+    logger.info("Created NAT: %s in %s", nat_id, subnet or PUBLIC_SUBNETS[0])
     return nat_id
 
 

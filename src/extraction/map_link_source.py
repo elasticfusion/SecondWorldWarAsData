@@ -9,7 +9,7 @@ link and feeds it into the EXISTING map-as-source machinery:
          -> global content-hash dedup -> recycle as a map-as-source (contentrepository/ source pair)
 
 It reuses the map_vision prompt (search_external_maps._build_verification_prompt), the vision call
-(grok_client.extract_json_with_image), the content-hash dedup (fetch_review._register_content_hash_if_new),
+(grok_client.extract_json_with_image), the content-hash dedup (fetch_review._claim_content_hash),
 and the map_source_adapter render/recycle — only the DISCOVERY front-end (an in-document link vs an
 OpenSERP web search) is new (map spec §3.1 + the OpenSERP map path). Pure of pipeline side effects
 beyond writing the source pair; fail-safe (never raises into the phase).
@@ -25,6 +25,8 @@ from urllib.parse import urlparse
 logger = logging.getLogger(__name__)
 
 from src.utils.observe import observe_warn  # noqa: E402
+from src.grok_client import BatchModeCollecting, book_scope
+from src.utils.batch_pending import Pending
 
 # Hosts whose in-document map links we will follow. HyperWar/ibiblio is the curated corpus source;
 # same-host-as-the-document is also allowed. Everything else is skipped (defense-in-depth beyond the
@@ -85,6 +87,8 @@ def _vision_depicted(
             cache_type="in_doc_map_vision",
             image_timeout=image_timeout,
         )
+    except BatchModeCollecting:
+        raise  # queued for the batch, not an answer: the caller must not stamp or cache a verdict
     except Exception as e:  # noqa: BLE001 - a vision error must not crash the ingest
         logger.debug("in-doc map vision errored for %s: %s", img_url[:120], e)
         return None
@@ -124,6 +128,7 @@ def ingest_in_doc_map_links(
 
     LOOP GUARD: a map-derived source (book=map-*) is skipped so an ingested map can't re-trigger this.
     """
+    pending = Pending()
     summary = {
         "links": 0,
         "fetched": 0,
@@ -157,11 +162,18 @@ def ingest_in_doc_map_links(
             )
             summary["skipped"] += len(maps) - max_per_doc
             maps = maps[:max_per_doc]
-        for m in maps:
-            summary["links"] += 1
-            _ingest_one_link(
-                m, grok_client, context, tuple(allowed_hosts), image_timeout, summary
-            )
+        with book_scope(book):  # the vision answer must echo THIS document's BookID
+            for m in maps:
+                summary["links"] += 1
+                pending.call(  # a queued vision request: every link queues its own, raise once at the end
+                    _ingest_one_link,
+                    m,
+                    grok_client,
+                    context,
+                    tuple(allowed_hosts),
+                    image_timeout,
+                    summary,
+                )
     logger.info(
         "OBSERV map_link.summary links=%d fetched=%d verified=%d recycled=%d deduped=%d skipped=%d",
         summary["links"],
@@ -171,6 +183,7 @@ def ingest_in_doc_map_links(
         summary["deduped"],
         summary["skipped"],
     )
+    pending.raise_if_queued()  # batch rounds: the step is pending, the next pass has the answers
     return summary
 
 
@@ -215,37 +228,77 @@ def _ingest_one_link(
             summary["skipped"] += 1
             return
         summary["verified"] += 1
-        # Global exact-content dedup (reuse the fetch_review registry) keyed by the map URL.
-        if not _content_is_new(cleaned):
-            logger.info("OBSERV map_link.deduped url=%s", cleaned[:120])
-            summary["deduped"] += 1
-            return
-        if _recycle_as_source(map_id, map_title, cleaned, depicted):
-            logger.info(
-                "OBSERV map_link.recycled map=%s url=%s -> contentrepository/ "
-                "(re-enters pipeline for event derivation)",
-                map_id,
-                cleaned[:120],
-            )
-            summary["recycled"] += 1
-        else:
-            summary["skipped"] += 1
+        _claim_and_store(map_id, map_title, cleaned, depicted, summary)
+    except BatchModeCollecting:
+        raise  # queued for the batch: not an answer, not a failure
     except Exception as e:  # noqa: BLE001 - one bad link must not crash the ingest
         observe_warn("map_link", "error", map=map_id, reason=str(e)[:120])
         summary["skipped"] += 1
 
 
-def _content_is_new(url: str) -> bool:
-    """Dedup an in-doc map by URL via the global content-hash registry (fail-OPEN -> True)."""
+def _claim_and_store(
+    map_id: str,
+    map_title: str,
+    cleaned: str,
+    depicted: Dict[str, Any],
+    summary: Dict[str, int],
+) -> None:
+    """Global exact-content dedup (the fetch_review registry, keyed by the map URL), then recycle
+    the verified map as a source. Mutates ``summary``."""
+    from src.enrichment.fetch_review import CLAIM_DUPLICATE, CLAIM_WON
+
+    claim = _claim_map(cleaned)
+    if claim == CLAIM_DUPLICATE:
+        logger.info("OBSERV map_link.deduped url=%s", cleaned[:120])
+        summary["deduped"] += 1
+        return
+    if _store_claimed_map(map_id, map_title, cleaned, depicted, claim == CLAIM_WON):
+        logger.info(
+            "OBSERV map_link.recycled map=%s url=%s -> contentrepository/ "
+            "(re-enters pipeline for event derivation)",
+            map_id,
+            cleaned[:120],
+        )
+        summary["recycled"] += 1
+    else:
+        summary["skipped"] += 1
+
+
+def _store_claimed_map(
+    map_id: str, title: str, url: str, depicted: Dict[str, Any], won: bool = True
+) -> bool:
+    """Recycle a claimed map; when it is not written (False or a raise) give back the dedup claim
+    this attempt won, so a later run retries it instead of skipping it as a duplicate (task
+    1.6). A claim that errored (fail-open) was not taken here and is never released."""
+    stored = False
     try:
-        import hashlib
+        stored = _recycle_as_source(map_id, title, url, depicted)
+    finally:
+        if not stored and won:
+            from src.enrichment.fetch_review import release_content_hash
 
-        from src.enrichment.fetch_review import _register_content_hash_if_new
+            digest = _map_digest(url)
+            release_content_hash(digest, f"maplink-{digest[:16]}")
+    return stored
 
-        digest = "sha256:" + hashlib.sha256(url.encode("utf-8")).hexdigest()
-        return _register_content_hash_if_new(digest, f"maplink-{digest[:16]}")
+
+def _claim_map(url: str) -> str:
+    """Claim an in-doc map by URL in the global content-hash registry: fetch_review CLAIM_WON,
+    CLAIM_DUPLICATE or CLAIM_ERROR (fail-OPEN: proceed without a claim)."""
+    from src.enrichment.fetch_review import CLAIM_ERROR, _claim_content_hash
+
+    try:
+        digest = _map_digest(url)
+        return _claim_content_hash(digest, f"maplink-{digest[:16]}")
     except Exception:  # noqa: BLE001
-        return True
+        return CLAIM_ERROR
+
+
+def _map_digest(url: str) -> str:
+    """The content-hash registry digest for an in-doc map (keyed by its URL)."""
+    import hashlib
+
+    return "sha256:" + hashlib.sha256(url.encode("utf-8")).hexdigest()
 
 
 def persist_map_entities(
@@ -266,6 +319,8 @@ def persist_map_entities(
     index_path = maps_dir / "index.json"
     url_index = _load_url_index(index_path)
     counts = {"created": 0, "existing": 0, "skipped": 0}
+    pending = Pending()
+    saved = len(url_index)
     for doc in parsed_docs:
         if not isinstance(doc, dict):
             continue
@@ -274,7 +329,8 @@ def persist_map_entities(
             continue  # loop guard (mirror ingest_in_doc_map_links)
         for m in doc.get("maps") or []:
             if isinstance(m, dict):
-                _persist_one_map(
+                pending.call(  # a queued vision request must not skip the index save below
+                    _persist_one_map,
                     m,
                     book,
                     maps_dir,
@@ -284,6 +340,11 @@ def persist_map_entities(
                     output_root,
                     grok_client,
                 )
+        if len(url_index) != saved:
+            # after a document that added maps (not only at the end): a task stopped midway keeps
+            # the URLs it already mapped, so the next run does not create the same Map again
+            _save_url_index(index_path, url_index)
+            saved = len(url_index)
     _save_url_index(index_path, url_index)
     logger.info(
         "OBSERV maps.persist_summary created=%d existing=%d skipped=%d status=%s",
@@ -292,6 +353,7 @@ def persist_map_entities(
         counts["skipped"],
         "warn" if counts["skipped"] else "ok",
     )
+    pending.raise_if_queued()  # batch rounds: the step is pending, the next pass has the answers
     return counts
 
 

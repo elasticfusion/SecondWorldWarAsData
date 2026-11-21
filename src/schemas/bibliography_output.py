@@ -9,6 +9,10 @@ from src.schemas import (
     ulid_field,
 )
 
+# The ONLY form a bookseller listing may take (published on the site; the resolver builds it from
+# the ASIN alone). (?![\s\S]) rather than $: Python's $ also matches before a trailing newline.
+_BOOKSELLER_URL = r"^https://www\.amazon\.com/dp/[A-Z0-9]{10}(?![\s\S])"
+
 BIBLIOGRAPHY_OUTPUT_SCHEMA = {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "version": entity_version("bibliography"),
@@ -49,12 +53,58 @@ BIBLIOGRAPHY_OUTPUT_SCHEMA = {
         "availability": enum_field(
             ["online", "offline", "archive", "local", "unknown"], nullable=True
         ),
-        # Free-form provenance bag written by the resolver: prov keys from the biblio-note resolver
-        # + a structured findings list ({url, source}). additionalProperties:true because the prov
-        # keys vary by source type; this is internal provenance metadata, not user-facing content.
+        # Provenance bag written by the resolver: prov keys from the biblio-note resolver + a
+        # structured findings list. additionalProperties:true because the prov keys vary by source
+        # type; this is internal provenance metadata. The keys that are PUBLISHED or relied on are
+        # modeled: a bookseller listing (a pointer to buy, never an online copy; the URL is the
+        # canonical https://www.amazon.com/dp/<ASIN> only, so a malformed or foreign URL cannot
+        # reach the site) and when the listing search last ran.
         "source_metadata": {
             "type": ["object", "null"],
             "additionalProperties": True,
+            "properties": {
+                "findings": {
+                    "type": ["array", "null"],
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": True,
+                        "properties": {
+                            "url": make_nullable("string"),
+                            "source": make_nullable("string"),
+                            "kind": enum_field(["bookseller"], nullable=True),
+                        },
+                        # a bookseller finding is held to the same URL rule as bookseller[]
+                        "if": {
+                            "properties": {"kind": {"const": "bookseller"}},
+                            "required": ["kind"],
+                        },
+                        "then": {
+                            "properties": {
+                                "url": {"type": "string", "pattern": _BOOKSELLER_URL},
+                                "source": {"enum": ["amazon"]},
+                            },
+                            "required": ["url", "source"],
+                        },
+                    },
+                },
+                "bookseller": {
+                    "type": ["array", "null"],
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": False,
+                        "required": ["url", "source", "kind"],
+                        "properties": {
+                            "url": {
+                                "type": "string",
+                                "pattern": _BOOKSELLER_URL,
+                            },
+                            "source": {"type": "string", "enum": ["amazon"]},
+                            "kind": {"type": "string", "enum": ["bookseller"]},
+                        },
+                    },
+                },
+                "bookseller_searched_at": make_nullable("integer"),
+            },
         },
         "resource_urls": {
             "type": ["array", "null"],

@@ -334,4 +334,8 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    from src.utils import stop_cause
+
+    # a Grok outage / no credit during translation (required: an untranslated document must
+    # not go on) exits 81/80; the wrapper's alert says what to repeat (owner 2026-11-20)
+    sys.exit(stop_cause.run_main(main))

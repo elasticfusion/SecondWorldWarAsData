@@ -246,3 +246,162 @@ def test_safe_entity_path_accepts_valid():
     assert (
         w._safe_entity_path("people/sub/../x.json", "people") is False
     )  # normalization change
+
+
+def test_a_grok_stop_keeps_the_message_and_pauses(monkeypatch):
+    """Task 1.2e: Grok down or no credits must not crash the worker or drain the queue into the
+    DLQ: the message is kept (retry) and the worker pauses for the stop window."""
+    import openserp_worker as w
+    from src.utils import grok_models
+
+    slept = []
+    monkeypatch.setattr(w.time, "sleep", slept.append)
+    monkeypatch.setattr(w, "_safe_entity_path", lambda *a: True)
+
+    class Storage:
+        def read_json(self, path):
+            return {"name": "x"}
+
+    import src.enrichment.openserp_enrichment as oe
+
+    monkeypatch.setattr(
+        oe,
+        "enrich_one_person",
+        lambda *a: (_ for _ in ()).throw(grok_models.GrokUnreachable("down")),
+    )
+    out = w.process_message(
+        {"entity_type": "people", "entity_path": "people/x.json"},
+        Storage(),
+        "http://serp",
+        object(),
+    )
+    assert out == "defer" and slept == [w.GROK_STOP_PAUSE_S]
+
+
+def _defer_run(monkeypatch, send_fails=False, deferrals=None):
+    import openserp_worker as w
+
+    monkeypatch.setattr(w, "process_message", lambda *a: "defer")
+    sqs = MagicMock()
+    if send_fails:
+        sqs.send_message.side_effect = RuntimeError("AccessDenied")
+    body = '{"entity_type": "people", "entity_path": "people/x.json"}'
+    msg = {"ReceiptHandle": "r1", "Body": body}
+    if deferrals is not None:
+        msg["MessageAttributes"] = {"deferrals": {"StringValue": str(deferrals)}}
+    sqs.receive_message.side_effect = [{"Messages": [msg]}, {"Messages": []}]
+    w.run_worker(sqs, "qurl", object(), "http://s", object(), idle_exit_polls=1)
+    return w, sqs, body
+
+
+def test_an_outage_requeues_the_message_fresh_so_it_never_reaches_the_dlq(monkeypatch):
+    """Task 1.2f: each receive counts toward maxReceiveCount, so a Grok outage longer than a few
+    pauses used to move the whole queue into the DLQ. The message is sent again (receive count
+    0, delayed) and only then is the old one deleted."""
+    w, sqs, body = _defer_run(monkeypatch)
+    sqs.send_message.assert_called_once_with(
+        QueueUrl="qurl",
+        MessageBody=body,
+        DelaySeconds=w.DEFER_DELAY_S,
+        MessageAttributes={"deferrals": {"DataType": "Number", "StringValue": "1"}},
+    )
+    sqs.delete_message.assert_called_once_with(QueueUrl="qurl", ReceiptHandle="r1")
+
+
+def test_deferrals_are_counted_and_capped(monkeypatch, caplog):
+    import openserp_worker as w
+
+    _, sqs, _ = _defer_run(monkeypatch, deferrals=4)
+    attrs = sqs.send_message.call_args.kwargs["MessageAttributes"]
+    assert attrs["deferrals"]["StringValue"] == "5"
+    _, sqs, _ = _defer_run(monkeypatch, deferrals=w.MAX_DEFERRALS)
+    sqs.send_message.assert_not_called()
+    sqs.delete_message.assert_not_called()  # an ordinary, counted retry now (-> DLQ)
+    assert "OBSERV openserp_worker.defer_cap" in caplog.text
+
+
+def test_a_failed_requeue_keeps_the_original_message(monkeypatch, caplog):
+    _, sqs, _ = _defer_run(monkeypatch, send_fails=True)
+    sqs.delete_message.assert_not_called()
+    assert "OBSERV openserp_worker.requeue_failed" in caplog.text
+
+
+# --- the worker traces each entity like the directory driver (task 1.2f) ----------------------
+
+
+def _traced(monkeypatch, statuses, changed=False, verdicts=None):
+    """enrich_one_person records ``statuses`` as its queries' results."""
+    import src.enrichment.openserp_enrichment as oe
+
+    def enrich(data, url, grok):
+        for st in statuses:
+            oe._trace_query("q", st, 1 if st == "results" else 0)
+        for v in verdicts or []:
+            oe._trace.get()["verdicts"].append(v)
+        return changed
+
+    monkeypatch.setattr(oe, "enrich_one_person", enrich)
+    monkeypatch.setattr(w, "_safe_entity_path", lambda *a: True)
+    storage = FakeStorage({"people/x.json": {"name": "X", "PersonID": "P1"}})
+    storage.written = {}
+    real = storage.write_json
+    storage.write_json = lambda p, d: (storage.written.__setitem__(p, d), real(p, d))[1]
+    out = w.process_message(
+        {"entity_type": "people", "entity_path": "people/x.json"},
+        storage,
+        "http://s",
+        object(),
+    )
+    return out, storage
+
+
+def test_an_entity_whose_searches_only_errored_is_not_marked_searched(monkeypatch):
+    out, storage = _traced(monkeypatch, ["error", "error"])
+    assert out == "defer"  # was: marked searched, with no search done
+    assert "openserp_searched" not in storage.written.get("people/x.json", {})
+
+
+def test_an_empty_search_is_marked_and_logged_for_review(monkeypatch):
+    out, storage = _traced(monkeypatch, ["empty", "empty"])
+    assert out == "done"
+    [(path, rec)] = [
+        (p, d) for p, d in storage.written.items() if p.startswith("review/")
+    ]
+    assert path.startswith("review/openserp_misses/") and rec["outcome"] == "empty"
+    assert storage.written["people/x.json"]["openserp_searched"] is True
+
+
+def test_a_found_entity_writes_no_review_record(monkeypatch):
+    out, storage = _traced(monkeypatch, ["results"], changed=True)
+    assert out == "done" and not [p for p in storage.written if p.startswith("review/")]
+
+
+def test_redeliveries_on_one_day_are_one_day_not_five_runs(monkeypatch, caplog):
+    """A 15-minute redelivery loop during an OpenSERP outage must not look like five runs."""
+    import src.enrichment.openserp_enrichment as oe
+
+    for _ in range(oe.UNAVAILABLE_RUN_CAP + 3):
+        _traced(monkeypatch, ["error"])
+    assert "entity_never_searched" not in caplog.text
+
+
+def test_an_entity_that_errors_on_five_different_days_is_called_out_once(
+    monkeypatch, caplog
+):
+    import datetime as dt
+
+    import src.enrichment.openserp_enrichment as oe
+    from src.utils import search_cache as sc
+
+    class Day(dt.datetime):
+        today = dt.datetime(2026, 11, 1, tzinfo=dt.timezone.utc)
+
+        @classmethod
+        def now(cls, tz=None):
+            return cls.today
+
+    monkeypatch.setattr(dt, "datetime", Day)
+    for i in range(oe.UNAVAILABLE_RUN_CAP + 2):
+        Day.today = dt.datetime(2026, 11, 1 + i, tzinfo=dt.timezone.utc)
+        _traced(monkeypatch, ["error"])
+    assert caplog.text.count("OBSERV openserp.entity_never_searched") == 1

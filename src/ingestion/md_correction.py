@@ -16,6 +16,12 @@ from __future__ import annotations
 import logging
 from typing import Optional
 
+from src.utils.grok_models import (
+    GrokFundsExhausted,
+    GrokUnreachable,
+    clear_transient_stop,
+)
+
 logger = logging.getLogger(__name__)
 
 _MIN_USABLE_CHARS = 40
@@ -55,6 +61,30 @@ _SYSTEM = (
 )
 
 
+def _ask_repair(raw_text: str, grok_client, source_hint: str) -> Optional[str]:
+    """Grok's repair, or None when Grok is down or out of credit: the repair is optional (owner
+    2026-11-20, task 1.2f), so the import goes on and the document goes to human review like any
+    failed repair."""
+    prompt = (
+        "Repair the following extracted document text into clean Markdown. "
+        "Preserve all wording verbatim; only fix structure and remove "
+        f"extraction artifacts.{(' Source: ' + source_hint) if source_hint else ''}"
+        "\n\n--- RAW TEXT ---\n" + raw_text
+    )
+    try:
+        return grok_client.chat_completion(
+            prompt=prompt, system_prompt=_SYSTEM, temperature=0.0, cache_type="default"
+        )
+    except (GrokUnreachable, GrokFundsExhausted) as e:
+        clear_transient_stop()
+        logger.warning(
+            "MD-correction skipped for %s: Grok unavailable (%s)",
+            source_hint or "input",
+            type(e).__name__,
+        )
+        return None
+
+
 def correct_markdown(
     raw_text: str,
     *,
@@ -73,15 +103,7 @@ def correct_markdown(
         _observe_mdcorrect(False, "skipped", reason="input below minimum usable chars")
         return None
     try:
-        prompt = (
-            "Repair the following extracted document text into clean Markdown. "
-            "Preserve all wording verbatim; only fix structure and remove "
-            f"extraction artifacts.{(' Source: ' + source_hint) if source_hint else ''}"
-            "\n\n--- RAW TEXT ---\n" + raw_text
-        )
-        result = grok_client.chat_completion(
-            prompt=prompt, system_prompt=_SYSTEM, temperature=0.0, cache_type="default"
-        )
+        result = _ask_repair(raw_text, grok_client, source_hint)
         if result and len(result.strip()) >= min_chars:
             logger.info(
                 "MD-correction second pass recovered %d chars from %s",

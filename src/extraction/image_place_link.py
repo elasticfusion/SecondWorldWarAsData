@@ -28,6 +28,8 @@ from typing import Any, Dict, List, Optional, Tuple
 logger = logging.getLogger(__name__)
 
 from src.utils.observe import observe_warn  # noqa: E402
+from src.grok_client import BatchModeCollecting
+from src.utils.batch_pending import Pending
 
 # Deterministic terrain/aerial cues in a caption (lowercased). Conservative: a people/equipment photo
 # caption should NOT trip these.
@@ -79,8 +81,20 @@ def _grok_is_terrain(caption: str, grok_client: Any) -> Tuple[bool, str]:
             "(as opposed to a portrait of people, equipment, or a diagram/chart)?\n"
             "Answer with exactly one word: TERRAIN or OTHER."
         )
-        resp = (grok_client.chat_completion(prompt) or "").strip().upper()
-        return (resp.startswith("TERRAIN"), "grok")
+        from src.utils.grok_choice import ask_choice, can_reask, evictor
+
+        choice = ask_choice(
+            lambda: grok_client.chat_completion(prompt),
+            ("TERRAIN", "OTHER"),
+            evictor(grok_client, prompt),
+            what="image_place.terrain",
+            reask=can_reask(grok_client),
+        )
+        if choice is None:  # unusable twice: not linked (fail-safe), retried next run
+            return (False, "grok-unparsed")
+        return (choice == "TERRAIN", "grok")
+    except BatchModeCollecting:
+        raise  # queued for the batch: not an answer, not a failure
     except Exception as e:  # noqa: BLE001
         observe_warn("image_place", "grok_error", reason=str(e)[:120])
         return (False, "grok-error")
@@ -165,18 +179,22 @@ def _resolve_or_create_place(
         key = place_name.lower().strip()
         if not key:
             return None
-        if key in name_to_id or key in index:
-            from src.extraction.places import (
-                _find_or_create_place,
-            )  # existing -> returns its file
+        from src.extraction.entity_writers import find_or_create_place
 
-            return _find_or_create_place(place_name, {}, places_dir, index)
-        # Not yet a place -> create it through the real pipeline (provenance-marked mention).
-        from src.extraction.places import _find_or_create_place
-
-        mention = {"geography_type": "other", "source": "document:image-caption"}
-        pf = _find_or_create_place(place_name, mention, places_dir, index)
-        logger.info("OBSERV image_place.created place=%s", place_name)
+        known = key in name_to_id or key in index
+        # an unknown place goes through the shared place writer with a provenance-marked
+        # mention (task 1.8: the one writer Phase 2 uses too)
+        mention = (
+            {}
+            if known
+            else {"geography_type": "other", "source": "document:image-caption"}
+        )
+        pf = find_or_create_place(place_name, places_dir, mention)
+        index[key] = (
+            pf.name
+        )  # the next photo of this place in the run finds it as known
+        if not known:
+            logger.info("OBSERV image_place.created place=%s", place_name)
         return pf
     except Exception as e:  # noqa: BLE001
         logger.warning(
@@ -332,6 +350,7 @@ def link_images_to_places(
     index = _safe_load_index(places_dir, _load_places_index)
     # CRITICAL provenance: map book -> SourceSectionID ULID so every link is ULID-attributed.
     book_to_section = _build_book_section_index(places_dir.parent)
+    pending = Pending()
     for doc in parsed_docs:
         if isinstance(doc, dict):
             _link_doc_images(
@@ -342,6 +361,7 @@ def link_images_to_places(
                 book_to_section,
                 grok_client,
                 summary,
+                pending,
             )
     logger.info(
         "OBSERV image_place.summary images=%d terrain=%d places=%d created=%d linked=%d skipped=%d",
@@ -352,6 +372,7 @@ def link_images_to_places(
         summary["linked"],
         summary["skipped"],
     )
+    pending.raise_if_queued()  # batch rounds: the step is pending, the next pass has the answers
     return summary
 
 
@@ -403,8 +424,11 @@ def _link_doc_images(
     book_to_section: Dict[str, str],
     grok_client: Any,
     summary: Dict[str, int],
+    pending: Pending,
 ) -> None:
-    """Classify + link one parsed doc's terrain/aerial images (mutates ``summary``). Fail-safe."""
+    """Classify + link one parsed doc's terrain/aerial images (mutates ``summary``). Fail-safe.
+    An image whose terrain verdict was QUEUED for the batch is noted in ``pending`` (neither
+    skipped nor linked) and the next image is visited."""
     book = str(doc.get("book", ""))
     section_id = book_to_section.get(book.strip().lower()) if book else None
     for img in doc.get("images") or []:
@@ -415,7 +439,8 @@ def _link_doc_images(
         if not caption or not url:
             continue
         summary["images"] += 1
-        _link_one_image(
+        pending.call(
+            _link_one_image,
             caption,
             url,
             book,
@@ -470,5 +495,7 @@ def _link_one_image(
                 _set_image_content_location(places_dir.parent, url, pf, name)
             else:
                 summary["skipped"] += 1
+    except BatchModeCollecting:
+        raise  # queued for the batch: not an answer, not a failure
     except Exception as e:  # noqa: BLE001 - linking must never crash the pipeline
         observe_warn("image_place", "error", reason=str(e)[:120])

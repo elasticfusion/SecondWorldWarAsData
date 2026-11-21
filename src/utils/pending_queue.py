@@ -1,0 +1,468 @@
+"""The per-book phase queues in the api-cache table: ``pending#parsed#<book>`` (waiting for
+Phase 2) and ``pending#enrich#<book>`` (waiting for Phase 3). Task 1.2, 2026-11-18.
+
+ONE implementation for the trigger Lambda and the ECS wrapper (both read and write these rows).
+
+Phase 3 row lifecycle (owner decisions D8c-2, D10; finding V3):
+  * queued   - the trigger found the Phase 3 lock held: ``queue_enrich`` writes the row;
+  * started  - the task counts the attempt FIRST (``claim_attempt``, creating the row if the book
+               was launched without one). Counting at the start bounds EVERY way a run can end -
+               a crash, a preflight abort, a SIGTERM, a gate failure - with no exit-path hooks;
+               past ``max_attempts`` the task does not run, removes the row and alerts;
+  * success  - the task deletes ITS OWN row (``finish``);
+  * anything else - the row stays, so the hourly reconcile retries the book.
+
+Deferral (task 1.2b, owner 2026-11-18: "deferred yes, dropped never"). A row is never deleted
+except on success. ``defer`` marks it with a cause:
+  * ``funding`` / ``connectivity`` (AUTO_RESUME) - nothing wrong with the book: Grok credits, NAT,
+    an AZ or the network. These are cluster-wide, so while one is recent NO book is runnable (no
+    task is launched just to fail the same way); after ``queue.defer_retry_minutes`` the next
+    reconcile tries again. The attempt is given back (``give_back``).
+  * ``failure`` (past the attempt cap) / ``config`` (bad API key, unavailable model) - held until
+    an operator runs ``scripts/resume_book.py`` (``resume``).
+Before: the row was deleted when the NEXT book was triggered, so a failed book was never retried
+and a book launched by the reconcile could be picked as its own "next book" and run twice.
+"""
+
+from __future__ import annotations
+
+import logging
+import time
+from typing import Any, List, Optional, Tuple
+
+from src.utils.ddb_scan import scan_prefix
+
+logger = logging.getLogger(__name__)
+
+KINDS = ("parsed", "enrich")
+DEFAULT_MAX_ATTEMPTS = 3
+
+AUTO_RESUME = ("funding", "connectivity")
+MANUAL_RESUME = ("failure", "config")
+CAUSES = AUTO_RESUME + MANUAL_RESUME
+# connectivity / funding stops since the last resume before a book is held for the operator
+DEFAULT_MAX_CONNECTIVITY_DEFERRALS = 24  # ~a day of hourly retries
+DEFAULT_MAX_FUNDING_DEFERRALS = 72  # ~3 days waiting for a top-up
+DEFAULT_DEFER_RETRY_MINUTES = 50  # under the hourly reconcile, so its next run retries
+RESUME_COMMAND = "python3 scripts/resume_book.py"
+
+
+def _prefix(kind: str) -> str:
+    if kind not in KINDS:
+        raise ValueError(f"unknown queue kind {kind!r}")
+    return f"pending#{kind}#"
+
+
+def row_key(kind: str, book: str) -> str:
+    """``pending#<kind>#<book>``. The book must be a safe slug (no '#', so it cannot address
+    another row family; src/ingestion/book_slug.py)."""
+    if not book or "#" in book or book.strip() != book:
+        raise ValueError(f"not a safe book name for a queue row: {book!r}")
+    return _prefix(kind) + book
+
+
+def pending_books(table: Any, kind: str) -> List[str]:
+    """Every book queued for ``kind``, sorted (all scan pages)."""
+    prefix = _prefix(kind)
+    books = {
+        str(item["cache_key"])[len(prefix) :]
+        for item in scan_prefix(table, prefix, projection="cache_key")
+    }
+    return sorted(b for b in books if b)
+
+
+def _rows(table: Any, kind: str) -> List[dict]:
+    """Every row of ``kind`` with its deferral fields (all scan pages)."""
+    return list(
+        scan_prefix(
+            table,
+            _prefix(kind),
+            projection="#k, #d, #a, #r, #n, #s",
+            names={
+                "#k": "cache_key",
+                "#d": "defer_cause",
+                "#a": "deferred_at",
+                "#r": "defer_reason",
+                "#n": "attempts",
+                "#s": "last_failed_steps",
+            },
+        )
+    )
+
+
+def _split_rows(table: Any, kind: str) -> Tuple[List[str], List[str], int, str]:
+    """(runnable, held, newest auto-deferral time, its cause) over every row of ``kind``."""
+    prefix = _prefix(kind)
+    runnable: List[Tuple[int, str]] = []
+    held: List[str] = []
+    newest_auto, auto_cause = 0, ""
+    for item in _rows(table, kind):
+        book = str(item["cache_key"])[len(prefix) :]
+        cause = item.get("defer_cause")
+        at = int(item.get("deferred_at") or 0)
+        if not book:
+            continue
+        if cause in MANUAL_RESUME:
+            held.append(book)
+            continue
+        if cause in AUTO_RESUME and at > newest_auto:
+            newest_auto, auto_cause = at, cause
+        # never-deferred books first, then the OLDEST deferral: a book that keeps renewing the
+        # cluster-wide hold goes last instead of starving the others (it was alphabetical)
+        runnable.append((at if cause in AUTO_RESUME else 0, book))
+    return [b for _, b in sorted(runnable)], sorted(held), newest_auto, auto_cause
+
+
+def runnable_books(
+    table: Any,
+    kind: str,
+    retry_minutes: int = DEFAULT_DEFER_RETRY_MINUTES,
+    now: Optional[float] = None,
+) -> List[str]:
+    """Queued books that may be launched now, sorted. A ``failure``/``config`` deferral is held for
+    the operator. A ``funding``/``connectivity`` deferral is cluster-wide: while the newest one is
+    younger than ``retry_minutes`` nothing is runnable; after that every book is."""
+    runnable, held, newest_auto, auto_cause = _split_rows(table, kind)
+    if held:
+        logger.info(
+            "OBSERV queue.deferred_held kind=%s books=%s status=ok - resume each with `%s <book>`",
+            kind,
+            ",".join(held),
+            RESUME_COMMAND,
+        )
+        remind_held(table, kind, held, now)
+    now = time.time() if now is None else now
+    wait = int(retry_minutes * 60 - (now - newest_auto)) if newest_auto else 0
+    if wait > 0 and runnable:
+        logger.info(
+            "OBSERV queue.hold kind=%s cause=%s books=%d retry_in_s=%d status=ok - every book "
+            "waits; the next reconcile after that retries",
+            kind,
+            auto_cause,
+            len(runnable),
+            wait,
+        )
+        return []
+    return runnable
+
+
+HELD_REMINDER_HOURS = 24
+
+
+def remind_held(
+    table: Any, kind: str, held: List[str], now: Optional[float] = None
+) -> bool:
+    """Once a day (across Lambda invocations), remind the operator that books are held for them:
+    after the one alert when each was held, a held book was only logged by every reconcile.
+    Returns whether the reminder was sent. Never raises."""
+    from src.utils import alert_window
+    from src.utils.observe import observe_alert
+
+    now = time.time() if now is None else now
+    key = f"queue#held_reminded#{kind}"
+    try:
+        if not alert_window.claim(table, key, HELD_REMINDER_HOURS * 3600, now):
+            return False
+        shown = ", ".join(held[:10]) + (
+            f" (+{len(held) - 10} more)" if len(held) > 10 else ""
+        )
+        sent = observe_alert(
+            "queue",
+            "held_reminder",
+            note=(
+                f"{len(held)} book(s) are still held for you and will not run until resumed: "
+                f"{shown}. `{RESUME_COMMAND} list` shows why; after the fix run "
+                f"`{RESUME_COMMAND} <book>`"
+            ),
+            dedup_key=f"{kind}.{int(now // 86400)}",
+            kind=kind,
+            count=len(held),
+        )
+        if not sent:  # not delivered: the next reconcile tries again
+            alert_window.release(table, key)
+        return bool(sent)
+    except Exception as e:  # noqa: BLE001 - a reminder must never stop the reconcile
+        logger.warning(
+            "OBSERV queue.held_reminder_failed err=%s status=warn", type(e).__name__
+        )
+        return False
+
+
+def record_failed_steps(table: Any, book: str, steps: List[str]) -> None:
+    """Keep the Phase 3 steps that failed in the book's last run on its queue row, so the
+    attempt-cap hold and ``resume_book.py --list`` can name them (task 1.2f follow-up).
+    """
+    clean = [str(s)[:60] for s in steps if s][:10]
+    table.update_item(
+        Key={"cache_key": row_key("enrich", book)},
+        UpdateExpression="SET last_failed_steps = :s",
+        ConditionExpression="attribute_exists(cache_key)",
+        ExpressionAttributeValues={":s": clean},
+    )
+
+
+def failed_steps(table: Any, book: str) -> List[str]:
+    """The steps that failed in the book's last run ([] if none recorded)."""
+    item = table.get_item(Key={"cache_key": row_key("enrich", book)}).get("Item") or {}
+    steps = item.get("last_failed_steps")
+    return [str(s) for s in steps] if isinstance(steps, list) else []
+
+
+def deferred_rows(table: Any, kind: str = "enrich") -> List[dict]:
+    """Deferred rows as {book, cause, reason, deferred_at, attempts}, sorted by book."""
+    prefix = _prefix(kind)
+    out = [
+        {
+            "book": str(i["cache_key"])[len(prefix) :],
+            "cause": i["defer_cause"],
+            "reason": i.get("defer_reason", ""),
+            "deferred_at": int(i.get("deferred_at") or 0),
+            "attempts": int(i.get("attempts") or 0),
+            "last_failed_steps": [str(x) for x in (i.get("last_failed_steps") or [])],
+        }
+        for i in _rows(table, kind)
+        if i.get("defer_cause")
+    ]
+    return sorted(out, key=lambda r: r["book"])
+
+
+def next_book(
+    table: Any,
+    kind: str,
+    exclude: str = "",
+    retry_minutes: int = DEFAULT_DEFER_RETRY_MINUTES,
+) -> str:
+    """The first runnable book other than ``exclude`` (the running book), or ''."""
+    for book in runnable_books(table, kind, retry_minutes):
+        if book != exclude:
+            return book
+    return ""
+
+
+def queue_enrich(table: Any, book: str) -> None:
+    """Queue ``book`` for Phase 3. Idempotent; keeps an existing attempt count."""
+    table.update_item(
+        Key={"cache_key": row_key("enrich", book)},
+        UpdateExpression="SET book = :b, queued_at = if_not_exists(queued_at, :t)",
+        ExpressionAttributeValues={":b": book, ":t": int(time.time())},
+    )
+
+
+def finish(table: Any, kind: str, book: str) -> None:
+    """The book's phase succeeded: remove its own row (absent is fine)."""
+    table.delete_item(Key={"cache_key": row_key(kind, book)})
+
+
+def claim_attempt(
+    table: Any, book: str, max_attempts: int = DEFAULT_MAX_ATTEMPTS, task_id: str = ""
+) -> Tuple[int, bool]:
+    """A Phase 3 task for ``book`` is starting: count the attempt on its row (atomic ADD; the row
+    is created if absent, so a failed run is retried) and clear any deferral (this run is the
+    retry). Returns (attempts, allowed). Past ``max_attempts`` the row is deferred ``failure``
+    (kept, never dropped) and allowed is False: the caller must not run, and alerts.
+    """
+    key = {"cache_key": row_key("enrich", book)}
+    values: dict = {":b": book, ":t": int(time.time()), ":one": 1}
+    claimed_by = ""
+    if task_id:  # only this task may give this attempt back (give_back)
+        values[":task"] = task_id
+        claimed_by = ", claimed_by = :task"
+    resp = table.update_item(
+        Key=key,
+        UpdateExpression=(
+            "SET book = :b, queued_at = if_not_exists(queued_at, :t), started_at = :t"
+            f"{claimed_by} ADD attempts :one"
+        ),
+        ExpressionAttributeValues=values,
+        ReturnValues="UPDATED_NEW",
+    )
+    attempts = int((resp.get("Attributes") or {}).get("attempts", 1))
+    cap = max(1, int(max_attempts))
+    if attempts > cap:
+        try:
+            defer(table, book, "failure", f"Phase 3 failed {cap} times")
+        except (
+            Exception
+        ) as e:  # noqa: BLE001 - fail closed: past the cap the run never starts
+            logger.error(
+                "OBSERV queue.defer_failed book=%s err=%s status=error - past the cap, not run; "
+                "the row keeps its count, so the next start is refused again",
+                book,
+                type(e).__name__,
+            )
+        return attempts, False
+    # only now clear a deferral (this run is the retry): clearing it in the counting update
+    # would make a capped row look runnable until the re-defer above. The last run's failed
+    # steps go too: a refused (capped) start keeps them, so its hold alert names them
+    try:
+        table.update_item(
+            Key=key,
+            UpdateExpression="REMOVE defer_cause, deferred_at, defer_reason, last_failed_steps",
+            ConditionExpression="attribute_exists(cache_key)",
+        )
+    except Exception as e:  # noqa: BLE001 - the attempt IS counted; run it
+        logger.error(
+            "OBSERV queue.defer_clear_failed book=%s err=%s status=error - the attempt is "
+            "counted, but an old deferral may remain on the row; `%s %s` clears it",
+            book,
+            type(e).__name__,
+            RESUME_COMMAND,
+            book,
+        )
+    return attempts, True
+
+
+def defer(
+    table: Any,
+    book: str,
+    cause: str,
+    reason: str = "",
+    max_connectivity: int = DEFAULT_MAX_CONNECTIVITY_DEFERRALS,
+    max_funding: int = DEFAULT_MAX_FUNDING_DEFERRALS,
+) -> str:
+    """Mark ``book``'s existing Phase 3 row deferred for ``cause``: kept, never dropped. Returns
+    the cause it was deferred with, or '' if the book has no row (it finished, or was never
+    queued): a finished book is never re-queued. ``reason`` is stored one-line and capped.
+
+    ``connectivity`` and ``funding`` stops give the attempt back and resume on their own, so a
+    book that keeps stopping that way (a bug, one book's own request, a mid-run 402 after paid
+    work) would retry forever. They are counted since the last resume; past ``max_connectivity``
+    (``max_funding``) the book is deferred ``failure`` instead (held for the operator).
+    """
+    if cause not in CAUSES:
+        raise ValueError(f"unknown deferral cause {cause!r}")
+    reason = " ".join(str(reason).split())[:500]
+    field = f"{cause}_stops"
+    counted = cause in AUTO_RESUME
+    try:
+        resp = table.update_item(
+            Key={"cache_key": row_key("enrich", book)},
+            UpdateExpression="SET defer_cause = :c, deferred_at = :t, defer_reason = :r"
+            + (f", {field} = if_not_exists({field}, :z) + :one" if counted else ""),
+            ConditionExpression="attribute_exists(cache_key)",
+            ExpressionAttributeValues={
+                ":t": int(time.time()),
+                ":c": cause,
+                ":r": reason,
+                **({":z": 0, ":one": 1} if counted else {}),
+            },
+            ReturnValues="UPDATED_NEW",
+        )
+    except Exception as e:  # noqa: BLE001 - re-raised unless it is the guard
+        if _condition_failed(e):
+            return ""
+        raise
+    stops = int((resp.get("Attributes") or {}).get(field, 0))
+    cap = max_connectivity if cause == "connectivity" else max_funding
+    if counted and stops > max(1, int(cap)):
+        return _hold(table, book, cause, stops, reason)
+    return cause
+
+
+def _hold(table: Any, book: str, cause: str, stops: int, reason: str) -> str:
+    """Too many automatic stops: hold the book for the operator ('failure'); '' if it finished."""
+    try:
+        table.update_item(
+            Key={"cache_key": row_key("enrich", book)},
+            UpdateExpression="SET defer_cause = :c, defer_reason = :r",
+            ConditionExpression="attribute_exists(cache_key)",
+            ExpressionAttributeValues={
+                ":c": "failure",
+                ":r": f"stopped for {cause} {stops} times since the last resume: "
+                f"{reason}"[:500],
+            },
+        )
+    except Exception as e:  # noqa: BLE001 - re-raised unless the book just finished
+        if _condition_failed(e):
+            return ""
+        raise
+    return "failure"
+
+
+def _condition_failed(e: Exception) -> bool:
+    code = (getattr(e, "response", None) or {}).get("Error", {}).get("Code", "")
+    return code == "ConditionalCheckFailedException"
+
+
+def give_back(table: Any, book: str, task_id: str = "") -> bool:
+    """Undo an attempt (the stop was not the book's fault). Only on an existing row with
+    attempts > 0, so a finished book's row is never re-created. With ``task_id``, only the attempt
+    THAT task claimed (``claimed_by``), once: the task and the trigger Lambda can both try, and a
+    later run's attempt is never undone. Returns True if given back."""
+    cond = "attribute_exists(cache_key) AND attempts > :zero"
+    update = "ADD attempts :minus"
+    values: dict = {":minus": -1, ":zero": 0}
+    if task_id:
+        cond += " AND claimed_by = :task"
+        update += " REMOVE claimed_by"
+        values[":task"] = task_id
+    try:
+        table.update_item(
+            Key={"cache_key": row_key("enrich", book)},
+            UpdateExpression=update,
+            ConditionExpression=cond,
+            ExpressionAttributeValues=values,
+        )
+        return True
+    except Exception as e:  # noqa: BLE001 - re-raised unless it is the guard
+        if _condition_failed(e):
+            return False
+        raise
+
+
+def resume(table: Any, book: str) -> bool:
+    """Operator resume: clear the deferral and the attempt count on an existing row, so the next
+    reconcile runs the book. Returns False if the book has no row."""
+    try:
+        table.update_item(
+            Key={"cache_key": row_key("enrich", book)},
+            UpdateExpression=(
+                "SET attempts = :zero REMOVE defer_cause, deferred_at, defer_reason, "
+                "connectivity_stops, funding_stops"
+            ),
+            ConditionExpression="attribute_exists(cache_key)",
+            ExpressionAttributeValues={":zero": 0},
+        )
+        return True
+    except Exception as e:  # noqa: BLE001 - re-raised unless it is the guard
+        if _condition_failed(e):
+            return False
+        raise
+
+
+def max_connectivity_deferrals(config: Optional[dict] = None) -> int:
+    """``queue.max_connectivity_deferrals`` (default 24)."""
+    try:
+        value = int(
+            ((config or {}).get("queue") or {}).get("max_connectivity_deferrals", 0)
+        )
+    except (TypeError, ValueError):
+        value = 0
+    return value if value > 0 else DEFAULT_MAX_CONNECTIVITY_DEFERRALS
+
+
+def max_funding_deferrals(config: Optional[dict] = None) -> int:
+    """``queue.max_funding_deferrals`` (default 72)."""
+    try:
+        value = int(((config or {}).get("queue") or {}).get("max_funding_deferrals", 0))
+    except (TypeError, ValueError):
+        value = 0
+    return value if value > 0 else DEFAULT_MAX_FUNDING_DEFERRALS
+
+
+def defer_retry_minutes(config: Optional[dict] = None) -> int:
+    """``queue.defer_retry_minutes`` (default 50)."""
+    try:
+        value = int(((config or {}).get("queue") or {}).get("defer_retry_minutes", 0))
+    except (TypeError, ValueError):
+        value = 0
+    return value if value > 0 else DEFAULT_DEFER_RETRY_MINUTES
+
+
+def max_attempts(config: Optional[dict] = None) -> int:
+    """``queue.phase3_max_attempts`` (default 3)."""
+    try:
+        value = int(((config or {}).get("queue") or {}).get("phase3_max_attempts", 0))
+    except (TypeError, ValueError):
+        value = 0
+    return value if value > 0 else DEFAULT_MAX_ATTEMPTS

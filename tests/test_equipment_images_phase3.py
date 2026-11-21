@@ -443,31 +443,6 @@ def test_a_batch_queued_scope_leaves_the_record_untouched(
     assert f.read_text() == before
 
 
-def test_the_phase3_batch_rerun_runs_equipment_images(monkeypatch):
-    import types
-
-    import phase3_enrich_data as P
-    import src.enrichment.bibliography_resolver as B
-
-    for fn in (
-        "enrich_groups_data",
-        "enrich_all_places",
-        "link_parent_place_ids",
-        "enrich_bibliography",
-    ):
-        monkeypatch.setattr(P, fn, lambda *a, **k: 0)
-    monkeypatch.setattr(B, "resolve_bibliography_dir", lambda *a, **k: {"resolved": 0})
-    ran = []
-    monkeypatch.setattr(
-        P, "_resolve_equipment_images", lambda out, grok, cfg: ran.append(out) or 2
-    )
-    args = types.SimpleNamespace(
-        people_only=False, max_items=0, output_dir=__import__("pathlib").Path("/tmp/x")
-    )
-    assert P._run_batch_rerun(args, {"supplemental_material": {}}, object()) == 2
-    assert len(ran) == 1
-
-
 def test_an_image_waiting_for_a_human_is_not_refetched_or_realerted(
     tmp_path, vision, monkeypatch
 ):

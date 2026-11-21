@@ -149,6 +149,10 @@ def _render_parsed_body(parsed, body: str) -> str:
     return body
 
 
+def _escape(text: str) -> str:
+    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
 def _description(subject: str, message: str) -> str:
     """Full message body, structured for Slack — carries the SAME detail email
     gets (both subscribe to the same SNS topic). We do NOT drop content: the whole
@@ -160,8 +164,10 @@ def _description(subject: str, message: str) -> str:
       email shows in its subject line, which Slack otherwise buries in the title).
     - Financial notifications still get the detected dollar amounts pinned on top.
     """
-    body = _coerce_body(message)
-    subj = (subject or "").strip()
+    # Slack markup in alert text (an uploaded file name, a page title) is shown, never acted on:
+    # <!channel>, <url|label> and & are escaped as Slack requires (task 1.2f)
+    body = _escape(_coerce_body(message))
+    subj = _escape((subject or "").strip())
 
     # Surface the subject as a bold lead when it's distinct from the body lead
     # (avoid duplicating when the body already starts with the subject text).
@@ -184,7 +190,7 @@ def _to_chatbot_custom(subject: str, message: str) -> dict:
     financial = _is_financial(f"{subject} {message}")
     content: dict = {
         "textType": "client-markdown",
-        "title": f"{emoji} {title}"[:250],
+        "title": f"{emoji} {_escape(title)}"[:250],
         "description": _description(subject, message),
         "nextSteps": [s[:350] for s in _next_steps(subject, message)],
     }

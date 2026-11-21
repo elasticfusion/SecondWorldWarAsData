@@ -21,6 +21,7 @@ def _client():
     c._get_cache = lambda ct: c.caches.setdefault(ct, {})
     c._make_cache_key = lambda *a, **k: "ck"
     c._get_model = lambda ct: "m"
+    c.batch_mode = False
     return c
 
 

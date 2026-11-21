@@ -144,7 +144,7 @@ def test_repeats_warn_once_then_count(caplog):
     ]
     assert len(lines) == 2  # first, then the 25th
     assert "count=1" in lines[0] and "count=25" in lines[1]
-    assert all("check_the_prompt/model" in m for m in lines)  # actionable
+    assert all("check the prompt/model" in m for m in lines)  # actionable
 
 
 def test_events_validator_counts_string_numbers():

@@ -58,16 +58,17 @@ def test_collecting_outside_a_batch_collect_pass_is_a_real_failure(caplog):
 
 
 def test_retrieve_rerun_env_is_synchronous(monkeypatch):
-    # Other phases: the retrieve re-run drops --batch; BATCH_PHASE2=true in the task env must
-    # not re-enable batch mode (phase2_extract._resolve_batch_mode lets the env win).
+    # Phases that do not run batch rounds (neither Phase 2 nor Phase 3): the retrieve re-run drops
+    # --batch; BATCH_PHASE2=true in the task env must not re-enable batch mode
+    # (phase2_extract._resolve_batch_mode lets the env win).
     monkeypatch.setenv("S3_BUCKET", "test-bucket")
     monkeypatch.setenv("AWS_DEFAULT_REGION", "us-east-1")
     import ecs_entrypoint
 
     monkeypatch.setenv("BATCH_PHASE2", "true")
-    env = ecs_entrypoint._retrieve_rerun_env("phase3_enrich_data.py")
+    env = ecs_entrypoint._retrieve_rerun_env("phase1_parse.py")
     assert "BATCH_PHASE2" not in env
-    assert env["SKIP_RETRY"] == "1" and env["PIPELINE_PHASE"] == "phase3_enrich_data"
+    assert env["SKIP_RETRY"] == "1" and env["PIPELINE_PHASE"] == "phase1_parse"
 
 
 def test_the_phase2_retrieve_rerun_resumes_its_batch_rounds(monkeypatch):

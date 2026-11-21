@@ -146,7 +146,7 @@ def test_duplicate_content_is_deduped_not_reuploaded(monkeypatch):
     s3 = _S3()
     monkeypatch.setattr(FR, "_s3_client_and_bucket", lambda: (s3, "b"))
     monkeypatch.setattr(
-        FR, "_register_content_hash_if_new", lambda digest, sid: False
+        FR, "_claim_content_hash", lambda digest, sid: FR.CLAIM_DUPLICATE
     )  # already seen
     marked = []
     monkeypatch.setattr(
@@ -169,7 +169,7 @@ def test_new_content_proceeds(monkeypatch):
     s3 = _S3()
     monkeypatch.setattr(FR, "_s3_client_and_bucket", lambda: (s3, "b"))
     monkeypatch.setattr(
-        FR, "_register_content_hash_if_new", lambda digest, sid: True
+        FR, "_claim_content_hash", lambda digest, sid: FR.CLAIM_WON
     )  # new
     monkeypatch.setattr(FR, "set_review_status", lambda fid, st: True)
     out = FR.submit_affirmed_batch()

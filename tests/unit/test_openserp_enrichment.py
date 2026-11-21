@@ -65,11 +65,19 @@ class TestVerifyResult:
         assert _verify_result("title", "context", Mock()) is False
 
     @patch("src.utils.search_cache.get_cached", return_value=None)
-    def test_grok_error_fails_closed(self, _):
+    def test_grok_error_is_not_a_rejection(self, _):
+        """Task 1.2e (owner rule 3): a failed verdict is neither accepted nor counted as a NO:
+        it raises VerifyFailed (the entity is retried next run). Full cases:
+        tests/test_openserp_verify_batch.py."""
+        import pytest
+
+        from src.enrichment.openserp_enrichment import VerifyFailed
+        from src.grok_client import GrokAPIError
+
         client = Mock()
-        client.chat_completion.side_effect = RuntimeError("boom")
-        # Hardened: a Grok error must reject (fail-closed), not accept.
-        assert _verify_result("title", "context", client) is False
+        client.extract_json.side_effect = GrokAPIError("boom")
+        with pytest.raises(VerifyFailed):
+            _verify_result("title", "context", client)
 
 
 class TestSearchQueryLoader:

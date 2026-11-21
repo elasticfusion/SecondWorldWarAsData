@@ -89,6 +89,63 @@ def get_active_jobs() -> List[BatchJob]:
     return jobs
 
 
+LIVE_STATUSES = ("pending", "ready", "in_task")
+# A batch xAI answers within a day (most within hours). A row still live after this is not trusted
+# to block its book: the batch is gone or never settles (the 30-day row TTL is the only other exit)
+LIVE_MAX_AGE_S = 36 * 3600
+
+
+def live_batch_for(table, phase: str, book: Optional[str]) -> Optional[str]:
+    """The id of a batch of ``phase`` for ``book`` (any book when None) that is still being
+    answered or waiting to be retrieved (pending / ready / in_task) and younger than
+    LIVE_MAX_AGE_S, else None. While one exists the book must not be launched again: a second run
+    would collect the same requests and submit (and pay for) them twice. An OLDER live row is
+    reported once (actionable: look at the batch, delete the row) and does not block. Errors
+    propagate: the caller decides how to fail."""
+    from src.utils.ddb_scan import scan_prefix
+
+    values = {
+        ":a": LIVE_STATUSES[0],
+        ":b": LIVE_STATUSES[1],
+        ":c": LIVE_STATUSES[2],
+        ":ph": phase,
+    }
+    flt = "#s IN (:a, :b, :c) AND phase = :ph"
+    if book:
+        flt += " AND book = :bk"
+        values[":bk"] = book
+    now = time.time()
+    for item in scan_prefix(
+        table,
+        "batch_job#",
+        projection="batch_id, phase, book, #s, submitted_at, #t",
+        names={"#s": "status", "#t": "ttl"},
+        extra_filter=flt,
+        values=values,
+    ):
+        age = now - float(item.get("submitted_at", 0) or 0)
+        if age > LIVE_MAX_AGE_S or float(item.get("ttl", now + 1) or 0) < now:
+            _report_stale_live(item, age)
+            continue
+        return str(item.get("batch_id", "")) or "?"
+    return None
+
+
+def _report_stale_live(item: dict, age: float) -> None:
+    from src.utils.observe import observe_warn
+
+    observe_warn(
+        "batch",
+        "live_row_ignored",
+        batch=str(item.get("batch_id", ""))[:40],
+        book=str(item.get("book", ""))[:80],
+        age_h=int(age // 3600),
+        note="a batch job row is still pending/ready/in_task after more than "
+        f"{LIVE_MAX_AGE_S // 3600} h: it no longer blocks its book. Check the batch in the xAI "
+        "console; if it is gone, delete the batch_job# row",
+    )
+
+
 def update_job_status(batch_id: str, status: str) -> None:
     """Update a job's status."""
     table = _get_table()
@@ -141,21 +198,23 @@ IN_TASK = "in_task"
 
 
 def record_in_task(batch_id: str, batch_name: str, request_count: int) -> None:
-    """Record a just-submitted Phase 2 batch as ``in_task`` (ECS only; best-effort - the hand-off
-    and in-task retrieve update it)."""
+    """Record a just-submitted Phase 2 or Phase 3 batch as ``in_task`` (ECS only; best-effort -
+    the hand-off and in-task retrieve update it). A task that dies during its wait (a Spot
+    reclaim) leaves this row: the poller adopts it, and the trigger does not relaunch the book
+    while it is live (else the same requests would be submitted and paid for twice)."""
     import os
 
-    phase = os.environ.get("PIPELINE_PHASE", "")
+    phase = _rounds_phase()
     in_ecs = bool(
         os.environ.get("ECS_CONTAINER_METADATA_URI_V4") or os.environ.get("ECS_TASK_ID")
     )
-    if not (in_ecs and phase.startswith("phase2") and batch_id):
+    if not (in_ecs and phase and batch_id):
         return
     try:
         enqueue_job(
             BatchJob(
                 batch_id=batch_id,
-                phase="phase2",
+                phase=phase,
                 book=os.environ.get("BOOK_NAME", "unknown") or "unknown",
                 batch_name=batch_name,
                 submitted_at=int(time.time()),
@@ -166,9 +225,28 @@ def record_in_task(batch_id: str, batch_name: str, request_count: int) -> None:
     except (
         Exception
     ) as e:  # noqa: BLE001 - never a batch failure: it is already submitted
-        logger.warning(
-            "OBSERV batch.in_task_record_failed batch=%s err=%s", batch_id, e
+        from src.utils.observe import observe_error
+
+        observe_error(
+            "batch",
+            "in_task_record_failed",
+            batch=batch_id,
+            err=type(e).__name__,
+            note="the batch was submitted but its in_task row was not written: if this task is "
+            "stopped now the book is launched again and submits the SAME requests (paid twice). "
+            "Check dynamodb access; the batch is retrieved by the task's own wait",
         )
+
+
+def _rounds_phase() -> str:
+    """ "phase2" / "phase3" when this process is one of the phases that run batch rounds, else ""."""
+    import os
+
+    name = os.environ.get("PIPELINE_PHASE", "")
+    for phase in ("phase2", "phase3"):
+        if name.startswith(phase):
+            return phase
+    return ""
 
 
 def mark_retrieved_in_task(batch_id: str) -> None:
@@ -177,7 +255,7 @@ def mark_retrieved_in_task(batch_id: str) -> None:
 
 
 def mark_in_task(batch_id: str, status: str) -> None:
-    """Settle this task's ``in_task`` record (best-effort; Phase 2 in ECS only, and only an
+    """Settle this task's ``in_task`` record (best-effort; Phase 2 and 3 in ECS only, and only an
     EXISTING row - an update must never create a bare row for another phase's batch)."""
     import os
 
@@ -187,7 +265,7 @@ def mark_in_task(batch_id: str, status: str) -> None:
         os.environ.get("ECS_CONTAINER_METADATA_URI_V4") or os.environ.get("ECS_TASK_ID")
     ):
         return
-    if not os.environ.get("PIPELINE_PHASE", "").startswith("phase2"):
+    if not _rounds_phase():
         return
     try:
         _get_table().update_item(

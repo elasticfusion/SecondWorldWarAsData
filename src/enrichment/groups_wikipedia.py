@@ -275,9 +275,10 @@ def _enrich_one_group_file(f: Path) -> tuple[bool, bool]:
     True iff a result was found. Preserves skip conditions (parse-fail, already-checked,
     missing/short name) and always stamps via update_enriched (negative-cache) on lookup.
     """
-    try:
-        data = json.loads(f.read_text(encoding="utf-8"))
-    except Exception:
+    from src.utils.entity_records import load_record
+
+    data = load_record(f, "groups_wikipedia")  # corrupt: alerted, the book is held
+    if data is None:
         return False, False
 
     if data.get("wikipedia_url") or data.get("wikipedia_checked_at"):

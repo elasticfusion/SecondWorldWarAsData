@@ -140,7 +140,9 @@ def test_coverage_shortfall_correlates_with_barrier_status(
     with caplog.at_level(logging.WARNING):
         ee._observe_bibliography_download_coverage(s3, barrier_status="timeout")
     msg = " ".join(r.message for r in caplog.records)
-    assert "SHORTFALL" in msg and "TIMED OUT" in msg
+    # an alert now (task 1.1): status=error, escalated to email + Slack, with the cause as a field
+    assert "phase3.bib_download_shortfall status=error" in msg
+    assert "SHORTFALL" in msg and "TIMED_OUT" in msg
 
 
 def _s3_with(barrier_body, marker_body):
@@ -343,3 +345,45 @@ def test_forged_run_id_in_barrier_is_never_trusted_or_logged(caplog):
     s3 = _s3_with({}, {"run_id": R1, "started_at": 0})
     body = {"completed_at": ee.time.time(), "run_id": "x\nOBSERV forged"}
     assert ee._judge_barrier(s3, body, 0, "k") == (True, "timestamp")
+
+
+def _timeout_alert(monkeypatch, s3):
+    """Run a 1-second wait against ``s3``; return the (event, note) it alerted."""
+    sent = []
+    monkeypatch.setenv("RECONCILE_BARRIER_WAIT_SECS", "1")
+    monkeypatch.setattr(ee, "_s3_client", lambda: s3)
+    monkeypatch.setattr(ee.time, "sleep", lambda n: _REAL_SLEEP(0.05))
+    monkeypatch.setattr(ee, "_pending_batches_for_book", lambda: 0)
+    monkeypatch.setattr(
+        ee, "observe_error", lambda s, e, note="", **k: sent.append((e, note))
+    )
+    assert ee._wait_for_reconcile_barrier() == "timeout"
+    return sent
+
+
+def test_an_old_barrier_without_a_run_id_says_rerun_dedup_not_phase3(monkeypatch):
+    """A standalone Phase 3 re-run after a failed run-marker write would wait and alert again
+    with nothing new: the alert names the step that ends the loop."""
+    s3 = MagicMock()
+    s3.get_object.return_value = _barrier_obj(ee._TASK_START_TS - 10_000)
+    [(event, note)] = _timeout_alert(monkeypatch, s3)
+    assert event == "barrier_unproven" and "Phase 2 dedup step" in note
+    assert len(note) <= 300
+
+
+def test_no_barrier_at_all_is_a_plain_timeout_that_says_rerun_dedup(monkeypatch):
+    s3 = MagicMock()
+    s3.get_object.side_effect = Exception("404")
+    [(event, note)] = _timeout_alert(monkeypatch, s3)
+    assert event == "barrier_timeout" and "Phase 3 alone waits again" in note
+    assert len(note) <= 300
+
+
+def test_a_barrier_from_another_run_is_not_unproven(monkeypatch):
+    """A run-id mismatch is proof the barrier is stale (a newer reconcile is running)."""
+    s3 = _s3_with(
+        {"completed_at": ee._TASK_START_TS - 10_000, "run_id": OLD},
+        {"run_id": NEW, "started_at": 0},
+    )
+    [(event, _)] = _timeout_alert(monkeypatch, s3)
+    assert event == "barrier_timeout"

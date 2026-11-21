@@ -45,6 +45,10 @@ def fetch_image_bytes(url: str) -> Tuple[Optional[bytes], Optional[str]]:
     return body, ext
 
 
+# fetch reasons that mean the image host did not answer (retry later), not that the image is bad
+TRANSIENT_FETCH_REASONS = frozenset({"fetch_timeout", "bad_status_transient"})
+
+
 def fetch_image_bytes_with_reason(url: str):
     """Like ``fetch_image_bytes`` but ALSO returns a specific ``reason`` string on failure so the
     caller's OBSERV line can distinguish a real SSRF block from a benign not-an-image rejection
@@ -130,9 +134,17 @@ def _safe_image_response_with_reason(cleaned: str):
         )
     except Exception as exc:  # noqa: BLE001 - fetch failure must be non-fatal
         logger.debug("Failed to download %s: %s", cleaned, exc)
+        import requests
+
+        # a timeout is the host not answering now (an outage); refused / TLS / DNS is a link
+        # that does not work (it uses an attempt, so a dead host cannot stay pending forever)
+        if isinstance(exc, requests.Timeout):
+            return None, "fetch_timeout"
         return None, "fetch_error"
     if resp.status_code != 200:
-        return None, "bad_status"
+        # 429 / 5xx: the host is down or throttling, not a dead link (task 1.2f)
+        transient = resp.status_code == 429 or resp.status_code >= 500
+        return None, "bad_status_transient" if transient else "bad_status"
     return resp, "ok"
 
 

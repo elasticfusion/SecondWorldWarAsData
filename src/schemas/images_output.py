@@ -64,6 +64,9 @@ IMAGES_OUTPUT_SCHEMA = {
         "map_vision_checked_at": make_nullable("string"),
         # Undecided vision attempts; at the cap the image goes to a human (needs_review).
         "map_vision_attempts": {"type": ["integer", "null"], "minimum": 0},
+        # Phase 3 runs in which the image host did not answer (429/5xx/timeout): not a vision
+        # attempt; at the cap the image goes to a human (needs_review). Task 1.2f, 2026-11-18.
+        "host_unavailable_runs": {"type": ["integer", "null"], "minimum": 0},
         "superseded_by_map_id": ulid_field(nullable=True),
         # --- schema.org ImageObject/MediaObject-aligned additive fields (adopted 2026-10-27; see
         # docs/current/design/SCHEMA_ORG_REVIEW.md §5). All nullable; our strict idiom. Existing
