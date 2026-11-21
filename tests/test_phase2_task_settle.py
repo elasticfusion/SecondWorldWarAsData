@@ -65,7 +65,9 @@ def test_a_handed_off_round_enqueues_that_batch_and_ends(ep):
     assert enqueue.call_args.args[0] == "new"
     assert enqueue.call_args.kwargs["status"] == "pending"
     assert enqueue.call_args.args[3] == "phase2-B-1files-r2-new"  # the round travels on
-    alert.assert_called_once_with("new", "phase2-B-1files-r2-new")  # standard topic
+    alert.assert_called_once_with(
+        "new", "phase2-B-1files-r2-new", "phase2_extract.py"
+    )  # standard topic
     old_notice.assert_not_called()  # not also the old "batch submitted" notice
     status.assert_called_once_with("prev", "retrieved")
     ep._post_process.assert_not_called()
@@ -121,17 +123,3 @@ def test_a_finished_phase3_is_post_processed_not_run_again(ep):
     ep._settle_phase2_task("phase3_enrich_data.py", 0)
     ep._post_process.assert_called_once()
     ep._final_sync.assert_called_once()
-
-
-def test_a_phase3_hand_off_fails_loudly_until_it_can_resume(ep):
-    _results(ep, pending_batch="new", pending_batch_name="phase3-B-r2-9reqs")
-    with (
-        mock.patch.object(ep, "_enqueue_or_alert") as enqueue,
-        mock.patch("src.utils.observe.observe_error") as err,
-        pytest.raises(SystemExit) as stop,
-    ):
-        ep._settle_phase2_task("phase3_enrich_data.py", 75)
-    assert stop.value.code == 1
-    enqueue.assert_not_called()  # nothing is enqueued that no task could resume
-    assert err.call_args.args[1] == "phase3_handoff_unsupported"
-    ep._post_process.assert_not_called()

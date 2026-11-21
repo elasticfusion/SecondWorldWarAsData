@@ -11,7 +11,7 @@ import threading
 import time
 import uuid
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, NoReturn, Optional, Union
 
 import boto3
 
@@ -104,9 +104,28 @@ def _requeue_interrupted_resume() -> None:
     if not _current_resume_batch:
         return
     try:
+        from src.utils import job_queue
         from src.utils.job_queue import update_job_status
         from src.utils.observe import observe_error
 
+        phase = "phase3" if "phase3" in _current_phase_script else "phase2"
+        try:
+            newer = job_queue.live_batch_for(
+                job_queue._get_table(), phase, os.environ.get("BOOK_NAME", "")
+            )
+        except (
+            Exception
+        ):  # noqa: BLE001 - cannot tell: hand the batch back (a resume is cheap)
+            newer = None
+        if newer:
+            # the resumed run already handed off / submitted the NEXT round: retrieving this one
+            # again would start a second resume that asks for that round's requests again
+            logger.info(
+                "OBSERV batch.resume_not_requeued batch=%s newer=%s - a later round is live",
+                _current_resume_batch,
+                newer,
+            )
+            return
         update_job_status(_current_resume_batch, "ready")
         observe_error(
             "batch",
@@ -1718,34 +1737,7 @@ def run_phase(phase_script: str, extra_args: list) -> None:
     sync.stop()
 
     if result.returncode != 0:
-        logger.error(
-            "Phase failed: %s (code %d, %.0fs)",
-            phase_name,
-            result.returncode,
-            _phase_duration,
-            extra={
-                "extra_fields": {
-                    "event": "phase_failed",
-                    "phase": phase_name,
-                    "returncode": result.returncode,
-                    "duration_s": round(_phase_duration),
-                }
-            },
-        )
-        try:
-            next_step = _defer_on_stop_cause(result.returncode)
-            # a real failure (not deferred): the attempt counts even if a SIGTERM follows
-            _attempt_counts()
-            _notify_failure(phase_script, result.returncode, next_step)
-            _final_sync_failed_phase(phase_script)
-            _audit_failed_phase2(phase_script, result.returncode)
-        finally:
-            # every phase, Phase 3 too (owner decision D10, task 1.3), even if a step above
-            # raised: the book is still queued (src/utils/pending_queue) and the reconcile's
-            # retry needs the lock free
-            _remove_lock(phase_script)
-            _release_nat_lease()  # M3: task exiting — drop NAT demand
-        sys.exit(result.returncode)
+        _fail_run(phase_script, phase_name, result.returncode, _phase_duration)
 
     logger.info(
         "Phase complete: %s (%.0fs)",
@@ -1768,6 +1760,43 @@ def run_phase(phase_script: str, extra_args: list) -> None:
     _post_process(phase_script, env)
     _reset_spot_ladder()  # finished: this book's next launch starts small on Spot again
     _release_nat_lease()  # M3: task done — drop NAT demand
+
+
+def _fail_run(
+    phase_script: str, phase_name: str, returncode: int, duration: float = 0.0
+) -> NoReturn:
+    """A phase run ended with a non-zero code: log it, defer or count the failure, notify, sync
+    what was saved, free the lock and the NAT lease, exit with the code. One path for a run that
+    failed in ``run_phase`` and for a batch run (Phase 3 rounds) settled in this task.
+    """
+    logger.error(
+        "Phase failed: %s (code %d, %.0fs)",
+        phase_name,
+        returncode,
+        duration,
+        extra={
+            "extra_fields": {
+                "event": "phase_failed",
+                "phase": phase_name,
+                "returncode": returncode,
+                "duration_s": round(duration),
+            }
+        },
+    )
+    try:
+        next_step = _defer_on_stop_cause(returncode)
+        # a real failure (not deferred): the attempt counts even if a SIGTERM follows
+        _attempt_counts()
+        _notify_failure(phase_script, returncode, next_step)
+        _final_sync_failed_phase(phase_script)
+        _audit_failed_phase2(phase_script, returncode)
+    finally:
+        # every phase, Phase 3 too (owner decision D10, task 1.3), even if a step above
+        # raised: the book is still queued (src/utils/pending_queue) and the reconcile's
+        # retry needs the lock free
+        _remove_lock(phase_script)
+        _release_nat_lease()  # M3: task exiting — drop NAT demand
+    sys.exit(returncode)
 
 
 def _prepare_phase1() -> None:
@@ -5355,12 +5384,20 @@ def _acquire_lock(phase_script: str) -> bool:
 # second release (a SIGTERM during the Phase 3 post-sync repair, then its finally) could delete
 # the lock a retry task has just taken (task 1.3)
 _released_locks: set = set()
+# Whether this task holds the phase lock it may delete. A task the trigger launched holds it (the
+# trigger took it for the launch). A RETRIEVE task that resumes a Phase 3 run starts without it and
+# sets this only when it has taken the lock itself (``_wait_for_lock``): deleting a lock it never
+# took would end another book's (serial mode) or another run's mutual exclusion.
+_lock_owned = True
 
 
 def _remove_lock(phase_script: str) -> None:
     """Remove the DynamoDB lock for this phase (once per task)."""
     lock_key = _lock_key(phase_script)
     if not lock_key or lock_key in _released_locks:
+        return
+    if not _lock_owned:
+        logger.info("Not removing %s: this task does not hold it", lock_key)
         return
     try:
         table_name = os.environ.get("CACHE_TABLE", "dev-wwii-api-cache")
@@ -5570,10 +5607,13 @@ def _entities_materialized_in_task() -> bool:
         return False
 
 
-def _alert_handed_off(batch_id: str, batch_name: str) -> None:
-    """Operator alert (phase2-complete topic: email + Slack) that a Phase 2 batch round went to
-    the poller: which book and round, and what happens next. Informational, not an error.
+def _alert_handed_off(
+    batch_id: str, batch_name: str, phase_script: str = "phase2_extract.py"
+) -> None:
+    """Operator alert (phase2-complete topic: email + Slack) that a Phase 2 or Phase 3 batch round
+    went to the poller: which book and round, and what happens next. Informational, not an error.
     """
+    label = _phase_label(phase_script)
     from src.utils.batch_api import in_task_wait_minutes
     from src.utils.batch_rounds import round_of
     from src.utils.observe import publish_alert
@@ -5587,11 +5627,11 @@ def _alert_handed_off(batch_id: str, batch_name: str) -> None:
     except Exception:  # noqa: BLE001 - the alert must not fail on config
         wait = in_task_wait_minutes()
     publish_alert(
-        f"WWII Pipeline: Phase 2 round {rnd or '?'} handed to the poller ({book})"[
+        f"WWII Pipeline: {label} round {rnd or '?'} handed to the poller ({book})"[
             :100
         ],
         (
-            f"Phase 2 for {book}: batch round {rnd or '?'} (batch {batch_id}) was not answered "
+            f"{label} for {book}: batch round {rnd or '?'} (batch {batch_id}) was not answered "
             f"within the {wait:.0f}-minute in-task wait, so this task ended.\n\n"
             "Next: the batch poller checks it every poll interval; when Grok has answered it, a "
             "retrieve task loads the answers and resumes the book from the next round (same "
@@ -5762,21 +5802,6 @@ def _settle_phase2_task(
     from src.utils.batch_rounds import HANDED_OFF_EXIT
     from src.utils.job_queue import update_job_status
 
-    if returncode == HANDED_OFF_EXIT and "phase3" in phase_script:
-        # Phase 3 waits for its rounds in the task (phase3_enrich_data._run_batch_rounds); a
-        # hand-off needs the lock release / re-acquire and per-round attempt claim of TODO Group 2
-        # step 2c, not built yet: fail loudly instead of enqueueing a batch nothing can resume.
-        from src.utils.observe import observe_error
-
-        observe_error(
-            "batch",
-            "phase3_handoff_unsupported",
-            batch=str(_phase_results().get("pending_batch") or "?"),
-            book=os.environ.get("BOOK_NAME", ""),
-            note="Phase 3 hand-off is not built: re-trigger Phase 3 for this book (the answered "
-            "requests are cached, so it resumes where it stopped)",
-        )
-        returncode = 1
     if retrieved_batch:
         update_job_status(
             retrieved_batch,
@@ -5790,6 +5815,8 @@ def _settle_phase2_task(
         )
         _final_sync(phase_script)
         _stop_openserp_if_running(phase_script)
+        if "phase3" in phase_script:
+            _leave_phase3_for_poller(handed_off=enqueued)
         if not enqueued:
             from src.utils.observe import observe_error
 
@@ -5802,12 +5829,20 @@ def _settle_phase2_task(
             )
             sys.exit(1)
         try:
-            _alert_handed_off(pending, str(results.get("pending_batch_name") or ""))
+            _alert_handed_off(
+                pending, str(results.get("pending_batch_name") or ""), phase_script
+            )
         except Exception as e:  # noqa: BLE001 - advisory: the batch is enqueued already
             logger.warning("Hand-off alert not sent: %s", e)
-        logger.info("Phase 2 handed batch %s to the poller; this task ends.", pending)
+        logger.info(
+            "%s handed batch %s to the poller; this task ends.",
+            _phase_label(phase_script),
+            pending,
+        )
         return
     if returncode != 0:
+        if "phase3" in phase_script:  # the one failure path of a Phase 3 run
+            _fail_run(phase_script, Path(phase_script).stem, returncode)
         _final_sync_failed_phase(phase_script)
         _audit_failed_phase2(phase_script, returncode)
         logger.error("Phase 2 exited with code %d", returncode)
@@ -5815,7 +5850,30 @@ def _settle_phase2_task(
     _final_sync(phase_script)
     _stop_openserp_if_running(phase_script)
     _post_process(phase_script, os.environ.copy())
-    logger.info("Phase 2 complete in this task (every batch round answered).")
+    if "phase3" in phase_script:
+        _reset_spot_ladder()  # finished: this book's next launch starts small on Spot again
+        _release_nat_lease()
+    logger.info(
+        "%s complete in this task (every batch round answered).",
+        _phase_label(phase_script),
+    )
+
+
+def _phase_label(phase_script: str) -> str:
+    return "Phase 3" if "phase3" in phase_script else "Phase 2"
+
+
+def _leave_phase3_for_poller(handed_off: bool = True) -> None:
+    """A Phase 3 round was handed to the batch poller: this task is NOT a failure and NOT done.
+    Give back its attempt (a round trip is progress; only a failure counts toward
+    queue.phase3_max_attempts, and the resumed task claims its own) - but only when the batch WAS
+    enqueued: a hand-off nothing can resume stays counted. Free the lock (the resumed task takes
+    it) and drop this task's NAT demand (the pending batch job keeps NAT up). The book's queue row
+    stays, so a lost batch is still picked up by the reconcile."""
+    if handed_off:
+        _give_back_own_attempt()
+    _remove_lock(_current_phase_script or "phase3_enrich_data.py")
+    _release_nat_lease()
 
 
 def _enqueue_or_alert(
@@ -5997,6 +6055,13 @@ def _map_batch_results_by_index(submitted, ordered_results, batch_id=""):
     return result.mapped
 
 
+def _resumes_rounds(phase_script: str) -> bool:
+    """Phase 2 and Phase 3 run their batch ROUNDS in the task: a retrieve task RESUMES them (batch
+    mode stays on, the round count continues) instead of re-running the phase synchronously.
+    """
+    return "phase2" in phase_script or "phase3" in phase_script
+
+
 def _retrieve_rerun_env(phase_script: str, batch_name: str = "") -> dict:
     """Environment for the retrieve re-run (it reads the cache the batch results populated).
 
@@ -6010,7 +6075,7 @@ def _retrieve_rerun_env(phase_script: str, batch_name: str = "") -> dict:
     env = os.environ.copy()
     env["SKIP_RETRY"] = "1"
     env["PIPELINE_PHASE"] = Path(phase_script).stem
-    if "phase2" in phase_script:
+    if _resumes_rounds(phase_script):
         from src.utils.batch_rounds import round_of
 
         env["BATCH_ROUND_START"] = str(round_of(batch_name) + 1)
@@ -6052,54 +6117,71 @@ def _submitted_from_dynamo_metrics(batch_id: str) -> list:
     return pairs
 
 
-def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> None:
-    """Retrieve completed batch results and re-run phase with cached data."""
-    import re as _re
+PHASE3_RESUME_LOCK_WAIT_S = 1800
+PHASE3_RESUME_LOCK_POLL_S = 30
 
-    from src.utils.job_queue import get_job, update_job_status
 
-    # Register the phase for the SIGTERM handler. Without this, a spot reclaim of a --retrieve-only
-    # task hit _handle_sigterm with _current_phase_script="" → _final_sync("")/_remove_lock("") were
-    # no-ops, so in-task entities were lost and the lock leaked (§1.0d H3).
-    global _current_phase_script, _current_resume_batch
-    _current_phase_script = phase_script
+def _begin_phase3_resume(phase_script: str) -> bool:
+    """A retrieve task is about to RESUME a handed-off Phase 3 run (its answers are cached): what
+    ``run_phase`` does before a run, in the same order. True to go on, False when the task must
+    end (it has said why): the book stays queued, and because the answers are cached a later
+    Phase 3 run for it picks up where this one would have.
 
-    WORKDIR.mkdir(parents=True, exist_ok=True)
-    _load_secrets()
-    _patch_config()
-
-    # READINESS GATE: the retrieve task makes Grok egress (retrieve_results) and runs
-    # _post_process (SNS + trigger Lambda) — all NAT-only. Validate NAT is ready
-    # (available + ACTIVE route + endpoints) with self-heal, the SAME contract as
-    # run_phase/run_submit_only. Previously this path trusted the batch-poller's
-    # state-only NAT wait (no route-active check) → the "available != routable" race.
-    _ensure_nat_if_needed(phase_script)
-
-    job = get_job(batch_id)
-    if not job:
-        logger.error("Job %s not found in queue", batch_id)
-        sys.exit(1)
-
-    logger.info(
-        "Retrieving batch %s (%s/%s, %d reqs)",
-        batch_id,
-        job.phase,
-        job.book,
-        job.request_count,
+    - the attempt: claimed here (the hand-off gave its own back), so only a FAILED resume counts
+      toward queue.phase3_max_attempts. A refusal means the book is deferred (alerted); this task
+      holds no lock yet, so it removes none;
+    - the lock: taken (waiting up to PHASE3_RESUME_LOCK_WAIT_S for another book's Phase 3 in serial
+      mode) BEFORE the inputs are downloaded, so the run never works on a copy another run is
+      changing, and the trigger cannot launch the same book while this task runs it;
+    - the credit floor, OpenSERP and NAT: as at the start of a run (more spend follows).
+    """
+    global _lock_owned
+    _lock_owned = (
+        False  # until _wait_for_lock takes it: never delete a lock held by another
     )
+    if not _claim_enrich_attempt():
+        return False
+    _acquire_nat_lease()
+    if not _wait_for_lock(phase_script):
+        _give_back_own_attempt()
+        _release_nat_lease()
+        logger.info(
+            "OBSERV batch.resume_waiting book=%s - another Phase 3 holds the lock; the book "
+            "stays queued and its answers are cached, so the reconcile resumes it",
+            os.environ.get("BOOK_NAME", ""),
+        )
+        return False
+    try:
+        _preflight_balance_check(phase_script)
+        _preflight_credit_check()
+        _start_openserp_if_needed(phase_script)
+    except Exception:
+        # (a deliberate preflight stop frees the lock itself and exits: SystemExit passes)
+        _remove_lock(phase_script)
+        _release_nat_lease()
+        raise
+    return True
 
-    # Scope downloads to the book being retrieved (avoid processing entire backlog)
-    if job.book and job.book != "unknown":
-        os.environ["BOOK_NAME"] = job.book
-    os.environ["FORCE_DOWNLOAD_PARSED"] = "1"  # Retrieve needs all parsed files
-    _setup_symlinks()
-    _download_inputs(phase_script)
-    # Download metrics so cache_type mapping is available for result classification
-    _download_s3_prefix(_s3_client(), "output/metrics/")
 
-    if "phase3" in phase_script:
-        _stamp_schema_versions()
+def _wait_for_lock(phase_script: str) -> bool:
+    """Take the phase lock, waiting up to PHASE3_RESUME_LOCK_WAIT_S for it to be freed. The NAT
+    lease is extended on every poll (it lasts 15 minutes; the wait can be 30). Marks the lock as
+    this task's (``_lock_owned``) only when it was taken."""
+    global _lock_owned
+    deadline = time.monotonic() + PHASE3_RESUME_LOCK_WAIT_S
+    while not _acquire_lock(phase_script):
+        if time.monotonic() >= deadline:
+            return False
+        _heartbeat_nat_lease()
+        time.sleep(PHASE3_RESUME_LOCK_POLL_S)
+    _lock_owned = True
+    return True
 
+
+def _cache_batch_answers(batch_id: str) -> int:
+    """Retrieve the batch's results and put each answer in the cache under its own request id.
+    Costs nothing and needs no lock or inputs (only the batch's metrics, downloaded by the caller).
+    Returns how many answers were cached."""
     # Retrieve results in SUBMISSION ORDER. The xAI results API was thought not to echo our (it does; aligned by id first)
     # custom_id (only a server-assigned batch_request_id), so we map results to OUR
     # cache keys by POSITION against the submission-ordered request_details in metrics.
@@ -6149,18 +6231,102 @@ def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> Non
     grok_client = GrokClient(cache_dir)
 
     mapped = _map_batch_results_by_index(submitted, ordered_results, batch_id)
-    populated = _populate_cache(grok_client, mapped, batch_id)
-    if "phase2" in phase_script:
-        # the answers are in the (shared) cache: the job is retrieved NOW, not after the resumed
-        # run - that run can take several 90-min rounds, past the poller's retrieve claim, and a
-        # still-"ready" job would be retrieved again by a second task on the same book. A reclaim
-        # mid-run puts it back to ready (_handle_sigterm).
+    return _populate_cache(grok_client, mapped, batch_id)
+
+
+def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> None:
+    """Retrieve completed batch results and re-run phase with cached data."""
+    import re as _re
+
+    from src.utils.job_queue import get_job, update_job_status
+
+    # Register the phase for the SIGTERM handler. Without this, a spot reclaim of a --retrieve-only
+    # task hit _handle_sigterm with _current_phase_script="" → _final_sync("")/_remove_lock("") were
+    # no-ops, so in-task entities were lost and the lock leaked (§1.0d H3).
+    global _current_phase_script, _current_resume_batch, _lock_owned
+    if "phase3" in phase_script:
+        # a retrieve task never starts with the lock (the trigger did not launch it): until
+        # _wait_for_lock takes it, no exit path, SIGTERM or NAT abort may delete a lock that
+        # belongs to another run
+        _lock_owned = False
+    _current_phase_script = phase_script
+
+    WORKDIR.mkdir(parents=True, exist_ok=True)
+    _load_secrets()
+    _patch_config()
+
+    # READINESS GATE: the retrieve task makes Grok egress (retrieve_results) and runs
+    # _post_process (SNS + trigger Lambda) — all NAT-only. Validate NAT is ready
+    # (available + ACTIVE route + endpoints) with self-heal, the SAME contract as
+    # run_phase/run_submit_only. Previously this path trusted the batch-poller's
+    # state-only NAT wait (no route-active check) → the "available != routable" race.
+    _ensure_nat_if_needed(phase_script)
+
+    job = get_job(batch_id)
+    if not job:
+        logger.error("Job %s not found in queue", batch_id)
+        sys.exit(1)
+
+    # Scope downloads to the book being retrieved (avoid processing entire backlog)
+    if job.book and job.book != "unknown":
+        from src.ingestion.book_slug import is_safe_slug
+
+        if not is_safe_slug(job.book):
+            # BOOK_NAME becomes a lock key, S3 prefixes, queue rows and --book: never from a
+            # job row that is not a plain book name
+            from src.utils.observe import observe_error
+
+            observe_error(
+                "batch",
+                "retrieve_book_rejected",
+                batch=batch_id,
+                book=str(job.book)[:80],
+                note="the batch job names an unsafe book: not retrieved. Check the batch_job# "
+                "row (who wrote it); delete it once checked",
+            )
+            update_job_status(batch_id, "failed")
+            sys.exit(1)
+        os.environ["BOOK_NAME"] = job.book
+    logger.info(
+        "Retrieving batch %s (%s/%s, %d reqs)",
+        batch_id,
+        job.phase,
+        job.book,
+        job.request_count,
+    )
+
+    os.environ["FORCE_DOWNLOAD_PARSED"] = "1"  # Retrieve needs all parsed files
+    _setup_symlinks()
+    if "phase3" in phase_script:
+        # the answers first (free, no lock, only the metrics), then the lock, THEN the inputs:
+        # a resumed run must not work on a copy another run is still changing
+        _download_s3_prefix(_s3_client(), "output/metrics/")
+        _cache_batch_answers(batch_id)
         update_job_status(batch_id, "retrieved")
         _current_resume_batch = batch_id
+        if not _begin_phase3_resume(phase_script):
+            _current_resume_batch = (
+                ""  # nothing is running: a SIGTERM must not re-queue it
+            )
+            return
+        _download_inputs(phase_script)
+        _stamp_schema_versions()
+    else:
+        _download_inputs(phase_script)
+        # Download metrics so cache_type mapping is available for result classification
+        _download_s3_prefix(_s3_client(), "output/metrics/")
+        _cache_batch_answers(batch_id)
+        if _resumes_rounds(phase_script):
+            # the answers are in the (shared) cache: the job is retrieved NOW, not after the
+            # resumed run - that run can take several 90-min rounds, past the poller's retrieve
+            # claim, and a still-"ready" job would be retrieved again by a second task on the same
+            # book. A reclaim mid-run puts it back to ready (_handle_sigterm).
+            update_job_status(batch_id, "retrieved")
+            _current_resume_batch = batch_id
 
     # Re-run the phase on the cached results. Phase 2 keeps --batch: it resumes its rounds.
     # Others re-run without it (hits cache; skip retry since batch results are authoritative).
-    resume = "phase2" in phase_script
+    resume = _resumes_rounds(phase_script)
     clean_args = (
         list(extra_args) if resume else [a for a in extra_args if a != "--batch"]
     )
@@ -6172,7 +6338,13 @@ def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> Non
     env = _retrieve_rerun_env(phase_script, job.batch_name)
     cmd = [sys.executable, phase_script] + _scope_args(phase_script, clean_args)
     logger.info("Re-running with cached results: %s", " ".join(cmd))
-    result = subprocess.run(cmd, cwd="/app", env=env, check=False)
+    # a resumed Phase 3 spends again: watch the balance as run_phase does
+    monitor = _start_balance_monitor(phase_script) if "phase3" in phase_script else None
+    try:
+        result = subprocess.run(cmd, cwd="/app", env=env, check=False)
+    finally:
+        if monitor is not None:
+            monitor.stop()
 
     sync.stop()
     if resume:

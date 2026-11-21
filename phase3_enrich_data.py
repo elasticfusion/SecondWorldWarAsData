@@ -884,14 +884,14 @@ def _run_batch_rounds(
     book queued. Otherwise it is the exit code of a run that ends early:
 
     - a round not answered within the in-task wait: ``HANDED_OFF_EXIT`` (75), ``pending_batch`` in
-      the results file (the entrypoint cannot resume Phase 3 yet: TODO Group 2 step 2c);
+      the results file; the poller retrieves the batch and a new task resumes the run;
     - over the round cap (alerted; a human can approve more): exit 1, ``incomplete`` in the results.
 
     Requests submitted ``batch.max_request_attempts`` times without an answer are set aside.
     """
     import time as _time
 
-    from src.utils.batch_api import BatchCollector, BatchPending
+    from src.utils.batch_api import BatchCollector, BatchPending, in_task_wait_minutes
     from src.utils.batch_rounds import (
         DEFAULT_MAX_ROUNDS,
         BatchRounds,
@@ -908,10 +908,9 @@ def _run_batch_rounds(
         first=first_round_from_env(),
         max_attempts=int(batch_cfg.get("max_request_attempts", 3)),
     )
-    # The task waits for each round itself (24 h, as the single batch did before) until the
-    # entrypoint can resume a handed-off Phase 3 (lock release/re-acquire, attempt claim per
-    # round-trip: TODO Group 2 step 2c). Set ``batch.phase3_in_task_wait_minutes`` lower only then.
-    wait_minutes = float(batch_cfg.get("phase3_in_task_wait_minutes", 24 * 60))
+    # The task waits for each round up to batch.in_task_wait_minutes (as Phase 2 does); a round not
+    # answered by then is handed to the poller and a retrieve task resumes the run (exit 75).
+    wait_minutes = in_task_wait_minutes(config)
     started = _time.monotonic()
     while True:
         rounds.drop_stuck(grok_client._batch_collector)

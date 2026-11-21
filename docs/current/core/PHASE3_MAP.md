@@ -650,10 +650,18 @@ exist and none has `noaa_observed` (`validate_phase3.py:172-208`), on every run.
 4. A request submitted `batch.max_request_attempts` (default 3) times without an answer is SET ASIDE
    (`BatchRounds.drop_stuck`): it leaves the batch, one alert names it, its step stays `pending` and its
    record unstamped (`OBSERV phase3.steps_pending`), and the run ends without it. The next run asks again.
-5. Each round waits in the task up to `batch.phase3_in_task_wait_minutes` (default 1440). A round not
-   answered by then exits `HANDED_OFF_EXIT` (75) with `pending_batch` in the results file. The entrypoint
-   cannot resume a handed-off Phase 3 yet (`_settle_phase2_task` fails it loudly, `batch.phase3_handoff_unsupported`):
-   TODO Group 2 step 2c (lock release and re-acquire, attempt claim per round-trip, retrieve resume).
+5. Each round waits in the task up to `batch.in_task_wait_minutes` (default 5, shared with Phase 2). A round not
+   answered by then exits `HANDED_OFF_EXIT` (75) with `pending_batch` in the results file; `_settle_phase2_task`
+   enqueues the batch for the poller, gives back the task's attempt (a round trip is progress, not a failure),
+   frees the lock and drops the NAT lease, and the task ends (alert `Phase 3 round N handed to the poller`).
+   While the batch is live (`batch_job#` pending / ready / in_task) the trigger does not launch the book
+   again (`trigger_handler._phase3_batch_live`): a second run would submit and pay for the same requests.
+   When the poller sees the batch answered it starts `--retrieve-only`: the answers are cached, the job is
+   `retrieved`, and `_begin_phase3_resume` does what the start of a run does (claim an attempt, take the lock,
+   waiting up to 30 min for another book's Phase 3 in serial mode, credit floor, NAT lease, OpenSERP), then
+   phase 3 runs again with `--batch` and `BATCH_ROUND_START` set to the next round. A resume that cannot
+   start (attempt cap, lock) leaves the book queued; its answers are cached, so the reconcile resumes it.
+   A failed Phase 3 run, in the task or after a resume, takes the one failure path `ecs_entrypoint._fail_run`.
 6. "Queued is not a verdict" (Group 2 step 2b, 2026-11-20). Every handler on a Phase 3 path to a Grok call
    re-raises `BatchModeCollecting` before its broad `except Exception`; before this, a queued request was
    read as an answer or a failure. The worst: OpenSERP's URL summary stamped the page "searched" and cached
@@ -663,7 +671,7 @@ exist and none has `noaa_observed` (`validate_phase3.py:172-208`), on every run.
    "geocoder is down" streak. A loop over many items visits every item (so every request is queued in one
    round) and raises once after it (`src/utils/batch_pending.Pending`); a queued URL claim is given back
    (`url_registry.release`). `tests/test_batch_queued_is_not_a_verdict.py` pins each. `batch.phase3`
-   can be switched on once step 2c (hand-off) is done or the in-task wait is accepted.
+   can be switched on.
 
 ---
 

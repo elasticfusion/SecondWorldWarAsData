@@ -2702,8 +2702,8 @@ def _run_task(
     if _task_family(task_def) == _task_family(AV_SCAN_TASK_DEF):
         _run_av_scan(task_def, source, extra_env)
         return True
-    if not credit_checked and _held_for_credit(task_def, source, book_name, extra_env):
-        return False  # kept (queue row or credit hold); launched once credit is back
+    if _launch_held(task_def, source, book_name, extra_env, credit_checked):
+        return False  # kept (queue row or credit hold) or waiting for its batch
     # Cancel any pending delayed teardown
     _cancel_delayed_teardown()
 
@@ -2731,6 +2731,47 @@ def _run_task(
 
     _launch_ecs_task(task_def, source, book_name, extra_env, lock_key, family)
     return True
+
+
+def _launch_held(task_def, source, book_name, extra_env, credit_checked) -> bool:
+    """True when this launch must not happen now: a Phase 3 book whose batch is being answered
+    (its retrieve task resumes it), or credit under the floor (the request is kept)."""
+    if task_def == PHASE3_TASK_DEF and _phase3_batch_live(book_name, source):
+        return True
+    return not credit_checked and _held_for_credit(
+        task_def, source, book_name, extra_env
+    )
+
+
+def _phase3_batch_live(book_name: str, source: str = "") -> bool:
+    """True while a Phase 3 batch of ``book_name`` (any book for an unscoped launch) is waiting for
+    its answers or for its retrieve task. A second Phase 3 launch then would collect the same
+    requests and pay for a second batch; the retrieve task resumes the run. The book's queue row
+    stays, so nothing is lost. A MANUAL launch is the operator's override and goes ahead. A row
+    older than ``job_queue.LIVE_MAX_AGE_S`` is not trusted (a batch gone at xAI never settles) and
+    is said so. A lookup error launches (False): a double launch is only a cost, a stuck book is
+    a defect."""
+    from src.utils import job_queue
+
+    if source == "manual":
+        return False
+    try:
+        batch = job_queue.live_batch_for(dynamo, "phase3", book_name or None)
+    except Exception as e:  # noqa: BLE001 - launching is the safe side
+        logger.warning(
+            "OBSERV trigger.batch_check_failed book=%s err=%s status=warn - launching anyway",
+            book_name,
+            type(e).__name__,
+        )
+        return False
+    if batch:
+        logger.info(
+            "OBSERV trigger.phase3_waits_for_batch book=%s batch=%s - not launching: the "
+            "retrieve task resumes the run when the batch is answered",
+            book_name or "(all)",
+            batch,
+        )
+    return bool(batch)
 
 
 def _spends_grok(task_def: str) -> bool:
