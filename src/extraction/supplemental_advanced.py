@@ -15,6 +15,8 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 import requests
+from src.grok_client import BatchModeCollecting
+from src.utils.batch_pending import Pending
 
 logger = logging.getLogger(__name__)
 
@@ -93,6 +95,8 @@ def extract_isbn(citation: Dict[str, Any], grok_client: Any) -> Optional[str]:
         isbn = response.strip().replace("-", "").replace(" ", "")
         return _validate_isbn(isbn)
 
+    except BatchModeCollecting:
+        raise  # queued for the batch: not an answer, not a failure
     except Exception as e:
         logger.debug("ISBN extraction error: %s", e)
         return None
@@ -124,6 +128,8 @@ def get_author_death_date(author: str, grok_client: Any) -> Optional[str]:
         logger.debug("Invalid death date format: %s", death_date)
         return "UNKNOWN"
 
+    except BatchModeCollecting:
+        raise  # queued for the batch: not an answer, not a failure
     except Exception as e:
         logger.debug("Death date lookup error: %s", e)
         return "UNKNOWN"
@@ -402,9 +408,13 @@ def enrich_bibliography(
         return 0
 
     enriched_count = 0
+    pending = (
+        Pending()
+    )  # batch rounds: visit every record so each one's requests are queued
     for bib_file in sorted(bib_files):
-        if _enrich_bib_file(bib_file, config, grok_client):
-            enriched_count += 1
+        with pending.item():
+            if _enrich_bib_file(bib_file, config, grok_client):
+                enriched_count += 1
 
     total = len(bib_files)
     logger.info("Enriched %d of %d bibliography files", enriched_count, total)
@@ -419,6 +429,7 @@ def enrich_bibliography(
         enriched_count,
         total - enriched_count,
     )
+    pending.raise_if_queued()
     return enriched_count
 
 
@@ -502,6 +513,8 @@ def _call_alt_title_expansion(grok_client: Any, verbatim: str) -> str:
             cache_type="bibliography_alt_title",
         )
         return (resp or "").strip().strip('"').strip()
+    except BatchModeCollecting:
+        raise  # queued for the batch: not an answer, not a failure
     except Exception as e:  # noqa: BLE001 - enrichment must never crash the pass
         logger.debug("alt_title expansion failed: %s", e)
         return ""
@@ -517,19 +530,27 @@ def _enrich_bib_file(bib_file: Path, config: Dict[str, Any], grok_client: Any) -
     if not citation or not isinstance(citation, dict):
         return False
 
-    changed = (
-        _enrich_alt_title(data, citation, config, grok_client)
-        | _enrich_isbn(data, citation, config, grok_client)
-        | _enrich_copyright(data, citation, config, grok_client)
-        | _enrich_archive_url(data, config)
-    )
+    changed = False
+    pending = (
+        Pending()
+    )  # batch rounds: every sub-step queues its request in the same round
+    for step in (
+        lambda: _enrich_alt_title(data, citation, config, grok_client),
+        lambda: _enrich_isbn(data, citation, config, grok_client),
+        lambda: _enrich_copyright(data, citation, config, grok_client),
+        lambda: _enrich_archive_url(data, config),
+    ):
+        with pending.item():
+            changed = step() or changed
 
     if changed:
         # Honor the write-guard return: a schema-blocked write did NOT persist, so do not report
         # this record as enriched (which would inflate OBSERV bibliography.summary — the same
         # silent-success class fixed in the resolver/reconcile paths).
         if not _save_enriched_data(bib_file, data, 1, entity="bibliography"):
+            pending.raise_if_queued()
             return False
+    pending.raise_if_queued()  # what was answered is saved; the rest is asked next round
     return changed
 
 

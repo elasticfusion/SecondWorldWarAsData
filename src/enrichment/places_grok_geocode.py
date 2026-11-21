@@ -36,6 +36,7 @@ from typing import Any, List, Optional
 from pydantic import BaseModel, Field
 
 from src.enrichment.places_geo import coords_verified, enrich_place, is_geocodable_name
+from src.grok_client import BatchModeCollecting
 
 logger = logging.getLogger(__name__)
 
@@ -158,6 +159,9 @@ class GeocodeRunReport:
     )
     # left retriable (geocode_error): an outage, a Grok error or an unreadable reply (task 1.2f)
     retriable: int = 0
+    # batch rounds: requests queued for the batch (not an answer, not an error); the pass raises
+    # BatchModeCollecting once the whole directory has been visited
+    queued: int = 0
     details: List[dict] = field(default_factory=list)
 
     def to_dict(self) -> dict:
@@ -798,6 +802,12 @@ def geocode_places_dir(
     _geocode_all(
         places_dir, grok_client, write, force, limit, report, resolve, person_names
     )
+    if report.queued:
+        # batch rounds: every place was visited (so every request is queued); the step is
+        # pending and the next pass has the answers. What was answered is already written.
+        exc = BatchModeCollecting(f"{report.queued} geocode requests queued")
+        exc.geocoded = report.geocoded  # type: ignore[attr-defined]
+        raise exc
     _log_geocode_summary(report)
     return report
 
@@ -814,7 +824,7 @@ def _geocode_all(places_dir, grok_client, write, force, limit, report, resolve, 
     for path in sorted(places_dir.glob("*.json")):
         if path.name in _SKIP_FILES:
             continue
-        if limit is not None and report.attempted >= limit:
+        if limit is not None and report.attempted + report.queued >= limit:
             break
         attempted = report.attempted
         _geocode_one_file(path, grok_client, write, force, report, resolve, people)
@@ -977,6 +987,12 @@ def _geocode_one_file(
     report.attempted += 1
     try:
         result = resolve(name, place, grok_client)
+    except BatchModeCollecting:
+        # QUEUED for the batch: not attempted yet, not an error (an error here fed the
+        # "geocoder is down" streak, the 0-of-N anomaly and the error rate)
+        report.attempted -= 1
+        report.queued += 1
+        return
     except Exception as exc:  # noqa: BLE001 - record and continue the batch
         report.errors += 1
         report.details.append({"name": name, "error": str(exc)})

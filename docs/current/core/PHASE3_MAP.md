@@ -654,9 +654,16 @@ exist and none has `noaa_observed` (`validate_phase3.py:172-208`), on every run.
    answered by then exits `HANDED_OFF_EXIT` (75) with `pending_batch` in the results file. The entrypoint
    cannot resume a handed-off Phase 3 yet (`_settle_phase2_task` fails it loudly, `batch.phase3_handoff_unsupported`):
    TODO Group 2 step 2c (lock release and re-acquire, attempt claim per round-trip, retrieve resume).
-6. Not yet safe to switch on (TODO Group 2 step 2b): steps that catch `BatchModeCollecting` as an ordinary
-   exception and then stamp or cache a verdict (`openserp_enrichment._verify_result` caches `REJECT` for 90 days, gap 5;
-   the callers listed in the step 2 audit). `batch.phase3` stays false until they are fixed.
+6. "Queued is not a verdict" (Group 2 step 2b, 2026-11-20). Every handler on a Phase 3 path to a Grok call
+   re-raises `BatchModeCollecting` before its broad `except Exception`; before this, a queued request was
+   read as an answer or a failure. The worst: OpenSERP's URL summary stamped the page "searched" and cached
+   `REJECT` for 90 days (gap 5), a queued death-date lookup wrote an "unknown" copyright status, a queued
+   NARA verify was cached as a genuine not-found, a queued link-relevancy check sent the link to human review,
+   a queued license check marked the place searched, and queued geocodes counted as errors and tripped the
+   "geocoder is down" streak. A loop over many items visits every item (so every request is queued in one
+   round) and raises once after it (`src/utils/batch_pending.Pending`); a queued URL claim is given back
+   (`url_registry.release`). `tests/test_batch_queued_is_not_a_verdict.py` pins each. `batch.phase3`
+   can be switched on once step 2c (hand-off) is done or the in-task wait is accepted.
 
 ---
 

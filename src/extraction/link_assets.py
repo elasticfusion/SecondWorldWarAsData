@@ -23,7 +23,9 @@ from pathlib import Path
 from typing import Any, List, Optional
 from urllib.parse import urljoin, urlparse
 
+from src.grok_client import BatchModeCollecting
 from src.ingestion.media_detection import _from_extension
+from src.utils.batch_pending import Pending
 from src.ingestion.source_metadata import MediaType
 
 logger = logging.getLogger(__name__)
@@ -140,6 +142,7 @@ def enqueue_doc_links(
         "dropped": 0,
         "anchors": 0,
     }
+    pending = Pending()
     try:
         from src.enrichment.source_retrieval import load_blacklist
         from src.extraction.link_relevancy import should_enqueue_link
@@ -154,14 +157,20 @@ def enqueue_doc_links(
             if la.is_anchor:
                 summary["anchors"] += 1
                 continue
-            enqueue, verdict = should_enqueue_link(
-                la.url,
-                la.text,
-                context=book,
-                grok_client=grok_client,
-                whitelist=wl,
-                blacklist=bl,
-            )
+            try:
+                enqueue, verdict = should_enqueue_link(
+                    la.url,
+                    la.text,
+                    context=book,
+                    grok_client=grok_client,
+                    whitelist=wl,
+                    blacklist=bl,
+                )
+            except BatchModeCollecting as e:
+                # relevancy QUEUED for the batch: neither enqueued for review nor dropped; the
+                # next pass has the verdict. Every link queues its own request.
+                pending.note(e)
+                continue
             if not enqueue:
                 summary["dropped"] += 1
                 logger.info(
@@ -171,6 +180,9 @@ def enqueue_doc_links(
             _enqueue_one(fp, la, book, base_url, verdict, source_section_id, summary)
     except Exception as e:  # noqa: BLE001 - enqueue must never crash the pipeline
         observe_warn("link_asset", "error", reason=str(e)[:120])
+    if pending:
+        # batch rounds: the summary is not final (queued links are neither enqueued nor dropped)
+        pending.raise_if_queued()
     logger.info(
         "OBSERV link_asset.summary book=%s links=%d enqueued=%d already_queued=%d dropped=%d "
         "anchors=%d",

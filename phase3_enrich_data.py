@@ -18,6 +18,7 @@ from src.extraction.enrich_places import enrich_all_places
 from src.extraction.places import link_parent_place_ids
 from src.extraction.supplemental_advanced import enrich_bibliography
 from src.grok_client import BatchModeCollecting, GrokClient
+from src.utils.batch_pending import Pending
 from src.utils.config import load_config
 from src.utils.logger import setup_logging
 
@@ -221,7 +222,7 @@ def _enrich_places_and_geocode(
                 geo_report.attempted,
             )
         source_stats["geocode"] = {
-            "enriched": geo_report.geocoded,
+            "enriched": _stat_enriched(source_stats, "geocode") + geo_report.geocoded,
             # per-place errors are RECORD failures: those places stay un-geocoded and are
             # retried next run, so they do not fail the step (only a raise does, owner
             # 2026-11-18); the count is shown in the completion summary
@@ -232,9 +233,11 @@ def _enrich_places_and_geocode(
             "errors": geo_report.errors,
         }
         return enriched + geo_report.geocoded
-    except BatchModeCollecting:
-        source_stats["geocode"] = {"enriched": 0, "status": "pending"}
-        return enriched
+    except BatchModeCollecting as e:
+        # places were queued for the batch: the step is pending; what WAS geocoded counts
+        done = _stat_enriched(source_stats, "geocode") + getattr(e, "geocoded", 0)
+        source_stats["geocode"] = {"enriched": done, "status": "pending"}
+        return enriched + getattr(e, "geocoded", 0)
     except Exception as e:  # noqa: BLE001 - geocoding must not abort Phase 3
         logger.error(
             "Geocoding step FAILED (places left un-geocoded): %s", e, exc_info=True
@@ -514,12 +517,16 @@ def _review_external_links(out, grok_client) -> int:
         return 0
     book_to_section = _book_section_index(out)  # CRITICAL: ULID attribution per doc
     totals = {"links": 0, "enqueued": 0, "dropped": 0, "anchors": 0}
+    pending = (
+        Pending()
+    )  # batch rounds: every doc queues its links' requests, one raise at the end
     for doc in docs:
         if not isinstance(doc, dict):
             continue
         base = doc.get("_source_url", "") or ""
         book = str(doc.get("book", ""))
-        s = enqueue_doc_links(
+        s = pending.call(
+            enqueue_doc_links,
             _doc_link_content(doc),
             base,
             book,
@@ -527,7 +534,7 @@ def _review_external_links(out, grok_client) -> int:
             source_section_id=book_to_section.get(book.strip().lower(), ""),
         )
         for k in totals:
-            totals[k] += int(s.get(k, 0))
+            totals[k] += int((s or {}).get(k, 0))
     logging.getLogger("root").info(
         "OBSERV phase3.step name=link_asset_review links=%d enqueued=%d dropped=%d anchors=%d "
         "status=ok",
@@ -536,6 +543,7 @@ def _review_external_links(out, grok_client) -> int:
         totals["dropped"],
         totals["anchors"],
     )
+    pending.raise_if_queued()  # batch rounds: the step is pending, the next pass has the answers
     return totals["enqueued"]
 
 
@@ -634,19 +642,25 @@ def _ingest_in_doc_map_links(out, grok_client, ext_config) -> int:
         return 0
     summary: dict = {}
     recycle = _recycle_in_doc_maps(ext_config)
+    pending = Pending()  # batch rounds: the persist below still queues its own requests
     if recycle:
-        summary = ingest_in_doc_map_links(
-            docs,
-            grok_client,
-            image_timeout=ext_config.get("image_download_timeout", 30),
-            allowed_hosts=tuple(ext_config.get("allowed_hosts") or ()),
-            max_per_doc=int(ext_config.get("max_recycled_per_doc", 50)),
+        summary = (
+            pending.call(
+                ingest_in_doc_map_links,
+                docs,
+                grok_client,
+                image_timeout=ext_config.get("image_download_timeout", 30),
+                allowed_hosts=tuple(ext_config.get("allowed_hosts") or ()),
+                max_per_doc=int(ext_config.get("max_recycled_per_doc", 50)),
+            )
+            or {}
         )
     # Step 5a: persist Map ENTITIES (URL-keyed, cross-chapter footprint accumulation) alongside the
     # map-as-source recycle above. Reuses find_or_create_map_by_url (dedup + append across chapters).
     from src.extraction.map_link_source import persist_map_entities
 
-    persist_map_entities(
+    pending.call(
+        persist_map_entities,
         docs,
         out / "maps",
         download=ext_config.get("download", True),
@@ -663,6 +677,7 @@ def _ingest_in_doc_map_links(out, grok_client, ext_config) -> int:
         summary.get("deduped", 0),
         summary.get("skipped", 0),
     )
+    pending.raise_if_queued()  # batch rounds: the step is pending, the next pass has the answers
     return int(summary.get("recycled", 0))
 
 
@@ -832,6 +847,11 @@ def _write_phase_results(output_dir: Path, payload: dict) -> None:
     (output_dir / ".phase_results.json").write_text(
         json.dumps(payload), encoding="utf-8"
     )
+
+
+def _stat_enriched(source_stats: dict, name: str) -> int:
+    """What a step enriched in the earlier passes of this run (rounds repeat the pass)."""
+    return int(source_stats.get(name, {}).get("enriched", 0) or 0)
 
 
 def _sources_with(source_stats: dict, status: str) -> list:
@@ -1145,7 +1165,7 @@ def run_enrichment_step(source_stats: dict, name: str, fn) -> int:
             result if isinstance(result, int) else getattr(result, "geocoded", 0) or 0
         )
         # rounds repeat the pass: the step's total is every pass's count
-        total = count + int(source_stats.get(name, {}).get("enriched", 0) or 0)
+        total = count + _stat_enriched(source_stats, name)
         source_stats[name] = {"enriched": total, "status": "ok"}
         try:
             logger.info("OBSERV phase3.step name=%s enriched=%d status=ok", name, count)
@@ -1155,8 +1175,10 @@ def run_enrichment_step(source_stats: dict, name: str, fn) -> int:
     except BatchModeCollecting:
         # requests were queued for the batch: not an answer and not a failure (the next round
         # asks again; a step that is still pending when the rounds end is reported)
-        prev = int(source_stats.get(name, {}).get("enriched", 0) or 0)
-        source_stats[name] = {"enriched": prev, "status": "pending"}
+        source_stats[name] = {
+            "enriched": _stat_enriched(source_stats, name),
+            "status": "pending",
+        }
         logger.info("OBSERV phase3.step name=%s enriched=0 status=pending", name)
         return 0
     except Exception as e:  # noqa: BLE001 - capture + surface, don't abort Phase 3

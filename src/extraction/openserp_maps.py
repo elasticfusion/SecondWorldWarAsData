@@ -25,6 +25,8 @@ USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTM
 logger = logging.getLogger(__name__)
 
 from src.utils.observe import observe_warn  # noqa: E402
+from src.grok_client import BatchModeCollecting
+from src.utils.batch_pending import Pending
 
 
 def _is_trusted_domain(domain: str) -> bool:
@@ -225,6 +227,8 @@ def _check_license_terms(
 
         return _analyze_license_with_grok(domain, url, license_text, grok_client)
 
+    except BatchModeCollecting:
+        raise  # queued for the batch: not an answer, not a failure
     except Exception as e:
         logger.warning(f"   ⚠️  License check failed: {e}")
         return False, url
@@ -812,6 +816,7 @@ def import_openserp_maps(
     imported = 0
     skipped_searched = 0
     skipped_downloaded = 0
+    pending = Pending()
 
     for idx, place_file in enumerate(place_files, 1):
         try:
@@ -833,6 +838,11 @@ def import_openserp_maps(
             imported += result_imported
             skipped_searched += result_skipped_s
             skipped_downloaded += result_skipped_d
+        except BatchModeCollecting as e:
+            pending.note(
+                e
+            )  # queued for the batch: the next place's requests are queued too
+            continue
         except Exception as e:
             logger.warning(f"Error processing {place_file.name}: {e}")
             continue
@@ -843,4 +853,5 @@ def import_openserp_maps(
     if skipped_downloaded > 0:
         logger.info(f"⏭️  Skipped {skipped_downloaded} previously downloaded URL(s)")
 
+    pending.raise_if_queued()  # batch rounds: the step is pending, the next pass has the answers
     return imported

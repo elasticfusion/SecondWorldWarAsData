@@ -423,6 +423,33 @@ def finalize_searched(
     return clean
 
 
+def release(url: str) -> bool:
+    """Give back a claim that produced no result (the work was QUEUED for a batch: not done, not
+    failed): delete the row ONLY while it is still ``in_progress``, so the next round is not
+    deferred for ``CLAIM_STALE_SECONDS``. A searched/dead record is never touched. Never raises.
+    Returns True if a claim was released."""
+    clean = clean_url(url)
+    table = _table() if clean else None
+    if clean is None or table is None:
+        return False
+    try:
+        table.delete_item(
+            Key={"cache_key": _url_key(clean)},
+            ConditionExpression="contains(#r, :ip)",
+            ExpressionAttributeNames={"#r": "response"},
+            ExpressionAttributeValues={":ip": '"status": "in_progress"'},
+        )
+        return True
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - not in_progress (or a transient error): nothing to do
+        if not _is_conditional_failure(e):
+            logger.warning(
+                "url claim release failed for %s: %s", clean, type(e).__name__
+            )
+        return False
+
+
 def should_fetch_content(url: str) -> bool:
     """Lightweight cross-entity / cross-phase dedup gate for first-party CONTENT fetches
     (Grokipedia Playwright render, Wikipedia API) that don't go through url_fetch.fetch().

@@ -9,6 +9,7 @@ from urllib.parse import quote
 import requests
 
 from src.utils.search_cache import cached_answer
+from src.grok_client import BatchModeCollecting
 
 logger = logging.getLogger(__name__)
 
@@ -743,6 +744,8 @@ def search_llm(
             logger.info("Found via LLM: %s", url)
             return url
 
+    except BatchModeCollecting:
+        raise  # queued for the batch: not an answer, not a failure
     except Exception as e:  # noqa: BLE001 - one failed lookup must not stop resolution
         # Visible, not debug: a failing Grok call here silently turns into "no copy found".
         logger.warning(

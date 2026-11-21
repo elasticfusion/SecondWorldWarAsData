@@ -22,6 +22,8 @@ from typing import Any, Dict, Iterator, List, Optional
 
 import requests
 
+from src.grok_client import BatchModeCollecting
+from src.utils.batch_pending import Pending
 from src.utils.file_lock import write_json_with_lock
 
 # Circuit breaker: skip all OpenSERP searches after N consecutive failures
@@ -702,6 +704,8 @@ def _ask_verdicts(
                 use_cache=True,
                 cache_type=cache_type,
             )
+        except BatchModeCollecting:
+            raise  # queued for the batch: not an answer, not a failure
         except Exception as e:  # noqa: BLE001 - any client error: no verdict, not a NO
             raise VerifyFailed(f"{cache_type}: {type(e).__name__}") from e
         verdict = parse(answer)
@@ -1042,16 +1046,31 @@ def _summarize_url_page(
             summary = _grok_summarize_html(
                 html, url, context, grok_client, result, provenance
             )
+    except BatchModeCollecting:
+        # QUEUED for the batch: not a summary and not a failure. The page is NOT stamped searched
+        # and no REJECT is cached (that would stand for 90 days); the claim is given back so the
+        # next round is not deferred, and the pass is repeated on the answer.
+        url_registry.release(
+            result.url
+        )  # the CLAIMED key (fetch claims the cleaned input URL)
+        raise
     except Exception as e:  # noqa: BLE001 - best-effort; never block enrichment
         logger.debug("URL summarize failed for %s: %s", url, e)
 
-    # Finalize the registry entry AFTER summarizing (finalize-after-write #2): searched,
-    # 90-day TTL, with the HTTP status for future filter decisions. relevant = we got a
-    # usable summary.
+    _finalize_url(url, result, bool(summary), context)
+    return summary
+
+
+def _finalize_url(url: str, result: Any, relevant: bool, context: str) -> None:
+    """Finalize the registry entry AFTER summarizing (finalize-after-write #2): searched, 90-day
+    TTL, with the HTTP status for future filter decisions. relevant = we got a usable summary.
+    """
+    from src.utils import url_registry
+
     try:
         url_registry.finalize_searched(
             result.final_url or url,
-            relevant=bool(summary),
+            relevant=relevant,
             context=context[:200],
             source="openserp",
             first_wayback_ts=(result.wayback_ts or ""),
@@ -1059,7 +1078,6 @@ def _summarize_url_page(
         )
     except Exception:  # noqa: BLE001
         pass
-    return summary
 
 
 def _url_verdict_cached(url: str) -> Optional[str]:
@@ -1817,9 +1835,11 @@ def enrich_people_with_openserp(
     max_web = cfg.get("max_web_results_per_entity", 5)
 
     enriched = 0
+    pending = Pending()
     for person in _collect_people_candidates(people_dir, openserp_url, max_items):
         f, data, name = person["file"], person["data"], person["name"]
-        changed = _search_entity(
+        changed = pending.call(
+            _search_entity,
             "people",
             f,
             data,
@@ -1845,6 +1865,7 @@ def enrich_people_with_openserp(
                 logger.info("  ✓ OpenSERP enriched: %s", name)
 
     logger.info("OpenSERP people enrichment: %d enriched", enriched)
+    pending.raise_if_queued()  # batch rounds: the step is pending, the next pass has the answers
     return enriched
 
 
@@ -1888,15 +1909,18 @@ def enrich_equipment_with_openserp(
         return 0
 
     enriched = 0
+    pending = Pending()
     for f in sorted(equipment_dir.glob("*.json")):
         if f.name in SKIP_FILES:
             continue
-        if max_items and enriched >= max_items:
+        # queued requests count too: a batch round must not queue more than --max-items entities
+        if max_items and enriched + pending.queued >= max_items:
             break
-        if _process_equipment_file(f, openserp_url, grok_client):
+        if pending.call(_process_equipment_file, f, openserp_url, grok_client):
             enriched += 1
 
     logger.info("OpenSERP equipment enrichment: %d enriched", enriched)
+    pending.raise_if_queued()  # batch rounds: the step is pending, the next pass has the answers
     return enriched
 
 
@@ -2010,12 +2034,16 @@ def enrich_source_sections_with_openserp(
     from src.utils.source_sections import iter_section_files
 
     enriched = 0
+    pending = Pending()
     n_records = 0
     for f, data in _iter_loadable_files(iter_section_files(output_root)):
         n_records += 1
-        if max_items and enriched >= max_items:
+        # queued requests count too: a batch round must not queue more than --max-items entities
+        if max_items and enriched + pending.queued >= max_items:
             break
-        if _process_one_source_section(f, data, openserp_url, grok_client):
+        if pending.call(
+            _process_one_source_section, f, data, openserp_url, grok_client
+        ):
             enriched += 1
 
     logger.info(
@@ -2027,6 +2055,7 @@ def enrich_source_sections_with_openserp(
             "%s; Phase 3 must download output/content/ (see no_parsed_docs) before this step",
             output_root,
         )
+    pending.raise_if_queued()  # batch rounds: the step is pending, the next pass has the answers
     return enriched
 
 
@@ -2179,8 +2208,10 @@ def enrich_groups_with_openserp(
         return 0
 
     enriched = 0
+    pending = Pending()
     for f, data in _iter_loadable_records(groups_dir):
-        if max_items and enriched >= max_items:
+        # queued requests count too: a batch round must not queue more than --max-items entities
+        if max_items and enriched + pending.queued >= max_items:
             break
 
         name = data.get("group_name", "")
@@ -2191,7 +2222,8 @@ def enrich_groups_with_openserp(
             continue
         _record_eligible()
 
-        changed = _search_entity(
+        changed = pending.call(
+            _search_entity,
             "people_groups",
             f,
             data,
@@ -2216,6 +2248,7 @@ def enrich_groups_with_openserp(
                 logger.info("  ✓ OpenSERP enriched group: %s", name)
 
     logger.info("OpenSERP people_groups enrichment: %d enriched", enriched)
+    pending.raise_if_queued()  # batch rounds: the step is pending, the next pass has the answers
     return enriched
 
 
@@ -2307,6 +2340,8 @@ def _apply_group_unit_patch(
             data["unit_patch"] = patch
             _metric("items_added", 1)
             return True
+    except BatchModeCollecting:
+        raise  # queued for the batch: not an answer, not a failure
     except Exception as e:  # noqa: BLE001 - never block group enrichment
         logger.debug("unit patch acquisition failed for %s: %s", name, e)
     return False
@@ -2389,8 +2424,10 @@ def enrich_places_with_openserp(
         return 0
 
     enriched = 0
+    pending = Pending()
     for f, data in _iter_loadable_records(places_dir):
-        if max_items and enriched >= max_items:
+        # queued requests count too: a batch round must not queue more than --max-items entities
+        if max_items and enriched + pending.queued >= max_items:
             break
 
         variants = place_name_variants(data)
@@ -2401,7 +2438,8 @@ def enrich_places_with_openserp(
             continue
 
         primary = variants[0]
-        changed = _search_entity(
+        changed = pending.call(
+            _search_entity,
             "places",
             f,
             data,
@@ -2420,6 +2458,7 @@ def enrich_places_with_openserp(
                 logger.info("  ✓ OpenSERP enriched place: %s", primary)
 
     logger.info("OpenSERP places enrichment: %d enriched", enriched)
+    pending.raise_if_queued()  # batch rounds: the step is pending, the next pass has the answers
     return enriched
 
 

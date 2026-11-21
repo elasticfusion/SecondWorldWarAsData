@@ -33,6 +33,8 @@ from src.extraction.media_classify import (
     vision_is_map,
 )
 from src.utils.observe import observe_warn
+from src.grok_client import BatchModeCollecting
+from src.utils.batch_pending import Pending
 
 logger = logging.getLogger(__name__)
 
@@ -258,6 +260,8 @@ def _resolve_file(
         return None
     try:
         outcome = _resolve_one(rec, output_root, grok_client, download)
+    except BatchModeCollecting:
+        raise  # queued for the batch: not an answer, not a failure
     except Exception as e:  # noqa: BLE001 - one image must not abort the step
         logger.warning(
             "OBSERV images.map_vision_error image=%s err=%s status=warn",
@@ -334,7 +338,9 @@ def _report(counts: Dict[str, int]) -> None:
 def resolve_pending(
     output_root: Path, grok_client, download: bool = True
 ) -> Dict[str, int]:
-    """Run deferred map vision over every ``pending_vision`` image record. Never raises."""
+    """Run deferred map vision over every ``pending_vision`` image record. Never raises, except
+    BatchModeCollecting after the whole pass when requests were queued for a batch round.
+    """
     counts: Dict[str, int] = {
         k: 0
         for k in (
@@ -350,14 +356,18 @@ def resolve_pending(
     }
     images_dir = output_root / "images"
     files = sorted(images_dir.glob("*.json")) if images_dir.is_dir() else []
+    pending = Pending()
     for f in files:
         if f.name == "index.json":
             continue
-        outcome = _resolve_file(f, output_root, grok_client, download)
+        # a queued vision request: not undecided (no alert, no attempt counted); every image
+        # queues its own and the step raises once below
+        outcome = pending.call(_resolve_file, f, output_root, grok_client, download)
         if outcome is None:
             continue
         if outcome != "unreadable":
             counts["pending"] += 1
         counts[outcome] += 1
     _report(counts)
+    pending.raise_if_queued()  # batch rounds: the step is pending, the next pass has the answers
     return counts

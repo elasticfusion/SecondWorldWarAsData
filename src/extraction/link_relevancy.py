@@ -18,6 +18,7 @@ from __future__ import annotations
 import logging
 from typing import Any, List, Optional
 from urllib.parse import urlparse
+from src.grok_client import BatchModeCollecting
 
 logger = logging.getLogger(__name__)
 
@@ -70,6 +71,8 @@ def _grok_link_relevant(grok_client: Any, text: str, url: str, context: str) -> 
             reask=can_reask(grok_client),
         )
         return choice != "NO"  # YES, UNKNOWN or unusable -> enqueue (safe default)
+    except BatchModeCollecting:
+        raise  # queued for the batch: not an answer, not a failure
     except Exception as e:  # noqa: BLE001
         logger.warning(
             "OBSERV link_asset.grok_error reason=%s (fail-safe=enqueue)", str(e)[:120]
@@ -104,5 +107,7 @@ def should_enqueue_link(
                 "irrelevant",
             )
         )
+    except BatchModeCollecting:
+        raise  # queued for the batch: not an answer, not a failure
     except Exception:  # noqa: BLE001
         return (True, "relevant")  # fail-safe: when in doubt, enqueue

@@ -355,6 +355,8 @@ def ingest_affirmed_chart(
             origin_event_id=origin_event_id,
             origin_source_section_id=origin_section_id,
         )
+    except BatchModeCollecting:
+        raise  # queued for the batch: not an answer, not a failure
     except (
         Exception
     ) as e:  # noqa: BLE001 - ingestion must never crash the affirm action
