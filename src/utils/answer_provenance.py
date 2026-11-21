@@ -15,18 +15,15 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional
 
 from src.utils.batch_rounds import round_of
-from src.utils.url_hygiene import CONTROL_CHARS
+from src.utils.url_hygiene import scrub
 
 logger = logging.getLogger(__name__)
-
-
-_CTRL = CONTROL_CHARS
 
 
 def _clean(value: Any, limit: int = 200) -> str:
     """Text from a metrics file for the terminal: control characters (ANSI escapes, newlines)
     removed, length capped."""
-    return _CTRL.sub(" ", str(value))[:limit]
+    return scrub(value)[:limit]
 
 
 def batches_for(request_id: str, metrics_dir: Path) -> List[Dict[str, Any]]:

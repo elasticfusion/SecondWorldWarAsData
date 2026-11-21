@@ -174,13 +174,32 @@ def is_clean_url(url: str) -> bool:
     return clean_url(url) is not None
 
 
-# Characters no stored or logged text may contain: ASCII/C1 controls, the Unicode line and paragraph
-# separators, the bidi marks and overrides, and the invisible marks that carry no letter. U+200C/U+200D (zero-width non-joiner/joiner) are
-# NOT here: Persian, Indic scripts and emoji sequences need them. ONE definition for URLs, stored find text and answer text.
-CONTROL_CHARS = re.compile(
-    "[\x00-\x1f\x7f-\x9f\u2028\u2029\u202a-\u202e\u2066-\u2069\u200b\u200e\u200f\u061c\u2060\ufeff]"
+# Text that came from a document must not carry anything that can forge or hide a line, or change how
+# a string reads. ONE definition for URLs, stored find text, answer text and log fields:
+#  * LINE_CONTROLS: ASCII and C1 controls and the Unicode line/paragraph separators. Replaced by a
+#    space (they separate things).
+#  * INVISIBLE: every Unicode "format" (Cf) character that draws nothing: soft hyphen, zero-width
+#    space, direction marks and overrides, BOM, word joiner, tag characters... DELETED, so no word
+#    boundary is invented (``a<ZWSP>b`` -> ``ab``). U+200C/U+200D (zero-width non-joiner/joiner) are
+#    kept: Persian, Indic scripts and emoji sequences need them. Variation selectors are kept too:
+#    U+FE0F selects the emoji form. A test pins this list against ``unicodedata``.
+LINE_CONTROLS = re.compile("[\x00-\x1f\x7f-\x9f\u2028\u2029]")
+INVISIBLE = re.compile(
+    "[\u00ad\u0600-\u0605\u061c\u06dd\u070f\u0890\u0891\u08e2\u180e\u200b\u200e\u200f"
+    "\u202a-\u202e\u2060-\u2064\u2066-\u206f\ufeff\ufff9-\ufffb\U000110bd\U000110cd"
+    "\U00013430-\U0001343f\U0001bca0-\U0001bca3\U0001d173-\U0001d17a\U000e0001"
+    "\U000e0020-\U000e007f]"
 )
-_URL_CONTROL = CONTROL_CHARS
+# what a URL may never contain (rejected, not repaired)
+_URL_CONTROL = re.compile(LINE_CONTROLS.pattern[:-1] + INVISIBLE.pattern[1:])
+
+
+def scrub(value: object) -> str:
+    """``value`` as text with line controls replaced by a space and invisible format characters
+    deleted. Never raises."""
+    return INVISIBLE.sub(
+        "", LINE_CONTROLS.sub(" ", str(value if value is not None else ""))
+    )
 
 
 def has_url_junk(raw: str) -> bool:

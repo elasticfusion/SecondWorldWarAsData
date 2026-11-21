@@ -242,7 +242,7 @@ def _reset_breaker():
 
 
 def test_unicode_line_separators_are_removed_from_stored_text():
-    assert fq._text("a\u2028b\u2029c\x85d\u202ee", 50) == "a b c d e"
+    assert fq._text("a\u2028b\u2029c\x85d\u202ee", 50) == "a b c de"
 
 
 def test_retries_stop_after_finds_fail_in_a_row(monkeypatch):
@@ -268,7 +268,9 @@ def test_retries_stop_after_finds_fail_in_a_row(monkeypatch):
 
 
 def test_zero_width_and_direction_marks_are_removed():
-    assert fq._text("a\u200bb\u200ec\u2060d\ufeffe\u061cf", 50) == "a b c d e f"
+    assert (
+        fq._text("a\u200bb\u200ec\u2060d\ufeffe\u061cf", 50) == "abcdef"
+    )  # no word boundary invented
 
 
 def test_nested_params_and_keys_are_cleaned(store):
@@ -322,3 +324,9 @@ def test_dicts_and_lists_are_capped_and_deep_scalars_reduced():
     assert len(out) == 50
     assert len(fq._clean_value(list(range(80)))) == 50
     assert fq._clean_value([[[1]]]) == [[["int"]]]
+
+
+def test_a_falsy_value_is_stored_as_empty_text():
+    assert (
+        fq._text(0, 20) == "" and fq._text(None, 20) == "" and fq._text(False, 20) == ""
+    )

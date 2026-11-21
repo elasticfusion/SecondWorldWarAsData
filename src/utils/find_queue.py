@@ -27,7 +27,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, Optional, Tuple
 
 from src.utils import fetch_provenance as fp
-from src.utils.url_hygiene import CONTROL_CHARS
+from src.utils.url_hygiene import scrub
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +69,7 @@ class Origin:
 def _text(value: Any, limit: int) -> str:
     """Untrusted text for a stored field: no control characters, no ``->`` (the review reads the
     acquisition URL after the first ``->`` of a summary), capped."""
-    return CONTROL_CHARS.sub(" ", str(value or "")).replace("->", "- >")[:limit]
+    return scrub(value or "").replace("->", "- >")[:limit]
 
 
 def already_queued(

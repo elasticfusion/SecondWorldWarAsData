@@ -26,11 +26,9 @@ logger = logging.getLogger(__name__)
 from src.utils.observe import observe_warn  # noqa: E402
 from src.grok_client import BatchModeCollecting
 from src.utils.batch_pending import Pending
-from src.utils.url_hygiene import CONTROL_CHARS
+from src.utils.url_hygiene import scrub
 
-# Strip C0 controls (incl. \n AND \r) from any untrusted-at-rest text before it enters a
-# log line — prevents OBSERV log-line forging (repo convention; matches grok_client).
-_CTRL = CONTROL_CHARS
+# Untrusted-at-rest text goes through ``scrub`` before it enters a log line (OBSERV line forging).
 
 
 def _looks_like_citation(entry: Dict[str, Any]) -> bool:
@@ -1868,7 +1866,7 @@ def _execute_nara_query(
     if not safe_q:
         logger.info(
             "OBSERV nara.query skipped=empty_after_sanitize raw=%r",
-            _CTRL.sub(" ", query or "")[:60],
+            scrub(query or "")[:60],
         )
         return None, False
     params: Dict[str, str] = {"q": safe_q, "limit": "5"}
@@ -2130,8 +2128,8 @@ def _verify_url_content(url: str, citation: str, grok_client: Any) -> bool:
     if clean_url(url) is None:
         logger.warning(
             "OBSERV bib.verify_url_blocked ssrf=1 url=%s citation=%s",
-            _CTRL.sub(" ", url)[:100],
-            _CTRL.sub(" ", citation)[:80],
+            scrub(url)[:100],
+            scrub(citation)[:80],
         )
         return False  # unsafe/malformed host -> cannot verify -> reject
     try:
@@ -2142,7 +2140,7 @@ def _verify_url_content(url: str, citation: str, grok_client: Any) -> bool:
             if status is None:
                 logger.warning(
                     "OBSERV bib.verify_url_blocked ssrf=1 resolve=1 url=%s",
-                    _CTRL.sub(" ", url)[:100],
+                    scrub(url)[:100],
                 )
             return False
 
@@ -2188,7 +2186,7 @@ Return ONLY "YES" or "NO". Answer "NO" if the page is unrelated, a generic searc
         # corpus. Reject + surface it loudly so the URL stays unverified/retriable.
         logger.warning(
             "OBSERV bib.verify_url_error url=%s err=%s status=warn",
-            _CTRL.sub(" ", url)[:100],
+            scrub(url)[:100],
             type(e).__name__,
         )
         return False
@@ -2609,7 +2607,7 @@ def _resolve_one_bib_file(
 
     status, was_deduped, nc_sample = result
     if status == "not_citation" and nc_sample and len(not_citation_samples) < 5:
-        not_citation_samples.append(_CTRL.sub(" ", nc_sample)[:80])
+        not_citation_samples.append(scrub(nc_sample)[:80])
     if status == "backend_down" and not was_deduped:
         _queue_if_outage_capped(f, stats, review_queue)
     if _account_bib_status(stats, status, was_deduped):
