@@ -174,14 +174,29 @@ def is_clean_url(url: str) -> bool:
     return clean_url(url) is not None
 
 
+# Characters no stored or logged text may contain: ASCII/C1 controls, the Unicode line and paragraph
+# separators, and the bidi overrides. ONE definition for URLs, stored find text and answer text.
+CONTROL_CHARS = re.compile("[\x00-\x1f\x7f-\x9f\u2028\u2029\u202a-\u202e\u2066-\u2069]")
+_URL_CONTROL = CONTROL_CHARS
+
+
+def has_url_junk(raw: str) -> bool:
+    """A link target that is malformed: a control character (line break, NUL, ESC) or whitespace
+    inside it. Such a target is rejected, never repaired, so a hostile or broken link cannot be
+    reshaped into a different URL."""
+    return bool(_URL_CONTROL.search(raw) or re.search(r"\s", raw))
+
+
 def _prevalidate_url_string(url):
     """clean_url's STRING-level guards (fail-closed, in order): non-str/empty, over-length.
     Returns the stripped URL string, or None to reject."""
     if not url or not isinstance(url, str):
         return None
     url = url.strip()
-    if not url or len(url) > _MAX_URL_LEN:
-        return None
+    if not url or len(url) > _MAX_URL_LEN or _URL_CONTROL.search(url):
+        return (
+            None  # a control character (newline, NUL, ESC) is never part of a clean URL
+        )
     return url
 
 

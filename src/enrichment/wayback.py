@@ -201,7 +201,7 @@ def find_snapshot(url: str, timeout: int = 15) -> Optional[Tuple[str, str]]:
 
 def _record_wayback_fetch(url, archived_url, ts, error=None) -> None:
     """Record a textual fetch-provenance event for a Wayback lookup. Positive snapshot -> a
-    hit enqueued for human review (review_status=pending); no snapshot -> a miss; an availability
+    hit (provenance only, never a review item); no snapshot -> a miss; an availability
     API transport/non-200/parse failure -> an error (API misbehavior stays walk-backable). Fail-safe.
     """
     try:

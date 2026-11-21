@@ -22,10 +22,12 @@ from __future__ import annotations
 
 import logging
 import re
+import time
 from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
 from src.utils import fetch_provenance as fp
+from src.utils.url_hygiene import CONTROL_CHARS
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +36,12 @@ RELEVANT = "relevant"  # Grok said YES: the only verdict that reaches a human
 ENQUEUED = "enqueued"
 ALREADY_QUEUED = "already_queued"
 REFUSED = "refused"
+FAILED = "failed"  # the event could not be stored (after retries)
+
+_WRITE_ATTEMPTS = 3
+_RETRY_BASE_S = 0.5
+_BREAKER_AFTER = 3  # finds that failed in a row before retries stop (one try per find)
+_consecutive_failures = 0
 
 
 @dataclass(frozen=True)
@@ -57,13 +65,10 @@ class Origin:
         return self.entity_id or f"{self.book}|{self.source_url}"
 
 
-_CTRL = re.compile(r"[\x00-\x1f\x7f]")
-
-
 def _text(value: Any, limit: int) -> str:
     """Untrusted text for a stored field: no control characters, no ``->`` (the review reads the
     acquisition URL after the first ``->`` of a summary), capped."""
-    return _CTRL.sub(" ", str(value or "")).replace("->", "- >")[:limit]
+    return CONTROL_CHARS.sub(" ", str(value or "")).replace("->", "- >")[:limit]
 
 
 def already_queued(
@@ -100,7 +105,11 @@ def _event_params(
     verdict: str, origin: Origin, params: Optional[Dict[str, Any]]
 ) -> Dict[str, Any]:
     return {
-        **(params or {}),
+        # every text value is untrusted (link text, titles): same cleanup as the summary
+        **{
+            k: _text(v, 500) if isinstance(v, str) else v
+            for k, v in (params or {}).items()
+        },
         "relevancy": verdict,
         "origin_entity_type": origin.entity_type or None,
         "origin_entity_id": origin.entity_id or None,
@@ -108,6 +117,28 @@ def _event_params(
         "source_url": _text(origin.source_url, 500) or None,
         "query": _text(origin.query, 200) or None,
     }
+
+
+def _record_with_retry(
+    provider: str, clean: str, event_args: Dict[str, Any], key: tuple
+) -> str:
+    """Write the find's event, retrying a failed write. Returns ENQUEUED, ALREADY_QUEUED (the event
+    exists: written by an earlier run) or FAILED (still not stored after the retries).
+    """
+    global _consecutive_failures
+    # during an outage stop retrying after a few finds fail in a row: one try each, no stall
+    attempts = _WRITE_ATTEMPTS if _consecutive_failures < _BREAKER_AFTER else 1
+    for attempt in range(1, attempts + 1):
+        if fp.record_fetch_event(once_key=key, **event_args):
+            _consecutive_failures = 0
+            return ENQUEUED
+        if fp.event_recorded(provider, key):
+            _consecutive_failures = 0
+            return ALREADY_QUEUED  # the event exists: an earlier run queued it
+        if attempt < attempts:
+            time.sleep(_RETRY_BASE_S * attempt)
+    _consecutive_failures += 1
+    return FAILED
 
 
 def enqueue_find(
@@ -121,36 +152,51 @@ def enqueue_find(
     legacy_key: Optional[tuple] = None,
 ) -> str:
     """Queue one found URL for human review. Returns ``ENQUEUED``, ``ALREADY_QUEUED`` (an earlier
-    run queued it: pending, approved, rejected or submitted) or ``REFUSED`` (no positive Grok
-    verdict, an unsafe URL, or a provider that is not a find provider). Never raises."""
+    run queued it: pending, approved, rejected or submitted), ``REFUSED`` (no positive Grok verdict,
+    an unsafe URL, or a provider that is not a find provider) or ``FAILED`` (the event could not be
+    stored after retries: nothing is recorded, so the next run queues it again). Never raises.
+    """
     clean = _refusal(provider, verdict, url)
     if clean is None:
         return REFUSED
     try:
         if legacy_key and fp.event_recorded(provider, legacy_key):
             return ALREADY_QUEUED
-        new = fp.record_fetch_event(
-            provider=provider,
-            endpoint=clean,
-            kind=fp.TEXTUAL,
-            outcome=fp.HIT,
-            request_params=_event_params(verdict, origin, params),
-            result_summary=_text(summary, 300),
-            once_key=(origin.key, clean),
+        status = _record_with_retry(
+            provider,
+            clean,
+            dict(
+                provider=provider,
+                endpoint=clean,
+                kind=fp.TEXTUAL,
+                outcome=fp.HIT,
+                request_params=_event_params(verdict, origin, params),
+                result_summary=_text(summary, 300),
+            ),
+            (origin.key, clean),
         )
     except Exception as e:  # noqa: BLE001 - queueing must never crash a step
-        logger.warning(
-            "OBSERV find_queue.error provider=%s err=%s status=warn",
+        logger.error(
+            "OBSERV find_queue.error provider=%s err=%s status=error - the find was not queued; "
+            "it is tried again next run. Check the task role's access to the api-cache table",
             provider,
             type(e).__name__,
         )
-        return REFUSED
-    if not new:
-        return ALREADY_QUEUED
-    logger.info(
-        "OBSERV find_queue.enqueued provider=%s origin=%s url=%s",
-        provider,
-        origin.key[:60],
-        clean[:120],
-    )
-    return ENQUEUED
+        return FAILED
+    if status == FAILED:
+        logger.error(
+            "OBSERV find_queue.write_failed provider=%s url=%s status=error - the review item "
+            "could not be stored after %d tries; it is tried again next run. Check the task role's "
+            "DynamoDB access to the api-cache table and its throttling",
+            provider,
+            _text(clean, 120),
+            _WRITE_ATTEMPTS,
+        )
+    elif status == ENQUEUED:
+        logger.info(
+            "OBSERV find_queue.enqueued provider=%s origin=%s url=%s",
+            provider,
+            _text(origin.key, 60),
+            _text(clean, 120),
+        )
+    return status

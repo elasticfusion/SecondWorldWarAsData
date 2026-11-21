@@ -131,3 +131,21 @@ def test_the_link_review_step_reports_undecided_links(tmp_path, monkeypatch, cap
     with caplog.at_level(logging.INFO):
         assert p3._review_external_links(tmp_path, None) == 1
     assert "undecided=2" in caplog.text
+
+
+def test_the_link_review_step_is_warn_when_a_store_failed(
+    tmp_path, monkeypatch, caplog
+):
+    import logging
+    import src.extraction.link_assets as la
+
+    p3 = _phase3()
+    monkeypatch.setattr(p3, "_load_parsed_docs", lambda out: [{"book": "B"}])
+    monkeypatch.setattr(p3, "_book_section_index", lambda out: {})
+    monkeypatch.setattr(p3, "_doc_link_content", lambda d: "")
+    monkeypatch.setattr(
+        la, "enqueue_doc_links", lambda *a, **k: {"links": 2, "failed": 2}
+    )
+    with caplog.at_level(logging.INFO):
+        p3._review_external_links(tmp_path, None)
+    assert "failed=2" in caplog.text and "status=warn" in caplog.text

@@ -35,7 +35,7 @@ BLOCKED = "blocked"
 
 # kind enum
 STRUCTURED = "structured"  # geocode / weather — provenance only
-TEXTUAL = "textual"  # wayback / award / bio — review-eligible
+TEXTUAL = "textual"  # a find (review-eligible) or a lookup (provenance only)
 
 # review_status enum (textual only)
 PENDING = "pending"
@@ -62,9 +62,9 @@ FIND_PROVIDERS = frozenset(
         "map-find",  # a map URL
     }
 )
-# "wayback": a primary document recovered from the Wayback Machine (source_retrieval keeps its bytes
-# for Phase 0): reviewed as before.
-_ENQUEUE_PROVIDERS = frozenset({"wayback"}) | FIND_PROVIDERS
+# "wayback" is NOT here: the availability lookup is a fetch fallback for a URL some step already
+# found (that find is what a human reviews); the snapshot it returns is recorded as provenance only.
+_ENQUEUE_PROVIDERS = FIND_PROVIDERS
 
 
 def _initial_review_status(provider: str, kind: str, outcome: str) -> Optional[str]:

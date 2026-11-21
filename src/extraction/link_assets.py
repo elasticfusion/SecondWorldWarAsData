@@ -26,6 +26,7 @@ from urllib.parse import urljoin, urlparse
 from src.grok_client import BatchModeCollecting
 from src.ingestion.media_detection import _from_extension
 from src.utils.batch_pending import Pending
+from src.utils.url_hygiene import has_url_junk
 from src.ingestion.source_metadata import MediaType
 
 logger = logging.getLogger(__name__)
@@ -67,6 +68,10 @@ def _resolve_target(target: str, base_url: str) -> Optional[tuple]:
     when there is no base). Fail-safe."""
     try:
         t = (target or "").strip()
+        if has_url_junk(t):
+            # malformed (line break, control character, inner space): rejected, not repaired
+            logger.info("OBSERV link_asset.malformed url=%r status=skipped", t[:200])
+            return None
         if not t or t.startswith(("mailto:", "javascript:", "tel:")):
             return None
         if t.startswith("#"):
@@ -141,6 +146,7 @@ def enqueue_doc_links(
         "already_queued": 0,
         "dropped": 0,
         "undecided": 0,
+        "failed": 0,
         "anchors": 0,
     }
     pending = Pending()
@@ -176,13 +182,14 @@ def enqueue_doc_links(
         pending.raise_if_queued()
     logger.info(
         "OBSERV link_asset.summary book=%s links=%d enqueued=%d already_queued=%d dropped=%d "
-        "undecided=%d anchors=%d",
+        "undecided=%d failed=%d anchors=%d",
         book,
         summary["links"],
         summary["enqueued"],
         summary["already_queued"],
         summary["dropped"],
         summary["undecided"],
+        summary["failed"],
         summary["anchors"],
     )
     return summary
@@ -224,7 +231,7 @@ def _handle_link(
         return
     if not enqueue:
         summary["dropped"] += 1
-        logger.info("OBSERV link_asset.dropped verdict=%s url=%s", verdict, la.url)
+        logger.info("OBSERV link_asset.dropped verdict=%s url=%r", verdict, la.url)
         return
     _enqueue_one(la, book, base_url, verdict, source_section_id, summary)
 
@@ -292,12 +299,17 @@ def _enqueue_one(
         if status == find_queue.REFUSED:
             summary["dropped"] += 1
             return
+        if status == find_queue.FAILED:
+            summary[
+                "failed"
+            ] += 1  # already logged as an error by find_queue; tried again next run
+            return
         if status != find_queue.ENQUEUED:
             summary["already_queued"] += 1
             return
         summary["enqueued"] += 1
         logger.info(
-            "OBSERV link_asset.enqueued media=%s verdict=%s source_url=%s source_section=%s url=%s",
+            "OBSERV link_asset.enqueued media=%s verdict=%s source_url=%r source_section=%s url=%r",
             la.media_type,
             verdict,
             source_url,

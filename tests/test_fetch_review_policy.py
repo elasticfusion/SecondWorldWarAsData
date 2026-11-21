@@ -26,13 +26,13 @@ def _events(store, provider):
 
 
 def test_primary_source_providers_are_enqueued():
-    for prov in ("wayback", *sorted(fp.FIND_PROVIDERS)):
+    for prov in sorted(fp.FIND_PROVIDERS):
         assert fp._initial_review_status(prov, fp.TEXTUAL, fp.HIT) == fp.PENDING
 
 
 def test_a_search_call_is_never_a_review_item():
     """nara / archive.org / gutendex queries used to queue one item per successful query."""
-    for prov in ("nara", "archive-org", "archive-solr", "gutendex"):
+    for prov in ("nara", "archive-org", "archive-solr", "gutendex", "wayback"):
         assert fp._initial_review_status(prov, fp.TEXTUAL, fp.HIT) is None
 
 
@@ -92,7 +92,7 @@ def test_affirm_persists_affirmed_status(_local, tmp_path):
     q = tmp_path / "doc.html"
     q.write_text("<html>archived</html>")
     fid = fp.record_fetch_event(
-        provider="wayback",
+        provider="openserp-find",
         endpoint="https://archive.org/wayback/available",
         kind=fp.TEXTUAL,
         outcome=fp.HIT,
@@ -101,7 +101,7 @@ def test_affirm_persists_affirmed_status(_local, tmp_path):
     event = next(e for e in fetch_review.list_pending() if e["fetch_event_id"] == fid)
     src = fetch_review.affirm_fetch_find(event, q)
     assert src is not None
-    assert _events(_local, "wayback")[0]["review_status"] == fp.AFFIRMED
+    assert _events(_local, "openserp-find")[0]["review_status"] == fp.AFFIRMED
     assert fetch_review.list_pending() == []
 
 

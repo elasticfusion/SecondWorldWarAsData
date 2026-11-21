@@ -165,3 +165,103 @@ def test_a_legacy_event_blocks_the_find(store):
         )
         == fq.ALREADY_QUEUED
     )
+
+
+def test_text_params_are_cleaned_like_the_summary(store):
+    fq.enqueue_find(
+        provider="openserp-find",
+        url="https://example.org/a",
+        verdict=fq.RELEVANT,
+        origin=GROUP,
+        summary="s",
+        params={"link_text": "a\n->b\x00", "n": 3},
+    )
+    (e,) = _events(store)
+    p = e["request_params"]
+    assert "\n" not in p["link_text"] and "->" not in p["link_text"] and p["n"] == 3
+
+
+def _no_sleep(monkeypatch):
+    monkeypatch.setattr(fq.time, "sleep", lambda s: None)
+
+
+def test_a_failed_write_is_retried_then_reported_as_failed(monkeypatch, caplog):
+    from unittest import mock
+
+    _no_sleep(monkeypatch)
+    table = mock.Mock()
+    table.put_item.side_effect = RuntimeError("ProvisionedThroughputExceeded")
+    table.get_item.return_value = {}
+    monkeypatch.setattr(fp, "_table", lambda: table)
+    assert _enqueue() == fq.FAILED
+    assert table.put_item.call_count == fq._WRITE_ATTEMPTS
+    assert (
+        "OBSERV find_queue.write_failed" in caplog.text
+        and "status=error" in caplog.text
+    )
+
+
+def test_a_write_that_fails_once_is_retried_and_queued(monkeypatch):
+    from unittest import mock
+
+    _no_sleep(monkeypatch)
+    table = mock.Mock()
+    table.put_item.side_effect = [RuntimeError("throttled"), None]
+    table.get_item.return_value = {}
+    monkeypatch.setattr(fp, "_table", lambda: table)
+    assert _enqueue() == fq.ENQUEUED
+    assert table.put_item.call_count == 2
+
+
+def test_an_existing_event_is_already_queued_not_failed(monkeypatch):
+    from unittest import mock
+
+    _no_sleep(monkeypatch)
+
+    class _Cond(Exception):
+        pass
+
+    _Cond.__name__ = "ConditionalCheckFailedException"
+    table = mock.Mock()
+    table.put_item.side_effect = _Cond()
+    table.get_item.return_value = {"Item": {"cache_key": "x"}}
+    monkeypatch.setattr(fp, "_table", lambda: table)
+    assert _enqueue() == fq.ALREADY_QUEUED
+    assert table.put_item.call_count == 1
+
+
+def test_the_wayback_availability_lookup_is_never_a_review_item():
+    assert fp._initial_review_status("wayback", fp.TEXTUAL, fp.HIT) is None
+
+
+@pytest.fixture(autouse=True)
+def _reset_breaker():
+    fq._consecutive_failures = 0
+    yield
+    fq._consecutive_failures = 0
+
+
+def test_unicode_line_separators_are_removed_from_stored_text():
+    assert fq._text("a\u2028b\u2029c\x85d\u202ee", 50) == "a b c d e"
+
+
+def test_retries_stop_after_finds_fail_in_a_row(monkeypatch):
+    from unittest import mock
+
+    sleeps = []
+    monkeypatch.setattr(fq.time, "sleep", lambda s: sleeps.append(s))
+    table = mock.Mock()
+    table.put_item.side_effect = RuntimeError("throttled")
+    table.get_item.return_value = {}
+    monkeypatch.setattr(fp, "_table", lambda: table)
+    for i in range(fq._BREAKER_AFTER):
+        assert _enqueue(url=f"https://example.org/{i}") == fq.FAILED
+    assert sleeps == [0.5, 1.0] * fq._BREAKER_AFTER  # backoff while retrying
+    table.put_item.reset_mock()
+    assert _enqueue(url="https://example.org/next") == fq.FAILED
+    assert table.put_item.call_count == 1  # breaker open: a single try, no stall
+    table.put_item.side_effect = None
+    assert (
+        _enqueue(url="https://example.org/ok") == fq.ENQUEUED
+    )  # and it closes on success
+    assert fq._consecutive_failures == 0

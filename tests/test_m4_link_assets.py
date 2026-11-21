@@ -162,6 +162,7 @@ def test_enqueue_records_pending_with_provenance(local_fp):
         "already_queued": 0,
         "dropped": 0,
         "undecided": 0,
+        "failed": 0,
         "anchors": 1,
     }
     pend, events = _pending(fp, d)
@@ -328,3 +329,31 @@ def test_a_refused_find_is_counted_as_dropped(local_fp, monkeypatch):
     monkeypatch.setattr(find_queue, "enqueue_find", lambda **k: find_queue.REFUSED)
     s = enqueue_doc_links("[c](charts/x.jpg)", BASE, "XChannel", grok_client=_G("YES"))
     assert s["dropped"] == 1 and s["already_queued"] == 0 and s["enqueued"] == 0
+
+
+def test_a_malformed_link_target_is_rejected_not_repaired():
+    """A line break, control character or inner space makes the link malformed: it is skipped."""
+    for bad in (
+        "https://example.org/a\nOBSERV fake/x.jpg",
+        "https://example.org/a b.jpg",
+        "https://example.org/a\x1b[0m.jpg",
+    ):
+        c = f'<a href="{bad}">t</a>'
+        assert not [a for a in extract_link_assets(c, BASE) if "example.org" in a.url]
+
+
+def test_a_dropped_link_log_stays_on_one_line(local_fp, caplog):
+    import logging
+
+    c = '<a href="https://example.org/a\x1b[31m.jpg">t</a>'
+    with caplog.at_level(logging.INFO):
+        enqueue_doc_links(c, BASE, "XChannel", grok_client=_G("NO"))
+    assert all("\x1b" not in r.getMessage() for r in caplog.records)
+
+
+def test_a_failed_store_is_counted_as_failed_not_already_queued(local_fp, monkeypatch):
+    from src.utils import find_queue
+
+    monkeypatch.setattr(find_queue, "enqueue_find", lambda **k: find_queue.FAILED)
+    s = enqueue_doc_links("[c](charts/x.jpg)", BASE, "XChannel", grok_client=_G("YES"))
+    assert s["failed"] == 1 and s["already_queued"] == 0 and s["enqueued"] == 0

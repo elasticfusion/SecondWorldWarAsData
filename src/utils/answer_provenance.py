@@ -11,16 +11,16 @@ from __future__ import annotations
 
 import json
 import logging
-import re
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional
 
 from src.utils.batch_rounds import round_of
+from src.utils.url_hygiene import CONTROL_CHARS
 
 logger = logging.getLogger(__name__)
 
 
-_CTRL = re.compile(r"[\x00-\x1f\x7f]")
+_CTRL = CONTROL_CHARS
 
 
 def _clean(value: Any, limit: int = 200) -> str:
