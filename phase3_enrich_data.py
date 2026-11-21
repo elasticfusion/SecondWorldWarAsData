@@ -516,7 +516,7 @@ def _review_external_links(out, grok_client) -> int:
     if not docs:
         return 0
     book_to_section = _book_section_index(out)  # CRITICAL: ULID attribution per doc
-    totals = {"links": 0, "enqueued": 0, "dropped": 0, "anchors": 0}
+    totals = {"links": 0, "enqueued": 0, "dropped": 0, "undecided": 0, "anchors": 0}
     pending = (
         Pending()
     )  # batch rounds: every doc queues its links' requests, one raise at the end
@@ -536,11 +536,12 @@ def _review_external_links(out, grok_client) -> int:
         for k in totals:
             totals[k] += int((s or {}).get(k, 0))
     logging.getLogger("root").info(
-        "OBSERV phase3.step name=link_asset_review links=%d enqueued=%d dropped=%d anchors=%d "
+        "OBSERV phase3.step name=link_asset_review links=%d enqueued=%d dropped=%d undecided=%d anchors=%d "
         "status=ok",
         totals["links"],
         totals["enqueued"],
         totals["dropped"],
+        totals["undecided"],
         totals["anchors"],
     )
     pending.raise_if_queued()  # batch rounds: the step is pending, the next pass has the answers

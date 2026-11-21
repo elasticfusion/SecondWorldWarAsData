@@ -942,12 +942,15 @@ Findings:
   adding it.
 
 #### Step: link_asset_review (PHASE3_MAP §1 step table, §4.4) (moved here from Group 9)
-- **HIGH - every Phase 3 run queues the same links again.** Each enqueue is a new event with a new ULID
+- **DONE (2026-11-20; once-per-link since 1.2f, now through `src/utils/find_queue.enqueue_find`, tests in
+  `tests/test_m4_link_assets.py`, `tests/test_find_queue.py`) HIGH - every Phase 3 run queues the same links again.** Each enqueue is a new event with a new ULID
   (`fetch_provenance.record_fetch_event`, key `fetchevent#<ulid>`); nothing checks for an existing
   pending, approved or rejected event with the same `url_key`. So each run duplicates the queue, and a
   link a human rejected comes back. Fix (DRY, with the shared enqueue helper): look up `url_key` (+
   entity) before enqueueing; a rejected or submitted link is never re-queued.
-- **HIGH - links skip Grok or are queued "when in doubt".** `link_relevancy_whitelist` is `ibiblio.org`
+- **DONE (2026-11-20: `link_relevancy.should_enqueue_link`: Grok judges every link, a trusted source too,
+  and only YES is queued; UNKNOWN / unusable / error / no client = `undecided`, not queued) HIGH - links skip Grok
+  or are queued "when in doubt".** `link_relevancy_whitelist` is `ibiblio.org`
   (`config/domain_blacklist.yaml:87`), so every HyperWar link is queued with no Grok verdict; a missing
   client, an error or an `UNKNOWN` answer also queues (`link_relevancy.py:71-92`, `:111`, `:121`).
   Owner rule (2026-11-17): Grok validates every link before a human sees it (recorded in the footnote
@@ -967,7 +970,9 @@ Findings:
   `trusted_sources` under intra_corpus_links). Approval submits the find to
   Phase 0 through `fetch_review.submit_affirmed_batch`. One shared enqueue helper (the OpenSERP entry
   above) is called by every finder. Current behaviour, verified in code:
-  - **The queue gets search calls, not finds.** `recorded_fetch` (`src/utils/fetch_provenance.py:185`)
+  - **DONE (2026-11-20: `fetch_provenance.FIND_PROVIDERS`; `nara`, `archive-org`, `archive-solr` and `gutendex`
+    search calls are provenance only; 76 old pending search-call items remain in `dev-wwii-api-cache`: 72
+    `archive-solr`, 4 `nara`, to be rejected with the owner's go-ahead).** The queue gets search calls, not finds. `recorded_fetch` (`src/utils/fetch_provenance.py:185`)
     records each request with `outcome=HIT` for any 2xx status (`:256`), and `_initial_review_status`
     (`:64`) makes that `pending` for `nara`, `archive-org`, `archive-solr`, `gutendex` and `wayback`. The
     `endpoint` is the search API (`catalog.archives.gov/api/v2/records/search`, archive.org

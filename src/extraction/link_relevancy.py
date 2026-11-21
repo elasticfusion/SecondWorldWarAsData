@@ -1,16 +1,16 @@
 """Relevancy gate for outbound document links before human-review enqueue (M4, step 3b).
 
-Owner policy (2026-10-27): every outbound link in a parsed doc is enqueued for HUMAN review rather
-than auto-ingested. To keep that queue signal-rich we gate on relevancy first:
+Owner rule (2026-11-17): Grok judges EVERY link before a human sees it - a trusted source is no
+exception (``trusted_sources`` in config.yaml, ``src/utils/link_policy``, only marks the item for the
+reviewer). One one-word verdict:
 
-  * a TRUSTED source (``trusted_sources`` in config.yaml, read through ``src/utils/link_policy`` -
-    HyperWar volumes and NARA records; task 1.9 replaced the wider ``link_relevancy_whitelist``,
-    which trusted all of ibiblio.org) -> skip the model call, enqueue;
-  * domain on the license-rejection ``blacklist`` -> DROP (never enqueue, never fetch);
-  * otherwise -> ask Grok a one-word relevancy verdict; relevant -> enqueue, irrelevant -> drop.
+  * domain on the license-rejection ``blacklist`` -> DROP (never queued, never fetched);
+  * Grok YES -> queue; Grok NO -> drop;
+  * UNKNOWN, an unusable reply, a Grok error or no client -> ``undecided``: NOT queued, and nothing
+    is recorded, so a later run asks again. (The old default was to queue "when in doubt": a link
+    nobody had judged reached a human.)
 
-Fail-safe default is ENQUEUE: a model/config error must not silently discard a citable link — let a
-human decide. No network I/O here beyond the (optional) Grok call; the link itself is never fetched.
+No network I/O here beyond the Grok call; the link itself is never fetched.
 """
 
 from __future__ import annotations
@@ -41,8 +41,9 @@ def _host_matches(url: str, domains: List[str]) -> bool:
 
 
 def is_whitelisted(url: str, whitelist: Optional[List[str]] = None) -> bool:
-    """True if the link is to a trusted source (skip Grok): ``whitelist`` (host or subdomain
-    match) when given, else the configured trusted sources (host AND path prefix)."""
+    """True if the link is to a trusted source: ``whitelist`` (host or subdomain match) when given,
+    else the configured trusted sources (host AND path prefix). Marks the item for the reviewer; it
+    does NOT skip the Grok verdict."""
     if whitelist is not None:
         return _host_matches(url, whitelist)
     from src.utils.link_policy import trust_basis
@@ -50,34 +51,37 @@ def is_whitelisted(url: str, whitelist: Optional[List[str]] = None) -> bool:
     return trust_basis(url) is not None
 
 
-def _grok_link_relevant(grok_client: Any, text: str, url: str, context: str) -> bool:
-    """Ask Grok whether a cited link is relevant to a WWII primary-source corpus. One-word verdict;
-    fail-safe -> True (enqueue when unsure, so a human still decides)."""
+def grok_link_verdict(
+    grok_client: Any, text: str, url: str, context: str
+) -> Optional[str]:
+    """Grok's one-word verdict on a cited link: ``YES``, ``NO``, ``UNKNOWN``, or None (an unusable
+    reply twice, or an error). A queued batch request is not a verdict (``BatchModeCollecting``).
+    """
     try:
         prompt = (
             "You are curating a World War II primary-source history corpus. A document links to "
             "the resource below. Would a WWII historian consider this link a relevant primary/"
             "reference source worth reviewing (not an ad, nav/boilerplate, or unrelated site)?\n"
-            f"Link text: {text!r}\nURL: {url}\nContext: {context[:400]!r}\n"
+            f"Link text: {text!r}\nURL: {url!r}\nContext: {context[:400]!r}\n"
             "Answer with exactly one word: YES, NO, or UNKNOWN."
         )
         from src.utils.grok_choice import ask_choice, can_reask, evictor
 
-        choice = ask_choice(
+        return ask_choice(
             lambda: grok_client.chat_completion(prompt),
             ("YES", "NO", "UNKNOWN"),
             evictor(grok_client, prompt),
             what="link_relevancy",
             reask=can_reask(grok_client),
         )
-        return choice != "NO"  # YES, UNKNOWN or unusable -> enqueue (safe default)
     except BatchModeCollecting:
         raise  # queued for the batch: not an answer, not a failure
     except Exception as e:  # noqa: BLE001
         logger.warning(
-            "OBSERV link_asset.grok_error reason=%s (fail-safe=enqueue)", str(e)[:120]
+            "OBSERV link_asset.grok_error reason=%s (undecided: not queued, asked again next run)",
+            str(e)[:120],
         )
-        return True
+        return None
 
 
 def should_enqueue_link(
@@ -89,25 +93,22 @@ def should_enqueue_link(
     whitelist: Optional[List[str]] = None,
     blacklist: Optional[List[str]] = None,
 ) -> tuple:
-    """Relevancy verdict for one link. Returns (enqueue: bool, verdict: str) where verdict is one of
-    ``whitelisted`` | ``relevant`` | ``irrelevant`` | ``blacklisted``. Fail-safe (never raises).
-    """
+    """Relevancy verdict for one link: ``(enqueue, verdict)``, verdict one of ``relevant`` |
+    ``irrelevant`` | ``blacklisted`` | ``undecided``. Only ``relevant`` is queued. ``whitelist`` is
+    kept for callers that name trusted hosts; it no longer skips the Grok question. Never raises
+    (but a queued batch request propagates)."""
     try:
         if blacklist and _host_matches(url, blacklist):
             return (False, "blacklisted")
-        if is_whitelisted(url, whitelist):
-            return (True, "whitelisted")
         if grok_client is None:
-            return (True, "relevant")  # no model available -> let a human decide
-        return (
-            (True, "relevant")
-            if _grok_link_relevant(grok_client, text, url, context)
-            else (
-                False,
-                "irrelevant",
-            )
-        )
+            return (False, "undecided")  # nobody judged it: nobody is shown it
+        verdict = grok_link_verdict(grok_client, text, url, context)
+        if verdict == "YES":
+            return (True, "relevant")
+        if verdict == "NO":
+            return (False, "irrelevant")
+        return (False, "undecided")
     except BatchModeCollecting:
         raise  # queued for the batch: not an answer, not a failure
     except Exception:  # noqa: BLE001
-        return (True, "relevant")  # fail-safe: when in doubt, enqueue
+        return (False, "undecided")

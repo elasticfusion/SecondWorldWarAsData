@@ -508,7 +508,7 @@ def test_a_queued_link_relevancy_is_neither_enqueued_nor_dropped(monkeypatch):
     from src.extraction import link_relevancy as lr
 
     with pytest.raises(BatchModeCollecting):
-        lr._grok_link_relevant(Q(), "text", "https://x.org/a", "book")
+        lr.grok_link_verdict(Q(), "text", "https://x.org/a", "book")
     with pytest.raises(BatchModeCollecting):
         lr.should_enqueue_link("https://x.org/a", "text", grok_client=Q())
     enq = []

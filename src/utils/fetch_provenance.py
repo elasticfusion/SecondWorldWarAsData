@@ -43,22 +43,28 @@ AFFIRMED = "affirmed"
 REJECTED = "rejected"
 SUBMITTED = "submitted"  # affirmed AND handed to Phase-1 as part of a batch (terminal)
 
-# ENQUEUE POLICY (owner-confirmed): which TEXTUAL providers represent a NEW, citable PRIMARY-SOURCE
-# document that should be enqueued for human review and, on affirm, promoted into ingestion like an
-# uploaded book — vs. an entity-ENRICHMENT lookup that merely attaches a fact/snippet (provenance
-# only). The test: "would a historian want this in the bibliography?" Archive/library/government
-# sources qualify; encyclopedia blurbs, image-license metadata, and search-result pointers do NOT.
-# Narrow + explicit so it is easy to adjust; a provider NOT listed is recorded with no review.
-_ENQUEUE_PROVIDERS = frozenset(
+# ENQUEUE POLICY (owner 2026-11-17): a SEARCH CALL is never a review item. Only a FIND is: a URL a
+# step found and Grok judged relevant, queued through ``src/utils/find_queue.enqueue_find`` (one
+# helper for every finder), carrying its origin. ``recorded_fetch`` records search requests as
+# provenance only (nara / archive.org / gutendex queries used to queue one item per successful query,
+# with no BibliographyID and no verdict).
+#
+# FIND_PROVIDERS: the providers that ``enqueue_find`` may queue under (one per finder, so a reviewer
+# sees where a find came from). "link-asset" is a link cited in a parsed document (M4).
+FIND_PROVIDERS = frozenset(
     {
-        "wayback",  # recovered archived primary document
-        "archive-org",  # archive.org item (book/document)
-        "archive-solr",  # archive.org advancedsearch hit -> acquirable item
-        "gutendex",  # Project Gutenberg full text
-        "nara",  # National Archives record (archival primary source)
-        "link-asset",  # M4: a recognized, relevance-gated outbound link from a parsed document
+        "link-asset",  # a link cited in a parsed document
+        "openserp-find",  # a page OpenSERP found for an entity
+        "archive-org-find",  # an Archive.org item for a bibliography record
+        "gutenberg-find",  # a Project Gutenberg text for a bibliography record
+        "nara-find",  # a National Archives record for a bibliography record
+        "llm-find",  # a URL Grok suggested, content-verified
+        "map-find",  # a map URL
     }
 )
+# "wayback": a primary document recovered from the Wayback Machine (source_retrieval keeps its bytes
+# for Phase 0): reviewed as before.
+_ENQUEUE_PROVIDERS = frozenset({"wayback"}) | FIND_PROVIDERS
 
 
 def _initial_review_status(provider: str, kind: str, outcome: str) -> Optional[str]:
@@ -173,6 +179,25 @@ def _persist(record: Dict[str, Any], once: bool = False) -> bool:
 
 
 _LOCAL_SEEN: Dict[str, set] = {}
+
+
+def event_recorded(provider: str, once_key: tuple) -> bool:
+    """Whether the event with this (provider, once_key) identity is already stored, with any review
+    status. Fail-safe: False when it cannot be told (the caller then judges and the once-write guard
+    still prevents a duplicate event)."""
+    try:
+        from src.utils.deterministic_ids import fetch_event_id as _fixed_id
+
+        event_id = _fixed_id(provider, *once_key)
+        table = _table()
+        if table is not None:
+            got = table.get_item(Key={"cache_key": f"{_KEY_PREFIX}{event_id}"})
+            return bool(got.get("Item"))
+        path = _LOCAL_DIR / f"{provider.replace('/', '_')}.jsonl"
+        return event_id in _local_ids(path)
+    except Exception as e:  # noqa: BLE001
+        logger.debug("event_recorded unavailable: %s", e)
+        return False
 
 
 def _local_ids(path: Path) -> set:

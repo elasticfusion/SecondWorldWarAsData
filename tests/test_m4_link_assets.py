@@ -43,15 +43,26 @@ def test_dedup_by_resolved_url():
 
 
 # --- relevancy gate ---
-def test_whitelist_bypasses_grok():
-    class Boom:
-        def chat_completion(self, p):
-            raise AssertionError("grok should NOT be called for a whitelisted domain")
+class _G:
+    """A Grok client with one fixed reply (or error)."""
 
+    def __init__(self, reply="YES", boom=False):
+        self.reply, self.boom, self.asked = reply, boom, []
+
+    def chat_completion(self, p):
+        self.asked.append(p)
+        if self.boom:
+            raise RuntimeError("boom")
+        return self.reply
+
+
+def test_a_trusted_source_is_asked_about_too():
+    """Owner 2026-11-17: Grok judges EVERY link before a human sees it."""
+    g = _G("YES")
     enq, verdict = LR.should_enqueue_link(
-        "https://ibiblio.org/x.pdf", "t", grok_client=Boom(), whitelist=["ibiblio.org"]
+        "https://ibiblio.org/x.pdf", "t", grok_client=g, whitelist=["ibiblio.org"]
     )
-    assert enq and verdict == "whitelisted"
+    assert enq and verdict == "relevant" and len(g.asked) == 1
 
 
 def test_subdomain_whitelist_match():
@@ -67,33 +78,26 @@ def test_blacklist_dropped():
 
 
 def test_grok_relevant_and_irrelevant():
-    class Yes:
-        def chat_completion(self, p):
-            return "YES"
-
-    class No:
-        def chat_completion(self, p):
-            return "NO"
-
-    enq, v = LR.should_enqueue_link(
-        "https://x.example/p", "t", grok_client=Yes(), whitelist=[]
+    assert LR.should_enqueue_link(
+        "https://x.example/p", "t", grok_client=_G("YES")
+    ) == (True, "relevant")
+    assert LR.should_enqueue_link("https://x.example/p", "t", grok_client=_G("NO")) == (
+        False,
+        "irrelevant",
     )
-    assert enq and v == "relevant"
-    enq2, v2 = LR.should_enqueue_link(
-        "https://x.example/p", "t", grok_client=No(), whitelist=[]
+
+
+@pytest.mark.parametrize(
+    "client",
+    [None, _G("UNKNOWN"), _G("I am not sure"), _G(boom=True)],
+    ids=["no client", "UNKNOWN", "unusable reply", "error"],
+)
+def test_when_grok_cannot_say_the_link_is_not_queued(client):
+    """The old default queued a link nobody had judged 'when in doubt'."""
+    assert LR.should_enqueue_link("https://x.example/p", "t", grok_client=client) == (
+        False,
+        "undecided",
     )
-    assert not enq2 and v2 == "irrelevant"
-
-
-def test_grok_error_failsafe_enqueue():
-    class Err:
-        def chat_completion(self, p):
-            raise RuntimeError("boom")
-
-    enq, v = LR.should_enqueue_link(
-        "https://x.example/p", "t", grok_client=Err(), whitelist=[]
-    )
-    assert enq and v == "relevant"  # fail-safe: when in doubt, enqueue
 
 
 def test_without_a_list_the_trusted_sources_decide(monkeypatch):
@@ -151,21 +155,20 @@ def _pending(fp, d):
 def test_enqueue_records_pending_with_provenance(local_fp):
     fp, d = local_fp
     content = "[fn63](../../MoH_P-T.html#roosevelt) [chart](charts/x.jpg) [top](#top)"
-    s = enqueue_doc_links(
-        content, BASE, "XChannel", grok_client=None, whitelist=["ibiblio.org"]
-    )
+    s = enqueue_doc_links(content, BASE, "XChannel", grok_client=_G("YES"))
     assert s == {
         "links": 3,
         "enqueued": 2,
         "already_queued": 0,
         "dropped": 0,
+        "undecided": 0,
         "anchors": 1,
     }
     pend, events = _pending(fp, d)
     assert len(pend) == 2
     assert all(e["provider"] == "link-asset" for e in events)
     p = pend[0]["request_params"]
-    assert p["relevancy"] == "whitelisted" and p["source_doc"] == "XChannel"
+    assert p["relevancy"] == "relevant" and p["source_doc"] == "XChannel"
     assert p["media_type"] in ("html", "image")
     # traceability: the event carries the source document URL + the resolved link endpoint
     assert p["source_url"] == BASE
@@ -174,25 +177,24 @@ def test_enqueue_records_pending_with_provenance(local_fp):
     assert "origin_SourceSectionID" in p
 
 
-def test_enqueue_drops_blacklisted_and_irrelevant(local_fp):
+def test_enqueue_drops_blacklisted_and_irrelevant_and_skips_undecided(local_fp):
     fp, d = local_fp
 
-    class No:
+    class ByUrl:
         def chat_completion(self, p):
-            return "NO"
+            return "YES" if "ibiblio.org/a.pdf" in p else "NO"
 
     content = "[spam](https://ebay.com/x) [ext](https://unknown.example/p) [ok](https://ibiblio.org/a.pdf)"
     s = enqueue_doc_links(
-        content,
-        BASE,
-        "X",
-        grok_client=No(),
-        whitelist=["ibiblio.org"],
-        blacklist=["ebay.com"],
+        content, BASE, "X", grok_client=ByUrl(), blacklist=["ebay.com"]
     )
     assert s["enqueued"] == 1 and s["dropped"] == 2
-    pend, _ = _pending(fp, d)
-    assert len(pend) == 1  # only the ibiblio one
+    assert len(_pending(fp, d)[0]) == 1  # only the ibiblio one
+    # nobody judged these: not queued, nothing recorded, asked again next run
+    s2 = enqueue_doc_links(
+        "[a](https://a.example/p) [b](https://b.example/p)", BASE, "Y", grok_client=None
+    )
+    assert (s2["undecided"], s2["enqueued"]) == (2, 0) and len(_pending(fp, d)[0]) == 1
 
 
 def test_enqueue_failsafe_on_bad_input(local_fp):
@@ -201,7 +203,7 @@ def test_enqueue_failsafe_on_bad_input(local_fp):
     assert s["enqueued"] == 0
 
 
-def test_enqueue_carries_source_section_ulid(local_fp):
+def test_enqueue_carries_source_section_ulid_and_the_trusted_flag(local_fp):
     """CRITICAL backfill: a provided source_section_id lands as origin_SourceSectionID on the event."""
     fp, d = local_fp
     sid = "01HX7SEC0000000000000000AB"
@@ -209,19 +211,21 @@ def test_enqueue_carries_source_section_ulid(local_fp):
         "[chart](charts/x.jpg)",
         BASE,
         "XChannel",
-        grok_client=None,
+        grok_client=_G("YES"),
         whitelist=["ibiblio.org"],
         source_section_id=sid,
     )
     pend, _ = _pending(fp, d)
-    assert pend and pend[0]["request_params"]["origin_SourceSectionID"] == sid
+    p = pend[0]["request_params"]
+    assert p["origin_SourceSectionID"] == sid and p["origin_entity_id"] == sid
+    assert p["origin_entity_type"] == "source_section"
 
 
 def test_a_rerun_does_not_queue_the_same_link_again(local_fp):
     """Task 1.2f: every Phase 3 re-run used to add a second PENDING review item per link."""
     fp, d = local_fp
     content = "[fn63](../../MoH_P-T.html#roosevelt) [chart](charts/x.jpg)"
-    kw = dict(grok_client=None, whitelist=["ibiblio.org"])
+    kw = dict(grok_client=_G("YES"))
     first = enqueue_doc_links(content, BASE, "XChannel", **kw)
     again = enqueue_doc_links(content, BASE, "XChannel", **kw)
     assert first["enqueued"] == 2 and again["enqueued"] == 0
@@ -229,6 +233,20 @@ def test_a_rerun_does_not_queue_the_same_link_again(local_fp):
     assert len(_pending(fp, d)[0]) == 2
     # the same link from another book is its own review item
     assert enqueue_doc_links(content, BASE, "OtherBook", **kw)["enqueued"] == 2
+
+
+def test_a_link_a_human_rejected_is_not_queued_again(local_fp):
+    """The review status lives on the event, and the event is recorded once ever."""
+    fp, d = local_fp
+    from src.enrichment import fetch_review
+
+    kw = dict(grok_client=_G("YES"))
+    enqueue_doc_links("[chart](charts/x.jpg)", BASE, "XChannel", **kw)
+    event = _pending(fp, d)[0][0]
+    assert fetch_review.reject_fetch_find(event)
+    again = enqueue_doc_links("[chart](charts/x.jpg)", BASE, "XChannel", **kw)
+    assert again["enqueued"] == 0 and again["already_queued"] == 1
+    assert _pending(fp, d)[0] == []  # still rejected, not pending
 
 
 def test_a_queued_review_item_is_never_overwritten_in_dynamodb(monkeypatch):
@@ -273,3 +291,40 @@ def test_a_review_item_that_was_not_stored_is_said(monkeypatch, caplog):
         once_key=("B",),
     )
     assert out == "" and "OBSERV fetch_provenance.write_failed" in caplog.text
+
+
+def test_a_link_queued_under_the_old_event_id_is_not_queued_again(local_fp):
+    """Production already holds link-asset events (some rejected or submitted) keyed by the old
+    once_key (book, section-or-url, url): the shared queue must recognise them, with no Grok request.
+    """
+    fp, d = local_fp
+    url = "https://example.org/old.jpg"
+    fp.record_fetch_event(
+        provider="link-asset",
+        endpoint=url,
+        kind=fp.TEXTUAL,
+        outcome=fp.HIT,
+        once_key=("XChannel", BASE, url),
+    )
+    g = _G("YES")
+    s = enqueue_doc_links(f"[chart]({url})", BASE, "XChannel", grok_client=g)
+    assert s["already_queued"] == 1 and s["enqueued"] == 0
+    assert g.asked == []  # nothing spent on a link already recorded
+
+
+def test_an_already_recorded_link_costs_no_grok_request(local_fp):
+    fp, d = local_fp
+    g = _G("YES")
+    content = "[chart](charts/x.jpg)"
+    enqueue_doc_links(content, BASE, "XChannel", grok_client=g)
+    assert len(g.asked) == 1
+    enqueue_doc_links(content, BASE, "XChannel", grok_client=g)
+    assert len(g.asked) == 1
+
+
+def test_a_refused_find_is_counted_as_dropped(local_fp, monkeypatch):
+    from src.utils import find_queue
+
+    monkeypatch.setattr(find_queue, "enqueue_find", lambda **k: find_queue.REFUSED)
+    s = enqueue_doc_links("[c](charts/x.jpg)", BASE, "XChannel", grok_client=_G("YES"))
+    assert s["dropped"] == 1 and s["already_queued"] == 0 and s["enqueued"] == 0

@@ -140,44 +140,35 @@ def enqueue_doc_links(
         "enqueued": 0,
         "already_queued": 0,
         "dropped": 0,
+        "undecided": 0,
         "anchors": 0,
     }
     pending = Pending()
     try:
         from src.enrichment.source_retrieval import load_blacklist
         from src.extraction.link_relevancy import should_enqueue_link
-        from src.utils import fetch_provenance as fp
 
         wl = whitelist if whitelist is not None else None
         bl = (
             blacklist if blacklist is not None else _safe_load_blacklist(load_blacklist)
         )
+
+        def judge(la: "LinkAsset"):
+            return should_enqueue_link(
+                la.url,
+                la.text,
+                context=book,
+                grok_client=grok_client,
+                whitelist=wl,
+                blacklist=bl,
+            )
+
         for la in extract_link_assets(content, base_url):
             summary["links"] += 1
             if la.is_anchor:
                 summary["anchors"] += 1
                 continue
-            try:
-                enqueue, verdict = should_enqueue_link(
-                    la.url,
-                    la.text,
-                    context=book,
-                    grok_client=grok_client,
-                    whitelist=wl,
-                    blacklist=bl,
-                )
-            except BatchModeCollecting as e:
-                # relevancy QUEUED for the batch: neither enqueued for review nor dropped; the
-                # next pass has the verdict. Every link queues its own request.
-                pending.note(e)
-                continue
-            if not enqueue:
-                summary["dropped"] += 1
-                logger.info(
-                    "OBSERV link_asset.dropped verdict=%s url=%s", verdict, la.url
-                )
-                continue
-            _enqueue_one(fp, la, book, base_url, verdict, source_section_id, summary)
+            _handle_link(la, book, base_url, source_section_id, summary, pending, judge)
     except Exception as e:  # noqa: BLE001 - enqueue must never crash the pipeline
         observe_warn("link_asset", "error", reason=str(e)[:120])
     if pending:
@@ -185,12 +176,13 @@ def enqueue_doc_links(
         pending.raise_if_queued()
     logger.info(
         "OBSERV link_asset.summary book=%s links=%d enqueued=%d already_queued=%d dropped=%d "
-        "anchors=%d",
+        "undecided=%d anchors=%d",
         book,
         summary["links"],
         summary["enqueued"],
         summary["already_queued"],
         summary["dropped"],
+        summary["undecided"],
         summary["anchors"],
     )
     return summary
@@ -204,8 +196,69 @@ def _safe_load_blacklist(loader) -> List[str]:
         return []
 
 
+def _handle_link(
+    la: "LinkAsset",
+    book: str,
+    base_url: str,
+    source_section_id: str,
+    summary: dict,
+    pending: Any,
+    judge: Any,
+) -> None:
+    """One link: skip it if an earlier run recorded it (no Grok request), else have Grok judge it
+    and queue it only when relevant."""
+    if _already_queued(la, book, base_url, source_section_id):
+        summary["already_queued"] += 1
+        return
+    try:
+        enqueue, verdict = judge(la)
+    except BatchModeCollecting as e:
+        # relevancy QUEUED for the batch: neither enqueued for review nor dropped; the next pass
+        # has the verdict. Every link queues its own request.
+        pending.note(e)
+        return
+    if verdict == "undecided":
+        # Grok could not say (UNKNOWN, an unusable reply, an error, no client): not queued and
+        # nothing recorded, so a later run asks again
+        summary["undecided"] += 1
+        return
+    if not enqueue:
+        summary["dropped"] += 1
+        logger.info("OBSERV link_asset.dropped verdict=%s url=%s", verdict, la.url)
+        return
+    _enqueue_one(la, book, base_url, verdict, source_section_id, summary)
+
+
+def _origin(book: str, source_url: str, source_section_id: str):
+    from src.utils import find_queue
+
+    return find_queue.Origin(
+        entity_type="source_section" if source_section_id else "",
+        entity_id=source_section_id,
+        book=book,
+        source_url=source_url,
+    )
+
+
+def _legacy_key(la: "LinkAsset", book: str, source_url: str, ssid: str) -> tuple:
+    """The once_key releases before the shared queue used for the same link."""
+    return (book, ssid or source_url, la.url)
+
+
+def _already_queued(
+    la: "LinkAsset", book: str, source_url: str, source_section_id: str
+) -> bool:
+    from src.utils import find_queue
+
+    return find_queue.already_queued(
+        "link-asset",
+        la.url,
+        _origin(book, source_url, source_section_id),
+        _legacy_key(la, book, source_url, source_section_id),
+    )
+
+
 def _enqueue_one(
-    fp: Any,
     la: "LinkAsset",
     book: str,
     source_url: str,
@@ -213,32 +266,33 @@ def _enqueue_one(
     source_section_id: str,
     summary: dict,
 ) -> None:
-    """Record one review-eligible link as a fetch_provenance TEXTUAL HIT (-> PENDING). Carries full
-    provenance so a reviewer can trace the link back to the exact source document it was cited in,
-    INCLUDING the originating source_section ULID (``origin_SourceSectionID``) so an affirmed asset's
-    eventual entity link is ULID-attributed. Fail-safe."""
+    """Queue one Grok-approved link through the shared ``find_queue.enqueue_find`` (once per link per
+    source section; a link a human rejected or submitted is never queued again). Carries the
+    originating source_section ULID (``origin_SourceSectionID``) so an affirmed asset's eventual
+    entity link is ULID-attributed, and whether the link is to a trusted source (for the reviewer).
+    Fail-safe."""
+    from src.extraction.link_relevancy import is_whitelisted
+    from src.utils import find_queue
+
     try:
-        new = fp.record_fetch_event(
+        status = find_queue.enqueue_find(
             provider="link-asset",
-            endpoint=la.url,
-            kind=fp.TEXTUAL,
-            outcome=fp.HIT,
-            request_params={
+            url=la.url,
+            verdict=verdict,
+            origin=_origin(book, source_url, source_section_id),
+            legacy_key=_legacy_key(la, book, source_url, source_section_id),
+            summary=f"{la.media_type} link ({verdict}) from {book} <{source_url}>: {la.text[:80]}",
+            params={
                 "media_type": la.media_type,
-                "relevancy": verdict,
                 "link_text": la.text[:200],
-                "source_doc": book,
-                "source_url": source_url,  # the parsed doc's _source_url -> trace to source material
-                "origin_SourceSectionID": source_section_id
-                or None,  # durable ULID attribution
+                "origin_SourceSectionID": source_section_id or None,
+                "trusted_source": is_whitelisted(la.url),
             },
-            result_summary=(
-                f"{la.media_type} link ({verdict}) from {book} <{source_url}>: {la.text[:80]}"
-            ),
-            # once per link per source section: a re-run does not queue it again (1.2f)
-            once_key=(book, source_section_id or source_url, la.url),
         )
-        if not new:
+        if status == find_queue.REFUSED:
+            summary["dropped"] += 1
+            return
+        if status != find_queue.ENQUEUED:
             summary["already_queued"] += 1
             return
         summary["enqueued"] += 1

@@ -113,3 +113,21 @@ def test_the_service_address_patch_never_turns_openserp_on(tmp_path, monkeypatch
     out = yaml.safe_load(cfg.read_text())
     assert out["supplemental_material"]["use_openserp"] is False
     assert out["external_maps"]["openserp_url"] == "http://10.0.0.5:7001"
+
+
+def test_the_link_review_step_reports_undecided_links(tmp_path, monkeypatch, caplog):
+    import logging
+    import src.extraction.link_assets as la
+
+    p3 = _phase3()
+    monkeypatch.setattr(p3, "_load_parsed_docs", lambda out: [{"book": "B"}])
+    monkeypatch.setattr(p3, "_book_section_index", lambda out: {})
+    monkeypatch.setattr(p3, "_doc_link_content", lambda d: "")
+    monkeypatch.setattr(
+        la,
+        "enqueue_doc_links",
+        lambda *a, **k: {"links": 3, "enqueued": 1, "dropped": 0, "undecided": 2},
+    )
+    with caplog.at_level(logging.INFO):
+        assert p3._review_external_links(tmp_path, None) == 1
+    assert "undecided=2" in caplog.text
