@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 from src.utils.observe import observe_warn  # noqa: E402
 from src.grok_client import BatchModeCollecting
-from src.enrichment import bibliography_finds
+from src.enrichment import bibliography_finds, nara_pull_list
 from src.extraction.bibliography import citation_key
 from src.utils.batch_pending import Pending
 from src.utils.url_hygiene import scrub
@@ -2437,13 +2437,19 @@ def _waiting_for_review(data: Dict[str, Any], index: Any) -> bool:
 
 
 def _nothing_to_search(f: Path, data: Dict[str, Any], config: Dict) -> Optional[str]:
-    """Apply the review decisions on the record's finds, then say why it needs no search this run:
-    ``"waiting"`` (its finds wait for a human), ``"skipped"`` (resolved), or None (search it). A decision
-    that arrived is written even when nothing is searched."""
+    """Apply the scans a person added and the review decisions on the record's finds, then say why
+    it needs no search this run: ``"held_unprocessed"`` (held on an added scan), ``"waiting"`` (its
+    finds wait for a human), ``"skipped"`` (resolved), or None (search it). Whatever changed is
+    written even when nothing is searched. An approved online copy is applied to a held record too
+    (it becomes ``resolved``, the scan stays a finding)."""
+    changed = nara_pull_list.apply_scan(data, config.get("bib_scans"))
     index = config.get("bib_finds")
-    mine = bibliography_finds.finds_for(index, data)
-    changed = _reconcile_finds(data, mine)
-    if _waiting_for_review(data, index):
+    changed = (
+        _reconcile_finds(data, bibliography_finds.finds_for(index, data)) or changed
+    )
+    if nara_pull_list.bound_to_scan(data):
+        idle = "held_unprocessed"  # held: no search (every run)
+    elif _waiting_for_review(data, index):
         idle = "waiting"
     elif _fully_resolved(data, config):
         idle = "skipped"
@@ -2794,6 +2800,14 @@ def _run_config(config: Optional[Dict]) -> Dict:
     config = dict(config or {})
     if "bib_finds" not in config:
         config["bib_finds"] = bibliography_finds.finds_index()
+    if "bib_scans" not in config:
+        # the scans people added from a NARA visit (operator rows; None: unreadable, none bound)
+        from src.utils import fetch_provenance as fp
+
+        table = fp._table()  # noqa: SLF001 - the cache table handle (None locally)
+        config["bib_scans"] = (
+            nara_pull_list.scan_bindings(table) if table is not None else {}
+        )
     if "holdings_index" not in config:
         config["holdings_index"] = build_holdings_index()
     logger.info("Local holdings index: %d source docs", len(config["holdings_index"]))

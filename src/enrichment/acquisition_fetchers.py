@@ -90,6 +90,12 @@ def nara_digital_objects(naid: str, api_key: str) -> Optional[Dict[str, Any]]:
         # about whether the cited records are online (only an item or file unit's list does)
         "level": level,
         "scans_known": level in ("item", "fileunit", "file unit", ""),
+        # where the record sits (record group > series > file unit): sorts the NARA pull list
+        "series_path": [
+            str(a.get("title"))[:200]
+            for a in (record.get("ancestors") or [])
+            if isinstance(a, dict) and a.get("title")
+        ][:8],
     }
 
 

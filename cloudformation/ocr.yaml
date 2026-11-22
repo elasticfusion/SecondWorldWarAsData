@@ -581,6 +581,9 @@ Resources:
                   ForAnyValue:StringLike:
                     dynamodb:LeadingKeys:
                       - rounds#*
+                      # NARA pull-list statuses and added-scan provenance: a person's rows
+                      - pull#*
+                      - pullscan#*
               - Effect: Allow
                 Action: servicequotas:GetServiceQuota
                 Resource: '*'

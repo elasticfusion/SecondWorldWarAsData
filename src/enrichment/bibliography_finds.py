@@ -104,6 +104,7 @@ def _scan_details(found: Dict[str, Any]) -> Dict[str, Any]:
     return {
         "nara_title": found["title"],
         "level": found.get("level") or None,
+        "series_path": found.get("series_path") or None,
         "object_count": len(objs) if known else None,
         "object_urls": objs[:_SAMPLE_OBJECTS],
         "formats": sorted({o.lower().rsplit(".", 1)[-1][:5] for o in objs if "." in o}),

@@ -89,6 +89,9 @@ Resources:
                   ForAnyValue:StringLike:
                     dynamodb:LeadingKeys:
                       - rounds#*
+                      # NARA pull-list statuses and added-scan provenance: a person's rows
+                      - pull#*
+                      - pullscan#*
               - Effect: Allow
                 # task 1.1e: enumerate_pending asks the credit-check Lambda before dispatching
                 # Phase 2/3 work
@@ -244,6 +247,9 @@ Resources:
                   ForAnyValue:StringLike:
                     dynamodb:LeadingKeys:
                       - rounds#*
+                      # NARA pull-list statuses and added-scan provenance: a person's rows
+                      - pull#*
+                      - pullscan#*
 
   # ---------------------------------------------------------------------------
   # The state machine (Standard). One execution = one looping drain pass (§17.5).

@@ -56,7 +56,10 @@ def _table_name() -> str:
 def _table() -> Any:
     """The DynamoDB pointer table, or None in a local/test run (then the JSONL file is used)."""
     in_lambda = bool(os.environ.get("AWS_LAMBDA_FUNCTION_NAME"))
-    if not in_lambda:
+    explicit = bool(
+        os.environ.get("ID_ALIAS_TABLE", "").strip()
+    )  # an operator script names it
+    if not (in_lambda or explicit):
         from src.utils.config import load_config
 
         if not load_config().get("aws", {}).get("enabled"):

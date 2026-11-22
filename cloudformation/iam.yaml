@@ -82,6 +82,10 @@ Resources:
                   ForAnyValue:StringLike:
                     dynamodb:LeadingKeys:
                       - rounds#*
+                      # the NARA pull list's status rows and added-scan provenance rows are a
+                      # person's (scripts/nara_pull_list.py), never a task's
+                      - pull#*
+                      - pullscan#*
               - Sid: SecretsManager
                 Effect: Allow
                 Action:
@@ -358,6 +362,10 @@ Resources:
                   ForAnyValue:StringLike:
                     dynamodb:LeadingKeys:
                       - rounds#*
+                      # the NARA pull list's status rows and added-scan provenance rows are a
+                      # person's (scripts/nara_pull_list.py), never a task's
+                      - pull#*
+                      - pullscan#*
               - Sid: NoLaunchStateWrites
                 # task 1.1b follow-up: the trigger trusts the Fargate price rows (Spot ladder
                 # limit) and its stop reports (re-sent by the hourly sweep); a task never

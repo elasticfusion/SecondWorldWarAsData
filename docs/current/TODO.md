@@ -1563,6 +1563,23 @@ bibliography JSON; Archive.org / Gutenberg finds through G3.
   unit, NARA identifier (NAID) when known, physical holding (Archives II), and a search history.
   Not yet decided: users (operator only, or contributors), and whether it is part of the URL-review /
   dedup UIs or a separate app.
+  **DONE - data layer and operator script (Group 3 step F, 2026-11-21; owner: data layer and scripts first, UI later;
+  statuses in DynamoDB; "locate first" items included).** `src/enrichment/nara_pull_list.py` +
+  `scripts/nara_pull_list.py build|status|add-scan`. The list is built on demand from the bibliography records and the
+  queued NARA finds: `exact` items (an approved NARA catalog record with 0 scans, one per naId, every citation it
+  serves) and `locate_first` items (record group known, no catalog match), sorted by record group, series path,
+  title, most-cited; exported as CSV (formula-safe) and a printable Markdown list. Statuses (needed, requested,
+  pulled, scanned, ingested, unobtainable; notes, who, when, history) are `pull#<item>` rows in the cache table.
+  `add-scan` checks the record (a merged-away id resolves to its survivor) and the file (pdf/tif/jpg/png, <= 2 GB,
+  sha256), sets the immutable slug `NARA-RG<N>-<naId>[-p<N>]` before upload, writes the provenance row
+  `pullscan#<slug>` first (who, scanned on, sha256, NARA ids, licence only when the person states a U.S. Government
+  record), uploads to `contentrepository/nara-scans/<slug>.<ext>` (normal intake), and marks the item scanned. The
+  next Phase 3 binds the bibliography record to the scan (`held_unprocessed`, `download_path`, a `verified_by: human`
+  finding). Pipeline roles are denied writes to `pull#` / `pullscan#` (`cloudformation/iam.yaml`). NARA finds now
+  carry the record's series path (same API reply). Left: the UI; entry, box and file-unit numbers (not in the
+  catalog API reply: recorded in the item's notes when pulled); flipping a bound record from `held_unprocessed` to
+  `resolved` once its scan's content exists (`output/content/<slug>/`); filling the scan's chapter meta (licence,
+  provenance) from its `pullscan#` row when Phase 0 imports it; a multi-file scan is added part by part.
 
 #### Carried over from PHASE3_MAP.md §6 (found by the 2026-11-17 documentation review) (moved here from Group 11)
 - **MED (was gap 20) - Bibliography verifier is fail-open in one place.** `_verify_match` accepts on a
