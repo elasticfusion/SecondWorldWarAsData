@@ -2150,6 +2150,22 @@ it. Owner: unit/person images checked by the Commons pre-check, vision on flagge
 Phase 2's open work stays in "1. PHASE 2 - OPEN" below.
 
 #### Step: bibliography_resolve (PHASE3_MAP §4.3) (moved here from Group 7)
+- **DONE (Group 3 step D, 2026-11-21) - records citing the same footnote are combined (owner 2026-11-21: "combined,
+  while maintaining provenance for both"; if one is approved the other is).** Phase 2 writes one footnote as several
+  records (the deterministic pass titles it "Unknown", the Grok pass gives it a real title), so the title-based
+  reconcile never grouped them: 348 such groups in production. `bibliography.reconcile_bibliography_dir` now folds
+  groups sharing `citation_key` (the verbatim text, moved here from the resolver: one definition), never a back-reference
+  (`Ibid.`, `*Ibid.*`, `op. cit.`), a cross-reference (`See below, ch. III.`), a bare date or a text under 12 characters.
+  The lowest BibliographyID survives; it lists the absorbed ids in `merged_from` (schema 2.31); every citing source
+  keeps its mention. Finds queued under an absorbed id belong to the survivor (`bibliography_finds.finds_for`).
+  Offline run on the production set (2026-11-21): 2,035 -> 1,472 records (563 combined, all within one book).
+  Also fixed: the full-corpus reconcile deleted only per-writer shard files on S3, so a record folded into
+  another (the fuzzy pass did this before) came back on the next download; it now deletes exactly the files reconcile
+  removed (`ecs_entrypoint._delete_merged_bibliography_records`, an error names any it could not delete).
+  Nothing outside the bibliography refers to a BibliographyID in production (scanned 2026-11-21: people
+  `biography_sources[].BibliographyID`, supplemental notes and loader mentions are all unset).
+  Left: the DynamoDB import (`lambda_handlers/import_handler`, manual) is a full import with no delete, so a
+  merged-away record stays in that table until it is cleared (true of every merge).
 - ***refactor* - FIX IN PHASE 2 (owner) - a quarter of Phase 2's "bibliography" is not citations,
   found only in Phase 3.**
   Of the 2,035 records, 534 fail `_looks_like_citation` (narrative footnotes, e.g. "An American heavy

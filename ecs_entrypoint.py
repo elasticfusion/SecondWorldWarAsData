@@ -3996,11 +3996,15 @@ def _reconcile_bibliography_full_corpus() -> None:
         from src.extraction.bibliography import reconcile_bibliography_dir
 
         bib_dir = WORKDIR / "output" / "bibliography"
-        merged_away = reconcile_bibliography_dir(bib_dir)
+        removed: list = []
+        merged_away = reconcile_bibliography_dir(bib_dir, removed=removed)
         # Upload the collapsed canonical files; shards were unlinked locally by reconcile, but
         # their S3 copies still exist — remove them so the prefix reflects the canonical set.
         up, _ = s3_sync_up(bib_dir, "output/bibliography")
         _delete_orphaned_bibliography_shards(s3, bib_dir)
+        # a record folded into another (same footnote text, near-identical title) is merged away
+        # too, under its own canonical name: without this it is downloaded again next run
+        _delete_merged_bibliography_records(s3, bib_dir, removed)
         logger.info(
             "Full-corpus bibliography reconcile: merged_away=%d, uploaded %d canonical files",
             merged_away,
@@ -4216,6 +4220,40 @@ def _publish_reconcile_barrier(
             key=barrier_key,
             error=type(e).__name__,
         )
+
+
+def _delete_merged_bibliography_records(s3, bib_dir: Path, removed: list) -> None:
+    """Delete the S3 copy of each bibliography record reconcile merged away (its id is on the
+    survivor's ``merged_from``). Only names reconcile itself removed, and only when no local file
+    of that name came back. A failed delete is an error: the record would return next run.
+    """
+    import re as _re
+
+    failed = deleted = 0
+    for name in sorted(set(removed)):
+        if (bib_dir / name).exists():
+            continue  # a file of that name is back: it is a record, never deleted
+        if not _re.fullmatch(r"bib_[0-9A-Za-z_.-]{1,120}\.json", name):
+            logger.error(
+                "OBSERV bib.merged_delete_skipped name=%r status=error - an unexpected file name; "
+                "its S3 copy is kept and returns next run: check and delete it by hand",
+                name[:120],
+            )
+            continue
+        deleted += 1
+        try:
+            s3.delete_object(Bucket=BUCKET, Key=f"output/bibliography/{name}")
+        except Exception as e:  # noqa: BLE001
+            failed += 1
+            logger.error(
+                "OBSERV bib.merged_delete_failed key=output/bibliography/%s err=%s status=error - "
+                "a merged-away record is still on S3 and returns next run; delete it by hand",
+                name,
+                type(e).__name__,
+            )
+    logger.info(
+        "OBSERV bib.merged_deleted count=%d failed=%d", deleted - failed, failed
+    )
 
 
 def _delete_orphaned_bibliography_shards(s3, bib_dir: Path) -> None:

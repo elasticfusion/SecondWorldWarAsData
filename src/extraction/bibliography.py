@@ -10,6 +10,7 @@ from typing import Any, Dict, List, Optional
 
 import ulid
 
+from src.schemas import ULID_REGEX
 from src.utils.entity_records import citation_identity, merge_mentions
 
 logger = logging.getLogger(__name__)
@@ -825,6 +826,35 @@ def store_bibliography_entry(
     return bib_data["BibliographyID"]
 
 
+def citation_key(d: Dict[str, Any]) -> str:
+    """Dedup key: verbatim text, else alt_title, else author|title (lowercased).
+
+    Deterministic bibliography records (source-url split) store the verbatim on the
+    MENTION with top-level verbatim_reference=None and title='Unknown' — so without the
+    mention/alt_title fallback EVERY such record keys to '|unknown' and 15/16 wrongly
+    collapse in the resolver dedup (only one ever reaches NARA)."""
+    cit = d.get("citation") or {}
+    verbatim = _stripped_verbatim(d, cit)
+    return (
+        verbatim
+        or str(cit.get("alt_title") or "").strip()
+        or f"{cit.get('author', '')}|{cit.get('title', '')}".strip()
+    ).lower()
+
+
+def _stripped_verbatim(d: Dict[str, Any], cit: Dict[str, Any]) -> str:
+    """Stripped verbatim text for the dedup key: top-level verbatim_reference / citation.verbatim,
+    else the first non-empty mention verbatim_reference, else ""."""
+    verbatim = str(d.get("verbatim_reference") or cit.get("verbatim") or "").strip()
+    if verbatim:
+        return verbatim
+    for m in d.get("mentions") or []:
+        mv = str(m.get("verbatim_reference") or "").strip()
+        if mv:
+            return mv
+    return ""
+
+
 def _merge_bib_records(records: List[Dict[str, Any]]) -> Dict[str, Any]:
     """Merge records that share a match key into one: union mentions (entity_records
     .citation_identity), and prefer the most-enriched base fields (a real title over 'Unknown', non-empty
@@ -837,8 +867,25 @@ def _merge_bib_records(records: List[Dict[str, Any]]) -> Dict[str, Any]:
         _merge_bib_fields(base, rec)
         merge_mentions(merged_mentions, rec.get("mentions"), citation_identity)
     base["mentions"] = merged_mentions
+    _note_merged_from(base, records)
     _align_alt_title(base)
     return base
+
+
+def _note_merged_from(base: Dict[str, Any], records: List[Dict[str, Any]]) -> None:
+    """Record on the surviving record every BibliographyID it absorbed (and those they had absorbed),
+    so a reference to an absorbed id still finds its record: the merge's provenance. Each citing
+    source keeps its own provenance on its mention."""
+    own = str(base.get("BibliographyID") or "")
+    absorbed = {
+        str(i)
+        for rec in records
+        for i in [rec.get("BibliographyID"), *(rec.get("merged_from") or [])]
+        # only a valid ULID can be referenced (the write guard repairs any other primary key)
+        if isinstance(i, str) and ULID_REGEX.match(i) and i != own
+    }
+    if absorbed:
+        base["merged_from"] = sorted(absorbed)
 
 
 def _align_alt_title(rec: Dict[str, Any]) -> None:
@@ -854,9 +901,8 @@ def _align_alt_title(rec: Dict[str, Any]) -> None:
     set_alt_title(rec, citation.get("alt_title") or rec.get("alt_title"))
 
 
-def _merge_bib_fields(base: Dict[str, Any], rec: Dict[str, Any]) -> None:
-    """Prefer the most-enriched base fields from ``rec`` (real title, populated fields)."""
-    # prefer a real title / populated fields from any record
+def _merge_titles(base: Dict[str, Any], rec: Dict[str, Any]) -> None:
+    """A real title over "Unknown", and an alt_title when the base has none."""
     if base.get("title", "Unknown") in ("", "Unknown") and rec.get("title") not in (
         "",
         "Unknown",
@@ -866,14 +912,72 @@ def _merge_bib_fields(base: Dict[str, Any], rec: Dict[str, Any]) -> None:
     if not base.get("alt_title") and rec.get("alt_title"):
         from src.utils.entity_records import set_alt_title
 
-        base["citation"] = dict(
-            base.get("citation") or {}
-        )  # never alias the merged shard's
+        base["citation"] = dict(base.get("citation") or {})  # never alias the shard's
         set_alt_title(base, rec["alt_title"])  # both copies: the guard rejects a drift
+
+
+def _merge_bib_fields(base: Dict[str, Any], rec: Dict[str, Any]) -> None:
+    """Prefer the most-enriched base fields from ``rec``: a real title, an archive reference,
+    every copy, and the furthest resolution state."""
+    _merge_titles(base, rec)
     if not base.get("archive_reference_number") and rec.get("archive_reference_number"):
         base["archive_reference_number"] = rec["archive_reference_number"]
-    if not base.get("resource_urls") and rec.get("resource_urls"):
-        base["resource_urls"] = rec["resource_urls"]
+    _merge_copies(base, rec)
+    if _resolution_rank(rec) > _resolution_rank(base):
+        # as a unit: a stale field of the other record never mixes in
+        base.update({k: rec.get(k) for k in _RESOLUTION_FIELDS})
+
+
+# how far a record's own search got: a merge keeps the furthest (a resolved record's status,
+# source and downloaded file must not be lost under a not-found survivor)
+_RESOLUTION_ORDER = (
+    None,
+    "unresolved",
+    "not_found",
+    "pending",
+    "reference_identified",
+    "held_unprocessed",
+    "resolved",
+)
+_RESOLUTION_FIELDS = (
+    "search_status",
+    "search_source",
+    "availability",
+    "download_status",
+    "download_path",
+)
+
+
+def _resolution_rank(rec: Dict[str, Any]) -> int:
+    status = rec.get("search_status")
+    return _RESOLUTION_ORDER.index(status) if status in _RESOLUTION_ORDER else 0
+
+
+def _findings(rec: Dict[str, Any]) -> List[Dict[str, Any]]:
+    found = (rec.get("source_metadata") or {}).get("findings")
+    return [f for f in found if isinstance(f, dict)] if isinstance(found, list) else []
+
+
+def _merge_copies(base: Dict[str, Any], rec: Dict[str, Any]) -> None:
+    """Every copy URL of both records (order kept, no repeats), and both records' approved
+    findings, so an approval on either holds for the combined record."""
+    urls = list(base.get("resource_urls") or [])
+    urls += [u for u in rec.get("resource_urls") or [] if u not in urls]
+    if urls:
+        base["resource_urls"] = urls
+    _merge_findings(base, rec)
+
+
+def _merge_findings(base: Dict[str, Any], rec: Dict[str, Any]) -> None:
+    """Add ``rec``'s findings the base does not hold yet (by URL)."""
+    theirs = _findings(rec)
+    if not theirs:
+        return
+    mine = _findings(base)
+    seen = {f.get("url") for f in mine}
+    meta = dict(base.get("source_metadata") or {})
+    meta["findings"] = mine + [f for f in theirs if f.get("url") not in seen]
+    base["source_metadata"] = meta
 
 
 def _group_title(items: List[tuple]) -> str:
@@ -927,14 +1031,100 @@ def _absorb_same_documents(groups, absorbed, key_i, title_i, candidates) -> None
             members.append(title_j)
 
 
-def reconcile_bibliography_dir(bib_dir: Path) -> int:
+# a verbatim shorter than this is too generic to say two records cite one work
+_MIN_SHARED_VERBATIM = 12
+
+
+def _citation_text(data: Dict[str, Any]) -> str:
+    """The citation's own text (verbatim, else alt_title), lowercased: never the author|title
+    fallback ("hodges|unknown" names no work)."""
+    raw = data.get("citation")
+    cit: Dict[str, Any] = raw if isinstance(raw, dict) else {}
+    text = _stripped_verbatim(data, cit) or str(cit.get("alt_title") or "").strip()
+    return text.lower()
+
+
+def _points_elsewhere(plain: str) -> bool:
+    """A note that is not a work of its own: too short, a stub or back-reference ("Ibid.", "op.
+    cit."), a cross-reference ("See below, ch. III."), or only a date."""
+    return bool(
+        len(plain) < _MIN_SHARED_VERBATIM
+        or _is_stub_citation(plain)
+        or _IBID_CONTENT_RE.match(plain)
+        or _OPCIT_RE.search(plain)
+        or _CROSS_REF_RE.match(plain)
+        or not _names_a_work(plain)
+    )
+
+
+def _shared_citation_key(data: Dict[str, Any]) -> str:
+    """The citation identity two records must share to be combined, or "" when this record's text
+    cannot say which work it cites."""
+    key = _citation_text(data)
+    plain = re.sub(r"[*_`]+", "", key).strip()  # markdown emphasis hides "*Ibid.*"
+    return "" if _points_elsewhere(plain) else key
+
+
+# a note that points at another note ("See below, ch. III.", "Cf. n. 12"), not at a work
+_CROSS_REF_RE = re.compile(
+    r"^\s*(see|cf\.?)\s+(also\s+)?(above|below|n\.|nn\.|note|notes|ch\.|chapter|p\.|pp\.)",
+    re.IGNORECASE,
+)
+_OPCIT_RE = re.compile(r"\b(op\.?\s*cit|loc\.?\s*cit)\b", re.IGNORECASE)
+_DATE_WORDS = re.compile(rf"\b{_MONTH}|\b\d+(st|nd|rd|th|d)?\b", re.IGNORECASE)
+
+
+def _names_a_work(text: str) -> bool:
+    """Whether the text names something beyond a date (a bare "29 April 1944" is the tail of an
+    earlier citation, not a work of its own)."""
+    rest = re.sub(r"[^A-Za-z]+", " ", _DATE_WORDS.sub(" ", text))
+    return any(len(w) >= 2 for w in rest.split())
+
+
+def _fold_groups(
+    groups: Dict[str, List[tuple]], owner: Dict[str, str], linked: set, target: str
+) -> int:
+    """Move every group in ``linked`` into ``target`` and re-point the keys they held."""
+    folded = 0
+    for other in sorted(linked - {target}):
+        if other in groups:
+            groups[target].extend(groups.pop(other))
+            owner.update({k: target for k, g in owner.items() if g == other})
+            folded += 1
+    return folded
+
+
+def _verbatim_collapse_groups(groups: Dict[str, List[tuple]]) -> int:
+    """Fold groups whose records share a citation identity (the same footnote text) into one,
+    mutating ``groups``. Phase 2 can write one footnote as several records (the deterministic pass
+    titles it "Unknown", the Grok pass gives it a real title), so their title-based groups differ.
+    Groups chained through shared texts all end in the smallest group key (deterministic, one
+    pass). Returns the number of groups folded away."""
+    owner: Dict[str, str] = {}  # citation key -> the group key that holds it
+    folded = 0
+    for gkey in sorted(groups):
+        if gkey not in groups:
+            continue
+        keys = {_shared_citation_key(d) for _f, d in groups[gkey]} - {""}
+        linked = {owner[k] for k in keys if k in owner} | {gkey}
+        target = min(linked)
+        folded += _fold_groups(groups, owner, linked, target)
+        owner.update({k: target for k in keys})
+    return folded
+
+
+def reconcile_bibliography_dir(
+    bib_dir: Path, removed: Optional[List[str]] = None
+) -> int:
     """Rebuild-time reconcile (Option B): union mentions across all bibliography records that
     belong to the same citation, collapsing per-writer shards (``bib_<hash>__<writer>.json``),
     cross-task duplicates, AND legacy random-ULID duplicates into ONE canonical deterministic
     file (``bib_<hash>.json``). Groups primarily by the ``<hash>`` embedded in the filename
     (stable across shards even if one shard's title got enriched differently), falling back to a
     hash recomputed from the record's match key for legacy/non-conforming names; then a fuzzy
-    near-title pass folds typo-level duplicates. Rebuilds the derived index. Idempotent +
+    near-title pass folds typo-level duplicates, and records citing the same footnote text are
+    combined (the survivor lists the absorbed ids in ``merged_from``). ``removed`` collects the
+    file names merged away, so the caller can delete them where they are stored too. Rebuilds the derived index. Idempotent +
     fail-safe (never raises). Returns the number of duplicate files merged away. Run at
     end-of-run / full-corpus reconcile phase — S3-authoritative, no Dynamo."""
     bib_dir = Path(bib_dir)
@@ -945,19 +1135,24 @@ def reconcile_bibliography_dir(bib_dir: Path) -> int:
     # a legacy fallback). Then a fuzzy near-title pass folds typo-level duplicates.
     groups = _group_bib_files_by_hash(bib_dir)
     _fuzzy_collapse_groups(groups)
+    folded = _verbatim_collapse_groups(groups)
 
     merged_away = 0
     new_index: Dict[str, Dict[str, str]] = {"titles": {}, "refs": {}, "authors": {}}
     for canon_name, items in groups.items():
-        merged_away += _reconcile_bib_group(bib_dir, canon_name, items, new_index)
+        merged_away += _reconcile_bib_group(
+            bib_dir, canon_name, items, new_index, removed
+        )
     try:
         _save_index(bib_dir, new_index)
     except OSError:
         pass
     logger.info(
-        "OBSERV bib.reconcile groups=%d merged_away=%d periodic_date_residue=%d",
+        "OBSERV bib.reconcile groups=%d merged_away=%d same_citation_folded=%d "
+        "periodic_date_residue=%d",
         len(groups),
         merged_away,
+        folded,
         _periodic_date_residue(groups),
     )
     return merged_away
@@ -1021,6 +1216,7 @@ def _reconcile_bib_group(
     canon_name: str,
     items: "List[tuple]",
     new_index: "Dict[str, Dict[str, str]]",
+    removed: Optional[List[str]] = None,
 ) -> int:
     """Merge one citation group's records into the canonical file, delete the non-canonical ones,
     and index the result. Returns the count merged away. Fail-safe (never raises)."""
@@ -1028,15 +1224,21 @@ def _reconcile_bib_group(
     records = [d for _, d in items]
     merged = _merge_bib_records(records) if len(records) > 1 else records[0]
     canon_path = bib_dir / canon_name
-    merged_away = _persist_merged_bib(canon_path, canon_name, merged, files)
+    merged_away = _persist_merged_bib(canon_path, canon_name, merged, files, removed)
     if merged_away < 0:
         return 0  # canonical write blocked/failed — shards kept (no data loss)
-    title = merged.get("title", "") or merged.get("verbatim_reference", "") or ""
-    _index_entry(new_index, _match_keys(merged, title), canon_name)
+    for rec in [merged, *records]:
+        title = rec.get("title", "") or ""
+        if title in (
+            "",
+            "Unknown",
+        ):  # the placeholder names no work: index the text instead
+            title = rec.get("verbatim_reference", "") or _citation_text(rec)
+        _index_entry(new_index, _match_keys(rec, title), canon_name)
     return merged_away
 
 
-def _persist_merged_bib(canon_path, canon_name, merged, files) -> int:
+def _persist_merged_bib(canon_path, canon_name, merged, files, removed=None) -> int:
     """Write the canonical record, then (only on a CONFIRMED write) unlink the non-canonical source
     shards. Returns the count merged away, or -1 if the write was blocked/failed (caller keeps the
     shards — never unlink on an unconfirmed canonical write = no silent data loss). Fail-safe.
@@ -1058,6 +1260,8 @@ def _persist_merged_bib(canon_path, canon_name, merged, files) -> int:
                 try:
                     f.unlink()
                     merged_away += 1
+                    if removed is not None:
+                        removed.append(f.name)
                 except OSError:
                     pass
     except Exception as e:  # noqa: BLE001 - reconcile must never break the run

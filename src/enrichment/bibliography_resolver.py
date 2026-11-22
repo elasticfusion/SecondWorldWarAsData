@@ -26,6 +26,7 @@ logger = logging.getLogger(__name__)
 from src.utils.observe import observe_warn  # noqa: E402
 from src.grok_client import BatchModeCollecting
 from src.enrichment import bibliography_finds
+from src.extraction.bibliography import citation_key
 from src.utils.batch_pending import Pending
 from src.utils.url_hygiene import scrub
 
@@ -2359,33 +2360,9 @@ _REUSE_FIELDS = (
 )
 
 
-def _citation_key(d: Dict[str, Any]) -> str:
-    """Dedup key: verbatim text, else alt_title, else author|title (lowercased).
-
-    Deterministic bibliography records (source-url split) store the verbatim on the
-    MENTION with top-level verbatim_reference=None and title='Unknown' — so without the
-    mention/alt_title fallback EVERY such record keys to '|unknown' and 15/16 wrongly
-    collapse in the resolver dedup (only one ever reaches NARA)."""
-    cit = d.get("citation") or {}
-    verbatim = _stripped_verbatim(d, cit)
-    return (
-        verbatim
-        or str(cit.get("alt_title") or "").strip()
-        or f"{cit.get('author', '')}|{cit.get('title', '')}".strip()
-    ).lower()
-
-
-def _stripped_verbatim(d: Dict[str, Any], cit: Dict[str, Any]) -> str:
-    """Stripped verbatim text for the dedup key: top-level verbatim_reference / citation.verbatim,
-    else the first non-empty mention verbatim_reference, else ""."""
-    verbatim = str(d.get("verbatim_reference") or cit.get("verbatim") or "").strip()
-    if verbatim:
-        return verbatim
-    for m in d.get("mentions") or []:
-        mv = str(m.get("verbatim_reference") or "").strip()
-        if mv:
-            return mv
-    return ""
+# ONE identity of a citation, shared with the Phase 2 reconcile (which merges records that
+# share it): its verbatim text, else alt_title, else author|title.
+_citation_key = citation_key
 
 
 def _reuse_cached_resolution(data: Dict[str, Any], cached: Dict[str, Any]) -> None:
@@ -2455,7 +2432,7 @@ def _waiting_for_review(data: Dict[str, Any], index: Any) -> bool:
     again on a read failure."""
     if data.get("search_status") != "pending" or data.get("resource_urls"):
         return False
-    mine = (index or {}).get(str(data.get("BibliographyID") or "")) or []
+    mine = bibliography_finds.finds_for(index, data) or []
     return index is None or bibliography_finds.still_waiting(mine)
 
 
@@ -2464,7 +2441,7 @@ def _nothing_to_search(f: Path, data: Dict[str, Any], config: Dict) -> Optional[
     ``"waiting"`` (its finds wait for a human), ``"skipped"`` (resolved), or None (search it). A decision
     that arrived is written even when nothing is searched."""
     index = config.get("bib_finds")
-    mine = (index or {}).get(str(data.get("BibliographyID") or ""))
+    mine = bibliography_finds.finds_for(index, data)
     changed = _reconcile_finds(data, mine)
     if _waiting_for_review(data, index):
         idle = "waiting"

@@ -24,6 +24,13 @@ BIBLIOGRAPHY_OUTPUT_SCHEMA = {
         **METADATA_PROPERTIES,
         **QUALITY_FLAGS_PROPERTY,
         "BibliographyID": ulid_field(),
+        # 2.31: the BibliographyIDs of records combined into this one (they cited the same
+        # footnote text); a reference to one of them resolves to this record
+        "merged_from": {
+            "type": ["array", "null"],
+            "items": ulid_field(),
+            "uniqueItems": True,
+        },
         "title": {"type": "string"},
         "alt_title": make_nullable("string"),
         "citation": {

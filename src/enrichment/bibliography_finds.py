@@ -248,6 +248,21 @@ def finds_index() -> Optional[Dict[str, List[Dict[str, Any]]]]:
 _APPROVED_DETAILS = ("pdf_url", "imagecount", "ocr", "mediatype", "title", "year")
 
 
+def finds_for(
+    index: Optional[Dict[str, List[Dict[str, Any]]]], record: Dict[str, Any]
+) -> Optional[List[Dict[str, Any]]]:
+    """The stored finds of one record: those queued under its BibliographyID and under every id it
+    absorbed when identical citations were combined (``merged_from``), so a decision on a find of
+    an absorbed record applies to the combined one. None when the record has none."""
+    if index is None:
+        return None
+    ids = [str(record.get("BibliographyID") or "")] + [
+        str(i) for i in record.get("merged_from") or [] if isinstance(i, str)
+    ]
+    out = [e for i in ids if i for e in index.get(i, [])]
+    return out or None
+
+
 def approved_details(event: Dict[str, Any]) -> Dict[str, Any]:
     """The finder metadata of an approved find that may go on the record: known keys only, and a
     PDF link only when it is a clean URL (the event is data read back from the store).

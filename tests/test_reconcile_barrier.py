@@ -297,7 +297,7 @@ def test_reconcile_orders_clear_marker_publish_with_same_run_id(monkeypatch, tmp
     monkeypatch.setattr(ee, "_delete_orphaned_bibliography_shards", lambda *a: None)
     import src.extraction.bibliography as bib
 
-    monkeypatch.setattr(bib, "reconcile_bibliography_dir", lambda d: 0)
+    monkeypatch.setattr(bib, "reconcile_bibliography_dir", lambda d, **k: 0)
     (tmp_path / "output" / "bibliography").mkdir(parents=True)
     ee._reconcile_bibliography_full_corpus()
     assert [c[:2] for c in calls] == [

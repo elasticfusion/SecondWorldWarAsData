@@ -622,7 +622,7 @@ Note: Images use `Sub-eventID` (hyphen) and `Sub-event_Name` (hyphen). No `event
 }
 ```
 
-Note: `source_metadata` is open (provenance keys vary by source); `findings`, `bookseller` and `bookseller_searched_at` are modeled (2.30). A `bookseller` listing is a pointer to buy, never an online copy: it is not in `resource_urls`, and its URL must be the canonical `https://www.amazon.com/dp/<10-char ASIN>`. `BibliographyID` and `title` are required. Bibliography uses `Sub-eventID` (hyphen) in mentions. The output `availability` enum is `online|offline|archive|unknown`. The extraction-time schema (`src/json_schemas.py`) uses `MaterialID` per item, while the consolidated output uses `BibliographyID`.
+Note: `source_metadata` is open (provenance keys vary by source); `findings`, `bookseller` and `bookseller_searched_at` are modeled (2.30). `merged_from` (2.31) lists the BibliographyIDs of records combined into this one (same footnote text); a reference to one of them resolves here. A `bookseller` listing is a pointer to buy, never an online copy: it is not in `resource_urls`, and its URL must be the canonical `https://www.amazon.com/dp/<10-char ASIN>`. `BibliographyID` and `title` are required. Bibliography uses `Sub-eventID` (hyphen) in mentions. The output `availability` enum is `online|offline|archive|unknown`. The extraction-time schema (`src/json_schemas.py`) uses `MaterialID` per item, while the consolidated output uses `BibliographyID`.
 
 ---
 
