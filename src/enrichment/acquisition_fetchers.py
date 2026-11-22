@@ -21,6 +21,10 @@ from src.enrichment.source_acquisition import AcquisitionTarget, register_fetche
 logger = logging.getLogger(__name__)
 
 _NAID_RE = re.compile(r"/id/(\d+)")
+# location fields kept from a catalog reply (an external API: every value is checked and capped)
+MAX_CONTAINERS = 20
+CONTAINER_LEN, MEDIA_LEN, UNIT_LEN, EMAIL_LEN = 80, 40, 200, 80
+_ASCII_INT = re.compile(r"[0-9]{1,6}")
 
 
 def _http_only(urls: List[str]) -> List[str]:
@@ -92,11 +96,135 @@ def nara_digital_objects(naid: str, api_key: str) -> Optional[Dict[str, Any]]:
         "scans_known": level in ("item", "fileunit", "file unit", ""),
         # where the record sits (record group > series > file unit): sorts the NARA pull list
         "series_path": [
-            str(a.get("title"))[:200]
-            for a in (record.get("ancestors") or [])
-            if isinstance(a, dict) and a.get("title")
+            _text(a["title"])
+            for a in _ancestors(record)
+            if isinstance(a.get("title"), str)
         ][:8],
+        **nara_location(record, naid),
     }
+
+
+def small_int(value: Any) -> Optional[int]:
+    """An API value as a small non-negative int (ASCII digits, at most 6), else None: never
+    raises, whatever the reply holds (a Unicode digit, a 5,000-digit string, a list)."""
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return value if 0 <= value < 10**6 else None
+    text = str(value).strip() if isinstance(value, str) else ""
+    return int(text) if _ASCII_INT.fullmatch(text) else None
+
+
+def _ancestors(record: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """The record's ancestors (dicts), broadest first (record group, then series)."""
+    anc = [a for a in record.get("ancestors") or [] if isinstance(a, dict)]
+    return sorted(anc, key=lambda a: -(small_int(a.get("distance")) or 0))
+
+
+def _text(value: Any, limit: int = 200) -> str:
+    """A text field of an API reply: a string, trimmed and capped; anything else is empty."""
+    return value.strip()[:limit] if isinstance(value, str) else ""
+
+
+def _ancestor(record: Dict[str, Any], level: str) -> Dict[str, Any]:
+    """The NEAREST ancestor at ``level`` (a record under nested series: the series it is in)."""
+    found = [a for a in _ancestors(record) if a.get("levelOfDescription") == level]
+    return found[-1] if found else {}
+
+
+def _occurrences(record: Dict[str, Any]) -> List[Dict[str, Any]]:
+    return [o for o in record.get("physicalOccurrences") or [] if isinstance(o, dict)]
+
+
+def _containers(record: Dict[str, Any], naid: str = "") -> List[Dict[str, str]]:
+    """Each box or reel (``mediaOccurrences[].containerId``) with its media type and copy status,
+    once each, in reply order, at most MAX_CONTAINERS (more is said)."""
+    seen, out = set(), []
+    for occ in _occurrences(record):
+        for m in occ.get("mediaOccurrences") or []:
+            if not (isinstance(m, dict) and isinstance(m.get("containerId"), str)):
+                continue
+            row = {
+                "container": _text(m["containerId"], CONTAINER_LEN),
+                "media": _text(m.get("specificMediaType"), MEDIA_LEN),
+                "copy_status": _text(occ.get("copyStatus"), MEDIA_LEN),
+            }
+            ident = (row["container"], row["media"], row["copy_status"])
+            if (
+                row["container"] and ident not in seen
+            ):  # a preservation and a reference copy
+                seen.add(ident)  # of one reel are two rows
+                out.append(row)
+    if len(out) > MAX_CONTAINERS:
+        logger.warning(
+            "OBSERV nara.containers_capped naId=%s kept=%d of=%d status=warn - the pull list "
+            "shows the first %d; open the catalog record for the rest",
+            naid,
+            MAX_CONTAINERS,
+            len(out),
+            MAX_CONTAINERS,
+        )
+    return out[:MAX_CONTAINERS]
+
+
+def _reference_unit(record: Dict[str, Any]) -> Optional[Dict[str, str]]:
+    """The reading room that serves the record: the one on the first occurrence that names one
+    (a record held once per site has one; NARA lists the textual reference unit first).
+    """
+    for occ in _occurrences(record):
+        for unit in occ.get("referenceUnits") or []:
+            if isinstance(unit, dict) and isinstance(unit.get("name"), str):
+                return {
+                    "name": _text(unit["name"], UNIT_LEN),
+                    "email": _text(unit.get("email"), EMAIL_LEN),
+                }
+    return None
+
+
+def nara_location(record: Dict[str, Any], naid: str = "") -> Dict[str, Any]:
+    """Where a NARA record is held and how to ask for it, from the catalog reply itself: the record
+    group number and series (``ancestors``), each container (box or reel) with its media type and
+    copy status, and the reference unit (reading room) that serves it. What a person needs on a
+    pull slip; no extra request. Never raises; a file unit or item with no container is said.
+    """
+    series = _ancestor(record, "series")
+    out = {
+        "record_group_number": small_int(
+            _ancestor(record, "recordGroup").get("recordGroupNumber")
+        ),
+        "series": (
+            {
+                "title": _text(series.get("title")),
+                "naId": nara_id_digits(series.get("naId")),
+            }
+            if series
+            else None
+        ),
+        "containers": _containers(record, naid),
+        "reference_unit": _reference_unit(record),
+    }
+    level = str(record.get("levelOfDescription") or "").lower()
+    held_on_site = bool(
+        _occurrences(record)
+    )  # an online-only (born-digital) record is not
+    if level in ("item", "fileunit") and held_on_site and not out["containers"]:
+        logger.warning(
+            "OBSERV nara.no_container naId=%s level=%s status=warn - the catalog names no box or "
+            "reel for it: a pull slip needs one; ask the reference unit or check the series",
+            naid,
+            level,
+        )
+    return out
+
+
+def nara_id_digits(value: Any) -> Optional[str]:
+    """A NARA id from a reply as digits (up to 15), else None."""
+    text = (
+        str(value)
+        if isinstance(value, (int, str)) and not isinstance(value, bool)
+        else ""
+    )
+    return text if re.fullmatch(r"[0-9]{1,15}", text) else None
 
 
 def _is_record_for(record: Dict[str, Any], naid: str) -> bool:

@@ -60,6 +60,8 @@ class PullItem:
     level: str = ""
     series_path: List[str] = field(default_factory=list)
     holding: str = ""
+    containers: List[Dict[str, str]] = field(default_factory=list)  # boxes / reels
+    reading_room: str = ""
     citations: List[Dict[str, Any]] = field(default_factory=list)
     status: str = "needed"
     notes: str = ""
@@ -158,25 +160,75 @@ def _add_record(
         _add_locate_first(items, rec)
 
 
+def _new_exact(rec: Dict[str, Any], naid: str, details: Dict[str, Any]) -> PullItem:
+    rg = details.get("record_group_number")
+    return PullItem(
+        item_id=f"nara-{naid}",
+        kind=EXACT,
+        # the catalog's own number first (a bool is not a number)
+        record_group=rg if type(rg) is int else record_group(rec),
+        naId=naid,
+        title=scrub(details.get("nara_title") or "")[:200],
+        level=scrub(details.get("level") or "")[:40],
+        series_path=[scrub(s)[:200] for s in details.get("series_path") or []][:8],
+        holding=scrub(rec.get("archive_physical_address") or "")[:200],
+        containers=_containers(details),
+        reading_room=_reading_room(details),
+    )
+
+
 def _add_exact(items, rec, finding, details) -> None:
     naid = str(finding["naId"])
     item = items.get(f"nara-{naid}")
     if item is None:
-        item = items[f"nara-{naid}"] = PullItem(
-            item_id=f"nara-{naid}",
-            kind=EXACT,
-            record_group=record_group(rec),
-            naId=naid,
-            title=scrub(details.get("nara_title") or "")[:200],
-            level=scrub(details.get("level") or "")[:40],
-            series_path=[scrub(s)[:200] for s in details.get("series_path") or []][:8],
-            holding=scrub(rec.get("archive_physical_address") or "")[:200],
-        )
+        item = items[f"nara-{naid}"] = _new_exact(rec, naid, details)
     if item.record_group is None:
         item.record_group = record_group(rec)  # the first citation that names one
     if not item.holding:
         item.holding = scrub(rec.get("archive_physical_address") or "")[:200]
+    if (
+        not item.containers
+    ):  # a find queued before locations were kept, then a newer one
+        item.containers = _containers(details)
+    if not item.reading_room:
+        item.reading_room = _reading_room(details)
     item.citations.append(_citation(rec))
+
+
+def _containers(details: Dict[str, Any]) -> List[Dict[str, str]]:
+    from src.enrichment.acquisition_fetchers import (
+        CONTAINER_LEN,
+        MAX_CONTAINERS,
+        MEDIA_LEN,
+    )
+
+    out = []
+    for c in details.get("containers") or []:
+        if isinstance(c, dict) and c.get("container"):
+            out.append(
+                {
+                    "container": scrub(c.get("container"))[:CONTAINER_LEN],
+                    "media": scrub(c.get("media") or "")[:MEDIA_LEN],
+                    "copy_status": scrub(c.get("copy_status") or "")[:MEDIA_LEN],
+                }
+            )
+    return out[:MAX_CONTAINERS]
+
+
+def _reading_room(details: Dict[str, Any]) -> str:
+    unit = details.get("reference_unit")
+    if not isinstance(unit, dict) or not unit.get("name"):
+        return ""
+    email = scrub(unit.get("email") or "")[:80]
+    return scrub(unit["name"])[:200] + (f" ({email})" if email else "")
+
+
+def _container_label(item: "PullItem") -> str:
+    def one(c: Dict[str, str]) -> str:
+        what = ", ".join(x for x in (c.get("media"), c.get("copy_status")) if x)
+        return c["container"] + (f" ({what})" if what else "")
+
+    return "; ".join(one(c) for c in item.containers)
 
 
 def _add_locate_first(items, rec) -> None:
@@ -192,11 +244,21 @@ def _add_locate_first(items, rec) -> None:
     )
 
 
+def _natural(text: str) -> List[Any]:
+    """A sort key that orders "Box 9" before "Box 10" (numbers compare as numbers)."""
+    parts = re.findall(r"[0-9]+|[^0-9]+", text.lower())
+    return [
+        (0, int(t[:9]), "") if t[0].isdigit() and t.isascii() else (1, 0, t)
+        for t in parts
+    ]
+
+
 def _visit_order(item: PullItem):
     return (
         item.kind != EXACT,
         item.record_group if item.record_group is not None else 9999,
         [s.lower() for s in item.series_path],
+        _natural(_container_label(item)),
         item.title.lower(),
         -item.cited_by,
         item.item_id,
@@ -276,6 +338,8 @@ _CSV_FIELDS = (
     "record_group",
     "series_path",
     "level",
+    "containers",
+    "reading_room",
     "title",
     "naId",
     "catalog_url",
@@ -302,6 +366,8 @@ def _csv_row(it: PullItem) -> Dict[str, str]:
         "record_group": it.record_group or "",
         "series_path": " > ".join(it.series_path),
         "level": it.level,
+        "containers": _container_label(it),
+        "reading_room": it.reading_room,
         "title": it.title,
         "naId": it.naId or "",
         "catalog_url": f"https://catalog.archives.gov/id/{it.naId}" if it.naId else "",
@@ -350,11 +416,12 @@ def export_markdown(items: List[PullItem], path: Path) -> None:
                 rg_seen = it.record_group
                 lines += ["", f"### RG {rg_seen if rg_seen is not None else '?'}", ""]
                 lines += [
-                    "| [ ] | Item | Series / level | Title | Cited by | Status |",
-                    "|---|---|---|---|---|---|",
+                    "| [ ] | Item | Series / level | Box / reel | Title | Cited by | Status |",
+                    "|---|---|---|---|---|---|---|",
                 ]
             lines.append(
                 f"| [ ] | {_md(it.item_id)} | {_md(' > '.join(it.series_path) or it.level)} | "
+                f"{_md(_container_label(it) or '-')} | "
                 f"{_md(it.title)} | {it.cited_by} | {_md(it.status)} |"
             )
         lines.append("")

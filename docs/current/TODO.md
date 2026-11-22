@@ -1576,8 +1576,11 @@ bibliography JSON; Archive.org / Gutenberg finds through G3.
   record), uploads to `contentrepository/nara-scans/<slug>.<ext>` (normal intake), and marks the item scanned. The
   next Phase 3 binds the bibliography record to the scan (`held_unprocessed`, `download_path`, a `verified_by: human`
   finding). Pipeline roles are denied writes to `pull#` / `pullscan#` (`cloudformation/iam.yaml`). NARA finds now
-  carry the record's series path (same API reply). Left: the UI; entry, box and file-unit numbers (not in the
-  catalog API reply: recorded in the item's notes when pulled); flipping a bound record from `held_unprocessed` to
+  carry the record's series path (same API reply). Left: the UI; the entry number (not seen in the catalog reply;
+  recorded in the item's notes when pulled). Fixed 2026-11-22 (an earlier note here wrongly said the catalog has no box
+  numbers): each NARA find keeps, from the same API reply, the record group number and series (`ancestors`), every
+  container with its media type and copy status (`physicalOccurrences[].mediaOccurrences[].containerId`, e.g. "Reel
+  1-009" or a box), and the reading room (`referenceUnits`); the list shows them and sorts by container; flipping a bound record from `held_unprocessed` to
   `resolved` once its scan's content exists (`output/content/<slug>/`); filling the scan's chapter meta (licence,
   provenance) from its `pullscan#` row when Phase 0 imports it; a multi-file scan is added part by part.
 

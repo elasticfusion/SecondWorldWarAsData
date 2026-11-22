@@ -105,6 +105,11 @@ def _scan_details(found: Dict[str, Any]) -> Dict[str, Any]:
         "nara_title": found["title"],
         "level": found.get("level") or None,
         "series_path": found.get("series_path") or None,
+        # where it is held: record group, series, boxes/reels, reading room (the pull slip)
+        "record_group_number": found.get("record_group_number"),
+        "series": found.get("series"),
+        "containers": found.get("containers") or None,
+        "reference_unit": found.get("reference_unit"),
         "object_count": len(objs) if known else None,
         "object_urls": objs[:_SAMPLE_OBJECTS],
         "formats": sorted({o.lower().rsplit(".", 1)[-1][:5] for o in objs if "." in o}),

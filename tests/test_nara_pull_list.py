@@ -504,3 +504,245 @@ def test_an_approved_online_copy_resolves_a_held_record(tmp_path):
 def test_a_null_source_metadata_does_not_crash_the_binding():
     rec = {**_locate(A), "source_metadata": None}
     assert npl.apply_scan(rec, {A: [_scan_row(A, "NARA-RG407-x")]}) is True
+
+
+# the shape of a live catalog reply (naId 403177795, fetched 2026-11-22), trimmed
+LIVE_RECORD = {
+    "naId": 403177795,
+    "title": "XIV Corps: 1-009",
+    "levelOfDescription": "fileUnit",
+    "ancestors": [
+        {"distance": 1, "levelOfDescription": "series", "title": "World War II Operations Reports", "naId": 305275},
+        {"distance": 2, "levelOfDescription": "recordGroup", "recordGroupNumber": 407,
+         "title": "Records of the Adjutant General's Office", "naId": 703},
+    ],
+    "physicalOccurrences": [
+        {
+            "copyStatus": "Preservation",
+            "referenceUnits": [{"name": "National Archives at College Park - Textual Reference",
+                                "email": "Archives2reference@nara.gov"}],
+            "mediaOccurrences": [{"specificMediaType": "Microfilm", "containerId": "Reel 1-009"}],
+        }
+    ],
+    "digitalObjects": [],
+}  # fmt: skip
+
+
+def test_the_catalog_reply_gives_record_group_series_container_and_reading_room(
+    monkeypatch,
+):
+    from src.enrichment import acquisition_fetchers as af
+
+    monkeypatch.setattr(af, "_fetch_nara_record", lambda n, k: {"record": LIVE_RECORD})
+    got = af.nara_digital_objects("403177795", "k")
+    assert got["series_path"] == [
+        "Records of the Adjutant General's Office",
+        "World War II Operations Reports",
+    ]
+    assert got["record_group_number"] == 407
+    assert got["series"] == {
+        "title": "World War II Operations Reports",
+        "naId": "305275",
+    }
+    assert got["containers"] == [
+        {"container": "Reel 1-009", "media": "Microfilm", "copy_status": "Preservation"}
+    ]
+    assert got["reference_unit"]["email"] == "Archives2reference@nara.gov"
+
+
+def test_the_pull_list_shows_the_box_or_reel_and_the_reading_room(
+    tmp_path, monkeypatch
+):
+    from src.enrichment import acquisition_fetchers as af
+    from src.enrichment import bibliography_finds as bf
+
+    monkeypatch.setattr(af, "_fetch_nara_record", lambda n, k: {"record": LIVE_RECORD})
+    details = bf.nara_download_details("https://catalog.archives.gov/id/403177795", "k")
+    event = {
+        "endpoint": "https://catalog.archives.gov/id/403177795",
+        "request_params": {"download": details},
+    }
+    rec = _paper(A, naid="403177795", rg=None)  # the catalog supplies the record group
+    (item,) = npl.build_items([rec], [event])
+    assert item.record_group == 407 and item.reading_room.startswith(
+        "National Archives at College Park"
+    )
+    npl.export_csv([item], tmp_path / "l.csv")
+    npl.export_markdown([item], tmp_path / "l.md")
+    row = next(csv.DictReader(open(tmp_path / "l.csv", encoding="utf-8")))
+    assert row["containers"] == "Reel 1-009 (Microfilm, Preservation)"
+    assert "Reel 1-009" in (tmp_path / "l.md").read_text()
+
+
+def test_items_in_one_series_sort_by_container():
+    def item(box):
+        return npl.PullItem(item_id=f"nara-{box}", kind=npl.EXACT, record_group=407,
+                            series_path=["RG 407", "Ops Reports"],
+                            containers=[{"container": f"Box {box}", "media": "Paper"}])  # fmt: skip
+
+    assert [i.item_id for i in sorted([item(9), item(3)], key=npl._visit_order)] == [
+        "nara-3",
+        "nara-9",
+    ]
+
+
+def test_box_ten_sorts_after_box_nine():
+    def item(box):
+        return npl.PullItem(item_id=f"nara-{box}", kind=npl.EXACT, record_group=407,
+                            containers=[{"container": f"Box {box}"}])  # fmt: skip
+
+    assert [i.item_id for i in sorted([item(10), item(9)], key=npl._visit_order)] == [
+        "nara-9",
+        "nara-10",
+    ]
+
+
+@pytest.mark.parametrize(
+    "value,expected",
+    [(407, 407), ("407", 407), (" 407 ", 407), ("²", None), ("①", None), ("1" * 5000, None),
+     ("RG 407", None), ("1.5", None), ([407], None), (True, None), (-3, None), (None, None)],
+)  # fmt: skip
+def test_small_int_never_raises(value, expected):
+    from src.enrichment.acquisition_fetchers import small_int
+
+    assert small_int(value) == expected
+
+
+@pytest.mark.parametrize(
+    "odd",
+    [
+        {"ancestors": [{"distance": "abc", "title": "x", "levelOfDescription": "series"}]},
+        {"ancestors": [{"distance": [1], "levelOfDescription": "recordGroup", "recordGroupNumber": "²"}]},
+        {"ancestors": "nope", "physicalOccurrences": "nope"},
+        {"ancestors": [None, 3, "x"], "physicalOccurrences": [None, {"mediaOccurrences": [None, {"containerId": 5}]}]},
+        {"ancestors": [{"title": {"a": 1}}]},
+        {},
+    ],
+)  # fmt: skip
+def test_an_odd_catalog_reply_never_aborts_the_lookup(odd, monkeypatch):
+    from src.enrichment import acquisition_fetchers as af
+
+    record = {"naId": 1, "title": "t", **odd}
+    monkeypatch.setattr(af, "_fetch_nara_record", lambda n, k: {"record": record})
+    got = af.nara_digital_objects("1", "k")
+    assert got is not None and isinstance(got["containers"], list)
+
+
+def test_an_untitled_record_group_still_gives_its_number():
+    from src.enrichment.acquisition_fetchers import nara_location
+
+    rec = {
+        "ancestors": [
+            {
+                "distance": 2,
+                "levelOfDescription": "recordGroup",
+                "recordGroupNumber": 407,
+            }
+        ]
+    }
+    assert nara_location(rec)["record_group_number"] == 407
+
+
+def test_several_occurrences_are_listed_once_each_with_their_copy_status():
+    from src.enrichment.acquisition_fetchers import nara_location
+
+    rec = {
+        "physicalOccurrences": [
+            {"copyStatus": "Preservation", "mediaOccurrences": [{"containerId": "Reel 1-009", "specificMediaType": "Microfilm"}]},
+            {"copyStatus": "Reference", "mediaOccurrences": [{"containerId": "Box 5", "specificMediaType": "Paper"},
+                                                             {"containerId": "Box 5", "specificMediaType": "Paper"}]},
+        ]
+    }  # fmt: skip
+    got = nara_location(rec)["containers"]
+    assert [c["container"] for c in got] == ["Reel 1-009", "Box 5"]
+    item = npl.PullItem(
+        item_id="nara-1", kind=npl.EXACT, record_group=407, containers=got
+    )
+    assert (
+        npl._container_label(item)
+        == "Reel 1-009 (Microfilm, Preservation); Box 5 (Paper, Reference)"
+    )
+
+
+def test_more_than_twenty_containers_are_capped_and_said(caplog):
+    from src.enrichment.acquisition_fetchers import MAX_CONTAINERS, nara_location
+
+    rec = {
+        "physicalOccurrences": [
+            {"mediaOccurrences": [{"containerId": f"Box {i}"} for i in range(30)]}
+        ]
+    }
+    assert len(nara_location(rec, "77")["containers"]) == MAX_CONTAINERS
+    assert "OBSERV nara.containers_capped naId=77" in caplog.text
+
+
+def test_a_file_unit_with_no_container_is_said(caplog):
+    from src.enrichment.acquisition_fetchers import nara_location
+
+    nara_location(
+        {
+            "levelOfDescription": "fileUnit",
+            "physicalOccurrences": [{"copyStatus": "Reference"}],
+        },
+        "88",
+    )
+    assert "OBSERV nara.no_container naId=88" in caplog.text
+    caplog.clear()
+    nara_location({"levelOfDescription": "item"}, "89")  # online only: nothing to pull
+    assert "no_container" not in caplog.text
+
+
+def test_the_nearest_series_is_the_one_shown():
+    from src.enrichment.acquisition_fetchers import nara_location
+
+    rec = {"ancestors": [
+        {"distance": 2, "levelOfDescription": "series", "title": "Outer", "naId": 1},
+        {"distance": 1, "levelOfDescription": "series", "title": "Inner", "naId": 2},
+    ]}  # fmt: skip
+    assert nara_location(rec)["series"] == {"title": "Inner", "naId": "2"}
+
+
+def test_a_find_queued_before_locations_were_kept_still_builds_and_exports(tmp_path):
+    old_event = {
+        "endpoint": NARA,
+        "request_params": {"download": {"naId": "305271", "object_count": 0}},
+    }
+    newer = {"endpoint": NARA, "request_params": {"download": {"containers": [{"container": "Box 7"}],
+                                                                "reference_unit": {"name": "Textual Reference"}}}}  # fmt: skip
+    (item,) = npl.build_items([_paper(A)], [old_event])
+    assert item.containers == [] and item.reading_room == ""
+    npl.export_csv([item], tmp_path / "l.csv")
+    npl.export_markdown([item], tmp_path / "l.md")
+    assert "| - |" in (tmp_path / "l.md").read_text()
+    # a later citation of the same record, whose find carries a location, fills it in
+    items = {}
+    npl._add_exact(
+        items, _paper(A), {"naId": "305271"}, old_event["request_params"]["download"]
+    )
+    npl._add_exact(
+        items, _paper(B), {"naId": "305271"}, newer["request_params"]["download"]
+    )
+    assert items["nara-305271"].containers[0]["container"] == "Box 7"
+    assert items["nara-305271"].reading_room == "Textual Reference"
+
+
+def test_natural_sort_handles_non_ascii_digits_and_no_digits():
+    assert npl._natural("Box ²") and npl._natural("Reel") == [(1, 0, "reel")]
+
+
+def test_non_text_reply_values_are_empty_and_copies_of_one_reel_both_listed():
+    from src.enrichment.acquisition_fetchers import nara_location
+
+    rec = {
+        "ancestors": [{"distance": 1, "levelOfDescription": "series", "title": {"a": 1}}],
+        "physicalOccurrences": [
+            {"copyStatus": "Preservation", "mediaOccurrences": [{"containerId": "Reel 1", "specificMediaType": ["x"]}]},
+            {"copyStatus": "Reference", "mediaOccurrences": [{"containerId": "Reel 1", "specificMediaType": ["x"]}]},
+        ],
+    }  # fmt: skip
+    got = nara_location(rec)
+    assert got["series"]["title"] == ""
+    assert [(c["media"], c["copy_status"]) for c in got["containers"]] == [
+        ("", "Preservation"),
+        ("", "Reference"),
+    ]
