@@ -58,7 +58,10 @@ def _count(ddb, table):
 
 
 @pytest.fixture
-def world():
+def world(monkeypatch):
+    # the table-clearing mechanics (batching, hash+range, a reserved-word key) are exercised on two
+    # stand-in tables; the real --full list is the merge-pointer table (test below)
+    monkeypatch.setattr(er, "ENTITY_TABLES", ("people", "places"))
     with mock_aws():
         ddb = boto3.client("dynamodb", region_name=REGION)
         s3 = boto3.client("s3", region_name=REGION)
@@ -381,3 +384,9 @@ def test_shell_wrapper_ordering_and_safety():
     # --enable-backstops must not need Python/boto3 (it only re-enables schedules).
     assert 'if [ "$ENABLE_ONLY" != "1" ]; then' in SH
     assert "mktemp" in SH and "/tmp/e2e_reset_nat.json" not in SH
+
+
+def test_a_full_reset_empties_the_merge_pointers_only():
+    """The per-entity JSON tables were removed (2026-11-21); the pointers describe the records a
+    full reset deletes, so they go too."""
+    assert er.ENTITY_TABLES == ("id-aliases",)

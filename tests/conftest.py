@@ -251,3 +251,15 @@ def queued_finds():
         return [json.loads(x) for x in path.read_text().splitlines() if x.strip()]
 
     return read
+
+
+@pytest.fixture(autouse=True)
+def _private_id_aliases(monkeypatch, tmp_path_factory):
+    """Merge pointers (src/utils/id_aliases) go to a private local file per test, never the repo's
+    output/ or a real table."""
+    from src.utils import id_aliases
+
+    monkeypatch.setattr(
+        id_aliases, "_LOCAL_FILE", tmp_path_factory.mktemp("id_aliases") / "a.jsonl"
+    )
+    id_aliases.reset_local()

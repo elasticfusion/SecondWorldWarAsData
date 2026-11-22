@@ -114,16 +114,6 @@
                 }
             }
         ],
-        "./lambda_handlers/import_handler.py": [
-            {
-                "code": "reportAttributeAccessIssue",
-                "range": {
-                    "startColumn": 23,
-                    "endColumn": 28,
-                    "lineCount": 1
-                }
-            }
-        ],
         "./lambda_handlers/nat_manager.py": [
             {
                 "code": "reportAttributeAccessIssue",

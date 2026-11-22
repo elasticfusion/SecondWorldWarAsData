@@ -512,20 +512,12 @@ aws ecs describe-tasks --cluster dev-wwii-pipeline \
 
 ---
 
-## Import to DynamoDB
+## DynamoDB
 
-```bash
-# Run as ECS task
-aws ecs run-task \
-  --cluster dev-wwii-pipeline \
-  --task-definition dev-wwii-import \
-  --launch-type FARGATE \
-  --network-configuration "awsvpcConfiguration={subnets=[<subnet-id>],securityGroups=[<sg-id>],assignPublicIp=DISABLED}" \
-  --region us-east-1
-
-# Or from local machine
-python3 import_to_dynamodb.py --region us-east-1 --prefix dev-wwii-
-```
+Entity records live only in S3 (`output/<entity>/*.json`). DynamoDB holds run state and the review
+queue (`<env>-wwii-api-cache`) and merge pointers (`<env>-wwii-id-aliases`: a merged-away record id ->
+the id that absorbed it, `src/utils/id_aliases`). The per-entity JSON tables and the
+`<env>-wwii-import` task were removed on 2026-11-21 (nothing wrote or read them).
 
 ---
 

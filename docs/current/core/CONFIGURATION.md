@@ -409,7 +409,7 @@ aws:
     startup_timeout: 120
 ```
 
-`config.yaml.example` ships only `enabled`, `region` and `notification_email` under `aws:`. The other keys are read with code defaults only if present (CloudFormation sets the matching env vars on ECS tasks; see below). `ecs_entrypoint.py:501-516` patches `aws.enabled: true`, `aws.s3_bucket` and `storage.entity_backend: filesystem` at runtime. The `health_check_url` and `database.backend/mongodb_uri` keys previously listed here are not read by any code; the health check is a fixed `GET {url}/health` (`src/utils/openserp_client.py:95`). `database.dynamodb_table_prefix` appears only in `lambda_handlers/import_handler.py`.
+`config.yaml.example` ships only `enabled`, `region` and `notification_email` under `aws:`. The other keys are read with code defaults only if present (CloudFormation sets the matching env vars on ECS tasks; see below). `ecs_entrypoint.py:501-516` patches `aws.enabled: true`, `aws.s3_bucket` and `storage.entity_backend: filesystem` at runtime. The `health_check_url` and `database.backend/mongodb_uri` keys previously listed here are not read by any code; the health check is a fixed `GET {url}/health` (`src/utils/openserp_client.py:95`). `database.dynamodb_table_prefix` is not read by any code (its only reader, the DynamoDB import, was removed 2026-11-21).
 
 **Options:**
 - `enabled` — When true, storage uses S3, cache uses DynamoDB, OpenSERP uses ECS Fargate

@@ -112,9 +112,8 @@ it starts, `_download_inputs` fills that tree from the S3 bucket, and the backgr
 sync copy the enriched files back afterwards. One function serves every phase: it picks the download
 by the phase script name (`EP:1298-1315`). For Phase 3 the steps are:
 
-1. **DynamoDB shortcut (does nothing).** It calls `_materialize_from_dynamo()` unless
-   `processing.force_reprocess` is true. That function is a deprecated stub that always returns
-   False (`EP:1290-1295`): S3 is the only entity store, so the S3 download below always runs.
+1. (The DynamoDB "shortcut" stub `_materialize_from_dynamo()` was removed 2026-11-21: S3 is the only
+   entity store, so the S3 download below always runs.)
 2. **Wait for the bibliography reconcile barrier.** `_download_phase3_from_s3` (`EP:1548`) first
    calls `_wait_for_reconcile_barrier` (`EP:1407`). The dedup step's full-corpus bibliography
    reconcile (`_reconcile_bibliography_full_corpus`, `EP:2883`) collapses the per-task bibliography

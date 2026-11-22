@@ -58,18 +58,9 @@ FULL_RUNSTATE_PREFIXES = (
     "retrieve#",
     "reviewed#",
 )
-ENTITY_TABLES = (
-    "people",
-    "places",
-    "maps",
-    "bibliography",
-    "casualties",
-    "dates",
-    "equipment",
-    "groups",
-    "logistics",
-    "weather",
-)
+# Derived tables a --full reset empties. The per-entity JSON tables were removed 2026-11-21; the
+# merge pointers (id-aliases) describe the records being deleted, so they go too.
+ENTITY_TABLES = ("id-aliases",)
 # Every SQS queue defined in cloudformation/ (compute.yaml, events.yaml). trigger-queue has a Lambda
 # event-source mapping, so sweep() purges the queues FIRST.
 SQS_QUEUES = (

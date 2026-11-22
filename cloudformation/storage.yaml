@@ -288,146 +288,25 @@ Resources:
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: true
 
-  # Entity tables
-  PeopleTable:
+  # Merge pointers (owner 2026-11-21): one item per merged-away record id -> the id that absorbed
+  # it (src/utils/id_aliases). Pointers only, never record JSON (S3 holds the records). The ten
+  # per-entity JSON tables (people, groups, places, ...) were removed: nothing wrote or read them
+  # since the DynamoDB entity store was retired; they were deleted while empty.
+  IdAliasTable:
     Type: AWS::DynamoDB::Table
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
-      TableName: !Sub ${EnvironmentName}-wwii-people
+      TableName: !Sub ${EnvironmentName}-wwii-id-aliases
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
-        - AttributeName: PersonID
+        - AttributeName: alias_key
           AttributeType: S
       KeySchema:
-        - AttributeName: PersonID
+        - AttributeName: alias_key
           KeyType: HASH
-
-  GroupsTable:
-    Type: AWS::DynamoDB::Table
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
-    Properties:
-      TableName: !Sub ${EnvironmentName}-wwii-groups
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - AttributeName: GroupID
-          AttributeType: S
-      KeySchema:
-        - AttributeName: GroupID
-          KeyType: HASH
-
-  PlacesTable:
-    Type: AWS::DynamoDB::Table
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
-    Properties:
-      TableName: !Sub ${EnvironmentName}-wwii-places
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - AttributeName: PlaceID
-          AttributeType: S
-      KeySchema:
-        - AttributeName: PlaceID
-          KeyType: HASH
-
-  DatesTable:
-    Type: AWS::DynamoDB::Table
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
-    Properties:
-      TableName: !Sub ${EnvironmentName}-wwii-dates
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - AttributeName: DateID
-          AttributeType: S
-      KeySchema:
-        - AttributeName: DateID
-          KeyType: HASH
-
-  EquipmentTable:
-    Type: AWS::DynamoDB::Table
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
-    Properties:
-      TableName: !Sub ${EnvironmentName}-wwii-equipment
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - AttributeName: EquipmentID
-          AttributeType: S
-      KeySchema:
-        - AttributeName: EquipmentID
-          KeyType: HASH
-
-  WeatherTable:
-    Type: AWS::DynamoDB::Table
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
-    Properties:
-      TableName: !Sub ${EnvironmentName}-wwii-weather
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - AttributeName: WeatherID
-          AttributeType: S
-      KeySchema:
-        - AttributeName: WeatherID
-          KeyType: HASH
-
-  LogisticsTable:
-    Type: AWS::DynamoDB::Table
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
-    Properties:
-      TableName: !Sub ${EnvironmentName}-wwii-logistics
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - AttributeName: LogisticsID
-          AttributeType: S
-      KeySchema:
-        - AttributeName: LogisticsID
-          KeyType: HASH
-
-  CasualtiesTable:
-    Type: AWS::DynamoDB::Table
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
-    Properties:
-      TableName: !Sub ${EnvironmentName}-wwii-casualties
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - AttributeName: CasualtyID
-          AttributeType: S
-      KeySchema:
-        - AttributeName: CasualtyID
-          KeyType: HASH
-
-  MapsTable:
-    Type: AWS::DynamoDB::Table
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
-    Properties:
-      TableName: !Sub ${EnvironmentName}-wwii-maps
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - AttributeName: MapID
-          AttributeType: S
-      KeySchema:
-        - AttributeName: MapID
-          KeyType: HASH
-
-  BibliographyTable:
-    Type: AWS::DynamoDB::Table
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
-    Properties:
-      TableName: !Sub ${EnvironmentName}-wwii-bibliography
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - AttributeName: BibliographyID
-          AttributeType: S
-      KeySchema:
-        - AttributeName: BibliographyID
-          KeyType: HASH
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
 
   # --- Cost Monitoring ---
   PipelineBudget:
@@ -460,3 +339,5 @@ Outputs:
     Value: !Ref CacheTable
   CacheTableArn:
     Value: !GetAtt CacheTable.Arn
+  IdAliasTableName:
+    Value: !Ref IdAliasTable

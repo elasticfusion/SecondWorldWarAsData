@@ -12,7 +12,7 @@ Run the WWII Data Extraction Pipeline on your local machine with filesystem stor
 - **Grok API key** from [x.ai](https://x.ai)
 - **Chrome/Chromium** (for PDF conversion and OpenSERP web scraping)
 - **Go 1.21+** (optional — for building OpenSERP search tool)
-- **AWS credentials** (optional — only for `import_to_dynamodb.py`; there is no MongoDB import path)
+- **AWS credentials** (optional — only for running against AWS; entity records stay as JSON files)
 
 ### Install Chrome
 
@@ -121,8 +121,6 @@ python3 phase2_extract.py --batch
 # 4. Enrich people/places/groups (optional)
 python3 phase3_retry.py
 
-# 5. Import to database (optional)
-python3 import_to_dynamodb.py    # DynamoDB (no MongoDB path exists)
 ```
 
 Output is in `output/` as JSON files.

@@ -1212,6 +1212,15 @@ tries, abort if never ready) -> `_clear_title_cache_if_reprocess` -> `_load_secr
   only worked for book-scoped runs until the unscoped branch started downloading `output/content/` (2026-11-07). Consider
   whether the unscoped whole-corpus run should re-run paid Grok steps (image-person, link review) over every book each time.
 
+#### Loader (PostgreSQL, Phase 2 of the plan): removed records and old ids (owner 2026-11-21)
+- **MED - the loader never deletes, so a removed record keeps its row.** `src/loader/load.py` only inserts or
+  replaces (`INSERT OR REPLACE` / `ON CONFLICT DO UPDATE`). Pointed at a database that already holds data, any record
+  removed from S3 (a merged bibliography record, a deduped person or place, a purged chapter) stays. Fix when the
+  loader is built: each load rebuilds into a fresh schema and swaps, or stamps the rows it loads and deletes the rest.
+- **MED - old ids must still resolve on the site and in the API.** Load the merge pointers
+  (`{env}-wwii-id-aliases`, `src/utils/id_aliases`) into an alias table, so a link, saved search or citation holding
+  a merged-away id reaches the surviving record (redirect, not 404).
+
 #### Older backlog - MED list
 - **[MED · observability-precision] download.file_missing cries wolf on expected-absent TRACKING files.** On every clean-slate/
   first run, Phase-2 download lists then 404s on index.json / .processed_events.json / manifests/run_scope/<book>.json — all
@@ -2164,8 +2173,17 @@ Phase 2's open work stays in "1. PHASE 2 - OPEN" below.
   removed (`ecs_entrypoint._delete_merged_bibliography_records`, an error names any it could not delete).
   Nothing outside the bibliography refers to a BibliographyID in production (scanned 2026-11-21: people
   `biography_sources[].BibliographyID`, supplemental notes and loader mentions are all unset).
-  Left: the DynamoDB import (`lambda_handlers/import_handler`, manual) is a full import with no delete, so a
-  merged-away record stays in that table until it is cleared (true of every merge).
+- **DONE (Group 3 step E, 2026-11-21) - merge pointers; the DynamoDB entity path retired (owner 2026-11-21: "we are
+  not full JSON in DynamoDB, creating a new table to handle pointers is OK").** New table `{env}-wwii-id-aliases`
+  (`cloudformation/storage.yaml`, pointers only: `alias_key = <entity>#<old id>` -> `survivor_id`, source, time) and
+  `src/utils/id_aliases` (`record`, `resolve` following chains, cycles said). A pointer is stored BEFORE a merged-away
+  record is deleted, else the record is kept and the merge retried: the bibliography full-corpus reconcile
+  (`bibliography.record_merge_pointers`, then the S3 delete), the dedup merge (`dedup.merge._pointer_stored`, people
+  and generic) and the dedup UI's generic merge. Retired (nothing wrote or read them): the ten empty per-entity JSON
+  tables (removed from the template; deleted while empty), the `{env}-wwii-import` task, `import_to_dynamodb.py`,
+  `lambda_handlers/import_handler.py`, and the no-op hooks `_materialize_from_dynamo`, `_dynamo_merge_sync`,
+  `_sync_entity_to_dynamo`. Needs a deploy (the new table) before the next full-corpus reconcile or dedup: until
+  then a merge keeps its merged-away records (no loss; retried).
 - ***refactor* - FIX IN PHASE 2 (owner) - a quarter of Phase 2's "bibliography" is not citations,
   found only in Phase 3.**
   Of the 2,035 records, 534 fail `_looks_like_citation` (narrative footnotes, e.g. "An American heavy
@@ -3709,3 +3727,8 @@ passing a safe final path segment (e.g. discovery's [a-z]+ section_id capture) r
 containment at the sink. Traversal is not currently reachable anywhere, but a future caller deriving
 a path segment from untrusted input would escape silently. Harden: assert the resolved target is
 under its intended root inside the guard (pipeline-wide, not one site).
+
+## LOW: UI - order bibliographical records by mention count, high to low (owner 2026-11-21)
+Eventually add a UI option to sort bibliography records by their number of mentions (the entries in
+a record's `mentions` / `event_mentions`), highest first. Applies to the bibliography listing in the
+site/review UIs. Count from the stored mentions, not a new field that could drift.

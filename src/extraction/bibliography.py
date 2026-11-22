@@ -855,6 +855,59 @@ def _stripped_verbatim(d: Dict[str, Any], cit: Dict[str, Any]) -> str:
     return ""
 
 
+def _store_pointers(id_aliases: Any, survivor: str, wanted: List[str]) -> int:
+    """Point every id in ``wanted`` at ``survivor``; returns how many failed. Ids with no pointer
+    yet go first, so an id absorbed earlier (A -> S1) is checked after its old survivor's own
+    pointer (S1 -> survivor) exists and its chain already leads here."""
+    end = id_aliases.resolve("bibliography", survivor)
+    ends = {o: id_aliases.resolve("bibliography", o) for o in wanted}
+    # an id whose chain already ends where the survivor's does needs nothing (a re-run: one read)
+    todo = [o for o in wanted if end is None or ends[o] != end]
+    fresh = [o for o in todo if ends[o] == o]
+    rest = [o for o in todo if o not in fresh]
+    failed = 0
+    for o in fresh + rest:
+        failed += not id_aliases.record("bibliography", o, survivor, "bib_reconcile")
+    return failed
+
+
+def record_merge_pointers(bib_dir: Path) -> bool:
+    """Store a pointer (``src/utils/id_aliases``) from every BibliographyID a record absorbed
+    (``merged_from``) to that record. Returns False when any could not be stored, or a record could
+    not be read (it may be a survivor): then the merged-away files must not be deleted yet (the
+    next run combines them again and retries)."""
+    from src.utils import id_aliases
+
+    ok = stored = unreadable = 0
+    for f in sorted(Path(bib_dir).glob("bib_*.json")):
+        try:
+            rec = json.loads(f.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            unreadable += 1
+            logger.error(
+                "OBSERV bib.merge_pointers_unreadable file=%s status=error - a bibliography record "
+                "could not be read, so merged-away records are kept this run; fix or remove it",
+                f.name,
+            )
+            continue
+        absorbed = rec.get("merged_from") if isinstance(rec, dict) else None
+        survivor = str(rec.get("BibliographyID") or "") if isinstance(rec, dict) else ""
+        wanted = (
+            [str(o) for o in absorbed]
+            if isinstance(absorbed, list) and survivor
+            else []
+        )
+        stored += len(wanted)
+        ok += len(wanted) - _store_pointers(id_aliases, survivor, wanted)
+    logger.info(
+        "OBSERV bib.merge_pointers stored=%d failed=%d unreadable=%d",
+        ok,
+        stored - ok,
+        unreadable,
+    )
+    return ok == stored and not unreadable
+
+
 def _merge_bib_records(records: List[Dict[str, Any]]) -> Dict[str, Any]:
     """Merge records that share a match key into one: union mentions (entity_records
     .citation_identity), and prefer the most-enriched base fields (a real title over 'Unknown', non-empty

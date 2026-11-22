@@ -442,7 +442,7 @@ On startup, `DynamoCacheBackend` performs a single DynamoDB scan to load all cac
 
 ### DynamoDB Materialization
 
-Removed. The DynamoDB entity store no longer exists: S3 (`output/<entity>/*.json`) is the sole entity store, and `ecs_entrypoint._materialize_from_dynamo()` is a deprecated no-op that always returns False. DynamoDB holds only cache, queue and coordination rows.
+Removed. The DynamoDB entity store no longer exists: S3 (`output/<entity>/*.json`) is the sole entity store, and the old no-op `_materialize_from_dynamo()` was removed (2026-11-21). DynamoDB holds cache, queue and coordination rows, and merge pointers (`{env}-wwii-id-aliases`, `src/utils/id_aliases`).
 
 ### Incremental Dedup
 

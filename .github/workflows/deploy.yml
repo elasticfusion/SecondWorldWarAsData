@@ -24,7 +24,6 @@ on:
   #     - "requirements-lambda.txt"
   #     - "ecs_entrypoint.py"
   #     - "phase*.py"
-  #     - "import_to_dynamodb.py"
   workflow_dispatch:
     inputs:
       deploy_target:

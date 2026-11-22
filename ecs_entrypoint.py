@@ -1997,14 +1997,6 @@ def _get_book_entity_files(s3, book_name: str) -> list:
     return list(referenced)
 
 
-def _materialize_from_dynamo() -> bool:
-    """Deprecated no-op. The DynamoDB entity (JSON) store was removed — S3 is the sole
-    authoritative entity store — so there is nothing to materialize from Dynamo. Always
-    returns False, so callers fall through to the S3 download path. (DynamoDB is retained
-    only for queue/coordination, not JSON storage.)"""
-    return False
-
-
 def _download_inputs(phase_script: str) -> None:
     """Download the appropriate inputs from S3 for this phase."""
     if "phase0" in phase_script:
@@ -2014,14 +2006,7 @@ def _download_inputs(phase_script: str) -> None:
     elif "phase2" in phase_script:
         n = _download_phase2_inputs()
         logger.info("Downloaded %d files for Phase 2", n)
-    elif "phase3" in phase_script or "import" in phase_script:
-        # Skip DynamoDB shortcut when force_reprocess — need full S3 corpus
-        import yaml as _yaml
-
-        _cfg = _yaml.safe_load(Path("/app/config.yaml").read_text())
-        force = _cfg.get("processing", {}).get("force_reprocess", False)
-        if not force and _materialize_from_dynamo():
-            return
+    elif "phase3" in phase_script:
         _download_phase3_from_s3()
 
 
@@ -3936,17 +3921,6 @@ def _migrate_exclusions_to_dynamo() -> None:
 
 def _download_dedup_data() -> None:
     """Download entity files needed for cross-book dedup comparison."""
-    # Try DynamoDB first (faster than S3 for entity files)
-    if _materialize_from_dynamo():
-        # Still need event files from S3 for cross-reference
-        s3 = _s3_client()
-        d, s = _download_s3_prefix_skip_existing(s3, "output/content/")
-        logger.info(
-            "Dedup: materialized entities from DynamoDB, downloaded %d event files from S3",
-            d,
-        )
-        return
-
     s3 = _s3_client()
     dedup_files = [
         "output/people/index.json",
@@ -4003,8 +3977,19 @@ def _reconcile_bibliography_full_corpus() -> None:
         up, _ = s3_sync_up(bib_dir, "output/bibliography")
         _delete_orphaned_bibliography_shards(s3, bib_dir)
         # a record folded into another (same footnote text, near-identical title) is merged away
-        # too, under its own canonical name: without this it is downloaded again next run
-        _delete_merged_bibliography_records(s3, bib_dir, removed)
+        # too, under its own canonical name: without this it is downloaded again next run. Its id
+        # must resolve first (a pointer to the survivor), else it is kept for the next run.
+        from src.extraction.bibliography import record_merge_pointers
+
+        if record_merge_pointers(bib_dir):
+            _delete_merged_bibliography_records(s3, bib_dir, removed)
+        elif removed:
+            logger.error(
+                "OBSERV bib.merged_delete_deferred count=%d status=error - merge pointers were "
+                "not all stored (see id_aliases.write_failed), so the merged-away records stay on "
+                "S3 and are combined again next run",
+                len(set(removed)),
+            )
         logger.info(
             "Full-corpus bibliography reconcile: merged_away=%d, uploaded %d canonical files",
             merged_away,
@@ -4860,22 +4845,18 @@ def _final_sync(phase_script: str = ""):
         # Write manifest to DynamoDB so next phase only downloads changed files
         if all_uploaded and "phase2" in phase_script:
             _write_manifest(all_uploaded)
-    elif "import" in phase_script:
-        pass  # import doesn't produce output
 
 
 PHASE_NAMES = {
     "phase1_parse.py": "Phase 1 (Parse)",
     "phase2_extract.py": "Phase 2 (Extract)",
     "phase3_enrich_data.py": "Phase 3 (Enrich)",
-    "import_to_dynamodb.py": "Import",
 }
 
 PHASE_SUFFIXES = {
     "phase1_parse.py": "phase1-parse",
     "phase2_extract.py": "phase2-extract",
     "phase3_enrich_data.py": "phase3-enrich",
-    "import_to_dynamodb.py": "import",
 }
 
 

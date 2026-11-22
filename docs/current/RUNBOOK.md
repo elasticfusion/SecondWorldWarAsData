@@ -112,7 +112,7 @@ aws dynamodb delete-item --table-name $TABLE \
   --key '{"cache_key":{"S":"lock#dev-wwii-phase2-extract"}}' --region $REGION
 
 # Nuclear: delete ALL phase locks (the phase suffixes are ecs_entrypoint.PHASE_SUFFIXES)
-for key in lock#dev-wwii-phase1-parse lock#dev-wwii-phase2-extract lock#dev-wwii-phase3-enrich lock#dev-wwii-import; do
+for key in lock#dev-wwii-phase1-parse lock#dev-wwii-phase2-extract lock#dev-wwii-phase3-enrich; do
   aws dynamodb delete-item --table-name $TABLE --key "{\"cache_key\":{\"S\":\"$key\"}}" --region $REGION
 done
 ```

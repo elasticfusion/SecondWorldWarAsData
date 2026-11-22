@@ -49,9 +49,8 @@ class FakeStorage:
 
 @pytest.fixture(autouse=True)
 def _no_manifest(monkeypatch):
-    # _append_to_manifest / _sync_entity_to_dynamo hit AWS — stub them out.
+    # _append_to_manifest hits AWS — stub it out.
     monkeypatch.setattr(ui, "_append_to_manifest", lambda keys: None)
-    monkeypatch.setattr(ui, "_sync_entity_to_dynamo", lambda t, d: None)
     monkeypatch.setattr(ui, "_lambda_context", None)
 
 
