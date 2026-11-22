@@ -196,6 +196,11 @@ def process_message(
 
     import src.enrichment.openserp_enrichment as oe
 
+    if oe.lacks_identity(entity_label, data):
+        # no ULID: not searched, not marked (an error names the record); the message is done, so it
+        # does not loop to the DLQ, and the entity is looked at again once the record is repaired
+        return "skip"
+
     enrich_one = getattr(oe, fn_name)
     from src.utils.grok_models import GrokFundsExhausted, GrokUnreachable
 

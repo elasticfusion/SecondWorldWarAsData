@@ -152,7 +152,9 @@ def test_people_are_searched_and_written_one_at_a_time(corpus, monkeypatch):
     """A run killed after the first person keeps that person's search (it is written before the
     second is searched): the re-run does not search them again."""
     for n in ("Able", "Baker"):
-        (corpus / "people" / f"{n}.json").write_text(json.dumps({"name": n}))
+        (corpus / "people" / f"{n}.json").write_text(
+            json.dumps({"name": n, "PersonID": "01HX7YZABCDEFGHJKMNPQRSTVW"})
+        )
     events = []
     monkeypatch.setattr(
         oe,

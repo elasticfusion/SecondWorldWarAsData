@@ -235,7 +235,9 @@ def test_the_worker_looks_again_after_a_service_stop(monkeypatch):
         "enrich_one_place",
         mock.Mock(side_effect=grok_models.ServiceUnreachable("down")),
     )
-    storage = mock.Mock(read_json=lambda p: {"name": "x"})
+    storage = mock.Mock(
+        read_json=lambda p: {"name": "x", "PlaceID": "01HX7YZABCDEFGHJKMNPQRSTVW"}
+    )
     out = w.process_message(
         {"entity_type": "places", "entity_path": "places/x.json"},
         storage,

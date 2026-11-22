@@ -833,7 +833,7 @@ rejected item stays rejected; an approved item starts Phase 0.
   already queued). The inline writes of `web_results[]` (places, groups), `veterans_associations[]`,
   `primary_sources[]` and web-page `military_awards[]` are gone; Grok-suggested biography URLs go the same
   way (provider `llm-find`) instead of `biography_sources[]`. Metrics `finds_queued` / `finds_already_queued` /
-  `finds_failed` are in the summary line, and `finds_failed` raises an anomaly. A record with no ULID queues nothing (an error names it); a page the queue
+  `finds_failed` are in the summary line, and `finds_failed` raises an anomaly. A record with no ULID is not searched and not marked searched (an error names it; the central write guard mints a missing primary key and production holds none, so this means a writer bypassed the guard: `scripts/check_raw_writes.sh`); a page the queue
   cannot store leaves the entity unsearched (SQS: deferred), so the next run asks again. Records written by earlier
   runs keep their old entries (no migration). Left: the people web search is still gated on
   `military_awards` being empty (now only an award extraction fills it): replace it with a queue/marker check;

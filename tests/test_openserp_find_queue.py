@@ -247,3 +247,63 @@ def test_a_suggested_url_with_a_line_break_is_neither_logged_nor_fetched(
     with caplog.at_level(logging.INFO):
         assert eb._queue_suggested_urls(prof, {"PersonID": "01H"}, "J", object()) == 0
     assert "OBSERV fake" not in caplog.text and queued_finds("llm-find") == []
+
+
+def test_a_record_without_a_ulid_is_not_searched_and_not_marked(
+    tmp_path, caplog, queued_finds
+):
+    calls = []
+    with caplog.at_level(logging.ERROR):
+        out = oe._search_entity(
+            "people", None, {"name": "John Doe"}, "John Doe", tmp_path,
+            lambda: calls.append(1) or True,
+        )  # fmt: skip
+    assert out is None and calls == []  # nothing searched; the caller marks nothing
+    assert "OBSERV find_queue.entity_without_id" in caplog.text
+    assert "bypassed it" in caplog.text  # says where to look
+    assert queued_finds() == []
+
+
+def test_equipment_needs_no_ulid_to_be_searched(tmp_path):
+    assert oe.lacks_identity("equipment", {"common_name": "M4"}) is False
+
+
+def test_the_worker_skips_a_record_without_a_ulid_and_marks_nothing(monkeypatch):
+    import openserp_worker as w
+
+    monkeypatch.setattr(w, "_safe_entity_path", lambda *a: True)
+
+    class Storage:
+        def read_json(self, path):
+            return {"name": "x"}
+
+        def write_json(self, *a):
+            raise AssertionError("an unsearched entity must not be written")
+
+    monkeypatch.setattr(
+        oe, "enrich_one_person", lambda *a: (_ for _ in ()).throw(AssertionError("no"))
+    )
+    out = w.process_message(
+        {"entity_type": "people", "entity_path": "people/x.json"},
+        Storage(),
+        "http://serp",
+        object(),
+    )
+    assert out == "skip"
+
+
+def test_every_searched_kind_needs_a_ulid():
+    ok = "01HX7YZABCDEFGHJKMNPQRSTVW"
+    cases = {
+        "people": "PersonID",
+        "people_groups": "GroupID",
+        "places": "PlaceID",
+        "source_section": "SourceSectionID",
+    }
+    for entity, field in cases.items():
+        assert oe.lacks_identity(entity, {}) is True, entity
+        assert oe.lacks_identity(entity, {field: ok}) is False, entity
+        for bad in ("", None, 0):
+            assert oe.lacks_identity(entity, {field: bad}) is True, (entity, bad)
+    # the people_groups schema says GroupID; some code writes PeopleGroupID: both are read
+    assert oe.lacks_identity("people_groups", {"PeopleGroupID": ok}) is False

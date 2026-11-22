@@ -43,7 +43,9 @@ def _patch_enrich(monkeypatch, changed=True, raises=False):
 
 def test_process_done_marks_and_writes(monkeypatch):
     _patch_enrich(monkeypatch, changed=True)
-    st = FakeStorage({"people/x.json": {"name": "X"}})
+    st = FakeStorage(
+        {"people/x.json": {"name": "X", "PersonID": "01HX7YZABCDEFGHJKMNPQRSTVW"}}
+    )
     body = {"entity_type": "people", "entity_path": "people/x.json"}
     verdict = w.process_message(body, st, "http://localhost:7001", grok_client=object())
     assert verdict == "done"
@@ -70,7 +72,9 @@ def test_process_skips_already_searched(monkeypatch):
 
 def test_process_retry_on_enrich_error(monkeypatch):
     _patch_enrich(monkeypatch, raises=True)
-    st = FakeStorage({"people/x.json": {"name": "X"}})
+    st = FakeStorage(
+        {"people/x.json": {"name": "X", "PersonID": "01HX7YZABCDEFGHJKMNPQRSTVW"}}
+    )
     body = {"entity_type": "people", "entity_path": "people/x.json"}
     verdict = w.process_message(body, st, "http://localhost:7001", grok_client=object())
     assert verdict == "retry"
@@ -92,7 +96,9 @@ def _msg(body):
 
 def test_run_worker_deletes_only_on_done(monkeypatch):
     _patch_enrich(monkeypatch, changed=True)
-    st = FakeStorage({"people/x.json": {"name": "X"}})
+    st = FakeStorage(
+        {"people/x.json": {"name": "X", "PersonID": "01HX7YZABCDEFGHJKMNPQRSTVW"}}
+    )
     sqs = MagicMock()
     # one real message, then empty to trigger idle-exit
     sqs.receive_message.side_effect = [
@@ -114,7 +120,9 @@ def test_run_worker_deletes_only_on_done(monkeypatch):
 
 def test_run_worker_no_delete_on_retry(monkeypatch):
     _patch_enrich(monkeypatch, raises=True)
-    st = FakeStorage({"people/x.json": {"name": "X"}})
+    st = FakeStorage(
+        {"people/x.json": {"name": "X", "PersonID": "01HX7YZABCDEFGHJKMNPQRSTVW"}}
+    )
     sqs = MagicMock()
     sqs.receive_message.side_effect = [
         {"Messages": [_msg({"entity_type": "people", "entity_path": "people/x.json"})]},
@@ -145,7 +153,9 @@ def test_sigterm_stops_without_delete(monkeypatch):
         return True
 
     monkeypatch.setattr(oe, "enrich_one_person", fake, raising=False)
-    st = FakeStorage({"people/x.json": {"name": "X"}})
+    st = FakeStorage(
+        {"people/x.json": {"name": "X", "PersonID": "01HX7YZABCDEFGHJKMNPQRSTVW"}}
+    )
     sqs = MagicMock()
     sqs.receive_message.side_effect = [
         {"Messages": [_msg({"entity_type": "people", "entity_path": "people/x.json"})]}
@@ -166,7 +176,10 @@ def test_sigterm_stops_without_delete(monkeypatch):
 def test_producer_only_enqueues_unsearched():
     st = FakeStorage(
         {
-            "people/a.json": {"name": "A"},  # needs search
+            "people/a.json": {
+                "name": "A",
+                "PersonID": "01HX7YZABCDEFGHJKMNPQRSTVW",
+            },  # needs search
             "people/b.json": {
                 "name": "B",
                 "openserp_searched": True,
@@ -210,7 +223,9 @@ def test_process_validation_failure_is_retry(monkeypatch):
         oe, "_validate_before_write", lambda d, e: False
     )  # guard rejects
     monkeypatch.setattr(oe, "_metric", lambda *a, **k: None)
-    st = FakeStorage({"people/x.json": {"name": "X"}})
+    st = FakeStorage(
+        {"people/x.json": {"name": "X", "PersonID": "01HX7YZABCDEFGHJKMNPQRSTVW"}}
+    )
     body = {"entity_type": "people", "entity_path": "people/x.json"}
     verdict = w.process_message(body, st, "http://localhost:7001", object())
     assert verdict == "retry"
@@ -260,7 +275,7 @@ def test_a_grok_stop_keeps_the_message_and_pauses(monkeypatch):
 
     class Storage:
         def read_json(self, path):
-            return {"name": "x"}
+            return {"name": "x", "PersonID": "01HX7YZABCDEFGHJKMNPQRSTVW"}
 
     import src.enrichment.openserp_enrichment as oe
 
@@ -288,7 +303,7 @@ def test_a_find_the_queue_would_not_store_defers_the_message(monkeypatch, caplog
 
     class Storage:
         def read_json(self, path):
-            return {"name": "x"}
+            return {"name": "x", "PersonID": "01HX7YZABCDEFGHJKMNPQRSTVW"}
 
         def write_json(self, *a):
             raise AssertionError("an unsearched entity must not be written")

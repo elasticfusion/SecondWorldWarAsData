@@ -98,8 +98,9 @@ def entity_origin(
         name = (data.get("operation") or {}).get("name") or name
     logger.error(
         "OBSERV find_queue.entity_without_id entity=%s name=%r status=error - the record has no "
-        "ULID, so its finds are not queued (they could not be linked back to it); give the "
-        "record a ULID",
+        "ULID, so it is not searched and its finds are not queued (they could not be linked back "
+        "to it). The central write guard mints a missing primary key: find the writer that "
+        "bypassed it (scripts/check_raw_writes.sh) and give the record a ULID",
         entity_type,
         _text(name, 60),
     )

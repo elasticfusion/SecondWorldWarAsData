@@ -48,7 +48,11 @@ def test_equipment_write_success_counted(monkeypatch, tmp_path):
 
 def test_source_section_write_failure_not_counted(monkeypatch, tmp_path):
     _reset()
-    data = {"operation": {"name": "Cobra"}, "primary_sources": []}
+    data = {
+        "SourceSectionID": "01HX7YZABCDEFGHJKMNPQRSTVW",
+        "operation": {"name": "Cobra"},
+        "primary_sources": [],
+    }
     f = tmp_path / "ss1.json"
     f.write_text("{}", encoding="utf-8")
 
@@ -69,7 +73,11 @@ def test_source_section_write_failure_not_counted(monkeypatch, tmp_path):
 
 def test_source_section_write_success_counted(monkeypatch, tmp_path):
     _reset()
-    data = {"operation": {"name": "Market Garden"}, "primary_sources": []}
+    data = {
+        "SourceSectionID": "01HX7YZABCDEFGHJKMNPQRSTVW",
+        "operation": {"name": "Market Garden"},
+        "primary_sources": [],
+    }
     f = tmp_path / "ss2.json"
     f.write_text("{}", encoding="utf-8")
 

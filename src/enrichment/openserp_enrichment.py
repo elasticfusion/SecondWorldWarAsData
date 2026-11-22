@@ -676,6 +676,27 @@ def _settle(output_root: Path, trace: Dict[str, Any], changed: bool) -> bool:
     return True
 
 
+# the kinds of entity whose pages are queued for review, by directory name -> origin entity type
+_ORIGIN_TYPE = {
+    "people": "person",
+    "people_groups": "people_group",
+    "places": "place",
+    "source_section": "source_section",
+}
+
+
+def lacks_identity(entity: str, data: Dict) -> bool:
+    """True when this entity record has no ULID, so a page found for it could not be linked back to
+    it. Such a record is NOT searched and NOT marked searched (``find_queue`` logs an error naming
+    it): the central write guard mints a missing primary key, so this means some writer bypassed
+    it. Equipment queues no pages and is never refused."""
+    kind = _ORIGIN_TYPE.get(entity)
+    if kind is None or find_queue.entity_origin(kind, data) is not None:
+        return False
+    _metric("finds_no_origin")
+    return True
+
+
 def _search_entity(
     entity: str, f: Any, data: Dict, name: Any, output_root: Path, search: Any
 ) -> Optional[bool]:
@@ -683,6 +704,8 @@ def _search_entity(
     changed flag to mark-and-write with, or None to leave the entity unsearched (Grok gave no
     verdict - VerifyFailed - or OpenSERP was unavailable). Misses go to the review log.
     """
+    if lacks_identity(entity, data):
+        return None  # left unsearched: nothing is spent on it
     trace = _new_trace(entity, f, data, name)
     try:
         with _tracing(trace):
