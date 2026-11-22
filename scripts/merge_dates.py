@@ -35,6 +35,13 @@ def make_key(d: dict) -> tuple:
     )
 
 
+import sys  # noqa: E402
+
+# run directly (python3 scripts/<name>.py): the repo root must be importable for src.*
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from src.dedup.merge import store_merge_pointer  # noqa: E402
+
+
 def merge_group(files: list[tuple[Path, dict]]) -> tuple[dict, list[str]]:
     """Merge a group of duplicate date records. Returns (merged_record, deprecated_ids)."""
     # Sort by file mod time — keep earliest as canonical
@@ -166,22 +173,34 @@ def main():
         merged, deprecated_ids, mention_id_map = merge_group(file_group)
         canonical_id = merged.get("DateID", "")
 
-        # Map deprecated DateIDs -> canonical, plus deduped-mention DateMentionID redirects.
-        for old_id in deprecated_ids:
-            id_map[old_id] = canonical_id
-        id_map.update(mention_id_map)
-
         # Write merged record
         canonical_path = file_group[0][0]
         if not args.dry_run:
             with open(canonical_path, "w") as out:
                 json.dump(merged, out, indent=2, ensure_ascii=False)
 
-        # Remove duplicate files
-        for path, _ in file_group[1:]:
+        # Remove duplicate files, each only once its DateID points at the canonical record
+        # (src/utils/id_aliases: the old id still resolves); otherwise it is kept (said). Only a
+        # removed file's ids are redirected: a kept file keeps its own id, so a re-run can still
+        # store its pointer.
+        kept = 0
+        for path, dup in file_group[1:]:
+            dup_id = str(dup.get("DateID") or "")
             if not args.dry_run:
+                if not store_merge_pointer("dates", dup_id, canonical_id):
+                    logger.error(
+                        "Kept %s: its pointer to %s was not stored (see id_aliases); re-run",
+                        path.name,
+                        canonical_id,
+                    )
+                    kept += 1
+                    continue
                 path.unlink()
+            if dup_id in deprecated_ids:
+                id_map[dup_id] = canonical_id
             files_removed += 1
+        if not kept:  # mention redirects only when every duplicate of the group is gone
+            id_map.update(mention_id_map)
 
         files_kept += 1
 

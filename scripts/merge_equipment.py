@@ -8,6 +8,9 @@ import sys
 from pathlib import Path
 from typing import Dict, List
 
+# run directly (python3 scripts/<name>.py): the repo root must be importable for src.*
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -175,21 +178,36 @@ def _do_merge(equipment_dir: Path, items: List[Dict], primary_idx: int):
 
     output_root = equipment_dir.parent
 
+    from src.dedup.merge import store_merge_pointer
+
+    absorbed = []
     for i, item in enumerate(items):
         if i == primary_idx:
             continue
         print(f"  Merging: {item['name']}")
         secondary_data = load_equipment(equipment_dir, item["filename"])
-        secondary_id = secondary_data.get("EquipmentID")
+        absorbed.append((item, secondary_data.get("EquipmentID")))
         primary_data = merge_equipment_data(primary_data, secondary_data)
+
+    # the merged survivor is written FIRST: a crash before this deletes nothing
+    with open(equipment_dir / primary["filename"], "w", encoding="utf-8") as f:
+        json.dump(primary_data, f, indent=2, ensure_ascii=False)
+
+    for item, secondary_id in absorbed:
+        # the pointer first: a kept file keeps its own id (references to it are not repointed),
+        # so a re-run can still store its pointer
+        if not store_merge_pointer(
+            "equipment", str(secondary_id or ""), str(primary_id or "")
+        ):
+            print(
+                f"    KEPT: {item['filename']} - its pointer was not stored (see id_aliases); re-run"
+            )
+            continue
         if secondary_id and primary_id and secondary_id != primary_id:
             update_event_refs(output_root, secondary_id, primary_id, "equipment")
         update_index(equipment_dir / "index.json", item["name"], primary["filename"])
         (equipment_dir / item["filename"]).unlink()
         print(f"    Deleted: {item['filename']} (refs redirected to {primary_id})")
-
-    with open(equipment_dir / primary["filename"], "w", encoding="utf-8") as f:
-        json.dump(primary_data, f, indent=2, ensure_ascii=False)
 
 
 def main():

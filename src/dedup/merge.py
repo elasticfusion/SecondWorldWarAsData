@@ -157,19 +157,28 @@ from src.extraction.people import _merge_person
 
 def store_merge_pointer(entity: str, old_id: str, survivor_id: str) -> bool:
     """Store the pointer from the merged-away id to the survivor BEFORE the secondary is deleted
-    (``src/utils/id_aliases``): anything holding the old id still reaches the record. A record
-    without a valid id has nothing to point from (True). False: keep the secondary (retried next run).
-    """
+    (``src/utils/id_aliases``): anything holding the old id still reaches the record. True when the
+    secondary may be deleted: the pointer is stored, or there is nothing to point from (the same
+    record twice, or an old id that is not a ULID: no reference can hold it). A valid old id with
+    no valid survivor is refused (False): it would be deleted with nowhere to point. False: keep
+    the secondary (retried next run)."""
     from src.schemas import ULID_REGEX
     from src.utils import id_aliases
 
-    if old_id == survivor_id or not all(
-        isinstance(i, str) and ULID_REGEX.fullmatch(i) for i in (old_id, survivor_id)
-    ):
-        # the same record twice, or no valid id (the write guard gives every record a ULID):
-        # nothing to point from
-        return True
+    def ok(i: str) -> bool:
+        return isinstance(i, str) and bool(ULID_REGEX.fullmatch(i))
 
+    if not ok(old_id) or old_id == survivor_id:
+        return True
+    if not ok(survivor_id):
+        logger.error(
+            "OBSERV dedup.merge_pointer_refused entity=%s old=%s status=error - the survivor has "
+            "no valid id, so the merged-away record is kept (it would have nowhere to point). "
+            "Give the survivor a ULID (the central write guard does) and re-run",
+            entity,
+            old_id,
+        )
+        return False
     return id_aliases.record(entity, old_id, survivor_id, "dedup")
 
 

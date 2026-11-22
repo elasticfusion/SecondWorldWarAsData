@@ -1212,6 +1212,30 @@ tries, abort if never ready) -> `_clear_title_cache_if_reprocess` -> `_load_secr
   only worked for book-scoped runs until the unscoped branch started downloading `output/content/` (2026-11-07). Consider
   whether the unscoped whole-corpus run should re-run paid Grok steps (image-person, link review) over every book each time.
 
+#### Merge scripts: review accuracy and schema compliance (owner 2026-11-21)
+- **MED - review every merge path and validate it against the current schemas.** In scope: the pipeline merges
+  (`src/dedup/merge.py` people + generic, `lambda_handlers/dedup_ui_handler.py`, the bibliography reconcile
+  `src/extraction/bibliography.py`) and the manual scripts (`scripts/consolidate_people_groups.py`,
+  `scripts/merge_dates.py`, `scripts/merge_equipment.py`, `scripts/resolve_surname_people.py`,
+  `scripts/resolve_title_people.py`; and decide whether the `scripts/archive/` merges - `consolidate_places.py`,
+  `merge_duplicate_people.py`, `merge_duplicate_places.py`, `merge_equipment_dupes.py`, `merge_related_groups.py` -
+  are deleted or kept). For each, check: (1) the merged record validates against its entity schema at the current
+  version (the manual scripts write with raw `json.dump`, bypassing the central write guard: no validation, no
+  `_schema_version` / `_last_updated` stamp, no primary-key repair - route them through `write_json_with_lock`);
+  (2) every field of the absorbed record is kept or deliberately dropped (e.g. `merge_equipment_data` merges
+  `mentions` but the equipment schema's mentions field, aliases, images and identity fields are not checked;
+  `consolidate_people_groups._merge_into` handles `event_mentions` and members only); (3) references to the
+  absorbed id are repointed everywhere they can live (`update_event_refs` covers event sub-events; check entity
+  cross-links, the review queue, maps, images); (4) a merge pointer (`src/utils/id_aliases`) is stored before the
+  file is deleted, and references are repointed only after it (2026-11-21: the pipeline merges and the three
+  manual merge scripts; a file whose pointer fails is kept with its own id, so a re-run can point it; not the
+  archive scripts); (5) the survivor is written before anything is deleted (fixed 2026-11-21 in
+  `consolidate_people_groups` and `merge_equipment`, which deleted first); (6) S3 and pointers: a local-only script
+  leaves the deleted record on S3, and with AWS off its pointers go to the local `output/_id_aliases.jsonl`, not
+  the `{env}-wwii-id-aliases` table - say how both are synced (or require AWS mode for a merge); (7) tests: run each on a
+  copy of production data and validate every output record. `resolve_*_people.py` only rename (PersonID kept) but
+  skip silently when the target file exists.
+
 #### Loader (PostgreSQL, Phase 2 of the plan): removed records and old ids (owner 2026-11-21)
 - **MED - the loader never deletes, so a removed record keeps its row.** `src/loader/load.py` only inserts or
   replaces (`INSERT OR REPLACE` / `ON CONFLICT DO UPDATE`). Pointed at a database that already holds data, any record
