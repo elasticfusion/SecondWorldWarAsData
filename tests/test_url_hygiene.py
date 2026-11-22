@@ -1,3 +1,6 @@
+import pytest
+
+
 def test_a_control_character_makes_a_url_unclean():
     from src.utils.url_hygiene import clean_url, has_url_junk
 
@@ -59,3 +62,17 @@ def test_scrub_spaces_line_controls_and_deletes_invisible_marks():
     assert scrub(None) == "" and scrub(5) == "5"
     persian = "می\u200cخواهم"
     assert scrub(persian) == persian and scrub("🏳\ufe0f") == "🏳\ufe0f"
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://example.org:abc/x",
+        "https://example.org:99999/x",
+        "https://example.org:-1/x",
+    ],
+)
+def test_a_port_that_is_not_a_port_is_rejected_not_a_crash(url):
+    from src.utils.url_hygiene import clean_url
+
+    assert clean_url(url) is None

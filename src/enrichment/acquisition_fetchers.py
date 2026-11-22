@@ -13,6 +13,7 @@ acquisition pass honouring the review-gate verdict.
 from __future__ import annotations
 
 import logging
+import json
 import re
 from typing import Any, Dict, List, Optional
 
@@ -53,6 +54,25 @@ def _nara_fetcher(
     looked_up = nara_digital_objects(naid, api_key)
     if looked_up is None:
         return None
+    approved = _approved_manifest(entry, naid)
+    if not approved:
+        logger.warning(
+            "OBSERV acquisition.nara_scans_unpinned naId=%s status=warn - no approved scan-list "
+            "fingerprint (approved before 2026-11-22): the list is not checked against what a "
+            "person saw. Compare the scans at https://catalog.archives.gov/id/%s with the citation "
+            "before downloading (there is no re-approval step yet; TODO Group 3)",
+            naid,
+            naid,
+        )
+    elif approved != looked_up.get("manifest_sha256"):
+        logger.error(
+            "OBSERV acquisition.nara_scans_changed naId=%s status=error - NARA's scan list is not "
+            "the one a person approved; nothing is downloaded. Review the record's scans again "
+            "(https://catalog.archives.gov/id/%s)",
+            naid,
+            naid,
+        )
+        return None
     objs = looked_up["object_urls"]
     # NOTE: the api_key is needed ONLY for the metadata lookup above. The objectUrl byte-
     # downloads are PUBLIC (verified: NARA media URLs return 200 with no key) — the download
@@ -71,6 +91,16 @@ def _nara_fetcher(
     )
 
 
+def _approved_manifest(entry: Dict[str, Any], naid: str) -> str:
+    """The scan-list fingerprint a person approved for this NARA record, if one was recorded."""
+    for f in (entry.get("source_metadata") or {}).get("findings") or []:
+        if isinstance(f, dict) and str(f.get("naId") or "") == naid:
+            fp = f.get("manifest_sha256")
+            if isinstance(fp, str) and re.fullmatch(r"[0-9a-f]{64}", fp):
+                return fp
+    return ""
+
+
 def nara_digital_objects(naid: str, api_key: str) -> Optional[Dict[str, Any]]:
     """The downloadable page scans of one NARA record: ``{"title", "object_urls"}`` (every
     http(s) ``digitalObjects[].objectUrl``), or None when the record could not be read. One
@@ -87,9 +117,20 @@ def nara_digital_objects(naid: str, api_key: str) -> Optional[Dict[str, Any]]:
         )
         return None
     level = str(record.get("levelOfDescription") or "").lower()
+    scans = nara_scans(record)
+    if scans["refused"]:
+        logger.warning(
+            "OBSERV nara.scan_urls_refused naId=%s refused=%d status=warn - scan URLs outside "
+            "%s%s were dropped; if NARA moved its media, add the path to NARA_SCAN_PATHS",
+            naid,
+            scans["refused"],
+            NARA_SCAN_HOST,
+            "|".join(NARA_SCAN_PATHS),
+        )
     return {
         "title": str(record.get("title") or ""),
-        "object_urls": _nara_object_urls(record),
+        "object_urls": [s["url"] for s in scans["scans"]],
+        **scans,
         # a series or record group holds its scans on its child items: its own list says nothing
         # about whether the cited records are online (only an item or file unit's list does)
         "level": level,
@@ -248,15 +289,90 @@ def _record_from_nara_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
     return payload.get("record", payload) or {}
 
 
-def _nara_object_urls(record: Dict[str, Any]) -> "list":
-    """Collect the http(s) digitalObjects objectUrls from a NARA record."""
-    return _http_only(
-        [
-            o["objectUrl"]
-            for o in (record.get("digitalObjects") or [])
-            if isinstance(o, dict) and isinstance(o.get("objectUrl"), str)
-        ]
+# where NARA serves page scans (seen live 2026-11-22: /medialive/; earlier /medialz/)
+NARA_SCAN_HOST = "catalog.archives.gov"
+NARA_SCAN_PATHS = ("/medialive/", "/medialz/")
+
+
+def nara_scan_url_ok(url: Any) -> bool:
+    """A scan URL a download may fetch: a clean https URL on NARA's own media paths."""
+    from urllib.parse import urlparse
+
+    from src.utils.url_hygiene import clean_url
+
+    if not isinstance(url, str) or len(url) > 2048 or not url.startswith("https://"):
+        return False
+    if not clean_url(url):
+        return False
+    p = urlparse(url)
+    return (
+        _plain_scan_parts(p)
+        and (p.hostname or "").lower() == NARA_SCAN_HOST
+        and p.path.startswith(NARA_SCAN_PATHS)
     )
+
+
+def _plain_scan_parts(p: Any) -> bool:
+    """No dot segments, escapes, path parameters, query, fragment, other ports or credentials
+    (clean_url has
+    already refused a port that is not a number)."""
+    # any escape is refused (a real name with %20 is dropped and counted, not decoded)
+    odd_path = any(c in p.path for c in ("..", "%", ";", "\\"))
+    extras = p.params or p.query or p.fragment or "@" in p.netloc
+    return not (odd_path or extras or p.port not in (None, 443))
+
+
+def nara_scans(record: Dict[str, Any]) -> Dict[str, Any]:
+    """The page scans of a NARA record (``digitalObjects``) as a download would fetch them: each
+    scan's URL, file name, type and size, in reply order; any URL off NARA's media paths is dropped
+    and counted. ``manifest_sha256`` fingerprints the list (URLs + sizes), so a download can tell
+    that it still fetches exactly what a person approved."""
+    import hashlib
+
+    scans, refused = [], 0
+    for o in record.get("digitalObjects") or []:
+        if not isinstance(o, dict):
+            continue
+        if not nara_scan_url_ok(o.get("objectUrl")):
+            refused += 1
+            continue
+        scans.append(
+            {
+                "url": o["objectUrl"],
+                "filename": _text(o.get("objectFilename"), 200),
+                "type": _text(o.get("objectType"), 40),
+                "size": small_int_bytes(o.get("objectFileSize")),
+            }
+        )
+    fingerprint = hashlib.sha256(
+        json.dumps([[s["url"], s["size"]] for s in scans]).encode("utf-8")
+    ).hexdigest()
+    return {
+        "scans": scans,
+        "refused": refused,
+        "total_bytes": sum(s["size"] or 0 for s in scans),
+        "types": sorted({s["type"] for s in scans if s["type"]}),
+        "manifest_sha256": fingerprint,
+    }
+
+
+def small_int_bytes(value: Any) -> Optional[int]:
+    """A file size from the reply (ASCII digits or an int, up to 1 TB), else None."""
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return value if 0 <= value <= 10**12 else None
+    text = value.strip() if isinstance(value, str) else ""
+    return (
+        int(text)
+        if re.fullmatch(r"[0-9]{1,13}", text) and int(text) <= 10**12
+        else None
+    )
+
+
+def _nara_object_urls(record: Dict[str, Any]) -> "list":
+    """The checked scan URLs of a NARA record (``nara_scans``)."""
+    return [s["url"] for s in nara_scans(record)["scans"]]
 
 
 def _nara_naid_from_urls(urls: "list") -> str:

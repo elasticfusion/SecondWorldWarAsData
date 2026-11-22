@@ -225,13 +225,14 @@ def _prevalidate_url_string(url):
 def _parse_and_validate_url(url):
     """Parse + run clean_url's reject guards in order; return ``(scheme, parsed)`` or None.
     Preserves EXACTLY clean_url's fail-closed sequence: non-str/empty, over-length, parse
-    failure, disallowed scheme, missing netloc/hostname, unsafe host, credentials-in-URL.
+    failure (a port that is not a number included), disallowed scheme, missing netloc/hostname, unsafe host, credentials-in-URL.
     """
     url = _prevalidate_url_string(url)
     if url is None:
         return None
     try:
         p = urlparse(url)
+        p.port  # noqa: B018 - a port that is not a number (or out of range) raises here
     except Exception:  # noqa: BLE001 - any parse failure -> not clean
         return None
 

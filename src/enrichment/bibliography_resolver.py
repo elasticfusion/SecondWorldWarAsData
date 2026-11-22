@@ -933,9 +933,26 @@ def _record_finding(entry: Dict, event: Dict) -> None:
     findings.append(item)
 
 
+_VISION_VERDICTS = ("match", "unsure", "unchecked")  # what a queued NARA find can carry
+
+
+def _fingerprint(value: Any) -> Optional[str]:
+    return (
+        value
+        if isinstance(value, str) and re.fullmatch(r"[0-9a-f]{64}", value)
+        else None
+    )
+
+
+def _vision_verdict(value: Any) -> Optional[str]:
+    verdict = value.get("verdict") if isinstance(value, dict) else None
+    return verdict if verdict in _VISION_VERDICTS else None
+
+
 def _nara_fields(download: Any) -> Dict[str, Any]:
-    """The NARA identity and scan count of an approved find, type-checked (read back from the
-    store): ``digital_objects`` None when unknown, never a guess."""
+    """The NARA identity, scan count, approved scan-list fingerprint and vision verdict of an
+    approved find, type-checked (read back from the store): None when unknown, never a guess.
+    A download fetches exactly the approved list, or nothing."""
     if not isinstance(download, dict):
         return {}
     naid, count = download.get("naId"), download.get("object_count")
@@ -944,6 +961,8 @@ def _nara_fields(download: Any) -> Dict[str, Any]:
     return {
         "naId": str(naid) if ok_id else None,
         "digital_objects": count if ok_count else None,
+        "manifest_sha256": _fingerprint(download.get("manifest_sha256")),
+        "vision_check": _vision_verdict(download.get("vision")),
     }
 
 

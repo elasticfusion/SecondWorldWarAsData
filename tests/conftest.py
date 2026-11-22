@@ -263,3 +263,16 @@ def _private_id_aliases(monkeypatch, tmp_path_factory):
         id_aliases, "_LOCAL_FILE", tmp_path_factory.mktemp("id_aliases") / "a.jsonl"
     )
     id_aliases.reset_local()
+
+
+@pytest.fixture(autouse=True)
+def _fresh_nara_lookups():
+    """bibliography_finds remembers NARA catalog replies for the process (batch rounds): each test
+    starts with none."""
+    from src.enrichment import bibliography_finds
+
+    bibliography_finds._LOOKED_UP.clear()
+    bibliography_finds._VISION.clear()
+    yield
+    bibliography_finds._LOOKED_UP.clear()
+    bibliography_finds._VISION.clear()

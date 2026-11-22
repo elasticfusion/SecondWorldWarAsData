@@ -76,7 +76,40 @@ def _summary(entry: Dict[str, Any], source: str) -> str:
     return f"{source} copy for bibliography record: {what}"
 
 
-def nara_download_details(url: str, api_key: Optional[str]) -> Dict[str, Any]:
+# naId -> its catalog reply, for this process
+_LOOKED_UP: Dict[str, Dict[str, Any]] = {}
+# (naId, citation, scan-list fingerprint) -> vision verdict, for this process
+_VISION: Dict[tuple, Dict[str, Any]] = {}
+_MEMO_MAX = 256  # records remembered per process (oldest forgotten first)
+
+
+def _remember(memo: Dict[Any, Any], key: Any, value: Any) -> Any:
+    if key not in memo and len(memo) >= _MEMO_MAX:
+        memo.pop(next(iter(memo)))
+    memo[key] = value
+    return value
+
+
+def _looked_up(naid: str, api_key: str) -> Optional[Dict[str, Any]]:
+    """One catalog call per NARA record per process: a batch round repeats the pass that queued
+    the vision request, and must not spend NARA quota again. A failed lookup is not remembered.
+    """
+    from src.enrichment import acquisition_fetchers as af
+
+    if naid not in _LOOKED_UP:
+        found = af.nara_digital_objects(naid, api_key)
+        if found is None:
+            return None
+        _remember(_LOOKED_UP, naid, found)
+    return _LOOKED_UP[naid]
+
+
+def nara_download_details(
+    url: str,
+    api_key: Optional[str],
+    citation: str = "",
+    grok_client: Any = None,
+) -> Dict[str, Any]:
     """What approving a NARA find would download: the record's page scans. One catalog API call.
     ``object_count`` is None (not 0) when the list could not be read, so a reviewer is never told
     "no scans" by an outage; the download step reads the list again."""
@@ -89,30 +122,61 @@ def nara_download_details(url: str, api_key: Optional[str]) -> Dict[str, Any]:
     details: Dict[str, Any] = {"naId": naid or None, "object_count": None}
     if not naid or not api_key:
         return details
-    found = af.nara_digital_objects(naid, api_key)
+    found = _looked_up(naid, api_key)
     if found is None:
         return details
     details.update(_scan_details(found))
+    if found.get("scans"):
+        details["vision"] = _vision(naid, citation, found, details, grok_client)
     return details
 
 
-def _scan_details(found: Dict[str, Any]) -> Dict[str, Any]:
-    """The scans of a NARA record as a reviewer sees them. A series' own list is not its scans
-    (they sit on its items), so an empty one is unknown (None), never 0."""
-    objs = found["object_urls"]
-    known = found.get("scans_known", True) or bool(objs)
+def _vision(naid, citation, found, details, grok_client) -> Dict[str, Any]:
+    """Grok vision on the pages themselves (the description match alone can pass a neighbouring
+    file), once per record, citation and scan list per process: the resolver may queue the same
+    find twice in a pass, and its pages are not fetched again. Raises BatchModeCollecting when
+    the request is queued for a batch (nothing is remembered then)."""
+    from src.enrichment import nara_vision
+
+    key = (naid, citation, found.get("manifest_sha256"))
+    if key not in _VISION:
+        verdict = nara_vision.check_scans(
+            found["scans"], citation, details, grok_client
+        )
+        _remember(_VISION, key, verdict)
+    return _VISION[key]
+
+
+def _location(found: Dict[str, Any]) -> Dict[str, Any]:
+    """Where it is held: record group, series, boxes/reels, reading room (the pull slip)."""
     return {
         "nara_title": found["title"],
         "level": found.get("level") or None,
         "series_path": found.get("series_path") or None,
-        # where it is held: record group, series, boxes/reels, reading room (the pull slip)
         "record_group_number": found.get("record_group_number"),
         "series": found.get("series"),
         "containers": found.get("containers") or None,
         "reference_unit": found.get("reference_unit"),
+    }
+
+
+def _scan_details(found: Dict[str, Any]) -> Dict[str, Any]:
+    """The scans of a NARA record as a reviewer sees them: a sample with each file's name, type
+    and size, the total, the types, and the list's fingerprint (a download fetches exactly this
+    list). A series' own list is not its scans (they sit on its items), so an empty one is unknown
+    (None), never 0."""
+    objs = found["object_urls"]
+    known = found.get("scans_known", True) or bool(objs)
+    return {
+        **_location(found),
         "object_count": len(objs) if known else None,
         "object_urls": objs[:_SAMPLE_OBJECTS],
         "formats": sorted({o.lower().rsplit(".", 1)[-1][:5] for o in objs if "." in o}),
+        "scans": (found.get("scans") or [])[:_SAMPLE_OBJECTS],
+        "total_bytes": found.get("total_bytes"),
+        "types": found.get("types") or None,
+        "manifest_sha256": found.get("manifest_sha256"),
+        "refused_urls": found.get("refused") or 0,
     }
 
 
@@ -216,7 +280,12 @@ def _queue_one(
         "source_metadata": details or None,
     }
     if source == NARA_SOURCE:
-        params["download"] = nara_download_details(url, config.get("nara_api_key"))
+        params["download"] = nara_download_details(
+            url, config.get("nara_api_key"), origin.query, grok_client
+        )
+        if _vision_says_not_the_document(params["download"], url):
+            out.refused += 1
+            return
     status = find_queue.enqueue_find(
         provider=provider,
         url=url,
@@ -227,6 +296,22 @@ def _queue_one(
     )
     field = _COUNTER.get(status, "refused")
     setattr(out, field, getattr(out, field) + 1)
+
+
+def _vision_says_not_the_document(details: Dict[str, Any], url: str) -> bool:
+    """Grok vision looked at the record's pages and none belongs to the cited document: the find
+    is not queued (no link reaches a human that Grok called irrelevant)."""
+    from src.enrichment.nara_vision import NOT_MATCH
+
+    vision = details.get("vision") or {}
+    if vision.get("verdict") != NOT_MATCH:
+        return False
+    logger.info(
+        "OBSERV bib_finds.nara_scans_not_the_document url=%s reason=%r",
+        find_queue.clean_for_log(url),
+        find_queue.clean_for_log(vision.get("reason") or "", 200),
+    )
+    return True
 
 
 def finds_index() -> Optional[Dict[str, List[Dict[str, Any]]]]:

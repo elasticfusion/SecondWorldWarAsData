@@ -85,7 +85,7 @@ casualties:
 # a source is a config edit.
 trusted_sources:
   - {name: hyperwar, match: ["ibiblio.org/hyperwar/"], forms: [html, pdf]}
-  - {name: nara, match: ["catalog.archives.gov/id/", "catalog.archives.gov/medialz/"]}
+  - {name: nara, match: ["catalog.archives.gov/id/", "catalog.archives.gov/medialive/", "catalog.archives.gov/medialz/"]}
 
 links:
   # how far a followed link's own links are followed (hops) and how many per page, for links on

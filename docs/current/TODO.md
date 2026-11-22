@@ -43,7 +43,7 @@ was verified. *refactor* = only a redesign fixes it. `EP` = `ecs_entrypoint.py`.
 | D10 | Release the Phase 3 lock at once on failure. |
 | D11 | NARA not-online UI: two use cases (more human online searches; a College Park research visit). A human-found URL is approved directly (D11-2); visit scans come in through normal intake (D11-3). |
 | V1 | CONFIRMED 2026-11-17: the xAI Batch API answers vision requests. One-request probe (Map IV, pipeline `BatchRequest` JSONL format, `grok-4.3`, 1.3 MB) completed in about 2.5 h with the right answer (`is_map: true`, the map's title, five places on it); the same request live took 3.7 s. |
-| V2 | NARA files are served from `catalog.archives.gov/medialz/` (checked with the catalog API v2). |
+| V2 | NARA files are served from `catalog.archives.gov/medialz/` (checked with the catalog API v2, 2026-11-17) and `/medialive/` (seen live 2026-11-22: `digitalObjects[].objectUrl`, HTTP 200, no key, no redirect). |
 | V3 | No live evidence either way; fix the `pending#enrich#` row lifecycle in G1 regardless. |
 
 ### Group 0 - baseline and test harness
@@ -1583,6 +1583,24 @@ bibliography JSON; Archive.org / Gutenberg finds through G3.
   1-009" or a box), and the reading room (`referenceUnits`); the list shows them and sorts by container; flipping a bound record from `held_unprocessed` to
   `resolved` once its scan's content exists (`output/content/<slug>/`); filling the scan's chapter meta (licence,
   provenance) from its `pullscan#` row when Phase 0 imports it; a multi-file scan is added part by part.
+  **DONE (2026-11-22) - NARA scans: captured, checked, and looked at by Grok vision.** Live reply (naId 6076787, 96
+  scans): `digitalObjects[]` gives `objectUrl` (direct, `catalog.archives.gov/medialive/...`, HTTP 200, no key),
+  `objectFilename`, `objectType`, `objectFileSize`. Now: every scan URL must be a clean https URL on
+  `catalog.archives.gov` under `/medialive/` or `/medialz/` (others dropped, `OBSERV nara.scan_urls_refused`;
+  `medialive` added to `trusted_sources`); each NARA find keeps a sample of 20 scans with name, type and size, the
+  total size, the types and the list's fingerprint (`manifest_sha256`), which goes on the record's finding on approval;
+  the download (`acquisition_fetchers._nara_fetcher`) stops with `OBSERV acquisition.nara_scans_changed` when NARA's
+  list no longer matches the approved one. Grok vision (`src/enrichment/nara_vision.py`, prompt `nara_scan_vision`,
+  request-bound, batch-aware) looks at the first and a middle image page at queue time: `not_match` (every checked page)
+  is not queued; `match` / `unsure` / `unchecked` (no image pages, e.g. PDF) are queued with the verdict, the reason
+  and the pages for the reviewer. One catalog call per record per process (batch rounds spend no quota again). Live
+  check: `tests/integration/test_nara_live.py` (`-m requires_api`, not in CI). Left: the human-started download itself;
+  the full scan list is re-read from NARA at download time (fingerprint-checked), not stored; PDF scans are not looked
+  at by vision (`unchecked`); a changed scan list (`nara_scans_changed`) and an approval from before fingerprints
+  (`OBSERV acquisition.nara_scans_unpinned`, warns and downloads) have no re-approval step yet; the fingerprint covers
+  URL + size, not file content; any UI must escape the vision `reason` (Grok text, scrubbed of control characters but
+  not HTML-escaped). Scan URLs with a query, fragment, escape, `;`, `..`, backslash, other port or credentials are
+  refused (counted). `clean_url` now rejects a port that is not a number instead of raising.
 
 #### Carried over from PHASE3_MAP.md §6 (found by the 2026-11-17 documentation review) (moved here from Group 11)
 - **MED (was gap 20) - Bibliography verifier is fail-open in one place.** `_verify_match` accepts on a

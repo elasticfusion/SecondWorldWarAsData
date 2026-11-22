@@ -357,6 +357,8 @@ def test_values_read_back_from_the_store_are_checked():
     assert br._nara_fields(event["request_params"]["download"]) == {
         "naId": None,
         "digital_objects": None,
+        "manifest_sha256": None,
+        "vision_check": None,
     }
     bad = {**event, "endpoint": "http://127.0.0.1/x"}
     assert bf.approved_finds([bad]) == []
