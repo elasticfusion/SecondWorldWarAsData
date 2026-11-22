@@ -172,7 +172,8 @@ def _citation_identified(record: Dict[str, Any]) -> bool:
         has_archive
         or has_url
         or bool(sm.get("canonical_title"))
-        or record.get("search_status") == "reference_identified"
+        # pending: copies were found and wait in the URL-review queue (Group 3)
+        or record.get("search_status") in ("reference_identified", "pending")
     )
 
 

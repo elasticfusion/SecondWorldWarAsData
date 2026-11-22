@@ -80,13 +80,16 @@ def test_collect_verified_candidates_no_grok_accepts_all():
     assert out == ["https://archive.org/details/a", "https://archive.org/details/b"]
 
 
-def test_search_online_sources_aggregates_multiple_findings():
-    """multiple findings per entry is OK: archive.org + gutenberg verified hits BOTH land in
-    resource_urls + source_metadata.findings (not first-source short-circuit).
+def test_search_online_sources_aggregates_multiple_findings(queued_finds):
+    """multiple findings per entry is OK: archive.org + gutenberg verified hits are BOTH queued for
+    human review (not first-source short-circuit), and neither is written to the record.
 
     Also proves DECOUPLING: with use_openserp=False, archive.org AND gutenberg still run
     (they are independent of OpenSERP) and both produce findings."""
-    entry = {"citation": {"title": "The Lorraine Campaign", "author": "Cole"}}
+    entry = {
+        "BibliographyID": "01HX7YZABCDEFGHJKMNPQRSTVW",
+        "citation": {"title": "The Lorraine Campaign", "author": "Cole"},
+    }
     config = {
         "nara_api_key": "",  # NARA off
         "use_openserp": False,  # OpenSERP OFF — archive.org + gutenberg must still run
@@ -116,12 +119,18 @@ def test_search_online_sources_aggregates_multiple_findings():
         )
 
     assert primary == ("https://archive.org/details/a", "archive_org")
-    assert entry["resource_urls"] == [
+    assert (
+        "resource_urls" not in entry
+    )  # held in the review queue until a human approves
+    assert entry.get("_finds_pending") is True
+    queued = queued_finds("archive-org-find") + queued_finds("gutenberg-find")
+    assert {e["endpoint"] for e in queued} == {
         "https://archive.org/details/a",
         "https://gutenberg.org/ebooks/1",
-    ]
-    findings = entry["source_metadata"]["findings"]
-    assert {f["source"] for f in findings} == {"archive_org", "gutenberg"}
+    }
+    assert {e["request_params"]["origin_entity_id"] for e in queued} == {
+        "01HX7YZABCDEFGHJKMNPQRSTVW"
+    }
 
 
 def test_unknown_title_feeds_verbatim_not_placeholder_to_sources():

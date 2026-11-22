@@ -62,6 +62,13 @@ def _load_events() -> List[Dict[str, Any]]:
     return events
 
 
+def load_events() -> tuple[List[Dict[str, Any]], int]:
+    """Every stored find event (any review status) and the number of load failures. A caller that
+    needs the whole picture must check the failure count: a scan that failed looks like no events.
+    """
+    return _load_events_counted()
+
+
 def _load_events_counted() -> tuple[List[Dict[str, Any]], int]:
     """Load events AND the count of load/scan failures (corrupt records/files). Fail-safe.
 

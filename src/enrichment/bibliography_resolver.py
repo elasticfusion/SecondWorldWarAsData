@@ -25,6 +25,7 @@ logger = logging.getLogger(__name__)
 
 from src.utils.observe import observe_warn  # noqa: E402
 from src.grok_client import BatchModeCollecting
+from src.enrichment import bibliography_finds
 from src.utils.batch_pending import Pending
 from src.utils.url_hygiene import scrub
 
@@ -220,7 +221,7 @@ def resolve_bibliography_entry(
     resolver = _pick_resolver(doc_type, availability, nara_ok)
     result = resolver(entry, citation, grok_client, cfg)
 
-    _apply_result(entry, result)
+    _apply_result(entry, result, grok_client, cfg)
     _maybe_bookseller(entry, doc_type, nara_ok, grok_client, cfg)
     return entry
 
@@ -418,16 +419,86 @@ def _pick_resolver(doc_type: str, availability: str, nara_searchable: bool = Fal
     return _resolve_generic_entry
 
 
-def _apply_result(entry: Dict, result: Optional[Tuple]) -> None:
-    """Apply resolver result to entry."""
+def _entry_query(entry: Dict) -> str:
+    """The citation a find was made for (kept on the queued find as its query)."""
+    title = str((entry.get("citation") or {}).get("title") or "")
+    return _entry_verbatim(entry)[:300] or title
+
+
+_RECORD_FACTS = ("archive_reference_number", "archive_physical_address")
+
+
+def _apply_record_facts(entry: Dict, extra: Optional[Dict]) -> Dict:
+    """Put the record-group facts (where the cited records are HELD) on the record, and return what
+    is left of ``extra``. They are deterministic facts about the holding, not a find, so they do not
+    wait for a review."""
+    rest = dict(extra or {})
+    entry.update({k: rest.pop(k) for k in _RECORD_FACTS if k in rest})
+    return rest
+
+
+def _queue_found(
+    entry: Dict,
+    findings: "list[Tuple[str, str]]",
+    query: str,
+    grok_client: Any,
+    config: Dict,
+    details: Optional[Dict] = None,
+) -> None:
+    """Hand the verified findings to the review queue (``bibliography_finds``) and note, on the
+    entry, that it now waits for a human. A find the queue could not store marks the entry as an
+    outage (retried next run, never a human item). Nothing is written to ``resource_urls``: only an
+    approved find is (``_reconcile_finds``)."""
+    got = bibliography_finds.queue_findings(
+        entry,
+        findings,
+        query=query,
+        grok_client=grok_client,
+        config=config,
+        details=details,
+    )
+    if got.failed:
+        _mark_backend_down(entry)
+    if got.wait_for_review and not entry.get("_backend_down"):
+        # waits for a human only when every find of the record was stored (one that failed earlier
+        # in this resolve keeps it searchable: the next run stores it, the rest cost nothing)
+        entry["_finds_pending"] = True
+    logger.info(
+        "OBSERV bib.findings count=%d queued=%d waiting=%d rejected=%d refused=%d failed=%d "
+        "sources=%s",
+        len(findings),
+        got.queued,
+        got.waiting,
+        got.rejected,
+        got.refused,
+        got.failed,
+        ",".join(sorted({src for _, src in findings})),
+    )
+
+
+def _apply_result(
+    entry: Dict, result: Optional[Tuple], grok_client: Any = None, config: Any = None
+) -> None:
+    """Apply a resolver result to the entry. A found URL is queued for human review, not written:
+    the entry waits as ``pending``. Record-group facts go on the record at once."""
     if not result:
+        entry.pop("_finds_pending", None)
         entry["search_status"] = "not_found"
         return
     url, source, extra = result
+    details = _apply_record_facts(entry, extra)
     if url:
-        _apply_resolved_url(entry, url, source, extra)
-    elif extra:
-        entry.update(extra)
+        _queue_found(
+            entry,
+            [(url, source)],
+            _entry_query(entry),
+            grok_client,
+            config or {},
+            details or None,
+        )
+    if entry.pop("_finds_pending", False):
+        entry["search_status"] = "pending"
+        return
     # No online URL found. If the entry carries an archive_reference_number (already held, or
     # just added via extra), the RECORD GROUP is identified but there is no digitized copy ->
     # "reference_identified" (honest; a later run still retries the online sources). Only a
@@ -438,6 +509,53 @@ def _apply_result(entry: Dict, result: Optional[Tuple]) -> None:
             _sm.get("canonical_title")
         )
         entry["search_status"] = "reference_identified" if identified else "not_found"
+
+
+def _apply_approved(entry: Dict, approved: list) -> None:
+    """Write the approved finds onto the record: the first is the primary copy (``search_source``,
+    ``availability``, the PDF link it brought), the rest are further ``resource_urls``.
+    """
+    for n, event in enumerate(approved):
+        p = event.get("request_params") or {}
+        url = event.get("endpoint", "")
+        if n == 0:
+            meta = bibliography_finds.approved_details(event)
+            _apply_resolved_url(entry, url, str(p.get("search_source") or ""), meta)
+        elif url not in entry.setdefault("resource_urls", []):
+            entry["resource_urls"].append(url)
+        _record_finding(entry, event)
+    if _paper_only(entry):
+        entry["availability"] = (
+            "archive"  # described by NARA, held on paper: pull it there
+        )
+    _refresh_license(entry)
+
+
+def _reconcile_finds(entry: Dict, finds: Optional[list]) -> bool:
+    """Apply the human review decisions on this record's queued finds to the record. Returns True
+    when the record changed. An approved find becomes a ``resource_urls`` entry; a record with no
+    approved find keeps ``pending`` while any find awaits a human. A record whose finds were all
+    rejected is left as it is: the normal search runs again and never shows a rejected URL twice.
+    """
+    if not finds:
+        return False
+    before = json.dumps(entry, sort_keys=True, default=str)
+    approved = bibliography_finds.approved_finds(finds)
+    if approved:
+        _apply_approved(entry, approved)
+    elif bibliography_finds.still_waiting(finds):
+        entry["search_status"] = "pending"
+    changed = json.dumps(entry, sort_keys=True, default=str) != before
+    if changed:
+        logger.info(
+            "OBSERV bib.finds_reconciled bib=%s approved=%d waiting=%d rejected=%d status=%s",
+            str(entry.get("BibliographyID") or "")[:26],
+            len(approved),
+            sum(1 for e in finds if e.get("review_status") == "pending"),
+            sum(1 for e in finds if e.get("review_status") == "rejected"),
+            entry.get("search_status"),
+        )
+    return changed
 
 
 def _apply_resolved_url(
@@ -762,9 +880,9 @@ def _search_online_sources(
 
     if not findings:
         return None
-    _aggregate_findings(entry, findings)
-    # Primary finding keeps the existing single-tuple contract (_apply_result appends it too,
-    # which the dedup above already guards against).
+    _queue_found(entry, findings, query, grok_client, config)
+    # The primary finding keeps the single-tuple contract (_apply_result queues it again: a find
+    # already stored is not stored twice).
     return findings[0]
 
 
@@ -791,21 +909,56 @@ def _joined_author(author: Any) -> str:
     return author
 
 
-def _aggregate_findings(entry: Dict, findings: "list[Tuple[str, str]]") -> None:
-    """Dedup-preserving-order the verified findings into entry['resource_urls'] + a structured
-    entry['source_metadata']['findings'] list, and OBSERV the count/sources."""
-    seen = set(entry.get("resource_urls") or [])
-    for url, _source in findings:
-        if url and url not in seen:
-            entry.setdefault("resource_urls", []).append(url)
-            seen.add(url)
-    entry.setdefault("source_metadata", {}).setdefault("findings", []).extend(
-        {"url": u, "source": s} for u, s in findings
-    )
-    logger.info(
-        "OBSERV bib.findings count=%d sources=%s",
-        len(findings),
-        ",".join(sorted({s for _, s in findings})),
+def _record_finding(entry: Dict, event: Dict) -> None:
+    """Add one APPROVED find to ``source_metadata.findings`` (once per URL), with the id of the
+    review event that approved it (the find's provenance) and, for a NARA record, how many page
+    scans it has (``digital_objects``: 0 = paper only, on the NARA pull list; None = unknown).
+    """
+    p = event.get("request_params") or {}
+    url = event.get("endpoint", "")
+    meta = entry.setdefault("source_metadata", {})
+    if not isinstance(meta.get("findings"), list):
+        meta["findings"] = []
+    findings = meta["findings"]
+    if any(isinstance(f, dict) and f.get("url") == url for f in findings):
+        return
+    item = {
+        "url": url,
+        "source": p.get("search_source") or "",
+        "fetch_event_id": str(event.get("fetch_event_id") or ""),
+        "verified_by": "grok+human",
+    }
+    item.update(_nara_fields(p.get("download")))
+    findings.append(item)
+
+
+def _nara_fields(download: Any) -> Dict[str, Any]:
+    """The NARA identity and scan count of an approved find, type-checked (read back from the
+    store): ``digital_objects`` None when unknown, never a guess."""
+    if not isinstance(download, dict):
+        return {}
+    naid, count = download.get("naId"), download.get("object_count")
+    ok_id = isinstance(naid, (str, int)) and str(naid).isdigit()
+    ok_count = isinstance(count, int) and not isinstance(count, bool) and count >= 0
+    return {
+        "naId": str(naid) if ok_id else None,
+        "digital_objects": count if ok_count else None,
+    }
+
+
+def _paper_only(entry: Dict) -> bool:
+    """The entry's only approved copies are NARA records known to hold no scans (catalog only):
+    held on paper, so it belongs on the NARA pull list. Any other approved copy (an Archive.org
+    scan, a Gutenberg text) or an unknown scan count means it is not paper-only."""
+    found = [
+        f
+        for f in (entry.get("source_metadata") or {}).get("findings") or []
+        if isinstance(f, dict) and f.get("verified_by") == "grok+human"
+    ]
+    return bool(found) and all(
+        f.get("source") == bibliography_finds.NARA_SOURCE
+        and f.get("digital_objects") == 0
+        for f in found
     )
 
 
@@ -2296,6 +2449,34 @@ def _fully_resolved(data: Dict[str, Any], config: Dict) -> bool:
     )
 
 
+def _waiting_for_review(data: Dict[str, Any], index: Any) -> bool:
+    """The record waits for a human: ``pending``, no copy yet, and the queue still holds a find
+    nobody decided. An unreadable queue (``index`` None) counts as waiting: nothing is searched
+    again on a read failure."""
+    if data.get("search_status") != "pending" or data.get("resource_urls"):
+        return False
+    mine = (index or {}).get(str(data.get("BibliographyID") or "")) or []
+    return index is None or bibliography_finds.still_waiting(mine)
+
+
+def _nothing_to_search(f: Path, data: Dict[str, Any], config: Dict) -> Optional[str]:
+    """Apply the review decisions on the record's finds, then say why it needs no search this run:
+    ``"waiting"`` (its finds wait for a human), ``"skipped"`` (resolved), or None (search it). A decision
+    that arrived is written even when nothing is searched."""
+    index = config.get("bib_finds")
+    mine = (index or {}).get(str(data.get("BibliographyID") or ""))
+    changed = _reconcile_finds(data, mine)
+    if _waiting_for_review(data, index):
+        idle = "waiting"
+    elif _fully_resolved(data, config):
+        idle = "skipped"
+    else:
+        return None
+    if changed:
+        _write_bib(f, data)
+    return idle
+
+
 def _process_bib_record(
     f: Path,
     data: Dict[str, Any],
@@ -2308,12 +2489,11 @@ def _process_bib_record(
     # "resolved" by a prior RG-IDENTIFY pass but with ZERO resource_urls has no digitized
     # copy yet — re-process it so the online sources (NARA catalog / OpenSERP / archive.org /
     # Gutenberg) get a chance to find one.
-    if _fully_resolved(data, config or {}):
-        return ("skipped", False, "")
+    idle = _nothing_to_search(f, data, config or {})
+    if idle:  # "pending": its finds wait for a human (counted); "skipped": resolved
+        return (idle, False, "")
 
     cached = _resolve_watched(data, grok_client, config, resolved_by_key)
-
-    from src.utils.file_lock import write_json_with_lock
 
     status = data.get("search_status") or "not_found"
     # Pop the transient-outage marker (never persisted) and derive the accounting status: a
@@ -2335,6 +2515,18 @@ def _process_bib_record(
         _relocate_narrative_note(f, data)
         return (status, cached is not None, sample)
 
+    _write_bib(f, data, status)
+    # OBSERV (bibliography chain): attribute each resolution to its source so the
+    # NARA vs archive_org vs local-holding breakdown (and NARA success rate) is visible.
+    if status == "resolved":
+        _observe_resolved(f, data)
+    return (account_status, cached is not None, "")
+
+
+def _write_bib(f: Path, data: Dict[str, Any], status: str = "") -> None:
+    """Persist one bibliography record through the central guard; a schema block raises."""
+    from src.utils.file_lock import write_json_with_lock
+
     written = write_json_with_lock(f, data, entity="bibliography")
     if not written:
         # The schema guard BLOCKED the write (schema-invalid record). The resolution did NOT persist,
@@ -2346,11 +2538,6 @@ def _process_bib_record(
         raise RuntimeError(
             f"schema guard refused bibliography write for {f.name} (status={status})"
         )
-    # OBSERV (bibliography chain): attribute each resolution to its source so the
-    # NARA vs archive_org vs local-holding breakdown (and NARA success rate) is visible.
-    if status == "resolved":
-        _observe_resolved(f, data)
-    return (account_status, cached is not None, "")
 
 
 def _resolve_watched(
@@ -2400,6 +2587,10 @@ def _resolve_or_reuse(
     it. Returns the cached record used (or None if this was a fresh resolution)."""
     key = _citation_key(data)
     cached = resolved_by_key.get(key) if key else None
+    if cached is not None and cached.get("search_status") == "pending":
+        # the identical citation's finds wait for review under ITS BibliographyID: this record
+        # queues its own (the searches and verdicts are cached, so this costs no new request)
+        cached = None
     if cached is not None and not data.get("resource_urls"):
         _reuse_cached_resolution(data, cached)
     elif cached is not None:
@@ -2559,6 +2750,8 @@ def _account_bib_status(stats: Dict[str, int], status: str, was_deduped: bool) -
             "skipped",
             "held_unprocessed",
             "backend_down",
+            "pending",  # its finds wait in the URL-review queue: not "not found online"
+            "waiting",  # the same, from an earlier run
         )
         and not was_deduped
     )
@@ -2617,6 +2810,19 @@ def _resolve_one_bib_file(
         stats["queued"] += 1
 
 
+def _run_config(config: Optional[Dict]) -> Dict:
+    """The resolver's per-run config: the review decisions on earlier finds (read once; None when
+    unreadable, then nothing is reconciled) and the local-holdings index (built once).
+    """
+    config = dict(config or {})
+    if "bib_finds" not in config:
+        config["bib_finds"] = bibliography_finds.finds_index()
+    if "holdings_index" not in config:
+        config["holdings_index"] = build_holdings_index()
+    logger.info("Local holdings index: %d source docs", len(config["holdings_index"]))
+    return config
+
+
 def resolve_bibliography_dir(
     bib_dir: Path,
     grok_client: Any = None,
@@ -2646,6 +2852,8 @@ def resolve_bibliography_dir(
             "held_unprocessed",
             "reference_identified",
             "backend_down",
+            "pending",  # finds queued for human review this run
+            "waiting",  # finds queued earlier, still waiting for a human
         )
     }
     skip_files = {"index.json", "review_queue.json"}
@@ -2656,10 +2864,7 @@ def resolve_bibliography_dir(
 
     # Build the local-holdings index ONCE and inject it so each entry can be
     # short-circuited to a source we already hold (MS # B-405 -> B405.pdf).
-    config = dict(config or {})
-    if "holdings_index" not in config:
-        config["holdings_index"] = build_holdings_index()
-    logger.info("Local holdings index: %d source docs", len(config["holdings_index"]))
+    config = _run_config(config)
 
     worked = 0  # records actually resolved this run: max_items counts these, not skipped ones
     pending = Pending()
@@ -2669,7 +2874,8 @@ def resolve_bibliography_dir(
         if max_items and worked >= max_items:
             break
         processed += 1
-        skipped_before, queued_before = stats["skipped"], len(review_queue)
+        idle_before = stats["skipped"] + stats["waiting"]
+        queued_before = len(review_queue)
         with (
             pending.item()
         ):  # a queued request: visit every record, raise once at the end
@@ -2682,7 +2888,7 @@ def resolve_bibliography_dir(
                 not_citation_samples,
                 review_queue,
             )
-        if stats["skipped"] == skipped_before:
+        if stats["skipped"] + stats["waiting"] == idle_before:
             worked += 1
         if len(review_queue) > queued_before:
             # kept as it grows: a task killed mid-pass does not lose the human queue
@@ -2748,7 +2954,7 @@ def _log_bib_resolution_summary(
         logger.info(
             "OBSERV bibliography.resolve_summary in=%d resolved=%d ref_identified=%d "
             "not_found=%d backend_down=%d outage_capped=%d not_citation=%d queued=%d held=%d "
-            "errors=%d",
+            "finds_pending=%d finds_waiting=%d errors=%d",
             processed,
             stats["resolved"],
             stats["reference_identified"],
@@ -2758,6 +2964,8 @@ def _log_bib_resolution_summary(
             stats["not_citation"],
             stats["queued"],
             stats["held_unprocessed"],
+            stats.get("pending", 0),
+            stats.get("waiting", 0),
             stats["errors"],
         )
         # backend_down is a TRANSIENT outage recorded distinctly from not_found so it is never
@@ -2775,6 +2983,8 @@ def _log_bib_resolution_summary(
             stats["resolved"]
             + stats["reference_identified"]
             + stats["held_unprocessed"]
+            + stats.get("pending", 0)
+            + stats.get("waiting", 0)
         )
         if resolvable > 0 and got == 0:
             logger.warning(

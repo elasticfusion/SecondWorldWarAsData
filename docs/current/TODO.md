@@ -990,6 +990,18 @@ Findings:
     `endpoint` is the search API (`catalog.archives.gov/api/v2/records/search`, archive.org
     advancedsearch, gutendex), so a reviewer sees one item per successful query, including queries that
     matched nothing, with no link to the BibliographyID and no Grok relevance verdict.
+  - **DONE (Group 3 step C, 2026-11-21) - the finds go to the review queue.** `src/enrichment/bibliography_finds.py`:
+    every verified copy is queued (providers `nara-find` / `archive-org-find` / `gutenberg-find` / `openserp-find` /
+    `llm-find`, origin = the BibliographyID, query = the citation); the record waits as `search_status: pending`
+    (skipped while a find awaits a human; an unreadable queue reconciles nothing and searches nothing). On a later run
+    an approved find becomes `resource_urls` + a `source_metadata.findings` item with its `fetch_event_id` and
+    `verified_by: grok+human`; a record whose finds were all rejected is searched again and never shown a rejected
+    URL twice; a find the queue cannot store is an outage (retried). Record-group facts (`archive_reference_number`,
+    address) still go on the record at once. A NARA find carries what a download would fetch (`download.naId`,
+    `object_count`, a sample of `digitalObjects` URLs, formats; `None` when the lookup failed, never 0); an approved
+    NARA record with 0 scans is `availability: archive` (paper only). Owner 2026-11-21: NARA finds are reviewed
+    like any find (machine-gathered = untrusted) and a human starts the download. API addresses are never queued.
+    The old behaviour, for the record:
   - **The finds bypass review.** `bibliography_resolve` writes each verified Archive.org / Gutenberg /
     NARA URL straight into the record's `resource_urls` and `source_metadata.findings`
     (`BR:330-336`, `BR:677-682`); nothing is submitted to Phase 0.

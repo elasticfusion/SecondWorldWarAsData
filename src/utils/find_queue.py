@@ -73,12 +73,14 @@ _ENTITY_ID_FIELDS = {
     "people_group": ("GroupID", "PeopleGroupID"),
     "place": ("PlaceID",),
     "source_section": ("SourceSectionID",),
+    "bibliography": ("BibliographyID",),
 }
 _ENTITY_NAME_FIELDS = {
     "person": "name",
     "people_group": "group_name",
     "place": "current_name",
     "source_section": "name",
+    "bibliography": "title",
 }
 
 

@@ -181,7 +181,7 @@ def test_llm_search_runs_only_when_no_other_source_found_a_copy(monkeypatch):
     monkeypatch.setattr(br, "_find_in_openserp", lambda *a, **k: [])
     monkeypatch.setattr(br, "_find_in_gutenberg", lambda *a, **k: [])
     monkeypatch.setattr(br, "_find_in_llm", lambda *a, **k: calls.append("llm") or [])
-    monkeypatch.setattr(br, "_aggregate_findings", lambda e, f: None)
+    monkeypatch.setattr(br, "_queue_found", lambda *a, **k: None)
 
     monkeypatch.setattr(
         br, "_find_in_archive_org", lambda *a, **k: [("https://a/x", "archive_org")]

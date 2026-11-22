@@ -46,12 +46,10 @@ def _nara_fetcher(
     if not api_key:
         logger.debug("NARA fetcher: no api key -> cannot build target")
         return None
-    payload = _fetch_nara_record(naid, api_key)
-    if payload is None:
+    looked_up = nara_digital_objects(naid, api_key)
+    if looked_up is None:
         return None
-
-    record = _record_from_nara_payload(payload)
-    objs = _nara_object_urls(record)
+    objs = looked_up["object_urls"]
     # NOTE: the api_key is needed ONLY for the metadata lookup above. The objectUrl byte-
     # downloads are PUBLIC (verified: NARA media URLs return 200 with no key) — the download
     # pass must NOT send the key on the high-volume byte requests.
@@ -67,6 +65,43 @@ def _nara_fetcher(
         object_urls=objs,
         detail=f"NARA naId {naid}, {len(objs)} digital objects",
     )
+
+
+def nara_digital_objects(naid: str, api_key: str) -> Optional[Dict[str, Any]]:
+    """The downloadable page scans of one NARA record: ``{"title", "object_urls"}`` (every
+    http(s) ``digitalObjects[].objectUrl``), or None when the record could not be read. One
+    catalog API call. The /id/<naId> page is the citable resource; these are what a download
+    fetches (a human starts it)."""
+    payload = _fetch_nara_record(naid, api_key)
+    if payload is None:
+        return None
+    record = _record_from_nara_payload(payload)
+    if not _is_record_for(record, naid):
+        # an answer with no record in it (a search fallback with no hit): unknown, NOT "no scans"
+        logger.info(
+            "NARA lookup: naId=%s returned no record (scan count unknown)", naid
+        )
+        return None
+    level = str(record.get("levelOfDescription") or "").lower()
+    return {
+        "title": str(record.get("title") or ""),
+        "object_urls": _nara_object_urls(record),
+        # a series or record group holds its scans on its child items: its own list says nothing
+        # about whether the cited records are online (only an item or file unit's list does)
+        "level": level,
+        "scans_known": level in ("item", "fileunit", "file unit", ""),
+    }
+
+
+def _is_record_for(record: Dict[str, Any], naid: str) -> bool:
+    """Whether a parsed NARA answer is a catalog record (its own naId, or at least a title or a
+    digitalObjects list), not an empty search shell."""
+    if not isinstance(record, dict) or not record:
+        return False
+    own = str(record.get("naId") or "")
+    if own:
+        return own == str(naid)
+    return bool(record.get("title") or record.get("digitalObjects"))
 
 
 def _record_from_nara_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
