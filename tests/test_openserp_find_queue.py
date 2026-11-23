@@ -75,8 +75,14 @@ def test_max_web_caps_the_new_finds_per_entity(queued_finds):
     def page(url, *a, **k):
         return {**PAGE, "url": url}
 
-    with patch.object(oe, "process_positive_url", side_effect=page):
+    with (
+        patch.object(oe, "process_positive_url", side_effect=page),
+        patch.object(oe, "_verify_results_batch") as batch,
+    ):
         oe._apply_verified_web(cand, {"PersonID": "01H"}, "John Doe", object(), 2)
+    assert (
+        len(batch.call_args.args[1]) == 4
+    )  # the four results asked about in one request
     assert len(queued_finds()) == 2
 
 

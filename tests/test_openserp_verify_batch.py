@@ -79,7 +79,8 @@ def test_batch_without_a_full_clear_answer_is_a_failure_not_nos(_fresh, answer):
         oe._verify_results_batch("ctx", _results(2), _grok(answer))
     assert not _fresh.called  # nothing cached: the next run asks again
     snap = oe.get_metrics()
-    assert snap["verify_no"] == 0 and snap["verify_failed"] == 2
+    # not counted here: prefetch_relevance falls back to one question per result
+    assert snap["verify_no"] == 0 and snap["verify_failed"] == 0
 
 
 def test_batch_unrepairable_answer_is_a_failure(_fresh):

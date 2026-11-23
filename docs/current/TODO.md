@@ -837,7 +837,7 @@ rejected item stays rejected; an approved item starts Phase 0.
   cannot store leaves the entity unsearched (SQS: deferred), so the next run asks again. Records written by earlier
   runs keep their old entries (no migration). Left: the people web search is still gated on
   `military_awards` being empty (now only an award extraction fills it): replace it with a queue/marker check;
-  `entities_enriched` is not counted in a batch round-2 pass where every page was already queued. STILL OPEN in this step: wiring the batched verifier, the OpenSERP search-response cache, the checksum re-check.**
+  `entities_enriched` is not counted in a batch round-2 pass where every page was already queued. STILL OPEN in this step: the OpenSERP search-response cache, the checksum re-check.**
 - **DONE (Group 3 step H, 2026-11-23) - the fetched page is kept for Phase 0.** `src/utils/find_pages.py`: the page a
   find was judged on (live, or the Internet Archive copy) is stored once under its checksum
   (`find-pages/pages/<sha256>.html` in the data bucket, write-once; `output/_find_pages/` locally) with a per-URL
@@ -950,8 +950,21 @@ Findings:
   relevance request and no fetch. The dev cache held no OpenSERP entries of any kind (`search#openserp*`, both
   `openserp_verify` and `openserp_url_verdict`; scan 2026-11-23: 0 of 32,626), so the key change re-asks nothing
   and no URL-wide `REJECT` from an old relevance NO exists. A summary is made once per URL with the first entity's
-  context and shared (the reviewer sees the same summary for each entity). Left: wire `_verify_results_batch` into the four `find_page` callers (one request
-  per query's results instead of one per result).
+  context and shared (the reviewer sees the same summary for each entity).
+- **DONE (Group 3 step J, 2026-11-23) - the per-entity relevance questions are batched.** `prefetch_relevance`
+  asks Grok about a query's results in ONE request (`_verify_results_batch`, at most 10 results) before
+  `find_page` looks at them one by one; the verdicts are cached under the same per-entity key, so `find_page`'s
+  question is a cache hit. Wired into all four find callers (people web results, places, event sources, group
+  textual categories), each with its own filter, and `_would_ask` applies `find_page`'s checks (queueable, not
+  already queued, page not unfetchable/retry-later), so only results that would be asked are in the batch. One
+  candidate (counting only results with no verdict cached for the entity, once per URL) is asked alone as before.
+  A batch answer without a clear verdict for every result falls back to one question per result (metric
+  `verify_batch_failed`); a failed single question still leaves the entity unsearched. In Grok batch mode one
+  request per query is queued per round instead of one per result. Each result's text is JSON-quoted in the batch
+  prompt and marked untrusted (a result cannot forge a line for its neighbours). Metric `verify_batched`; a cached
+  re-read is not traced twice in the review log. Open: the batch answer is positional (an index-keyed answer
+  would catch a reordered reply). Trade-off: a query's candidates are
+  all asked even when the per-entity cap is reached after the first few.
 - **FIX (owner 2026-11-17) - key relevance on (URL, entity); keep page state per URL.**
   - Store the Grok relevance verdict under (full-URL hash, entity ULID), in one cache, with one
     retention constant (drop the 60-character URL key and the 30-day `search_cache` TTL for it).
