@@ -464,24 +464,6 @@
                 }
             }
         ],
-        "./src/enrichment/openserp_enrichment.py": [
-            {
-                "code": "reportArgumentType",
-                "range": {
-                    "startColumn": 57,
-                    "endColumn": 67,
-                    "lineCount": 1
-                }
-            },
-            {
-                "code": "reportArgumentType",
-                "range": {
-                    "startColumn": 69,
-                    "endColumn": 76,
-                    "lineCount": 1
-                }
-            }
-        ],
         "./src/enrichment/places_grok_geocode.py": [
             {
                 "code": "reportArgumentType",

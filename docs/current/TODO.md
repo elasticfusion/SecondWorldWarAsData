@@ -965,6 +965,15 @@ Findings:
   re-read is not traced twice in the review log. Open: the batch answer is positional (an index-keyed answer
   would catch a reordered reply). Trade-off: a query's candidates are
   all asked even when the per-entity cap is reached after the first few.
+- **DONE (2026-11-23) - places are capped like people (owner).** `enrich_one_place`: at most
+  `openserp.max_web_results_per_entity` (3) new finds per search and `max_images_per_entity` (3) images on the
+  record (`_entity_caps`, shared with people); once a cap is reached no further name variant or query is sent, and
+  a place that already holds its images is not image-searched. Before, every variant x query x result was
+  verified (4 names: 16 queries, up to ~40 photo checks and ~40 page checks). Equipment was already capped at 3
+  photos (hard-coded in `search_equipment_images`; it has no web search).
+- **DONE (2026-11-23) - `openserp.results_per_query` is read** (it was ignored: every query asked for 5). Default
+  5; `config.yaml.example` and the three profile overlays set 5 (their 10/20/30 never took effect), so behaviour
+  is unchanged. Deeper results for productive entities come from paging (next).
 - **FIX (owner 2026-11-17) - key relevance on (URL, entity); keep page state per URL.**
   - Store the Grok relevance verdict under (full-URL hash, entity ULID), in one cache, with one
     retention constant (drop the 60-character URL key and the 30-day `search_cache` TTL for it).

@@ -179,7 +179,7 @@ def test_places_events_and_groups_batch_too(world, monkeypatch, queued_finds):
     monkeypatch.setattr(
         "src.utils.search_query_loader.render_search_queries", lambda *a, **k: ["q"]
     )
-    oe._enrich_place_sources({"PlaceID": "01HPL"}, ["Metz"], "Metz", "u", world)
+    oe._enrich_place_sources({"PlaceID": "01HPL"}, ["Metz"], "Metz", "u", world, 3)
     origin = find_queue.entity_origin("source_section", {"SourceSectionID": "01HS"})
     oe.search_event_content("Battle of Metz", grok_client=world, origin=origin)
     group = find_queue.entity_origin("people_group", {"GroupID": "01HG"})

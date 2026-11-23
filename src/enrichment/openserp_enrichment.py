@@ -421,24 +421,29 @@ def _drop_excluded_domains(results: List[Dict]) -> List[Dict]:
 _DEFAULT_RESULTS_PER_QUERY = 5
 
 
-def _results_per_query(cfg: Dict[str, Any]) -> int:
-    """``openserp.results_per_query`` (default 5; OpenSERP takes 1-100). A value that is not a
-    whole number in range is logged and the default used."""
-    raw = cfg.get("results_per_query", _DEFAULT_RESULTS_PER_QUERY)
-    if isinstance(raw, int) and not isinstance(raw, bool) and 1 <= raw <= 100:
+def _config_int(cfg: Dict[str, Any], key: str, default: int, hi: int = 1000) -> int:
+    """``openserp.<key>`` as a whole number from 1 to ``hi``; anything else is said (once, then
+    every 500th read: one typo must not flood the log) and ``default`` used."""
+    raw = cfg.get(key, default)
+    if isinstance(raw, int) and not isinstance(raw, bool) and 1 <= raw <= hi:
         return raw
     from src.utils.observe import observe_warn_counted
 
-    observe_warn_counted(  # once, then every 500th query: one typo must not flood the log
+    observe_warn_counted(
         "openserp",
-        "bad_results_per_query",
-        key=("results_per_query",),
+        f"bad_{key}",
+        key=(key,),
         every=500,
-        note=f"not a whole number from 1 to 100; using {_DEFAULT_RESULTS_PER_QUERY}. Fix "
-        "openserp.results_per_query in config.yaml",
+        note=f"not a whole number from 1 to {hi}; using {default}. Fix openserp.{key} in "
+        "config.yaml",
         value=str(raw)[:20],
     )
-    return _DEFAULT_RESULTS_PER_QUERY
+    return default
+
+
+def _results_per_query(cfg: Dict[str, Any]) -> int:
+    """``openserp.results_per_query`` (default 5; OpenSERP takes 1-100)."""
+    return _config_int(cfg, "results_per_query", _DEFAULT_RESULTS_PER_QUERY, hi=100)
 
 
 def _search_openserp(
@@ -2014,6 +2019,30 @@ def _collect_person_candidates(f, name: str, data: Dict, openserp_url: str) -> D
     return person_candidates
 
 
+def _entity_caps(
+    max_images: Optional[int] = None, max_web: Optional[int] = None
+) -> "tuple[int, int]":
+    """The per-entity caps (an explicit argument wins): ``openserp.max_images_per_entity``
+    (images on the record) and ``openserp.max_web_results_per_entity`` (new finds queued per
+    search)."""
+    cfg: Dict[str, Any] = {}
+    if max_images is None or max_web is None:
+        from src.utils.config import load_config
+
+        cfg = load_config().get("openserp", {})
+    images = (
+        _config_int(cfg, "max_images_per_entity", 1)
+        if max_images is None
+        else max_images
+    )
+    web = (
+        _config_int(cfg, "max_web_results_per_entity", 5)
+        if max_web is None
+        else max_web
+    )
+    return int(images), int(web)
+
+
 def enrich_one_person(
     data: Dict,
     openserp_url: str,
@@ -2028,18 +2057,7 @@ def enrich_one_person(
     batch directory driver (below) and the SQS worker (one message = one entity); it does NOT
     read/write files or set the openserp_searched marker — the caller owns persistence.
     """
-    if max_images is None or max_web is None:
-        from src.utils.config import load_config
-
-        cfg = load_config().get("openserp", {})
-        max_images = (
-            max_images
-            if max_images is not None
-            else cfg.get("max_images_per_entity", 1)
-        )
-        max_web = (
-            max_web if max_web is not None else cfg.get("max_web_results_per_entity", 5)
-        )
+    max_images, max_web = _entity_caps(max_images, max_web)
     name = data.get("name", "")
     if not name:
         return False
@@ -2143,11 +2161,7 @@ def enrich_people_with_openserp(
     if not _reset_and_check_reachable(openserp_url):
         return 0
 
-    from src.utils.config import load_config
-
-    cfg = load_config().get("openserp", {})
-    max_images = cfg.get("max_images_per_entity", 1)
-    max_web = cfg.get("max_web_results_per_entity", 5)
+    max_images, max_web = _entity_caps()
 
     enriched = 0
     pending = Pending()
@@ -2829,14 +2843,16 @@ def enrich_one_place(
     openserp_url: str,
     grok_client: Any,
     f: Any = None,  # noqa: ARG001 - signature parity with enrich_one_person
-    max_images: Optional[int] = None,  # noqa: ARG001 - unused
-    max_web: Optional[int] = None,  # noqa: ARG001 - unused
+    max_images: Optional[int] = None,
+    max_web: Optional[int] = None,
 ) -> bool:
     """Enrich ONE already-loaded place record in place (search + verify + apply).
 
-    Searches EACH name variant (current + aliases + native-language historical names): images
-    are verify-only; textual sources are fetched + summarized via process_positive_url. Returns
-    True if images or web_results were added. Mirrors enrich_one_person: shared per-entity unit
+    Searches EACH name variant (current + aliases + native-language historical names) until the
+    entity's caps are reached (``_entity_caps``: images on the record, new finds this search;
+    the remaining variants and queries are not sent): images are verify-only; textual sources
+    are fetched + summarized via process_positive_url. Returns True if images were added or
+    pages queued. Mirrors enrich_one_person: shared per-entity unit
     for the batch driver (above) and the SQS worker; it does NOT read/write files or set
     openserp_searched. entities_enriched/entities_searched + persistence stay in the driver.
     """
@@ -2845,71 +2861,105 @@ def enrich_one_place(
     if not variants:
         return False
     primary = variants[0]
-    changed = _enrich_place_images(data, variants, primary, openserp_url, grok_client)
+    max_images, max_web = _entity_caps(max_images, max_web)
+    changed = _enrich_place_images(
+        data, variants, primary, openserp_url, grok_client, max_images
+    )
     changed = (
-        _enrich_place_sources(data, variants, primary, openserp_url, grok_client)
+        _enrich_place_sources(
+            data, variants, primary, openserp_url, grok_client, max_web
+        )
         or changed
     )
     return changed
 
 
-def _enrich_place_images(
-    data: Dict, variants: list, primary: str, openserp_url: str, grok_client: Any
-) -> bool:
-    """Images (verify-only): search each name variant, Grok-verify each hit, append new ones."""
+def _place_results(variants: list, category: str, openserp_url: str):
+    """Each OpenSERP result list for a place's queries of ``category``, name variant by name
+    variant (lazy: a query is sent only when the caller asks for more)."""
     from src.utils.search_query_loader import render_search_queries
 
-    existing_img_urls = {
-        i.get("url") for i in (data.get("images") or []) if isinstance(i, dict)
-    }
-    changed = False
     for variant in variants:
-        for q in render_search_queries("places", "images", name=variant):
-            for r in _search_openserp(q, openserp_url):
-                url = r.get("url", "")
-                if not url or url in existing_img_urls:
-                    continue
-                if _verify_result(
-                    r.get("title", ""),
-                    f"Photo of {primary} (WWII place)",
-                    grok_client,
-                    snippet=r.get("description", ""),
-                    url=url,
-                ):
-                    data.setdefault("images", []).append(
-                        {"url": url, "title": r.get("title", ""), "source": "openserp"}
-                    )
-                    existing_img_urls.add(url)
-                    changed = True
+        for q in render_search_queries("places", category, name=variant):
+            yield _search_openserp(q, openserp_url)
+
+
+def _new_place_photo(
+    r: Dict[str, Any], existing: set, primary: str, grok_client: Any
+) -> bool:
+    """A result not on the record yet that Grok confirms is a photo of the place."""
+    url = r.get("url", "")
+    if not url or url in existing:
+        return False
+    return _verify_result(
+        r.get("title", ""),
+        f"Photo of {primary} (WWII place)",
+        grok_client,
+        snippet=r.get("description", ""),
+        url=url,
+    )
+
+
+def _enrich_place_images(
+    data: Dict,
+    variants: list,
+    primary: str,
+    openserp_url: str,
+    grok_client: Any,
+    max_images: int,
+) -> bool:
+    """Images (verify-only): search each name variant, Grok-verify each hit, append new ones,
+    until the record holds ``max_images`` (a place that has them is not image-searched).
+    """
+    images = data.get("images") or []
+    existing_img_urls = {i.get("url") for i in images if isinstance(i, dict)}
+    if len(images) >= max_images:
+        return False
+    changed = False
+    for results in _place_results(variants, "images", openserp_url):
+        for r in results:
+            url = r.get("url", "")
+            if _new_place_photo(r, existing_img_urls, primary, grok_client):
+                data.setdefault("images", []).append(
+                    {"url": url, "title": r.get("title", ""), "source": "openserp"}
+                )
+                existing_img_urls.add(url)
+                changed = True
+                if len(data["images"]) >= max_images:
+                    return changed
     return changed
 
 
 def _enrich_place_sources(
-    data: Dict, variants: list, primary: str, openserp_url: str, grok_client: Any
+    data: Dict,
+    variants: list,
+    primary: str,
+    openserp_url: str,
+    grok_client: Any,
+    max_web: int,
 ) -> bool:
     """Textual sources: search each variant, fetch + summarize each hit, and queue it for human
-    review. Nothing is written to the place record (``web_results[]`` is no longer written).
+    review, up to ``max_web`` new finds (then no more queries are sent). Nothing is written to
+    the place record (``web_results[]`` is no longer written).
     """
-    from src.utils.search_query_loader import render_search_queries
-
     origin = find_queue.entity_origin("place", data, query=primary)
     context = f"{primary} in World War II"
-    changed = False
-    for variant in variants:
-        for q in render_search_queries("places", "sources", name=variant):
-            results = _search_openserp(q, openserp_url)
-            prefetch_relevance(results, context, grok_client, origin)
-            for r in results:
-                url = r.get("url", "")
-                if not url:
-                    continue
-                if find_page(
-                    url,
-                    r.get("title", ""),
-                    r.get("description", ""),
-                    context,
-                    grok_client,
-                    origin,
-                ):
-                    changed = True
-    return changed
+    queued = 0
+    for results in _place_results(variants, "sources", openserp_url):
+        prefetch_relevance(results, context, grok_client, origin)
+        for r in results:
+            url = r.get("url", "")
+            if not url:
+                continue
+            if find_page(
+                url,
+                r.get("title", ""),
+                r.get("description", ""),
+                context,
+                grok_client,
+                origin,
+            ):
+                queued += 1
+                if queued >= max_web:
+                    return True
+    return queued > 0
