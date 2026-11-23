@@ -418,8 +418,34 @@ def _drop_excluded_domains(results: List[Dict]) -> List[Dict]:
     return kept
 
 
-def _search_openserp(query: str, openserp_url: str, limit: int = 5) -> List[Dict]:
-    """Run an OpenSERP search. Returns list of {url, title, description}."""
+_DEFAULT_RESULTS_PER_QUERY = 5
+
+
+def _results_per_query(cfg: Dict[str, Any]) -> int:
+    """``openserp.results_per_query`` (default 5; OpenSERP takes 1-100). A value that is not a
+    whole number in range is logged and the default used."""
+    raw = cfg.get("results_per_query", _DEFAULT_RESULTS_PER_QUERY)
+    if isinstance(raw, int) and not isinstance(raw, bool) and 1 <= raw <= 100:
+        return raw
+    from src.utils.observe import observe_warn_counted
+
+    observe_warn_counted(  # once, then every 500th query: one typo must not flood the log
+        "openserp",
+        "bad_results_per_query",
+        key=("results_per_query",),
+        every=500,
+        note=f"not a whole number from 1 to 100; using {_DEFAULT_RESULTS_PER_QUERY}. Fix "
+        "openserp.results_per_query in config.yaml",
+        value=str(raw)[:20],
+    )
+    return _DEFAULT_RESULTS_PER_QUERY
+
+
+def _search_openserp(
+    query: str, openserp_url: str, limit: Optional[int] = None
+) -> List[Dict]:
+    """Run an OpenSERP search. Returns list of {url, title, description}. ``limit`` defaults to
+    ``openserp.results_per_query``."""
     if _breaker_is_open():
         # OpenSERP was found down: nothing may be searched (and stamped) until it is back
         _trace_query(query, "error")
@@ -434,6 +460,8 @@ def _search_openserp(query: str, openserp_url: str, limit: int = 5) -> List[Dict
         from src.utils.config import load_config
 
         cfg = load_config().get("openserp", {})
+        if limit is None:
+            limit = _results_per_query(cfg)
         time.sleep(cfg.get("rate_limit_seconds", 5))
         # Browser-mode OpenSERP (headless Chromium across several engines) can be slow;
         # the per-request timeout is config-driven so it can absorb browser latency

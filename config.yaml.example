@@ -263,7 +263,7 @@ dedup:
       cross_document_weight: 0.0
 
 openserp:
-  results_per_query: 10                # Fewer results = fewer verification calls
+  results_per_query: 5                 # results per OpenSERP query (each one may cost a Grok verify)
   max_images_per_entity: 3
   max_web_results_per_entity: 3
   rate_limit_seconds: 5                # Polite spacing between OpenSERP queries (serial)
