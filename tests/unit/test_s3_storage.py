@@ -27,11 +27,25 @@ class TestS3StorageReadWrite:
         result = s3_storage.read_json("people/eisenhower.json")
         assert result == data
 
-    def test_write_and_read_bytes(self, s3_storage):
-        content = b"binary content here"
-        s3_storage.write_bytes("files/test.bin", content)
-        result = s3_storage.read_bytes("files/test.bin")
-        assert result == content
+    def test_write_and_read_text_bytes(self, s3_storage):
+        content = b"<p>text content here</p>"
+        s3_storage.write_bytes("files/test.html", content)
+        assert s3_storage.read_bytes("files/test.html") == content
+
+    def test_a_binary_is_readable_only_after_its_scan(self, s3_storage):
+        """ClamAV on for every binary (owner 2026-11-23): it waits in unscanned/ until the drain
+        promotes it to its own key."""
+        content = b"\x89PNG\r\n\x1a\nbinary"
+        s3_storage.write_bytes("files/test.png", content)
+        with pytest.raises(s3_storage.s3.exceptions.NoSuchKey):
+            s3_storage.read_bytes("files/test.png")
+        assert s3_storage.exists("files/test.png")  # written: not written again
+        s3_storage.s3.copy_object(  # what a clean scan does (av_scan._move_key)
+            Bucket="test-bucket",
+            CopySource={"Bucket": "test-bucket", "Key": "unscanned/files/test.png"},
+            Key="files/test.png",
+        )
+        assert s3_storage.read_bytes("files/test.png") == content
 
     def test_exists_true(self, s3_storage):
         s3_storage.write_json("test.json", {"key": "value"})

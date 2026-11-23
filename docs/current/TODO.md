@@ -965,6 +965,22 @@ Findings:
   re-read is not traced twice in the review log. Open: the batch answer is positional (an index-keyed answer
   would catch a reordered reply). Trade-off: a query's candidates are
   all asked even when the per-entity cap is reached after the first few.
+- **DONE (2026-11-23) - ClamAV on for every binary object (owner).** It was already on in dev (ClamAV image in
+  ECR, trigger `AV_SCAN_ENABLED=true`), but binaries written by tasks skipped it: source-page images
+  (`output/images/files/`), person portraits and award files (`award_source_pages`), unit patches and other
+  originals (`artifacts/`) - and the two-minute background sync uploaded even map images straight to production.
+  Now `av_scan.staged_key` puts everything under `unscanned/` at all three upload points (final sync,
+  background sync, `S3Storage.write_bytes`) - deny by default: only known text suffixes go straight through,
+  and a direct write only if its bytes are text (the review found portraits saved under a server-chosen
+  `.html`/`.svg`/`.avif` suffix skipping the scan); staged binaries stay out of the Phase 2 manifest; the drain
+  runs in its own self-continuing trigger invocations (Phase 2/3 completion and the 15-min schedule; the
+  review found an inline drain could outlive the 900 s Lambda and strand the phase chain); the deploy builds the
+  ClamAV image if missing and stops rather than deploy with scanning off. OPEN (reviews): a quarantined
+  binary is fetched, staged and scanned again on every encounter (no tombstone); `AvImageUri` is still
+  optional in CloudFormation (only `deploy_all.sh` enforces it); a persistently unscannable key is retried on
+  every drain (no attempt cap). Exempt by design: a book's own figures (cut from an already-scanned PDF) - ask
+  the owner whether they should be scanned too. Existing objects already in production are not re-scanned
+  (dev; owner 2026-11-23: no cleanup).
 - **DONE (2026-11-23) step 1 of web photos: equipment (owner 2026-11-23).** OpenSERP's "photo" searches used the
   WEB search, so every "photo" was a page URL judged on its title; for equipment the later vision step then
   rejected each one (a page is not an image). Now `src/enrichment/web_photos.py`: an OpenSERP IMAGE search
@@ -994,10 +1010,9 @@ Findings:
   browser would; ~40 ms of process start per kept page. Fetched images are decoded only as
   JPEG/PNG/GIF/TIFF/WEBP/BMP (no EPS -> Ghostscript). A photo that cannot be stored leaves the entity unsearched
   (`FindNotStored`; the cached verdict means no second Grok request).
-  Notes / OPEN: AV scanning is opt-in (`AV_SCAN_ENABLED` needs the ClamAV image deployed); until it is on,
-  photos stay staged (never in production unscanned), so a record's `local_path` names a file not yet in
-  production (a quarantined one never arrives): the site generator must check the object exists (or add a scan
-  state). Local runs (no `S3_BUCKET`) write photos straight to `output/photos/files/` (dev only). Phase 0's
+  Notes / OPEN: a photo waits in `unscanned/` until the next drain (after Phase 2 or 3), so a record's
+  `local_path` can name a file not yet in production (a quarantined one never arrives): the site generator must
+  check the object exists (or add a scan state). Local runs (no `S3_BUCKET`) write photos straight to `output/photos/files/` (dev only). Phase 0's
   own `text_converters._strip_inline_js` is a weaker, separate strip: move it onto `html_safety` (DRY; changes
   Phase 0 conversion output, so with a conversion regression check). Verdicts are keyed (bytes, entity), not on
   the caption: a hostile caption seen first can fix a photo's verdict for 90 days. Pages kept before this

@@ -31,6 +31,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import re
 import time as _time
 import uuid
 from dataclasses import dataclass, field
@@ -103,6 +104,7 @@ class AvOutcome:
     """Aggregate result the caller acts on."""
 
     scanned: bool = False  # was a scan actually attempted (binary present)?
+    more: bool = False  # a drain stopped at its deadline with keys left (drain again)
     clean_keys: list[str] = field(default_factory=list)
     quarantined_keys: list[str] = field(default_factory=list)
     results: list[ScanResult] = field(default_factory=list)
@@ -378,6 +380,79 @@ UNSCANNED_PREFIX = "unscanned/"
 QUARANTINE_PREFIX = "quarantine/"
 
 
+# what a task may upload straight to its key: text the pipeline writes itself. DENY BY DEFAULT -
+# anything else (an image, a PDF, an unknown or missing suffix, a .svg, an .img) is staged
+_TEXT_SUFFIXES = (
+    ".json",
+    ".jsonl",
+    ".md",
+    ".txt",
+    ".csv",
+    ".tsv",
+    ".html",
+    ".htm",
+    ".xml",
+    ".yaml",
+    ".yml",
+    ".log",
+)
+# the pipeline's own state, never served or ingested (the diagnostics copy of the Grok cache,
+# written only by ecs_entrypoint from /app/cache/api)
+_INTERNAL_PREFIXES = ("diagnostics/cache/",)
+
+
+# C0 control bytes (and DEL) that text never holds - tab, newline, form feed and carriage return
+# are text; a file signature like ZIP's "PK\x03\x04" is caught here
+_CONTROL = re.compile(rb"[\x00-\x08\x0b\x0e-\x1f\x7f]")
+
+
+# file signatures that are never text, whatever bytes follow
+_BINARY_MAGIC = (
+    b"%PDF-",
+    b"PK\x03\x04",
+    b"MZ",
+    b"\x7fELF",
+    b"GIF8",
+    b"\x89PNG",
+    b"\xff\xd8\xff",
+    b"\xd0\xcf\x11\xe0",
+    b"#!",
+)
+
+
+def _looks_like_text(body: bytes) -> bool:
+    """The WHOLE body is UTF-8 text with no control bytes but tab/newline/form feed/carriage
+    return, and does not open with a binary file signature."""
+    data = bytes(body)
+    if data.startswith(_BINARY_MAGIC) or _CONTROL.search(data):
+        return False
+    try:
+        data.decode("utf-8")
+        return True
+    except UnicodeDecodeError:
+        return False
+
+
+def needs_scan(key: str, body: "bytes | None" = None) -> bool:
+    """Whether an object written to ``key`` must pass ClamAV first (owner 2026-11-23: ClamAV on
+    for every binary). Everything does, except a text-suffix key (``_TEXT_SUFFIXES``) whose
+    ``body`` - when the caller has it - really is text: a server's bytes saved under a
+    Content-Type-derived ``.html`` are staged too. Already-staged and internal keys never.
+    """
+    if key.startswith(UNSCANNED_PREFIX) or key.startswith(_INTERNAL_PREFIXES):
+        return False
+    if not key.lower().endswith(_TEXT_SUFFIXES):
+        return True
+    return body is not None and not _looks_like_text(body)
+
+
+def staged_key(key: str, body: "bytes | None" = None) -> str:
+    """Where an upload to ``key`` must go: under ``unscanned/`` when it needs a scan
+    (``needs_scan``) - the drain promotes it to ``key`` only after a clean scan and quarantines an
+    infected one - else ``key`` itself."""
+    return UNSCANNED_PREFIX + key if needs_scan(key, body) else key
+
+
 def _prod_path(key: str) -> str:
     """Strip the unscanned/ staging prefix to recover the production path (the move target parity)."""
     return key[len(UNSCANNED_PREFIX) :] if key.startswith(UNSCANNED_PREFIX) else key
@@ -589,13 +664,34 @@ def _release_drain_lock(s3_client, bucket: str) -> None:
         pass
 
 
+def _rotated(keys: list) -> list:
+    """The keys from a random starting point (each drain begins somewhere new)."""
+    import random
+
+    if not keys:
+        return keys
+    start = random.randrange(len(keys))  # nosec B311 - load spreading, not security
+    return keys[start:] + keys[:start]
+
+
 def drain_unscanned(
-    s3_client, bucket: str, scanner: Scanner, *, chunk_size: int = 25, region: str = ""
+    s3_client,
+    bucket: str,
+    scanner: Scanner,
+    *,
+    chunk_size: int = 25,
+    region: str = "",
+    deadline: "float | None" = None,
 ) -> AvOutcome:
     """Model-A drain: list the unscanned/ queue and scan it in bounded SEQUENTIAL chunks (one ClamAV
     task per chunk so no single sequential scan outruns the poll window), dispositioning each chunk
     via the three-zone scan_staged_binaries. Single-drainer (S3 lock) so overlapping runs don't
     race. Keys arriving AFTER the snapshot wait for the next drain. Never raises.
+
+    ``deadline`` (a ``time.monotonic()`` value): no chunk after the first is STARTED after it;
+    the outcome's ``more`` says keys were left for the next drain (a Lambda must stop before its
+    timeout). A chunk ClamAV decides nothing about ends the drain (``more`` False): the 15-minute
+    schedule tries again, never a tight loop. Each drain starts at a random key.
 
     Returns an aggregate AvOutcome (clean/quarantined across all chunks)."""
     agg = AvOutcome()
@@ -611,12 +707,34 @@ def drain_unscanned(
             len(keys),
             step,
         )
+        keys = _rotated(
+            keys
+        )  # no fixed first chunk: undecidable keys cannot starve the rest
         for i in range(0, len(keys), step):
+            if i and deadline is not None and _time.monotonic() > deadline:
+                agg.more = (
+                    True  # the first chunk always runs: an invocation always progresses
+                )
+                logger.info(
+                    "OBSERV av.drain_deadline left=%d status=ok - the rest is drained next",
+                    len(keys) - i,
+                )
+                break
             chunk = keys[i : i + step]
             out = scan_staged_binaries(s3_client, bucket, chunk, scanner, region=region)
             agg.results.extend(out.results)
             agg.clean_keys.extend(out.clean_keys)
             agg.quarantined_keys.extend(out.quarantined_keys)
+            if not (out.clean_keys or out.quarantined_keys):
+                agg.more = False  # ClamAV decided nothing: do not keep launching scans
+                logger.error(
+                    "OBSERV av.drain_no_verdict keys=%d left=%d status=error - the ClamAV task "
+                    "returned no verdict for a whole chunk; the drain stops (the 15-minute "
+                    "schedule tries again). Check the AvScanTaskDef task's logs and its signature DB",
+                    len(chunk),
+                    len(keys) - i - len(chunk),
+                )
+                break
         agg.scanned = bool(agg.results)
         logger.info(
             "OBSERV av.drain_summary chunks=%d promoted=%d quarantined=%d status=%s",

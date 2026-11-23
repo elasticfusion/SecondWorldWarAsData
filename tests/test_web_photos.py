@@ -128,26 +128,27 @@ def test_a_confirmed_photo_is_kept_with_its_provenance(web):
     assert "M4 Sherman, Normandy, July 1944" in grok.vision_asked[0]["prompt"]
 
 
-def test_the_photo_waits_in_the_av_staging_area():
-    assert find_pages.PHOTO_STAGING_PREFIX == "unscanned/output/photos/files"
-    from src.ingestion.av_scan import UNSCANNED_PREFIX, _prod_path
-
-    staged = f"{find_pages.PHOTO_STAGING_PREFIX}/abc.png"
-    assert staged.startswith(UNSCANNED_PREFIX)
-    assert (
-        _prod_path(staged) == "output/photos/files/abc.png"
-    )  # what a clean scan promotes to
-
-
 def test_in_aws_a_photo_is_written_only_to_the_staging_area(monkeypatch):
-    from src.utils.storage import S3Storage
+    from src.ingestion.av_scan import _prod_path
+
+    puts = []
+
+    class _S3:
+        class exceptions:
+            ClientError = KeyError
+
+        def head_object(self, Bucket, Key):
+            raise KeyError(Key)
+
+        def put_object(self, Bucket, Key, Body):
+            puts.append(Key)
 
     monkeypatch.setattr(find_pages, "_bucket", lambda: "dev-wwii-data-pipeline")
-    store = find_pages._storage(
-        find_pages.PHOTO_STAGING_PREFIX, find_pages._PHOTO_LOCAL_DIR
-    )
-    assert isinstance(store, S3Storage)
-    assert store._key("x.png") == "unscanned/output/photos/files/x.png"
+    monkeypatch.setattr("boto3.client", lambda *a, **k: _S3())
+    got = find_pages.keep_photo(_png(), "png")
+    (key,) = puts
+    assert key.startswith("unscanned/output/photos/files/")
+    assert _prod_path(key) == got["local_path"]  # where a clean scan promotes it
 
 
 def test_the_same_photo_from_another_site_is_a_duplicate(web):

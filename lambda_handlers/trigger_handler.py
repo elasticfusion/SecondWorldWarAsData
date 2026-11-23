@@ -1858,10 +1858,16 @@ def handler(event, _context):
     if event.get("source") == "manual":
         return _handle_manual_trigger(event)
 
-    # Scheduled stale lock check
+    # Scheduled stale lock check (and a drain of the AV staging area: catches anything a
+    # phase-complete drain left)
     if event.get("source") == "scheduled":
         _sweep_stop_reports_safely()
+        _start_av_drain("scheduled")
         return _handle_scheduled_check()
+
+    # A drain of the AV staging area (started by phase completion, the schedule, or itself)
+    if event.get("source") == "av-drain":
+        return _run_av_drain(_context)
 
     # A Phase 3 task finished its book: launch the next queued one that can run (each is tried
     # until one launches - another may be running in its own task)
@@ -2054,6 +2060,60 @@ def _submit_ocr_batch(ocr_keys: list) -> None:
             logger.warning("OCR submit did not proceed for %s", k)
 
 
+# one ClamAV chunk: the task launch plus its result poll (av_scan._poll_av_result, 600 s), with
+# margin - a drain invocation starts a chunk only while this much time is left
+_AV_CHUNK_BUDGET_S = 700
+
+
+def _start_av_drain(reason: str) -> None:
+    """Drain unscanned/ in a separate, asynchronous invocation of this function (never blocks the
+    caller). Fail-safe: a failed request is said; the 15-minute scheduled check starts one too.
+    """
+    if not AV_SCAN_ENABLED:
+        return
+    try:
+        boto3.client("lambda").invoke(
+            FunctionName=os.environ.get("AWS_LAMBDA_FUNCTION_NAME", ""),
+            InvocationType="Event",
+            Payload=json.dumps({"source": "av-drain", "reason": reason}).encode(),
+        )
+    except Exception as e:  # noqa: BLE001 - the scheduled check starts a drain anyway
+        logger.warning(
+            "OBSERV av.drain_start_failed reason=%s err=%s status=warn - the staged binaries wait "
+            "for the next scheduled check (15 min). Check this function's lambda:InvokeFunction",
+            reason,
+            type(e).__name__,
+        )
+
+
+def _run_av_drain(context) -> dict:
+    """One drain invocation: scan chunks while a whole chunk still fits in this invocation, then
+    hand the rest to a fresh invocation. Another active drainer (the S3 lock) means nothing to do.
+    """
+    from src.ingestion.av_scan import drain_unscanned
+
+    remaining = context.get_remaining_time_in_millis() / 1000 if context else 900.0
+    deadline = time.monotonic() + max(0.0, remaining - _AV_CHUNK_BUDGET_S)
+    try:
+        out = drain_unscanned(s3, BUCKET, _make_av_scanner(), deadline=deadline)
+    except Exception as e:  # noqa: BLE001 - said; the scheduled check drains again
+        logger.warning(
+            "OBSERV av.phase_drain_failed reason=%s status=warn - the staged binaries wait for "
+            "the next drain. Check the ClamAV task (AvScanTaskDef) logs",
+            type(e).__name__,
+        )
+        return {"action": "av_drain", "ok": False}
+    logger.info(
+        "OBSERV av.phase_drain promoted=%d quarantined=%d more=%s status=ok",
+        len(out.clean_keys),
+        len(out.quarantined_keys),
+        out.more,
+    )
+    if out.more and (out.clean_keys or out.quarantined_keys):
+        _start_av_drain("continue")  # only while it progresses: never a loop of no-ops
+    return {"action": "av_drain", "ok": True, "more": out.more}
+
+
 def _drive_next_phase(completed_phase: str) -> dict:
     """Event-driven phase chaining: a completed phase invokes this to launch the
     NEXT phase immediately from parked pending#* queues (instead of relying on the
@@ -2065,24 +2125,15 @@ def _drive_next_phase(completed_phase: str) -> dict:
     just reconcile all pending queues. Delegates to _reconcile_pending so the
     event-driven path and the scheduled backstop share ONE drain implementation.
     """
-    # On Phase-3 completion, drain the unscanned/ AV queue: downloaded map/image binaries were
-    # staged to unscanned/ by the Phase-3 final sync (never prod un-scanned). Scan+promote them
-    # with the SAME ClamAV scanner (clean->prod, infected->quarantine/+alert, unscannable->stay).
+    # On Phase-2 or Phase-3 completion, drain the unscanned/ AV queue: every binary a task writes
+    # (maps, images, photos, portraits, patches) is staged to unscanned/ by its upload (never prod
+    # un-scanned; av_scan.staged_key). Scan+promote them with the SAME ClamAV scanner (clean->prod,
+    # infected->quarantine/+alert, unscannable->stay). An empty queue launches no scan task.
     # Fail-safe: a drain error never blocks phase chaining.
-    if completed_phase == "3" and AV_SCAN_ENABLED:
-        try:
-            from src.ingestion.av_scan import drain_unscanned
-
-            out = drain_unscanned(s3, BUCKET, _make_av_scanner())
-            logger.info(
-                "OBSERV av.phase3_drain promoted=%d quarantined=%d status=ok",
-                len(out.clean_keys),
-                len(out.quarantined_keys),
-            )
-        except Exception as e:  # noqa: BLE001 - AV drain must not block phase chaining
-            logger.warning(
-                "OBSERV av.phase3_drain_failed reason=%s status=warn", type(e).__name__
-            )
+    # The drain runs in its OWN invocation (``_start_av_drain``): a chunk can take ~10 min, so an
+    # inline drain could outlive this Lambda and strand both its lock and the phase chain.
+    if completed_phase in ("2", "3"):
+        _start_av_drain(f"phase-{completed_phase}")
 
     launched = _reconcile_pending(reason=f"phase-{completed_phase}-complete")
     return {

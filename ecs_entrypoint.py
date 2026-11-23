@@ -612,11 +612,15 @@ def s3_sync_up(
     exclude_patterns: "list | None" = None,
     skip_keys: "set | None" = None,
 ) -> tuple:
-    """Upload local dir to S3 prefix. Returns (file_count, uploaded_keys)."""
+    """Upload local dir to S3 prefix. Returns (file_count, uploaded_keys). A binary goes to the AV
+    staging area (``av_scan.staged_key``): it is counted, but not in ``uploaded_keys`` (the next
+    phase's manifest) - it reaches its own key only after a clean ClamAV scan."""
+    from src.ingestion.av_scan import staged_key
+
     s3 = _s3_client()
     exclude = exclude_patterns or []
     skip = skip_keys or set()
-    count = 0
+    count = staged = 0
     uploaded = []
     for f in local_dir.rglob("*"):
         if f.is_file():
@@ -625,12 +629,24 @@ def s3_sync_up(
             # not just files whose NAME contains "files").
             if any(pat in f.name or pat in rel.split("/") for pat in exclude):
                 continue
+            if f.suffix == ".tmp":
+                continue  # mid-write (write_json_with_lock), as the background sync skips it
             key = f"{prefix}/{rel}"
             if key in skip:
                 continue
-            s3.upload_file(str(f), BUCKET, key)
-            uploaded.append(key)
+            dest = staged_key(key)
+            s3.upload_file(str(f), BUCKET, dest)
             count += 1
+            if dest == key:
+                uploaded.append(key)
+            else:
+                staged += 1
+    if staged:
+        logger.info(
+            "OBSERV av.staged_for_scan prefix=%s count=%d dest=unscanned/ status=ok",
+            prefix,
+            staged,
+        )
     return count, uploaded
 
 
@@ -767,7 +783,10 @@ class BackgroundSync:
             )
 
     def _sync_changed(self, local_dir: Path, prefix: str) -> tuple:
-        """Upload only files modified since last sync. Returns (uploaded, failed)."""
+        """Upload only files modified since last sync. Returns (uploaded, failed). A binary goes to
+        the AV staging area (``av_scan.staged_key``)."""
+        from src.ingestion.av_scan import staged_key
+
         s3 = _s3_client()
         exclude = [
             "-parsed.json"
@@ -793,7 +812,8 @@ class BackgroundSync:
             if now - mtime < 2:
                 continue
             try:
-                s3.upload_file(str(f), BUCKET, key)
+                # a binary goes to the AV staging area, never straight to its key
+                s3.upload_file(str(f), BUCKET, staged_key(key))
             except FileNotFoundError:
                 continue  # removed between the scan and the upload (merged away): not S3
             except Exception as e:  # noqa: BLE001 - retried next pass; counted
@@ -4558,22 +4578,11 @@ def _read_manifest() -> list:
 
 
 def _sync_maps_with_av_staging(maps_dir: "Path", skip: set) -> tuple:
-    """AV staging (owner three-zone model): downloaded map image BINARIES (output/maps/files/) must
-    NOT land in production un-scanned. Stage them to the unscanned/ prefix (mirrored structure); the
-    trigger Lambda drains+promotes them on Phase-3 completion. The map RECORD JSONs
-    (output/maps/*.json) sync to prod as usual (excluding the files/ binaries). Returns the (count,
-    keys) for the PROD record sync (the staging sync is logged separately)."""
-    files_dir = maps_dir / "files"
-    if files_dir.exists():
-        nf, _ = s3_sync_up(files_dir, "unscanned/output/maps/files")
-        if nf:
-            logger.info(
-                "OBSERV av.staged_for_scan dir=output/maps/files count=%d dest=unscanned/ status=ok",
-                nf,
-            )
-    return s3_sync_up(
-        maps_dir, "output/maps", skip_keys=skip, exclude_patterns=["files"]
-    )
+    """The maps directory's upload: the records to production and the downloaded map images to
+    the AV staging area - which ``s3_sync_up`` now does for every binary (``av_scan.staged_key``),
+    honouring ``skip`` for both (an unchanged downloaded image is not staged and scanned again).
+    """
+    return s3_sync_up(maps_dir, "output/maps", skip_keys=skip)
 
 
 def _final_sync_phase1() -> None:

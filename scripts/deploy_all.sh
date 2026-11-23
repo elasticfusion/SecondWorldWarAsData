@@ -559,10 +559,17 @@ VIDEO_ARG=""; AV_ARG=""
 if aws ecr describe-images --repository-name wwii-video --region $REGION --image-ids imageTag=latest >/dev/null 2>&1; then
   VIDEO_ARG="--video-image $VIDEO_IMAGE"; echo "  video image present → passing $VIDEO_IMAGE"
 fi
+# ClamAV is ON for every binary (owner 2026-11-23): a missing image is built now, and a deploy
+# never goes out without it (it would silently turn the AV gate and the unscanned/ drain off).
+if ! aws ecr describe-images --repository-name wwii-clamav --region $REGION --image-ids imageTag=latest >/dev/null 2>&1; then
+  echo "  clamav image absent → building it (AV scanning is mandatory)"
+  build_scan_push Dockerfile.clamav wwii-clamav wwii-clamav "$AV_IMAGE" 1
+fi
 if aws ecr describe-images --repository-name wwii-clamav --region $REGION --image-ids imageTag=latest >/dev/null 2>&1; then
   AV_ARG="--av-image $AV_IMAGE"; echo "  clamav image present → passing $AV_IMAGE (AV scanning ENABLED)"
 else
-  echo "  clamav image absent → AV scanning stays disabled (AvImageUri='')"
+  echo "  ✗ clamav image still absent after the build: NOT deploying with AV scanning off. Fix the"
+  echo "    Dockerfile.clamav build (or ECR access) and re-run. Hard stop."; exit 1
 fi
 
 echo ""

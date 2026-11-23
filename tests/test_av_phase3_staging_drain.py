@@ -45,25 +45,13 @@ def test_sync_up_stages_files_to_unscanned(monkeypatch):
     assert up == ["unscanned/output/maps/files/m.jpg"]
 
 
-def test_phase3_complete_drains_phase2_does_not(monkeypatch):
+def test_phase2_and_phase3_completion_start_a_drain_phase1_does_not(monkeypatch):
     import lambda_handlers.trigger_handler as th
-    import src.ingestion.av_scan as av
 
-    monkeypatch.setattr(th, "AV_SCAN_ENABLED", True)
     monkeypatch.setattr(th, "_reconcile_pending", lambda reason: [])
-    monkeypatch.setattr(th, "_make_av_scanner", lambda: object())
-    calls = {"n": 0}
-
-    class _Out:
-        clean_keys = []
-        quarantined_keys = []
-
-    monkeypatch.setattr(
-        av,
-        "drain_unscanned",
-        lambda *a, **k: (calls.__setitem__("n", calls["n"] + 1) or _Out()),
-    )
+    started = []
+    monkeypatch.setattr(th, "_start_av_drain", lambda reason: started.append(reason))
     th._drive_next_phase("3")
-    assert calls["n"] == 1
-    th._drive_next_phase("2")
-    assert calls["n"] == 1  # phase2 doesn't drain
+    th._drive_next_phase("2")  # Phase 2 stages images: drained as soon as it ends
+    th._drive_next_phase("1")  # Phase 1 uploads no binaries
+    assert started == ["phase-3", "phase-2"]

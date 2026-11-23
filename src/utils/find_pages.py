@@ -13,9 +13,10 @@ Lambda reads; outside ``output/``, so no sync or trigger sees it), else ``output
 Every page is kept without its active content (``html_safety``: scripts, embeds, event handlers,
 ``javascript:`` URLs - owner 2026-11-23), and the checksum is of what is kept.
 
-Photos (``keep_photo``) are kept under their checksum in the AV staging area
-(``unscanned/output/photos/files/``): the ClamAV drain after Phase 3 promotes a clean one to
-``output/photos/files/`` and quarantines an infected one, so no photo reaches production unscanned.
+Photos (``keep_photo``) are kept under their checksum at ``output/photos/files/``; like every
+binary written to S3 they land in the AV staging area first (``unscanned/``, by
+``S3Storage.write_bytes``): the ClamAV drain promotes a clean one and quarantines an infected one,
+so no photo reaches production unscanned.
 """
 
 from __future__ import annotations
@@ -34,9 +35,6 @@ logger = logging.getLogger(__name__)
 S3_PREFIX = "find-pages"
 _LOCAL_DIR = Path("output/_find_pages")
 PHOTO_PATH = "output/photos/files"  # where a scanned-clean photo lives
-PHOTO_STAGING_PREFIX = (
-    "unscanned/" + PHOTO_PATH
-)  # av_scan.UNSCANNED_PREFIX + its production path
 _PHOTO_LOCAL_DIR = Path(PHOTO_PATH)
 _EXT_RE = re.compile(r"[a-z0-9]{1,5}")
 _WRITE_ATTEMPTS = 3
@@ -222,7 +220,8 @@ def keep_photo(body: bytes, ext: str) -> Dict[str, Any]:
     sha = content_sha256(body)
     ext = ext.lower().lstrip(".") if isinstance(ext, str) else ""
     name = f"{sha[7:]}.{ext if _EXT_RE.fullmatch(ext) else 'img'}"
-    store = _storage(PHOTO_STAGING_PREFIX, _PHOTO_LOCAL_DIR)
+    # S3Storage.write_bytes stages a binary under unscanned/ (av_scan.staged_key)
+    store = _storage(PHOTO_PATH, _PHOTO_LOCAL_DIR)
     if not _with_retry(
         "photo", lambda: store.exists(name) or store.write_bytes(name, body)
     ):

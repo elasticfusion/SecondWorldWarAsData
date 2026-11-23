@@ -182,11 +182,28 @@ decision 2026-10-01:
 - **Quarantine:** `av_scan._quarantine` moves the key to `quarantine/<key>` and rejects to review;
   `freeze_submitter` writes `quarantine/frozen/<identity>.json` when a submitter identity exists
   (still none for S3-event uploads) and is otherwise a no-op.
-- **Second entry point (not in the original design):** map/image binaries downloaded during Phase 3
-  are staged under `unscanned/` (`ecs_entrypoint.py`, Phase-3 final sync) and scanned by
-  `av_scan.drain_unscanned` when Phase 3 completes (`trigger_handler._drive_next_phase`, `OBSERV
-  av.phase3_drain`): clean -> production path, infected -> `quarantine/`, unscannable -> stays in
-  `unscanned/` and is retried. A single-drainer lock (`_acquire_drain_lock`) serialises drains.
+- **Second entry point (not in the original design): every binary a task writes (owner
+  2026-11-23: ClamAV on for all binary objects).** `av_scan.staged_key` maps every key to
+  `unscanned/<key>` - DENY BY DEFAULT: only a key with a known text suffix (`_TEXT_SUFFIXES`: json,
+  md, html, ...) goes straight to its key, and for a direct write only when its WHOLE body is really
+  text (UTF-8, no control bytes, no binary file signature; a server's bytes saved under a
+  Content-Type-derived `.html` are staged); `diagnostics/cache/` (the pipeline's own cache copy) is
+  exempt. It is applied at the three places a task uploads:
+  the final sync (`ecs_entrypoint.s3_sync_up`), the two-minute background sync
+  (`BackgroundSync._sync_changed`; it used to upload map images and `artifacts/` straight to
+  production) and direct storage writes (`S3Storage.write_bytes`: portraits, award files, web
+  photos). Staged binaries are left out of the Phase 2 manifest. `av_scan.drain_unscanned` scans
+  them in its OWN asynchronous trigger invocation (`_start_av_drain` -> `{"source": "av-drain"}`),
+  started when Phase 2 or Phase 3 completes and by the 15-minute schedule: each invocation starts a
+  chunk only while a whole one (launch + 600 s poll) still fits before the Lambda's timeout, then
+  re-invokes itself for the rest (`OBSERV av.phase_drain ... more=`) - only while it decides
+  something; phase chaining never waits on it. The first chunk always runs, each drain starts at a
+  random key (an undecidable chunk cannot starve the rest), and a chunk ClamAV returns no verdict for
+  stops the drain with `OBSERV av.drain_no_verdict` (error; the schedule retries in 15 min). An empty queue launches no scan task: clean -> production path, infected ->
+  `quarantine/`, unscannable -> stays in `unscanned/` and is retried. A single-drainer lock
+  (`_acquire_drain_lock`) serialises drains. `scripts/deploy_all.sh` builds the ClamAV image when it
+  is missing and refuses to deploy without it. Exempt by design: a book's own figures
+  (`contentrepository/.../_figures/`), cut by the pipeline from an already-scanned PDF.
 - **Not built:** Excel/PowerPoint to text converters (the Office section above). `.xlsx`/`.pptx`
   are scanned as binaries but `src/ingestion` has no converter for them.
 
