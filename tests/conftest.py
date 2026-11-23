@@ -266,6 +266,17 @@ def _private_id_aliases(monkeypatch, tmp_path_factory):
 
 
 @pytest.fixture(autouse=True)
+def _private_find_pages(monkeypatch, tmp_path_factory):
+    """Kept find pages (src/utils/find_pages) go to a private local directory per test, never the
+    repo's output/ or a real bucket."""
+    from src.utils import find_pages
+
+    monkeypatch.setattr(find_pages, "_LOCAL_DIR", tmp_path_factory.mktemp("find_pages"))
+    monkeypatch.setattr(find_pages, "_bucket", lambda: "")
+    monkeypatch.setattr(find_pages, "_STORES", {})
+
+
+@pytest.fixture(autouse=True)
 def _fresh_nara_lookups():
     """bibliography_finds remembers NARA catalog replies for the process (batch rounds): each test
     starts with none."""

@@ -974,7 +974,9 @@ def validate_source_urls(
 ) -> list[dict]:
     """Fetch each URL, verify it exists and is relevant via Grok.
 
-    Returns list of validated source dicts with url, status, and reason.
+    Returns list of validated source dicts with url, status and relevance; a relevant one also
+    carries the fetched ``page`` and its ``provenance`` (live, or the Internet Archive copy), so the
+    find keeps the page it was judged on.
     """
     validated = []
     for url in urls[:max_urls]:
@@ -983,7 +985,8 @@ def validate_source_urls(
 
         logger.info("  Validating URL: %s", url)
 
-        page_text = _fetch_url_content(url)
+        prov: Dict[str, Any] = {}
+        page_text = _fetch_url_content(url, provenance=prov)
         if page_text is None:
             logger.info("    ❌ URL unreachable")
             validated.append({"url": url, "status": "broken", "relevant": False})
@@ -992,7 +995,10 @@ def validate_source_urls(
         relevant = _validate_url_relevance(url, page_text, person_name, grok_client)
         status = "validated" if relevant else "irrelevant"
         logger.info("    %s %s", "✅" if relevant else "❌", status)
-        validated.append({"url": url, "status": status, "relevant": relevant})
+        found = {"url": url, "status": status, "relevant": relevant}
+        if relevant:
+            found.update(page=page_text, provenance=prov)
+        validated.append(found)
 
     return validated
 
@@ -1096,7 +1102,7 @@ def _queue_suggested_urls(
     not changed by it. Returns the number of finds queued. Raises ``find_queue.FindNotStored`` when the
     queue refused a write: the caller leaves the person unstamped, so the next run asks again (Grok's
     answer is cached, so nothing is paid twice)."""
-    from src.utils import find_queue
+    from src.utils import find_pages, find_queue
 
     origin = find_queue.entity_origin("person", person_data, query=person_name)
     if origin is None:
@@ -1110,13 +1116,14 @@ def _queue_suggested_urls(
     for r in validate_source_urls(fresh, person_name, grok_client):
         if not r["relevant"]:
             continue
+        page = find_pages.keep(r["url"], r.get("page") or "", r.get("provenance"))
         status = find_queue.enqueue_find(
             provider=_FIND_PROVIDER,
             url=r["url"],
             verdict=find_queue.RELEVANT,  # fetched, and Grok called the page relevant
             origin=origin,
             summary=f"Grok-suggested source for {person_name}",
-            params={"suggested_by": "grok", "validation": r["status"]},
+            params={"suggested_by": "grok", "validation": r["status"], **page},
         )
         if status == find_queue.ENQUEUED:
             queued += 1

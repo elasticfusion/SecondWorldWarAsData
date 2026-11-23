@@ -23,7 +23,7 @@ from typing import Any, Dict, Iterator, List, Optional
 import requests
 
 from src.grok_client import BatchModeCollecting
-from src.utils import find_queue
+from src.utils import find_pages, find_queue
 from src.utils.batch_pending import Pending
 from src.utils.file_lock import write_json_with_lock
 
@@ -146,6 +146,7 @@ _METRIC_KEYS = (
     "finds_failed",
     "finds_no_origin",  # an entity with no ULID: its finds are not queued
     "finds_refused",  # a URL the queue will not take (unsafe or malformed)
+    "pages_not_kept",  # a fetched page that could not be stored (its find has no page)
     # write_failed counts enriched records whose persisted write FAILED (returned False) — the
     # enrichment is lost. Previously the count/_metric was incremented before an unchecked write,
     # so a failed persist read as a successful enrichment. Now the count is gated on the write.
@@ -259,7 +260,7 @@ def _emit_openserp_summary(snap: Dict[str, Any]) -> None:
         "OBSERV openserp.summary eligible=%d searched=%d enriched=%d skipped_no_name=%d "
         "queries=%d results=%d zero=%d verify_yes=%d verify_no=%d breaker_opened=%d "
         "items_added=%d finds_queued=%d finds_already_queued=%d finds_failed=%d "
-        "hit_permille=%d search_permille=%d",
+        "pages_not_kept=%d hit_permille=%d search_permille=%d",
         snap.get("entities_eligible", 0),
         snap["entities_searched"],
         snap["entities_enriched"],
@@ -274,6 +275,7 @@ def _emit_openserp_summary(snap: Dict[str, Any]) -> None:
         snap["finds_queued"],
         snap["finds_already_queued"],
         snap["finds_failed"],
+        snap.get("pages_not_kept", 0),
         int(snap["enrichment_rate"] * 1000),
         int(snap.get("search_rate", 0) * 1000),
     )
@@ -297,6 +299,13 @@ def _emit_openserp_anomalies(snap: Dict[str, Any]) -> None:
             "queue; asked again next run - check the task role's DynamoDB access to the api-cache "
             "table and its throttling)",
             snap["finds_failed"],
+        )
+    if snap.get("pages_not_kept"):
+        logger.warning(
+            "OBSERV openserp.anomaly pages_not_kept=%d (pages queued for review without the page "
+            "itself: their approval gives Phase 0 only the URL and summary - check the task role's "
+            "s3:PutObject on find-pages/ in the data bucket; see OBSERV find_pages.write_failed)",
+            snap["pages_not_kept"],
         )
     if snap["breaker_opened"]:
         logger.warning(
@@ -1112,6 +1121,10 @@ def _summarize_url_page(
         logger.debug("URL summarize failed for %s: %s", url, e)
 
     _finalize_url(url, result, bool(summary), context)
+    if summary and provenance is not None:
+        provenance["page_html"] = (
+            html  # the page the summary was made from, kept with the find
+        )
     return summary
 
 
@@ -1182,6 +1195,23 @@ def _wayback_ts_to_iso(ts: str) -> str:
         return ""
 
 
+def _from_cached_summary(url: str, title: str, summary: str) -> Dict[str, Any]:
+    """A page summarized by an earlier entity's search: no fetch, no Grok request; the page kept
+    then goes with the find."""
+    page = find_pages.kept(url)
+    if not page["page_kept"]:
+        _metric("pages_not_kept")  # find_pages logged it
+    return {
+        "url": url,
+        "title": title,
+        "summary": summary,
+        # when the page was really fetched (not now); unknown for an older summary
+        "fetched_at": page.get("page_fetched_at"),
+        "source": "openserp",
+        **page,
+    }
+
+
 def process_positive_url(
     url: str,
     title: str,
@@ -1204,14 +1234,8 @@ def process_positive_url(
     cached = _url_verdict_cached(url)
     if cached in ("REJECT", _RETRY_VERDICT):
         return None
-    if cached:  # positive summary cached
-        return {
-            "url": url,
-            "title": title,
-            "summary": cached,
-            "fetched_at": int(_time.time()),
-            "source": "openserp",
-        }
+    if cached:  # positive summary cached: the page it was made from was kept then
+        return _from_cached_summary(url, title, cached)
 
     if not _verify_result(title, context, grok_client, snippet=snippet, url=url):
         _cache_url_verdict(url, "REJECT")
@@ -1235,6 +1259,9 @@ def process_positive_url(
         _cache_url_verdict(url, "REJECT")
         return None
     _metric("urls_fetched")  # a real page fetch+summarize (cache hits return earlier)
+    page = find_pages.keep(url, prov.pop("page_html", ""), prov)
+    if not page["page_kept"]:
+        _metric("pages_not_kept")  # find_pages logged the error
     _cache_url_verdict(url, summary)
     result: Dict[str, Any] = {
         "url": url,  # ALWAYS the original source URL (citation anchor)
@@ -1242,6 +1269,7 @@ def process_positive_url(
         "summary": summary,
         "fetched_at": int(_time.time()),
         "source": "openserp",
+        **page,
     }
     # If the live page was WAF-blocked/dead and content came from the Internet Archive,
     # record BOTH the original URL (above) and the archive retrieval for the citation:
@@ -1276,6 +1304,8 @@ def _find_params(processed: Dict[str, Any], extra: Optional[Dict[str, Any]]) -> 
         "wayback_capture_timestamp",
         "archive_capture_date",
         "retrieved_at",
+        "page_kept",
+        *find_pages.PAGE_FIELDS,
     )
     return {**{k: processed[k] for k in keep if k in processed}, **(extra or {})}
 

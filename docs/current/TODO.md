@@ -837,8 +837,25 @@ rejected item stays rejected; an approved item starts Phase 0.
   cannot store leaves the entity unsearched (SQS: deferred), so the next run asks again. Records written by earlier
   runs keep their old entries (no migration). Left: the people web search is still gated on
   `military_awards` being empty (now only an award extraction fills it): replace it with a queue/marker check;
-  `entities_enriched` is not counted in a batch round-2 pass where every page was already queued. STILL OPEN in this step: keep the fetched page for Phase 0
-  (below), the (URL, entity) relevance cache, the OpenSERP search-response cache, the checksum re-check.**
+  `entities_enriched` is not counted in a batch round-2 pass where every page was already queued. STILL OPEN in this step: the (URL, entity) relevance cache, the OpenSERP search-response cache, the checksum re-check.**
+- **DONE (Group 3 step H, 2026-11-23) - the fetched page is kept for Phase 0.** `src/utils/find_pages.py`: the page a
+  find was judged on (live, or the Internet Archive copy) is stored once under its checksum
+  (`find-pages/pages/<sha256>.html` in the data bucket, write-once; `output/_find_pages/` locally) with a per-URL
+  pointer (`find-pages/urls/<sha256 of the clean URL>.json`), so a later entity that reuses the cached summary gets
+  the same page. OpenSERP finds (`process_positive_url`) and Grok-suggested biography URLs (`llm-find`) carry
+  `page_sha256`, size, fetch time and live/wayback source in the queue item. On approval `_find_content_bytes`
+  submits that page after checking its checksum; a missing or altered page is not submitted
+  (`OBSERV fetch_review.page_unusable`, error; stays approved). A failed write is retried 3 times, then
+  `OBSERV find_pages.write_failed` (error) and `pages_not_kept` in the OpenSERP summary/anomaly; the find is still
+  queued, without a page. A find with no kept page (older items, M4 links) is still submitted as the provenance
+  stub, logged as `OBSERV fetch_review.submitted_stub` (warn when the page write failed, info for older items). A
+  cache hit now carries the page's real fetch time, not "now". The submit no longer reads a local file named by
+  the queue item (`quarantine_path` / `retrieved_path`; no writer set them, and a tampered item could have
+  published any file the Lambda can read). Pages over 25 MB are not kept (`OBSERV find_pages.oversized`).
+  **OPEN (security review 2026-11-23):** the URL-review UI's single "affirm" path
+  (`urlreview_ui_handler`, `fetch_review.affirm_fetch_find`) still takes `quarantine_path` from the queue item as
+  `SourceMetadata.original_path`; trace what ingestion reads from it, and drop it or pin it to a quarantine root. Left: rejected finds' pages are not deleted (small; no lifecycle rule, since a pending find may wait
+  indefinitely); the review UI does not yet show whether a page was kept.
 - **HIGH *refactor* - DECISION (owner 2026-11-17): a page OpenSERP finds and Grok confirms goes to the
   human URL-review queue; approval submits it to Phase 0.** Today `process_positive_url`
   (`src/enrichment/openserp_enrichment.py:808`) returns `{url, title, summary, fetched_at, source}` (plus

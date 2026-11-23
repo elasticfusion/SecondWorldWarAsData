@@ -410,38 +410,31 @@ def _find_title(fetch_event: Dict[str, Any]) -> str:
 
 
 def _find_content_bytes(fetch_event: Dict[str, Any]) -> bytes:
-    """The bytes to submit for a find: the quarantined file if present locally, else a provenance
-    HTML stub (the source URL + metadata) so Phase 1 can ingest it like any uploaded source.
-    """
+    """The bytes to submit for a find: the page it was judged on (kept by ``find_pages``, checked
+    against its checksum), else a provenance HTML stub (the source URL + metadata) so Phase 1 can
+    ingest it like any uploaded source. Raises
+    ``find_pages.PageUnusable`` when the find names a kept page that is missing or altered: it is
+    not submitted (the stub would stand in for a page a person approved)."""
     import html as _html
 
-    _MAX_CONTENT_BYTES = (
-        25 * 1024 * 1024
-    )  # cap a quarantined-file read (don't OOM the Lambda)
-    qp = fetch_event.get("quarantine_path") or fetch_event.get("retrieved_path") or ""
-    try:
-        if qp:
-            p = Path(qp)
-            if p.is_file():
-                size = p.stat().st_size
-                if size > _MAX_CONTENT_BYTES:
-                    logger.warning(
-                        "OBSERV fetch_review.content_oversized path=%s size=%d cap=%d "
-                        "status=warn (falling back to provenance stub)",
-                        p.name,
-                        size,
-                        _MAX_CONTENT_BYTES,
-                    )
-                else:
-                    with p.open("rb") as fh:
-                        return fh.read(_MAX_CONTENT_BYTES)
-    except (
-        Exception
-    ) as e:  # noqa: BLE001 - unreadable quarantine file -> fall back to the stub
-        logger.warning(
-            "OBSERV fetch_review.content_read_failed err=%s status=warn",
-            type(e).__name__,
-        )
+    from src.utils import find_pages
+    from src.utils.url_hygiene import scrub
+
+    page = find_pages.load(fetch_event.get("request_params") or {})
+    if page is not None:
+        return page
+
+    # No local file is read here: no writer puts a quarantine path on a fetch event, and a path
+    # taken from a queue item would let a tampered item publish any file the Lambda can read.
+    params = fetch_event.get("request_params") or {}
+    log = logger.warning if params.get("page_kept") is False else logger.info
+    log(
+        "OBSERV fetch_review.submitted_stub fetch_event_id=%s provider=%s - the find has no kept "
+        "page, so Phase 0 gets only its URL and summary. To ingest the page itself, upload it to "
+        "contentrepository/ by hand",
+        scrub(str(fetch_event.get("fetch_event_id", "")))[:40],
+        scrub(str(fetch_event.get("provider", "")))[:40],
+    )
     url = _html.escape(fetch_event.get("endpoint", ""))
     provider = _html.escape(str(fetch_event.get("provider", "")))
     summary = _html.escape(str(fetch_event.get("result_summary", "")))
@@ -478,9 +471,9 @@ _CONTENT_HASH_PREFIX = "contenthash#"
 
 def _content_sha256(data: bytes) -> str:
     """sha256 of the content bytes (matches trigger_handler._title_checksum's digest format)."""
-    import hashlib
+    from src.utils.find_pages import content_sha256
 
-    return "sha256:" + hashlib.sha256(data).hexdigest()
+    return content_sha256(data)
 
 
 CLAIM_WON, CLAIM_DUPLICATE, CLAIM_ERROR = "won", "duplicate", "error"
@@ -605,6 +598,8 @@ def _submit_one_find(
     marked SUBMITTED (terminal). New content is uploaded to the contentrepository/ front door and
     marked SUBMITTED. Fail-safe: one bad find never sinks the batch."""
     from src.utils import fetch_provenance as fp
+    from src.utils import find_pages
+    from src.utils.url_hygiene import scrub
 
     fid = find.get("fetch_event_id", "")
     source_id = f"fetchfind-{fid}"
@@ -646,6 +641,16 @@ def _submit_one_find(
                 fid,
             )
             result["skipped"] += 1
+    except find_pages.PageUnusable as e:
+        logger.error(
+            "OBSERV fetch_review.page_unusable fetch_event_id=%s reason=%s status=error - the page "
+            "this find was approved on is missing or altered in find-pages/, so it is not submitted "
+            "(it stays approved and is tried again next batch). Check the data bucket's find-pages/ "
+            "objects; if the page is lost, reject the find",
+            scrub(str(fid))[:40],
+            e,
+        )
+        result["skipped"] += 1
     except Exception as e:  # noqa: BLE001 - one bad find must not sink the batch
         logger.warning("submit_affirmed_batch: failed to submit %s: %s", fid, e)
         result["skipped"] += 1

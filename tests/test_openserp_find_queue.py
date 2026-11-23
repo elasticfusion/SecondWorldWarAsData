@@ -156,7 +156,9 @@ def test_grok_suggested_biography_urls_are_queued_not_written(
 
     person = {"PersonID": "01HPERSON", "name": "John Doe"}  # the ULID is on the person
     profile = {"source_urls": ["https://example.org/bio", "https://example.org/other"]}
-    monkeypatch.setattr(eb, "_fetch_url_content", lambda u: "John Doe, 3rd Armored")
+    monkeypatch.setattr(
+        eb, "_fetch_url_content", lambda u, **k: "John Doe, 3rd Armored"
+    )
     monkeypatch.setattr(eb, "_validate_url_relevance", lambda u, t, n, g: "bio" in u)
     assert eb._queue_suggested_urls(profile, person, "John Doe", object()) == 1
     assert "biography_sources" not in profile and "source_urls" not in profile
@@ -165,7 +167,7 @@ def test_grok_suggested_biography_urls_are_queued_not_written(
     assert e["request_params"]["origin_entity_id"] == "01HPERSON"
     # a second run asks nothing and fetches nothing
     again = {"source_urls": ["https://example.org/bio"]}
-    monkeypatch.setattr(eb, "_fetch_url_content", lambda u: 1 / 0)
+    monkeypatch.setattr(eb, "_fetch_url_content", lambda u, **k: 1 / 0)
     assert eb._queue_suggested_urls(again, person, "John Doe", object()) == 0
     assert len(queued_finds("llm-find")) == 1
 
@@ -173,7 +175,7 @@ def test_grok_suggested_biography_urls_are_queued_not_written(
 def test_two_people_may_both_cite_the_same_page(queued_finds, monkeypatch):
     from src.extraction import enrich_biographies as eb
 
-    monkeypatch.setattr(eb, "_fetch_url_content", lambda u: "text")
+    monkeypatch.setattr(eb, "_fetch_url_content", lambda u, **k: "text")
     monkeypatch.setattr(eb, "_validate_url_relevance", lambda *a: True)
     for pid in ("01HA", "01HB"):
         prof = {"source_urls": ["https://example.org/shared"]}
@@ -190,7 +192,7 @@ def test_a_suggested_url_that_could_not_be_stored_leaves_the_person_unstamped(
 
     from src.extraction import enrich_biographies as eb
 
-    monkeypatch.setattr(eb, "_fetch_url_content", lambda u: "text")
+    monkeypatch.setattr(eb, "_fetch_url_content", lambda u, **k: "text")
     monkeypatch.setattr(eb, "_validate_url_relevance", lambda *a: True)
     monkeypatch.setattr(find_queue, "enqueue_find", lambda **k: find_queue.FAILED)
     prof = {"source_urls": ["https://example.org/bio", 7]}  # a non-string is ignored
@@ -242,7 +244,7 @@ def test_a_suggested_url_with_a_line_break_is_neither_logged_nor_fetched(
 ):
     from src.extraction import enrich_biographies as eb
 
-    monkeypatch.setattr(eb, "_fetch_url_content", lambda u: 1 / 0)
+    monkeypatch.setattr(eb, "_fetch_url_content", lambda u, **k: 1 / 0)
     prof = {"source_urls": ["https://example.org/a\nOBSERV fake status=error"]}
     with caplog.at_level(logging.INFO):
         assert eb._queue_suggested_urls(prof, {"PersonID": "01H"}, "J", object()) == 0
