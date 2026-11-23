@@ -11,14 +11,18 @@ from src.utils import find_pages, url_fetch
 
 URL = "https://example.org/obit/john-doe"
 HTML = "<html><body>John Doe served with the 3rd Armored Division.</body></html>"
+# what is kept: the page re-serialized without active content (src/utils/html_safety)
+from src.utils.html_safety import strip_active_content  # noqa: E402
+
+KEPT = strip_active_content(HTML).encode()
 
 
 def test_a_page_is_kept_once_under_its_checksum_and_the_url_points_at_it():
     got = find_pages.keep(URL, HTML)
     assert got["page_kept"] is True and got["page_retrieved_from"] == "live"
-    assert got["page_sha256"] == find_pages.content_sha256(HTML.encode())
-    assert got["page_bytes"] == len(HTML.encode())
-    assert find_pages.load(got) == HTML.encode()
+    assert got["page_sha256"] == find_pages.content_sha256(KEPT)
+    assert got["page_bytes"] == len(KEPT)
+    assert find_pages.load(got) == KEPT
     again = find_pages.kept(URL)
     assert {k: again[k] for k in find_pages.PAGE_FIELDS} == {
         k: got[k] for k in find_pages.PAGE_FIELDS
@@ -114,7 +118,7 @@ def test_an_openserp_find_carries_its_kept_page(monkeypatch, queued_finds):
     (event,) = queued_finds("openserp-find")
     params = event["request_params"]
     assert params["page_kept"] is True and "page_html" not in params
-    assert find_pages.load(params) == HTML.encode()
+    assert find_pages.load(params) == KEPT
 
 
 def test_a_cached_summary_reuses_the_page_and_its_real_fetch_time(monkeypatch):
@@ -155,7 +159,7 @@ def test_a_failed_pointer_write_keeps_the_page_for_this_find(monkeypatch):
         find_pages, "_storage", lambda: _NoPointer(find_pages._LOCAL_DIR)
     )
     got = find_pages.keep(URL, HTML)
-    assert got["page_kept"] is True and find_pages.load(got) == HTML.encode()
+    assert got["page_kept"] is True and find_pages.load(got) == KEPT
 
 
 def test_an_oversized_page_is_not_kept(monkeypatch, caplog):
@@ -198,7 +202,7 @@ def test_a_grok_suggested_find_carries_its_kept_page(monkeypatch, queued_finds):
     (event,) = queued_finds("llm-find")
     params = event["request_params"]
     assert params["page_retrieved_from"] == "wayback"
-    assert find_pages.load(params) == HTML.encode()
+    assert find_pages.load(params) == KEPT
 
 
 # --- approval: Phase 0 gets the page ------------------------------------------------------------
@@ -236,7 +240,7 @@ def test_an_approved_find_submits_its_kept_page(monkeypatch):
     page = find_pages.keep(URL, HTML)
     find = {"fetch_event_id": "e1", "endpoint": URL, "request_params": page}
     out, puts = _submit(monkeypatch, find)
-    assert out["submitted"] == 1 and puts == [HTML.encode()]
+    assert out["submitted"] == 1 and puts == [KEPT]
 
 
 def test_an_altered_kept_page_is_not_submitted(monkeypatch, caplog):

@@ -68,6 +68,7 @@ REQUEST_BOUND = frozenset(
         "vision_verification",
         "external_maps_verification",
         "nara_scan_vision",  # a NARA scan page against its citation (src/enrichment/nara_vision)
+        "photo_relevance_vision",  # a web photo against its entity (src/enrichment/web_photos)
     }
 )
 DOC_BOUND = frozenset({"in_doc_map_vision"})

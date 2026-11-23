@@ -1,7 +1,7 @@
 # JSON Schema Reference
 
 **Last Updated:** 2026-11-20
-**Schema Version:** per-entity (see `ENTITY_SCHEMA_VERSIONS` in `src/schemas/__init__.py`; as of 2026-11-16: places 2.30, equipment 2.30, people_groups 2.29, bibliography 2.30, images 2.29, people 2.27, casualties 2.27, maps 2.26, source_section 2.26, events/dates/weather/logistics 2.25, map_features 2.24) — there is no single global number
+**Schema Version:** per-entity (see `ENTITY_SCHEMA_VERSIONS` in `src/schemas/__init__.py`; as of 2026-11-23: places 2.30, equipment 2.31, people_groups 2.29, bibliography 2.30, images 2.29, people 2.27, casualties 2.27, maps 2.26, source_section 2.26, events/dates/weather/logistics 2.25, map_features 2.24) — there is no single global number
 
 > **Equipment 2.29+ (2026-11-07):** `identity_scope` (specific | generic | unresolved) decides enrichment: generic mentions are kept but never searched; named vessels are resolved to one ship by date (`identity_resolution`). Images are Phase 3 only, and an image counts as attached only when `images[].vision_check == "verified"` (`vision_verified: true`).
 
@@ -744,6 +744,7 @@ The per-entity JSON examples above predate several Phase 2 additions. The enforc
 | people | `name_resolution` (object), `oob_convergence_note` (string) | nullable |
 | people_groups | `organization_lifecycle` (`standing`/`ephemeral`), `active_period` `{start,end,precision(exact/approximate/unresolved),original_text}`, `constituent_units[]`, `members[]`, `member_countries[]` | schema 2.29 and earlier |
 | equipment | `variant_of`, `distinguishing_features` (lineage, 2.30), `lineage_source` (`grok_disambiguation`), `identity_scope` (`specific`/`generic`/`unresolved`), `identity_resolution`, `presence`, `absence_reason`, `extended_text` | nullable |
+| equipment (images[]) | `page_sha256`, `sha256`, `period_photo` (`yes`/`no`/`unsure`), `copyright_status` (web photos, 2.31) | nullable |
 | logistics | `original_text` (verbatim anchor), `weather_impact` `{WeatherID, impact_description, severity, ...}`, `impacted_places[]` | nullable |
 | casualties | `magnitude` (`none`/`light`/`moderate`/`heavy`/`severe`), `is_comparative` (bool), `impacted_equipment[]`, `impacted_logistics[]` | nullable |
 | places, people, people_groups, equipment, source_section | `openserp_searched_at` (number), `wikipedia_checked_at` (string) | nullable enrichment bookkeeping |

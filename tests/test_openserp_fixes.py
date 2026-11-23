@@ -10,13 +10,17 @@ def test_equipment_images_use_yaml_templates():
     # not a hardcoded f-string.
     seen = []
 
-    def fake_search(q, url, limit=10):
+    def fake_search(q, url, limit=None):
         seen.append(q)
         return []
 
-    with patch.object(oe, "_search_openserp", side_effect=fake_search):
+    with patch.object(oe, "_search_openserp_images", side_effect=fake_search):
         oe.search_equipment_images(
-            "M4 Sherman", "http://x", identifier="M4", year="1944"
+            "M4 Sherman",
+            "http://x",
+            identifier="M4",
+            year="1944",
+            equipment_id="01HEQUIPMENT0000000000000",
         )
     assert seen  # queries were rendered + issued
     # equipment.yaml 'images' templates quote the name and include identifier/year variants

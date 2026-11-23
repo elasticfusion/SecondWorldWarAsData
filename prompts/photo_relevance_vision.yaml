@@ -1,0 +1,26 @@
+system_prompt: |
+  You check whether a photograph found on the web shows a specific World War II subject.
+  You judge the image itself; the caption and page title are hints that may be wrong.
+
+prompt_template: |
+  A WWII history project found this image on a web page while looking for: {subject}.
+  Decide whether the image is a relevant photograph of that subject, and whether it is a
+  period photograph (taken during World War II, 1939-1945).
+
+  What counts as the subject: {what_counts}
+  Caption on the page: "{caption}"
+  Page title: "{page_title}"
+
+  Return JSON matching this structure:
+  {schema}
+
+schema: |
+  {"relevant": "yes", "period_photo": "yes", "reason": "An M4 Sherman with a 75 mm gun in a 1944 French village street"}
+
+rules:
+  - "relevant is one of: yes, no, unsure."
+  - "yes: the image clearly shows the subject as described (for a person: a photo of that person; for equipment: that equipment type or a preserved example; for a place: that place; for a unit: its people, insignia or equipment, as described)."
+  - "no: the image shows something else (another person, place, model or era), or is not a photograph or illustration of the subject at all (a logo, an advertisement, a map of somewhere else, a book cover, text)."
+  - "unsure: the image may show the subject but nothing visible settles it."
+  - "period_photo is one of: yes, no, unsure. yes only for a photograph taken during the war; no for a later photograph (a museum piece, a reenactment, a modern view), a painting, a drawing or a render."
+  - "Describe in reason what is visible that decided it; never invent details that are not in the image."

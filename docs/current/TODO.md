@@ -965,6 +965,45 @@ Findings:
   re-read is not traced twice in the review log. Open: the batch answer is positional (an index-keyed answer
   would catch a reordered reply). Trade-off: a query's candidates are
   all asked even when the per-entity cap is reached after the first few.
+- **DONE (2026-11-23) step 1 of web photos: equipment (owner 2026-11-23).** OpenSERP's "photo" searches used the
+  WEB search, so every "photo" was a page URL judged on its title; for equipment the later vision step then
+  rejected each one (a page is not an image). Now `src/enrichment/web_photos.py`: an OpenSERP IMAGE search
+  (`_search_openserp_images`, `/mega/image`: the image URL and the page it is on; cached like the web search) ->
+  a batched text pre-filter (one Grok request per query) -> the photo downloaded SSRF-safe (sha256 + perceptual
+  hash: the same bytes, or a resized copy, already held = a duplicate; bytes already judged for this entity are
+  not judged again, verdict cache (sha256, entity) 90 days) -> the page fetched SSRF-safe and kept WITHOUT its
+  JavaScript (`src/utils/html_safety.py`, applied to every kept page: scripts, iframes/objects/embeds, base,
+  meta refresh, `on*` handlers, `javascript:`/`vbscript:`/`data:` URLs) and the caption read from it -> Grok
+  vision (`prompts/photo_relevance_vision.yaml`, request-bound): relevant yes/no/unsure and `period_photo` ->
+  the photo kept under its checksum in the AV staging area `unscanned/output/photos/files/` (the post-Phase-3
+  ClamAV drain promotes a clean one to `output/photos/files/`). Every kept photo is vision-confirmed; no usable
+  answer raises `VerifyFailed` (entity unsearched, asked again). Entries carry the image URL, page URL, kept
+  page, sha256, phash, caption, verdict + reason, `period_photo`, `copyright_status: assumed_public_domain`
+  (owner) - equipment schema 2.31 (additive). Equipment is wired (`search_equipment_images`, cap
+  `max_images_per_entity`); the equipment vision step treats these as checked. Metrics `photos_*`.
+  The page strip (`html_safety`) rebuilds each kept page from an ALLOWLIST with `nh3` (Rust ammonia on
+  html5ever, a browser-conformant parser; new pinned dependency `nh3==0.3.8`): text/layout tags only, URLs only
+  http/https/mailto, comments dropped, script/style content removed, the `<title>` kept escaped. Two blocklist
+  versions were bypassed in the 2026-11-23 security reviews (html.parser: `<!--><script>`, CDATA, duplicate
+  `href`, SVG `<style>`; html5lib: `<b></i>` x16,000 = 76 s), so the parse runs in a CHILD PROCESS killed after
+  `BUDGET_S` (5 s) on at most 2 MB: no page can stall a worker (`PageTooComplex` -> not kept,
+  `page_too_complex` warning); a cleaned page nesting deeper than 256 is refused too, so Phase 0's own html5lib
+  parse of an approved page cannot be stalled; the child gets an empty environment (no AWS/Grok keys) and UTF-8.
+  Kept pages lose `srcset`/`data-src` and HyperWar's `<a name=...>` page anchors (a HyperWar page approved
+  through the queue would convert as a generic page; HyperWar books are ingested directly). 18 XSS payloads are tested by re-parsing the kept page with html5lib as a
+  browser would; ~40 ms of process start per kept page. Fetched images are decoded only as
+  JPEG/PNG/GIF/TIFF/WEBP/BMP (no EPS -> Ghostscript). A photo that cannot be stored leaves the entity unsearched
+  (`FindNotStored`; the cached verdict means no second Grok request).
+  Notes / OPEN: AV scanning is opt-in (`AV_SCAN_ENABLED` needs the ClamAV image deployed); until it is on,
+  photos stay staged (never in production unscanned), so a record's `local_path` names a file not yet in
+  production (a quarantined one never arrives): the site generator must check the object exists (or add a scan
+  state). Local runs (no `S3_BUCKET`) write photos straight to `output/photos/files/` (dev only). Phase 0's
+  own `text_converters._strip_inline_js` is a weaker, separate strip: move it onto `html_safety` (DRY; changes
+  Phase 0 conversion output, so with a conversion regression check). Verdicts are keyed (bytes, entity), not on
+  the caption: a hostile caption seen first can fix a photo's verdict for 90 days. Pages kept before this
+  change were not stripped (none in production). A Grok side-by-side comparison of near-duplicates is not built
+  (the perceptual hash catches resized/re-saved copies; crops are not caught). NEXT: step 2 - people, places,
+  groups.
 - **DONE (2026-11-23) - OpenSERP search responses are cached.** `_search_openserp` keeps each answer (an empty one
   included) per (query, limit, start) for `supplemental_material.openserp_cache_days` (14) through the shared
   `search_cache.cached_answer` (source `openserp_search_v1`): a batch round, a retry, an SQS redelivery or another

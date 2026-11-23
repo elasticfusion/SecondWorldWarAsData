@@ -60,6 +60,13 @@ _IMAGES_SCHEMA = {
             # provenance: the article page the candidate was taken from, and when
             "source_page_url": make_nullable("string"),
             "candidate_added_at": make_nullable("string"),
+            # web photos (src/enrichment/web_photos): the kept page it is on (find_pages), the
+            # photo's own checksum (kept under it for the AV scan), whether vision judged it a
+            # period (1939-1945) photograph, and the copyright basis (owner: assumed public domain)
+            "page_sha256": make_nullable("string"),
+            "sha256": make_nullable("string"),
+            "period_photo": enum_field(["yes", "no", "unsure"], nullable=True),
+            "copyright_status": make_nullable("string"),
         },
     },
 }

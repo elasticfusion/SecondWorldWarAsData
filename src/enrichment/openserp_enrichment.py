@@ -158,6 +158,17 @@ _METRIC_KEYS = (
     "pages_deeper",
     "queries_cached",  # searches answered from the search-response cache (no query sent)
     "queries_cache_unusable",  # a cached answer of the wrong shape (asked again)
+    # photos (web_photos): judged by Grok vision, accepted, rejected, duplicates of a photo
+    # already held, verdicts reused, not fetched, dropped by the text pre-filter
+    "photos_vision_asked",
+    "photos_accepted",
+    "photos_rejected",
+    "photos_duplicate",
+    "photos_verdict_cached",
+    "photos_fetch_failed",
+    "photos_prefiltered_out",
+    "photos_page_not_kept",
+    "photos_not_kept",
     # an entity whose queries only errored (OpenSERP unavailable): left unsearched
     "entities_unavailable",
     "results_site_excluded",  # results dropped for an excluded site
@@ -276,6 +287,8 @@ def _emit_openserp_summary(snap: Dict[str, Any]) -> None:
     logger.info(
         "OBSERV openserp.summary eligible=%d searched=%d enriched=%d skipped_no_name=%d "
         "queries=%d cached=%d results=%d zero=%d verify_yes=%d verify_no=%d breaker_opened=%d "
+        "photos_asked=%d photos_accepted=%d photos_rejected=%d photos_duplicate=%d "
+        "photos_cached=%d photos_fetch_failed=%d photos_not_kept=%d "
         "items_added=%d finds_queued=%d finds_already_queued=%d finds_failed=%d "
         "pages_not_kept=%d pages_reused=%d verify_batched=%d verify_batch_failed=%d "
         "hit_permille=%d search_permille=%d",
@@ -290,6 +303,13 @@ def _emit_openserp_summary(snap: Dict[str, Any]) -> None:
         snap["verify_yes"],
         snap["verify_no"],
         snap["breaker_opened"],
+        snap.get("photos_vision_asked", 0),
+        snap.get("photos_accepted", 0),
+        snap.get("photos_rejected", 0),
+        snap.get("photos_duplicate", 0),
+        snap.get("photos_verdict_cached", 0),
+        snap.get("photos_fetch_failed", 0),
+        snap.get("photos_not_kept", 0),
         snap["items_added"],
         snap["finds_queued"],
         snap["finds_already_queued"],
@@ -411,9 +431,10 @@ def _drop_excluded_domains(results: List[Dict]) -> List[Dict]:
     kept: List[Dict] = []
     dropped = 0
     for r in results:
-        url = r.get("url", "")
+        # an image result is dropped when its image OR the page it is on is on an excluded site
+        urls = [u for u in (r.get("url", ""), r.get("page_url", "")) if u]
         try:
-            if url and is_domain_excluded(url):
+            if any(is_domain_excluded(u) for u in urls):
                 dropped += 1
                 continue
         except (
@@ -469,10 +490,24 @@ class _SearchFailed(Exception):
 
 
 _SEARCH_CACHE_SOURCE = "openserp_search_v1"
+_IMAGE_CACHE_SOURCE = "openserp_image_v1"
+
+
+def _search_openserp_images(
+    query: str, openserp_url: str, limit: Optional[int] = None
+) -> List[Dict]:
+    """An OpenSERP IMAGE search (``/mega/image``): each result's ``url`` is the image file and
+    ``page_url`` the page it is on (a web search only finds pages). Cached, traced and guarded by
+    the breaker exactly as ``_search_openserp``; never paged."""
+    return _search_openserp(query, openserp_url, limit, images=True)
 
 
 def _search_openserp(
-    query: str, openserp_url: str, limit: Optional[int] = None, start: int = 0
+    query: str,
+    openserp_url: str,
+    limit: Optional[int] = None,
+    start: int = 0,
+    images: bool = False,
 ) -> List[Dict]:
     """Run an OpenSERP search. Returns list of {url, title, description}. ``limit`` defaults to
     ``openserp.results_per_query``; ``start`` is the result offset (paging, ``_page_start``).
@@ -498,13 +533,12 @@ def _search_openserp(
 
     def live() -> List[Dict[str, str]]:
         asked.append(True)
-        return _live_search(query, openserp_url, limit, start, cfg)
+        return _live_search(query, openserp_url, limit, start, cfg, images)
 
     key = json.dumps([query, limit, start], ensure_ascii=False)
+    source = _IMAGE_CACHE_SOURCE if images else _SEARCH_CACHE_SOURCE
     try:
-        mapped = cached_answer(
-            _SEARCH_CACHE_SOURCE, key, live, ttl_days=scraped_ttl_days()
-        )
+        mapped = cached_answer(source, key, live, ttl_days=scraped_ttl_days())
         if not _is_search_answer(mapped):  # a corrupt or foreign entry: ask OpenSERP
             _metric("queries_cache_unusable")
             mapped = live()
@@ -524,7 +558,12 @@ def _search_openserp(
 
 
 def _live_search(
-    query: str, openserp_url: str, limit: int, start: int, cfg: Dict[str, Any]
+    query: str,
+    openserp_url: str,
+    limit: int,
+    start: int,
+    cfg: Dict[str, Any],
+    images: bool = False,
 ) -> List[Dict[str, str]]:
     """One OpenSERP request: the mapped results (empty = a genuine "nothing found"), or
     ``_SearchFailed`` (logged, counted toward the breaker)."""
@@ -540,7 +579,7 @@ def _live_search(
         # without tripping the breaker on a slow-but-valid query.
         resp = recorded_fetch(
             "openserp",
-            f"{openserp_url}/mega/search",
+            f"{openserp_url}/mega/{'image' if images else 'search'}",
             kind=TEXTUAL,
             method="GET",
             params=_query_params(query, limit, start),
@@ -551,7 +590,7 @@ def _live_search(
             # parsed BEFORE success is recorded: a 200 whose body is not a search answer (a
             # captcha page, a cut-off reply) counts toward the breaker like any failure. A
             # genuine "nothing found" is an answer and must not open it (1.2d)
-            mapped = _mapped_results(resp.json())
+            mapped = _mapped_results(resp.json(), images)
             _breaker_record_success()
             return mapped
         logger.warning("OpenSERP [%s]: HTTP %d", query[:60], resp.status_code)
@@ -570,7 +609,7 @@ def _is_search_answer(value: Any) -> bool:
     )
 
 
-def _mapped_results(data: Any) -> List[Dict[str, str]]:
+def _mapped_results(data: Any, images: bool = False) -> List[Dict[str, str]]:
     """OpenSERP's reply (a flat list, or ``{"results": [...]}``) as {url, title, description}.
     A dict without ``results`` (an error or captcha envelope) is not an answer: it raises, so
     it is never kept as "nothing found"."""
@@ -579,7 +618,22 @@ def _mapped_results(data: Any) -> List[Dict[str, str]]:
     if isinstance(data, dict) and "results" not in data:
         raise ValueError(f"no results in the reply (keys: {sorted(data)[:5]})")
     results = data if isinstance(data, list) else data.get("results", [])
-    return [_mapped_row(r) for r in results or [] if r]
+    row = _mapped_image_row if images else _mapped_row
+    return [row(r) for r in results or [] if r]
+
+
+def _mapped_image_row(r: Dict[str, Any]) -> Dict[str, str]:
+    """An image result (OpenSERP v2: ``image.url``, ``source.page_url``) as {url = the image,
+    title, description, page_url}."""
+    image, source = r.get("image"), r.get("source")
+    image = image if isinstance(image, dict) else {}
+    source = source if isinstance(source, dict) else {}
+    return {
+        "url": str(image.get("url") or ""),
+        "title": str(r.get("title") or ""),
+        "description": "",
+        "page_url": str(source.get("page_url") or ""),
+    }
 
 
 def _mapped_row(r: Dict[str, Any]) -> Dict[str, str]:
@@ -1789,13 +1843,35 @@ def search_equipment_images(
     equipment_name: str,
     openserp_url: str,
     grok_client: Any = None,
-    max_results: int = 3,
+    max_results: Optional[int] = None,
     identifier: str = "",
     year: str = "",
     facts: str = "",
-) -> List[Dict[str, str]]:
-    """Search for photos of military equipment (uses search_queries/equipment.yaml,
-    sharpened with the equipment's own facts: category + country_of_origin)."""
+    equipment_id: str = "",
+    existing: Optional[List[Any]] = None,
+) -> List[Dict[str, Any]]:
+    """Photos of military equipment (search_queries/equipment.yaml, sharpened with the
+    equipment's own facts: category + country_of_origin) from an OpenSERP IMAGE search, each
+    confirmed by Grok vision (``web_photos``), up to ``max_results`` (default
+    ``openserp.max_images_per_entity``). ``equipment_id`` (the record's ULID) keys the verdicts;
+    without it nothing is searched."""
+    from src.enrichment import web_photos
+
+    if not equipment_id:
+        logger.warning(
+            "OBSERV openserp.equipment_without_id name=%r status=warn - not photo-searched: a "
+            "verdict must be tied to the record's EquipmentID. The write guard mints one; a record "
+            "without it bypassed the guard (scripts/check_raw_writes.sh)",
+            str(equipment_name)[:60],
+        )
+        return []
+    wanted = _entity_caps(max_results)[0]
+    subject = web_photos.Subject(
+        entity_key=f"equipment#{equipment_id}",
+        text_context=f"Photo of {equipment_name} WWII",
+        subject=f"{equipment_name} ({facts})" if facts else equipment_name,
+        what_counts=f"the {equipment_name} - a WWII photograph of it or a preserved example",
+    )
     queries = _render_queries(
         "equipment",
         "images",
@@ -1804,25 +1880,18 @@ def search_equipment_images(
         year=year,
         facts=facts,
     )
-    images: List[Dict[str, str]] = []
-    seen: set = set()
+    images: List[Dict[str, Any]] = []
     for query in queries:
-        for r in _search_openserp(query, openserp_url):
-            url = r.get("url", "")
-            title = r.get("title", "")
-            if not url or url in seen:
-                continue
-            if _verify_result(
-                title,
-                f"Photo of {equipment_name}",
-                grok_client,
-                snippet=r.get("description", ""),
-                url=url,
-            ):
-                images.append({"url": url, "title": title, "source": "openserp"})
-                seen.add(url)
-                if len(images) >= max_results:
-                    return images
+        results = _search_openserp_images(query, openserp_url)
+        images += web_photos.find_photos(
+            results,
+            subject,
+            grok_client,
+            list(existing or []) + images,
+            wanted - len(images),
+        )
+        if len(images) >= wanted:
+            break
     return images
 
 
@@ -2544,6 +2613,8 @@ def enrich_one_equipment(
         grok_client,
         identifier=data.get("technical_identifier") or "",
         facts=_equipment_query_terms(data),
+        equipment_id=str(data.get("EquipmentID") or ""),
+        existing=data.get("images") or [],
     )
     if not images:
         return False

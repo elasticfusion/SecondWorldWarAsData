@@ -272,6 +272,9 @@ def _private_find_pages(monkeypatch, tmp_path_factory):
     from src.utils import find_pages
 
     monkeypatch.setattr(find_pages, "_LOCAL_DIR", tmp_path_factory.mktemp("find_pages"))
+    monkeypatch.setattr(
+        find_pages, "_PHOTO_LOCAL_DIR", tmp_path_factory.mktemp("photos")
+    )
     monkeypatch.setattr(find_pages, "_bucket", lambda: "")
     monkeypatch.setattr(find_pages, "_STORES", {})
 
