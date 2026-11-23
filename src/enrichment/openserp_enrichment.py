@@ -156,6 +156,8 @@ _METRIC_KEYS = (
     "verify_batch_failed",
     # entities whose next search goes one result page deeper (paging)
     "pages_deeper",
+    "queries_cached",  # searches answered from the search-response cache (no query sent)
+    "queries_cache_unusable",  # a cached answer of the wrong shape (asked again)
     # an entity whose queries only errored (OpenSERP unavailable): left unsearched
     "entities_unavailable",
     "results_site_excluded",  # results dropped for an excluded site
@@ -218,7 +220,7 @@ def get_metrics() -> Dict[str, Any]:
         m: Dict[str, Any] = dict(_metrics)
     searched = m["entities_searched"] or 1
     verified = (m["verify_yes"] + m["verify_no"]) or 1
-    queries = m["queries_issued"] or 1
+    queries = (m["queries_issued"] + m.get("queries_cached", 0)) or 1  # sent + cached
     eligible = m.get("entities_eligible", 0) or 1
     m["enrichment_rate"] = round(m["entities_enriched"] / searched, 3)
     m["verify_pass_rate"] = round(m["verify_yes"] / verified, 3)
@@ -273,7 +275,7 @@ def _emit_openserp_summary(snap: Dict[str, Any]) -> None:
     """
     logger.info(
         "OBSERV openserp.summary eligible=%d searched=%d enriched=%d skipped_no_name=%d "
-        "queries=%d results=%d zero=%d verify_yes=%d verify_no=%d breaker_opened=%d "
+        "queries=%d cached=%d results=%d zero=%d verify_yes=%d verify_no=%d breaker_opened=%d "
         "items_added=%d finds_queued=%d finds_already_queued=%d finds_failed=%d "
         "pages_not_kept=%d pages_reused=%d verify_batched=%d verify_batch_failed=%d "
         "hit_permille=%d search_permille=%d",
@@ -282,6 +284,7 @@ def _emit_openserp_summary(snap: Dict[str, Any]) -> None:
         snap["entities_enriched"],
         snap.get("entities_skipped_no_name", 0),
         snap["queries_issued"],
+        snap.get("queries_cached", 0),
         snap["results_returned"],
         snap["zero_result_queries"],
         snap["verify_yes"],
@@ -461,12 +464,23 @@ def _query_params(query: str, limit: int, start: int) -> Dict[str, str]:
     return params
 
 
+class _SearchFailed(Exception):
+    """OpenSERP gave no answer (an HTTP error or an exception): never cached."""
+
+
+_SEARCH_CACHE_SOURCE = "openserp_search_v1"
+
+
 def _search_openserp(
     query: str, openserp_url: str, limit: Optional[int] = None, start: int = 0
 ) -> List[Dict]:
     """Run an OpenSERP search. Returns list of {url, title, description}. ``limit`` defaults to
     ``openserp.results_per_query``; ``start`` is the result offset (paging, ``_page_start``).
-    """
+
+    The answer (an empty one included) is kept ``supplemental_material.openserp_cache_days`` (14)
+    per (query, limit, start): a batch round, a retry, a redelivery or another record asking the
+    same thing sends no query and waits out no rate limit. A failed search is never kept.
+    Excluded domains are dropped after the cache, so a new exclusion applies at once."""
     if _breaker_is_open():
         # OpenSERP was found down: nothing may be searched (and stamped) until it is back
         _trace_query(query, "error")
@@ -474,69 +488,106 @@ def _search_openserp(
     global _last_url
     _last_url = openserp_url
 
+    from src.utils.config import load_config
+    from src.utils.search_cache import cached_answer, scraped_ttl_days
+
+    cfg = load_config().get("openserp", {})
+    if limit is None:
+        limit = _results_per_query(cfg)
+    asked: List[bool] = []
+
+    def live() -> List[Dict[str, str]]:
+        asked.append(True)
+        return _live_search(query, openserp_url, limit, start, cfg)
+
+    key = json.dumps([query, limit, start], ensure_ascii=False)
+    try:
+        mapped = cached_answer(
+            _SEARCH_CACHE_SOURCE, key, live, ttl_days=scraped_ttl_days()
+        )
+        if not _is_search_answer(mapped):  # a corrupt or foreign entry: ask OpenSERP
+            _metric("queries_cache_unusable")
+            mapped = live()
+    except _SearchFailed:
+        _trace_query(query, "error")
+        return []
+    if not asked:
+        _metric("queries_cached")
+    if not mapped:
+        _metric("zero_result_queries")
+        _trace_query(query, "empty")
+        return []
+    logger.info("OpenSERP [%s]: %d results", query[:60], len(mapped))
+    _trace_query(query, "results", len(mapped))
+    _metric("results_returned", len(mapped))
+    return _drop_excluded_domains(mapped)
+
+
+def _live_search(
+    query: str, openserp_url: str, limit: int, start: int, cfg: Dict[str, Any]
+) -> List[Dict[str, str]]:
+    """One OpenSERP request: the mapped results (empty = a genuine "nothing found"), or
+    ``_SearchFailed`` (logged, counted toward the breaker)."""
+    import time
+
+    from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
+
     _metric("queries_issued")
     try:
-        import time
-
-        from src.utils.config import load_config
-
-        cfg = load_config().get("openserp", {})
-        if limit is None:
-            limit = _results_per_query(cfg)
         time.sleep(cfg.get("rate_limit_seconds", 5))
         # Browser-mode OpenSERP (headless Chromium across several engines) can be slow;
         # the per-request timeout is config-driven so it can absorb browser latency
         # without tripping the breaker on a slow-but-valid query.
-        req_timeout = cfg.get("request_timeout_seconds", 60)
-        from src.utils.fetch_provenance import TEXTUAL, recorded_fetch
-
         resp = recorded_fetch(
             "openserp",
             f"{openserp_url}/mega/search",
             kind=TEXTUAL,
             method="GET",
             params=_query_params(query, limit, start),
-            timeout=req_timeout,
+            timeout=cfg.get("request_timeout_seconds", 60),
             result_summary_fn=lambda r: f"status={r.status_code} q={query[:40]!r}",
         )
         if resp.status_code == 200:
-            data = resp.json()
-            if not data:
-                # a genuine "nothing found" is an answer, not an OpenSERP failure: it must not
-                # open the breaker (which would leave every later entity unsearched, 1.2d)
-                _breaker_record_success()
-                _metric("zero_result_queries")
-                _trace_query(query, "empty")
-                return []
-            # Handle both flat list and {"results": [...]} formats
-            results = data if isinstance(data, list) else data.get("results", [])
-            if results:
-                _breaker_record_success()
-            else:
-                _breaker_record_success()
-                _metric("zero_result_queries")
-                _trace_query(query, "empty")
-                return []
-            logger.info("OpenSERP [%s]: %d results", query[:60], len(results))
-            _trace_query(query, "results", len(results))
-            _metric("results_returned", len(results))
-            mapped = [
-                {
-                    "url": r.get("url", ""),
-                    "title": r.get("title", ""),
-                    "description": r.get("snippet", ""),
-                }
-                for r in results
-                if r
-            ]
-            return _drop_excluded_domains(mapped)
+            # parsed BEFORE success is recorded: a 200 whose body is not a search answer (a
+            # captcha page, a cut-off reply) counts toward the breaker like any failure. A
+            # genuine "nothing found" is an answer and must not open it (1.2d)
+            mapped = _mapped_results(resp.json())
+            _breaker_record_success()
+            return mapped
         logger.warning("OpenSERP [%s]: HTTP %d", query[:60], resp.status_code)
-        _breaker_record_failure()
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001 - any failure: no answer, counted
         logger.warning("OpenSERP [%s]: %s", query[:60], e)
-        _breaker_record_failure()
-    _trace_query(query, "error")
-    return []
+    _breaker_record_failure()
+    raise _SearchFailed(query[:60])
+
+
+def _is_search_answer(value: Any) -> bool:
+    """A list of {url, title, description} strings (what ``_mapped_results`` makes)."""
+    return isinstance(value, list) and all(
+        isinstance(r, dict)
+        and all(isinstance(r.get(k), str) for k in ("url", "title", "description"))
+        for r in value
+    )
+
+
+def _mapped_results(data: Any) -> List[Dict[str, str]]:
+    """OpenSERP's reply (a flat list, or ``{"results": [...]}``) as {url, title, description}.
+    A dict without ``results`` (an error or captcha envelope) is not an answer: it raises, so
+    it is never kept as "nothing found"."""
+    if not data:
+        return []
+    if isinstance(data, dict) and "results" not in data:
+        raise ValueError(f"no results in the reply (keys: {sorted(data)[:5]})")
+    results = data if isinstance(data, list) else data.get("results", [])
+    return [_mapped_row(r) for r in results or [] if r]
+
+
+def _mapped_row(r: Dict[str, Any]) -> Dict[str, str]:
+    return {
+        "url": str(r.get("url") or ""),
+        "title": str(r.get("title") or ""),
+        "description": str(r.get("snippet") or ""),
+    }
 
 
 # --- per-entity search trace and the review log (task 1.2d, owner 2026-11-18) -----------------

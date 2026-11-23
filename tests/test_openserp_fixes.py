@@ -123,5 +123,5 @@ def test_search_timeout_is_config_driven():
             lambda: {"openserp": {"rate_limit_seconds": 0}},
         ),
     ):
-        oe._search_openserp("q", "http://x", limit=5)
+        oe._search_openserp("q2", "http://x", limit=5)  # "q" is answered from the cache
     assert captured["timeout"] == 60

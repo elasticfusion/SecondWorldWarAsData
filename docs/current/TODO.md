@@ -837,7 +837,7 @@ rejected item stays rejected; an approved item starts Phase 0.
   cannot store leaves the entity unsearched (SQS: deferred), so the next run asks again. Records written by earlier
   runs keep their old entries (no migration). Left: the people web search is still gated on
   `military_awards` being empty (now only an award extraction fills it): replace it with a queue/marker check;
-  `entities_enriched` is not counted in a batch round-2 pass where every page was already queued. STILL OPEN in this step: the OpenSERP search-response cache, the checksum re-check.**
+  `entities_enriched` is not counted in a batch round-2 pass where every page was already queued. STILL OPEN in this step: the checksum re-check.**
 - **DONE (Group 3 step H, 2026-11-23) - the fetched page is kept for Phase 0.** `src/utils/find_pages.py`: the page a
   find was judged on (live, or the Internet Archive copy) is stored once under its checksum
   (`find-pages/pages/<sha256>.html` in the data bucket, write-once; `output/_find_pages/` locally) with a per-URL
@@ -965,6 +965,13 @@ Findings:
   re-read is not traced twice in the review log. Open: the batch answer is positional (an index-keyed answer
   would catch a reordered reply). Trade-off: a query's candidates are
   all asked even when the per-entity cap is reached after the first few.
+- **DONE (2026-11-23) - OpenSERP search responses are cached.** `_search_openserp` keeps each answer (an empty one
+  included) per (query, limit, start) for `supplemental_material.openserp_cache_days` (14) through the shared
+  `search_cache.cached_answer` (source `openserp_search_v1`): a batch round, a retry, an SQS redelivery or another
+  record asking the same thing sends no query and waits out no rate limit (metric `queries_cached`). A failed
+  search (HTTP error, exception) is never kept. The window is far shorter than the 90-day re-search, so a
+  re-searched entity's first page is fresh; each result page is its own entry, so paging still reaches new
+  results. Excluded domains are dropped after the cache (a new exclusion applies at once).
 - **DONE (2026-11-23) - places are capped like people (owner).** `enrich_one_place`: at most
   `openserp.max_web_results_per_entity` (3) new finds per search and `max_images_per_entity` (3) images on the
   record (`_entity_caps`, shared with people); once a cap is reached no further name variant or query is sent, and

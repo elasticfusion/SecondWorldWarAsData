@@ -9,7 +9,7 @@ import pytest
 import src.enrichment.openserp_enrichment as oe
 
 
-def _limit_sent(monkeypatch, cfg):
+def _limit_sent(monkeypatch, cfg, query="q"):
     monkeypatch.setattr(
         "src.utils.config.load_config", lambda *a, **k: {"openserp": cfg}
     )
@@ -22,7 +22,7 @@ def _limit_sent(monkeypatch, cfg):
         return mock.Mock(status_code=200, json=lambda: [])
 
     monkeypatch.setattr("src.utils.fetch_provenance.recorded_fetch", fetch)
-    oe._search_openserp("q", "http://serp")
+    oe._search_openserp(query, "http://serp")
     return sent["limit"]
 
 
@@ -41,7 +41,7 @@ def test_a_bad_value_is_said_and_the_default_used(monkeypatch, caplog, bad):
     monkeypatch.setattr(observe, "_counts", {})
     with caplog.at_level(logging.WARNING):
         assert _limit_sent(monkeypatch, {"results_per_query": bad}) == "5"
-        assert _limit_sent(monkeypatch, {"results_per_query": bad}) == "5"
+        assert _limit_sent(monkeypatch, {"results_per_query": bad}, "q2") == "5"
     assert caplog.text.count("bad_results_per_query") == 1  # said once, not per query
 
 
