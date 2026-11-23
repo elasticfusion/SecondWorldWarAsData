@@ -60,7 +60,11 @@ def get_cached(source: str, query: str) -> Optional[str]:
 
 
 def cache_result(
-    source: str, query: str, result, negative_days: Optional[float] = None
+    source: str,
+    query: str,
+    result,
+    negative_days: Optional[float] = None,
+    positive_days: Optional[float] = None,
 ) -> None:  # result: str | None | TRANSIENT
     """Cache a search result.
 
@@ -75,7 +79,8 @@ def cache_result(
     backend = _get_backend()
     key = _make_key(source, query)
     if result:
-        backend.put(key, result, ttl_days=POSITIVE_TTL_DAYS)
+        days = POSITIVE_TTL_DAYS if positive_days is None else positive_days
+        backend.put(key, result, ttl_days=days)
     else:
         backend.put(
             key,

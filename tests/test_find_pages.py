@@ -133,6 +133,7 @@ def test_a_cached_summary_with_no_kept_page_is_queued_without_one(
 ):
     oe.reset_metrics()
     monkeypatch.setattr(oe, "_url_verdict_cached", lambda url: "He served.")
+    monkeypatch.setattr(oe, "_verify_result", lambda *a, **k: True)
     origin = oe.find_queue.entity_origin("person", {"PersonID": "01HPERSON"})
     assert oe.find_page(URL, "John Doe", "", "ctx", object(), origin)
     (event,) = queued_finds("openserp-find")

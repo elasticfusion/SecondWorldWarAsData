@@ -147,6 +147,9 @@ _METRIC_KEYS = (
     "finds_no_origin",  # an entity with no ULID: its finds are not queued
     "finds_refused",  # a URL the queue will not take (unsafe or malformed)
     "pages_not_kept",  # a fetched page that could not be stored (its find has no page)
+    # a page summarized for an earlier entity, judged relevant to this one: one Grok relevance
+    # request, no fetch and no summary request
+    "pages_reused",
     # write_failed counts enriched records whose persisted write FAILED (returned False) — the
     # enrichment is lost. Previously the count/_metric was incremented before an unchecked write,
     # so a failed persist read as a successful enrichment. Now the count is gated on the write.
@@ -260,7 +263,7 @@ def _emit_openserp_summary(snap: Dict[str, Any]) -> None:
         "OBSERV openserp.summary eligible=%d searched=%d enriched=%d skipped_no_name=%d "
         "queries=%d results=%d zero=%d verify_yes=%d verify_no=%d breaker_opened=%d "
         "items_added=%d finds_queued=%d finds_already_queued=%d finds_failed=%d "
-        "pages_not_kept=%d hit_permille=%d search_permille=%d",
+        "pages_not_kept=%d pages_reused=%d hit_permille=%d search_permille=%d",
         snap.get("entities_eligible", 0),
         snap["entities_searched"],
         snap["entities_enriched"],
@@ -276,6 +279,7 @@ def _emit_openserp_summary(snap: Dict[str, Any]) -> None:
         snap["finds_already_queued"],
         snap["finds_failed"],
         snap.get("pages_not_kept", 0),
+        snap.get("pages_reused", 0),
         int(snap["enrichment_rate"] * 1000),
         int(snap.get("search_rate", 0) * 1000),
     )
@@ -804,25 +808,37 @@ def _one_verdict(answer: Any) -> Optional[str]:
     return value if value in ("YES", "NO") else None
 
 
+def _verify_key(context: str, title: str, url: str, entity_key: str = "") -> str:
+    """The cache key of a relevance verdict: (entity, its context, full URL) when the entity is
+    known, since relevance is per entity (one entity's verdict is never reused for another, and a
+    changed context, e.g. a new alias, is asked again); else the full context, title and URL. No
+    prefix truncation (two URLs sharing a prefix never share an answer), and a JSON list, so no
+    field's text can run into the next. search_cache hashes it."""
+    if entity_key:
+        return json.dumps(["entity", entity_key, context, url], ensure_ascii=False)
+    return json.dumps([context, title, url], ensure_ascii=False)
+
+
 def _verify_result(
     candidate_title: str,
     expected_context: str,
     grok_client: Any,
     snippet: str = "",
     url: str = "",
+    entity_key: str = "",
 ) -> bool:
     """Use Grok to verify a search result is relevant (cached, batch-friendly).
 
     No grok_client: reject (fail-closed). A real YES/NO is cached (90 days, search_cache) and
     returned. No usable verdict: VerifyFailed (not cached, not a NO - task 1.2e). The judgment
     uses the title, the result snippet, AND the URL (not the title alone) for a stronger
-    signal."""
+    signal. ``entity_key`` (``<type>#<ULID>``) keys the verdict on (URL, entity)."""
     if not grok_client:
         # No verifier available -> cannot confirm relevance -> reject (fail-closed).
         return False
     from src.utils.search_cache import cache_result, get_cached
 
-    cache_key = f"{expected_context[:50]}|{candidate_title[:50]}|{url[:60]}"
+    cache_key = _verify_key(expected_context, candidate_title, url, entity_key)
     prompt = _single_verify_prompt(expected_context, candidate_title, snippet, url)
     model = _model_for(grok_client, "openserp_verify")
     cached = get_cached("openserp_verify", cache_key)
@@ -839,7 +855,9 @@ def _verify_result(
         _metric("verify_failed")
         raise
     _trace_verdict(candidate_title, url, answer, prompt, model, cached=False)
-    cache_result("openserp_verify", cache_key, answer)
+    cache_result(
+        "openserp_verify", cache_key, answer, positive_days=_URL_FETCH_RETENTION_DAYS
+    )
     _metric("verify_yes" if answer == "YES" else "verify_no")
     logger.info(
         "Grok verify [%s]: %s — '%s'",
@@ -856,6 +874,7 @@ def _prefilter_verify_cache(
     title_key: str,
     url_key: str,
     verdicts: "List[bool]",
+    entity_key: str = "",
 ) -> "tuple[List[str], List[int]]":
     """Compute per-result cache keys (EXACTLY as _verify_result) and consult the cache. Fills
     ``verdicts`` for already-decided results and returns (cache_keys, indices_still_needing_Grok).
@@ -867,7 +886,7 @@ def _prefilter_verify_cache(
     for i, r in enumerate(results):
         title = str(r.get(title_key, "") or "")
         url = str(r.get(url_key, "") or "")
-        cache_key = f"{expected_context[:50]}|{title[:50]}|{url[:60]}"
+        cache_key = _verify_key(expected_context, title, url, entity_key)
         cache_keys.append(cache_key)
         cached = get_cached("openserp_verify", cache_key)
         if cached in ("YES", "NO", "NOT_FOUND"):
@@ -924,6 +943,7 @@ def _verify_results_batch(
     snippet_key: str = "description",
     url_key: str = "url",
     title_key: str = "title",
+    entity_key: str = "",
 ) -> List[bool]:
     """Prompt-level batched verifier (design doc §10/§10A): verify ALL ``results`` in ONE Grok
     call that returns a per-result YES/NO array, instead of one Grok call per result.
@@ -934,9 +954,8 @@ def _verify_results_batch(
       * FAIL-CLOSED: no grok_client -> all False; any missing/malformed/short array index -> that
         index is False (reject); a Grok error -> uncached indices are False (and NOT cached, so a
         healthy later run can re-verify).
-      * CACHE PRESERVED: each result is keyed EXACTLY as _verify_result
-        (``f"{expected_context[:50]}|{title[:50]}|{url[:60]}"``). Already-cached results are
-        pre-filtered out of the batch (so repeat runs issue no Grok call); per-result cache
+      * CACHE PRESERVED: each result is keyed EXACTLY as _verify_result (``_verify_key``, with
+        the same ``entity_key``). Already-cached results are pre-filtered out of the batch (so repeat runs issue no Grok call); per-result cache
         entries are written from the batched response (90-day positive / negative TTL via
         cache_result).
       * METRICS PRESERVED: _metric("verify_yes"/"verify_no") is incremented per NEWLY-verified
@@ -957,7 +976,7 @@ def _verify_results_batch(
     # Pre-compute per-result cache keys (EXACTLY as _verify_result) and consult the cache so
     # already-decided results stay free (no Grok call) on repeat runs.
     cache_keys, to_verify = _prefilter_verify_cache(
-        results, expected_context, title_key, url_key, verdicts
+        results, expected_context, title_key, url_key, verdicts, entity_key
     )
 
     if not to_verify:
@@ -985,7 +1004,12 @@ def _verify_results_batch(
     for n, idx in enumerate(to_verify):
         answer = answers[n]
         verdicts[idx] = answer == "YES"
-        cache_result("openserp_verify", cache_keys[idx], answer)
+        cache_result(
+            "openserp_verify",
+            cache_keys[idx],
+            answer,
+            positive_days=_URL_FETCH_RETENTION_DAYS,
+        )
         _metric("verify_yes" if answer == "YES" else "verify_no")
     logger.info(
         "Grok batch verify: %d results for '%s' -> %d YES",
@@ -1198,6 +1222,7 @@ def _wayback_ts_to_iso(ts: str) -> str:
 def _from_cached_summary(url: str, title: str, summary: str) -> Dict[str, Any]:
     """A page summarized by an earlier entity's search: no fetch, no Grok request; the page kept
     then goes with the find."""
+    _metric("pages_reused")
     page = find_pages.kept(url)
     if not page["page_kept"]:
         _metric("pages_not_kept")  # find_pages logged it
@@ -1218,28 +1243,32 @@ def process_positive_url(
     snippet: str,
     context: str,
     grok_client: Any,
+    entity_key: str = "",
 ) -> Optional[Dict[str, Any]]:
-    """Verify + process one discovered URL into an enriched result, with positive AND negative
-    URL caching (both cached 90 days to prevent reprocessing):
+    """Verify + process one discovered URL into an enriched result. Relevance is asked per (URL,
+    entity) (``entity_key``, cached 90 days); the page itself (fetch state, summary, kept page) is
+    per URL, so a page is fetched and summarized once and a new entity is asked only whether it is
+    about them:
 
-      * previously REJECTED or dead URL -> return None immediately (no re-verify/re-fetch);
-      * previously processed positive    -> rebuild the result from the cached summary;
-      * new URL -> Grok-verify (fail-closed); reject -> cache 'REJECT' + None; accept -> fetch
-        + summarize the page, cache the summary, return {url,title,summary,fetched_at,source}.
+      * a URL that could not be fetched/summarized, or is to be retried later -> None at once;
+      * not relevant to this entity -> None (cached for this entity only; another entity is
+        still asked);
+      * relevant, page summarized before -> rebuilt from the cached summary (no fetch);
+      * relevant, new page -> fetch + summarize, cache the summary, keep the page.
     """
     import time as _time
 
     if not url:
         return None
     cached = _url_verdict_cached(url)
-    if cached in ("REJECT", _RETRY_VERDICT):
+    if cached in ("REJECT", _RETRY_VERDICT):  # page state: unfetchable, or retry later
         return None
+    if not _verify_result(
+        title, context, grok_client, snippet=snippet, url=url, entity_key=entity_key
+    ):
+        return None  # not about this entity: cached for it alone, never URL-wide
     if cached:  # positive summary cached: the page it was made from was kept then
         return _from_cached_summary(url, title, cached)
-
-    if not _verify_result(title, context, grok_client, snippet=snippet, url=url):
-        _cache_url_verdict(url, "REJECT")
-        return None
 
     prov: Dict[str, Any] = {}
     summary = _summarize_url_page(url, context, grok_client, provenance=prov)
@@ -1335,7 +1364,14 @@ def find_page(
     if find_queue.already_queued(FIND_PROVIDER, url, origin):
         _metric("finds_already_queued")
         return None
-    processed = process_positive_url(url, title, snippet, context, grok_client)
+    processed = process_positive_url(
+        url,
+        title,
+        snippet,
+        context,
+        grok_client,
+        entity_key=f"{origin.entity_type}#{origin.entity_id}",
+    )
     if not processed:
         return None
     status = find_queue.enqueue_find(

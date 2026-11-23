@@ -61,7 +61,11 @@ def test_batch_cache_key_matches_single_item_path(_fresh):
         [{"url": "http://u", "title": "t", "description": "d"}],
         _grok({"verdicts": ["YES"]}),
     )
-    assert _fresh.call_args.args == ("openserp_verify", "Photo of X|t|http://u", "YES")
+    assert _fresh.call_args.args == (
+        "openserp_verify",
+        oe._verify_key("Photo of X", "t", "http://u"),
+        "YES",
+    )
 
 
 @pytest.mark.parametrize(
@@ -106,7 +110,7 @@ def test_batch_all_cached_issues_no_grok_call(_fresh):
     grok = _grok()
     with patch(
         "src.utils.search_cache.get_cached",
-        side_effect=lambda _s, key: "YES" if key.endswith("http://u0") else "NO",
+        side_effect=lambda _s, key: "YES" if key.endswith('http://u0"]') else "NO",
     ):
         assert oe._verify_results_batch("ctx", _results(2), grok) == [True, False]
     assert grok.extract_json.call_count == 0 and not _fresh.called
@@ -116,10 +120,10 @@ def test_batch_partial_cache_only_verifies_uncached(_fresh):
     grok = _grok({"verdicts": ["YES"]})
     with patch(
         "src.utils.search_cache.get_cached",
-        side_effect=lambda _s, key: "YES" if key.endswith("http://u0") else None,
+        side_effect=lambda _s, key: "YES" if key.endswith('http://u0"]') else None,
     ):
         assert oe._verify_results_batch("ctx", _results(2), grok) == [True, True]
-    assert _fresh.call_count == 1 and _fresh.call_args.args[1].endswith("http://u1")
+    assert _fresh.call_count == 1 and _fresh.call_args.args[1].endswith('http://u1"]')
 
 
 # --- single ------------------------------------------------------------------------------------
@@ -129,7 +133,11 @@ def test_batch_partial_cache_only_verifies_uncached(_fresh):
 def test_a_single_verdict_is_cached_and_returned(_fresh, raw, want):
     grok = _grok({"relevant": raw})
     assert oe._verify_result("t", "ctx", grok, url="http://u") is want
-    assert _fresh.call_args.args == ("openserp_verify", "ctx|t|http://u", raw.upper())
+    assert _fresh.call_args.args == (
+        "openserp_verify",
+        oe._verify_key("ctx", "t", "http://u"),
+        raw.upper(),
+    )
 
 
 @pytest.mark.parametrize("answer", [{"relevant": "perhaps"}, {}, "YES", None])

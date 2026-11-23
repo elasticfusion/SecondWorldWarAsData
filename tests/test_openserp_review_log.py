@@ -133,7 +133,7 @@ def test_search_records_each_query_status(monkeypatch):
 
 def test_the_verifier_records_its_prompt_and_model(monkeypatch):
     monkeypatch.setattr("src.utils.search_cache.get_cached", lambda *a: None)
-    monkeypatch.setattr("src.utils.search_cache.cache_result", lambda *a: None)
+    monkeypatch.setattr("src.utils.search_cache.cache_result", lambda *a, **k: None)
     grok = mock.MagicMock()
     grok.extract_json.return_value = {"relevant": "NO"}
     grok._get_model.return_value = "grok-4.3"
@@ -202,9 +202,9 @@ def test_cached_batch_verdicts_count_in_the_outcome(monkeypatch):
 
     monkeypatch.setattr(
         "src.utils.search_cache.get_cached",
-        lambda s, k: "YES" if k.endswith("http://a") else None,
+        lambda s, k: "YES" if k.endswith('http://a"]') else None,
     )
-    monkeypatch.setattr("src.utils.search_cache.cache_result", lambda *a: None)
+    monkeypatch.setattr("src.utils.search_cache.cache_result", lambda *a, **k: None)
     grok = mock.MagicMock()
     grok.extract_json.return_value = {"verdicts": ["NO"]}
     trace = oe._new_trace("people", "f", {}, "x")

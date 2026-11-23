@@ -837,7 +837,7 @@ rejected item stays rejected; an approved item starts Phase 0.
   cannot store leaves the entity unsearched (SQS: deferred), so the next run asks again. Records written by earlier
   runs keep their old entries (no migration). Left: the people web search is still gated on
   `military_awards` being empty (now only an award extraction fills it): replace it with a queue/marker check;
-  `entities_enriched` is not counted in a batch round-2 pass where every page was already queued. STILL OPEN in this step: the (URL, entity) relevance cache, the OpenSERP search-response cache, the checksum re-check.**
+  `entities_enriched` is not counted in a batch round-2 pass where every page was already queued. STILL OPEN in this step: wiring the batched verifier, the OpenSERP search-response cache, the checksum re-check.**
 - **DONE (Group 3 step H, 2026-11-23) - the fetched page is kept for Phase 0.** `src/utils/find_pages.py`: the page a
   find was judged on (live, or the Internet Archive copy) is stored once under its checksum
   (`find-pages/pages/<sha256>.html` in the data bucket, write-once; `output/_find_pages/` locally) with a per-URL
@@ -937,6 +937,21 @@ Findings:
   also stamps `fetched_at` with the current time (`OE:835`), so the record claims a fetch that did not
   happen. Owner decision: what a re-check should do (liveness check only, cheap; or re-summarize and
   replace), and record `last_checked_at` / `status` on the entry.
+- **DONE (Group 3 step I, 2026-11-23) - relevance keyed on (URL, entity); page state per URL.**
+  `_verify_key`: an OpenSERP find's Grok relevance verdict is cached under (`<type>#<ULID>`, the entity's context
+  text, full URL) via `find_page` -> `process_positive_url(entity_key=...)` (a changed context, e.g. a new alias, is
+  asked again); other callers (images, awards, academic) use the full context + title + URL. Keys are a JSON list
+  (no field runs into the next); the 60-character URL truncation is gone, also in `_verify_results_batch`, which
+  takes the same `entity_key`. Metric `pages_reused` counts a summarized page judged relevant to another entity. Verdicts keep
+  for `_URL_FETCH_RETENTION_DAYS` (90; `search_cache.cache_result(positive_days=)`), not the 30-day default.
+  `process_positive_url` asks relevance BEFORE reusing a cached summary (a page found for one entity is no longer
+  handed to another unchecked), and a relevance NO is cached for that entity only (no URL-wide `REJECT`; `REJECT`
+  now means only "could not be fetched/summarized"). A new entity for an already-summarized page costs one Grok
+  relevance request and no fetch. The dev cache held no OpenSERP entries of any kind (`search#openserp*`, both
+  `openserp_verify` and `openserp_url_verdict`; scan 2026-11-23: 0 of 32,626), so the key change re-asks nothing
+  and no URL-wide `REJECT` from an old relevance NO exists. A summary is made once per URL with the first entity's
+  context and shared (the reviewer sees the same summary for each entity). Left: wire `_verify_results_batch` into the four `find_page` callers (one request
+  per query's results instead of one per result).
 - **FIX (owner 2026-11-17) - key relevance on (URL, entity); keep page state per URL.**
   - Store the Grok relevance verdict under (full-URL hash, entity ULID), in one cache, with one
     retention constant (drop the 60-character URL key and the 30-day `search_cache` TTL for it).
