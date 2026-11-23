@@ -154,6 +154,12 @@ _METRIC_KEYS = (
     "verify_batched",
     # batched answers without a clear verdict for every result (asked one by one instead)
     "verify_batch_failed",
+    # entities whose next search goes one result page deeper (paging)
+    "pages_deeper",
+    # an entity whose queries only errored (OpenSERP unavailable): left unsearched
+    "entities_unavailable",
+    "results_site_excluded",  # results dropped for an excluded site
+    "urls_retry_later",  # pages walled or rate-limited: asked again in an hour
     # write_failed counts enriched records whose persisted write FAILED (returned False) — the
     # enrichment is lost. Previously the count/_metric was incremented before an unchecked write,
     # so a failed persist read as a successful enrichment. Now the count is gated on the write.
@@ -199,9 +205,11 @@ def _usable_entity_name(name: Any, min_len: int = 1) -> bool:
 
 
 def reset_metrics() -> None:
+    """Zero every counter, including any not listed in _METRIC_KEYS (one run's counts must not
+    carry into the next in a long-lived worker)."""
     with _metrics_lock:
-        for k in _METRIC_KEYS:
-            _metrics[k] = 0
+        _metrics.clear()
+        _metrics.update({k: 0 for k in _METRIC_KEYS})
 
 
 def get_metrics() -> Dict[str, Any]:
@@ -446,11 +454,19 @@ def _results_per_query(cfg: Dict[str, Any]) -> int:
     return _config_int(cfg, "results_per_query", _DEFAULT_RESULTS_PER_QUERY, hi=100)
 
 
+def _query_params(query: str, limit: int, start: int) -> Dict[str, str]:
+    params = {"text": query, "limit": str(limit), "mode": "any"}
+    if start > 0:
+        params["start"] = str(start)  # a deeper result page (paging)
+    return params
+
+
 def _search_openserp(
-    query: str, openserp_url: str, limit: Optional[int] = None
+    query: str, openserp_url: str, limit: Optional[int] = None, start: int = 0
 ) -> List[Dict]:
     """Run an OpenSERP search. Returns list of {url, title, description}. ``limit`` defaults to
-    ``openserp.results_per_query``."""
+    ``openserp.results_per_query``; ``start`` is the result offset (paging, ``_page_start``).
+    """
     if _breaker_is_open():
         # OpenSERP was found down: nothing may be searched (and stamped) until it is back
         _trace_query(query, "error")
@@ -479,11 +495,7 @@ def _search_openserp(
             f"{openserp_url}/mega/search",
             kind=TEXTUAL,
             method="GET",
-            params={
-                "text": query,
-                "limit": str(limit),
-                "mode": "any",
-            },
+            params=_query_params(query, limit, start),
             timeout=req_timeout,
             result_summary_fn=lambda r: f"status={r.status_code} q={query[:40]!r}",
         )
@@ -564,6 +576,145 @@ def _trace_query(query: str, status: str, count: int = 0) -> None:
     t = _trace.get()
     if t is not None:
         t["queries"].append({"query": query[:300], "status": status, "results": count})
+
+
+# --- paging: a productive entity's next search goes one result page deeper (owner 2026-11-23) ---
+
+_PAGE_CURSOR_TTL_DAYS = 365  # outlives the 90-day re-search window
+
+
+def _page_cursor_key(entity_key: str) -> str:
+    return json.dumps(["page", entity_key])
+
+
+def _paging_limits() -> "tuple[int, int]":
+    """(results per page, pages) for paging, from one config read."""
+    from src.utils.config import load_config
+
+    cfg = load_config().get("openserp", {})
+    return _results_per_query(cfg), _config_int(cfg, "max_result_pages", 3, hi=10)
+
+
+def _parse_cursor(raw: Any) -> int:
+    """A stored cursor as a result offset: a short ASCII whole number on a page boundary within the
+    paged range, else
+    0 (said: a value our own writes never produce means a bad or foreign cache entry).
+    """
+    if raw is None:
+        return 0
+    limit, pages = _paging_limits()
+    ok = isinstance(raw, str) and raw.isascii() and raw.isdecimal() and len(raw) <= 4
+    start = int(raw) if ok else -1
+    if 0 <= start <= (pages - 1) * limit and start % limit == 0:
+        return start
+    from src.utils.observe import observe_warn_counted
+
+    observe_warn_counted(
+        "openserp",
+        "bad_page_cursor",
+        key=("page_cursor",),
+        every=100,
+        note="a stored paging cursor is not a result offset in range; the entity starts at the "
+        "first page (its next search stores a good one). Many of these: check what writes "
+        "search#openserp_page# keys in the api-cache table",
+        value=str(raw)[:20],
+    )
+    return 0
+
+
+def _page_start(origin: Any) -> int:
+    """The result offset this entity's find queries start at (0 = the first page): where its
+    last search left off (``commit_paging``). 0 outside an entity search or with no entity.
+    """
+    t = _trace.get()
+    if t is None or origin is None:
+        return 0
+    p = t.setdefault("paging", {})
+    if "start" not in p:
+        from src.utils.search_cache import get_cached
+
+        key = _entity_key(origin)
+        raw = get_cached("openserp_page", _page_cursor_key(key))
+        start = _parse_cursor(raw)
+        p.update(key=key, start=start, stored=raw == str(start), new=0, known=0)
+        p["capped"] = False
+    return p["start"]
+
+
+def _page_note(what: str) -> None:
+    """Record, for the paging decision, a find newly queued (``new``), a relevant page queued by an
+    earlier search (``known``), or that the entity's cap stopped its search (``capped``).
+    """
+    t = _trace.get()
+    p = (t or {}).get("paging") or {}
+    if "start" not in p:
+        return
+    if what == "capped":
+        p["capped"] = True
+    else:
+        p[what] += 1
+
+
+def _next_page_start(p: Dict[str, Any], limit: int, pages: int) -> "tuple[int, str]":
+    """Where the next search starts, and why: the same page when the cap stopped this one (its
+    leftover pages are queued next time), one page deeper when this page had relevant pages
+    (new or queued earlier) until ``pages`` pages, else back to the first page."""
+    if p["capped"]:
+        return p["start"], "capped"
+    if p["new"] + p["known"] > 0:
+        deeper = p["start"] + limit
+        return (deeper, "deeper") if deeper < pages * limit else (0, "deepest")
+    return 0, "nothing_new"
+
+
+def _store_cursor(entity_key: str, start: int) -> bool:
+    """Write the cursor; a failed write is said and the search still counts (the entity's next
+    search starts where the last stored cursor said)."""
+    from src.utils.search_cache import cache_result
+
+    try:
+        cache_result(
+            "openserp_page",
+            _page_cursor_key(entity_key),
+            str(start),
+            positive_days=_PAGE_CURSOR_TTL_DAYS,
+        )
+        return True
+    except Exception as e:  # noqa: BLE001 - paging must never fail a finished search
+        logger.warning(
+            "OBSERV openserp.page_cursor_write_failed entity=%s err=%s status=warn - the next "
+            "search starts at the old page. Check the task role's access to the api-cache table",
+            entity_key,
+            type(e).__name__,
+        )
+        return False
+
+
+def commit_paging(trace: Dict[str, Any]) -> None:
+    """After an entity's search counts as searched: store where its next search starts. Not after
+    a failed one (nothing reaches here), and not when a query errored (the cursor stays).
+    """
+    p = trace.get("paging") or {}
+    if "start" not in p or any(q["status"] == "error" for q in trace["queries"]):
+        return
+    limit, pages = _paging_limits()
+    nxt, why = _next_page_start(p, limit, pages)
+    if not (
+        nxt == p["start"] and (p["stored"] or nxt == 0)
+    ):  # else unchanged: no write
+        if not _store_cursor(p["key"], nxt):
+            return
+    if nxt > p["start"]:
+        _metric("pages_deeper")
+    logger.info(
+        "OBSERV openserp.page entity=%s start=%d next=%d reason=%s new=%d known=%d",
+        p["key"],
+        p["start"],
+        nxt,
+        why,
+        p["new"],
+        p["known"],
+    )
 
 
 def _trace_verdict(
@@ -777,7 +928,10 @@ def _search_entity(
             str(e)[:120],
         )
         return None
-    return changed if _settle(output_root, trace, changed) else None
+    if not _settle(output_root, trace, changed):
+        return None
+    commit_paging(trace)
+    return changed
 
 
 FindNotStored = find_queue.FindNotStored  # one exception for every finder
@@ -1477,6 +1631,7 @@ def find_page(
         return None
     if find_queue.already_queued(FIND_PROVIDER, url, origin):
         _metric("finds_already_queued")
+        _page_note("known")
         return None
     processed = process_positive_url(
         url,
@@ -1498,6 +1653,7 @@ def find_page(
     )
     if status == find_queue.ENQUEUED:
         _metric("finds_queued")
+        _page_note("new")
         return processed
     if status == find_queue.FAILED:
         _metric("finds_failed")  # find_queue logged the error
@@ -1814,7 +1970,7 @@ def search_event_content(
     seen_urls = set()
     context = f"Content about {event_name}"
     for query in queries:
-        results = _search_openserp(query, openserp_url)
+        results = _search_openserp(query, openserp_url, start=_page_start(origin))
         prefetch_relevance(
             results,
             context,
@@ -1839,6 +1995,7 @@ def search_event_content(
                 if processed:
                     sources.append(processed)
                     if len(sources) >= max_results:
+                        _page_note("capped")
                         return sources
     return sources
 
@@ -1922,6 +2079,7 @@ def _apply_verified_web(
         ):
             queued += 1
             if queued >= max_web:
+                _page_note("capped")
                 break
     return queued > 0
 
@@ -2011,8 +2169,9 @@ def _collect_person_candidates(f, name: str, data: Dict, openserp_url: str) -> D
     # hits (award sites are sourced authoritatively elsewhere).
     if not data.get("military_awards"):
         web_hits: List[Dict[str, str]] = []
+        start = _page_start(find_queue.entity_origin("person", data, query=name))
         for q in _render_queries("people", "web_results", name=name, facts=facts):
-            web_hits.extend(_search_openserp(q, openserp_url))
+            web_hits.extend(_search_openserp(q, openserp_url, start=start))
         person_candidates["web_results"] = [
             h for h in web_hits if not _skip_result(h.get("url", ""))
         ]
@@ -2499,6 +2658,17 @@ def _prefetch_group_pages(
     prefetch_relevance(results, context, grok_client, origin, keep=keep)
 
 
+def _group_capped(textual: bool) -> None:
+    """Only the paged (textual) categories decide the paging."""
+    if textual:
+        _page_note("capped")
+
+
+def _group_page_start(origin: Any, textual: bool) -> int:
+    """Textual group categories are paged (their pages are queued finds); images are not."""
+    return _page_start(origin) if textual else 0
+
+
 def _group_openserp_category(
     group_name: str,
     nationality: str,
@@ -2524,7 +2694,9 @@ def _group_openserp_category(
     # (web_results, veterans_association) are fetched + summarized with pos/neg URL caching.
     textual = category != "images"
     for query in queries:
-        results = _search_openserp(query, openserp_url)
+        results = _search_openserp(
+            query, openserp_url, start=_group_page_start(origin, textual)
+        )
         _prefetch_group_pages(
             results, context, grok_client, origin, group_name, seen, textual
         )
@@ -2555,6 +2727,7 @@ def _group_openserp_category(
                 out.append({"url": url, "title": title, "source": "openserp"})
                 seen.add(url)
             if len(out) >= max_results:
+                _group_capped(textual)
                 return out
     return out
 
@@ -2874,14 +3047,15 @@ def enrich_one_place(
     return changed
 
 
-def _place_results(variants: list, category: str, openserp_url: str):
+def _place_results(variants: list, category: str, openserp_url: str, start: int = 0):
     """Each OpenSERP result list for a place's queries of ``category``, name variant by name
-    variant (lazy: a query is sent only when the caller asks for more)."""
+    variant (lazy: a query is sent only when the caller asks for more), from result ``start``.
+    """
     from src.utils.search_query_loader import render_search_queries
 
     for variant in variants:
         for q in render_search_queries("places", category, name=variant):
-            yield _search_openserp(q, openserp_url)
+            yield _search_openserp(q, openserp_url, start=start)
 
 
 def _new_place_photo(
@@ -2945,7 +3119,8 @@ def _enrich_place_sources(
     origin = find_queue.entity_origin("place", data, query=primary)
     context = f"{primary} in World War II"
     queued = 0
-    for results in _place_results(variants, "sources", openserp_url):
+    start = _page_start(origin)
+    for results in _place_results(variants, "sources", openserp_url, start):
         prefetch_relevance(results, context, grok_client, origin)
         for r in results:
             url = r.get("url", "")
@@ -2961,5 +3136,6 @@ def _enrich_place_sources(
             ):
                 queued += 1
                 if queued >= max_web:
+                    _page_note("capped")
                     return True
     return queued > 0

@@ -138,7 +138,7 @@ def test_enrich_one_place_delegates_images_and_sources():
     }
     seen = []
 
-    def fake_search(q, url, limit=10):
+    def fake_search(q, url, limit=10, start=0):
         seen.append(q)
         return [
             {"url": f"http://{abs(hash(q)) % 1000}", "title": "x WWII", "snippet": ""}

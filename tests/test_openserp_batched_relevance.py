@@ -175,7 +175,7 @@ def test_a_batched_verdict_is_traced_once(world, queued_finds):
 
 def test_places_events_and_groups_batch_too(world, monkeypatch, queued_finds):
     world.extract_json.return_value = {"verdicts": ["NO", "NO"]}
-    monkeypatch.setattr(oe, "_search_openserp", lambda q, u: _results("a", "b"))
+    monkeypatch.setattr(oe, "_search_openserp", lambda q, u, **k: _results("a", "b"))
     monkeypatch.setattr(
         "src.utils.search_query_loader.render_search_queries", lambda *a, **k: ["q"]
     )

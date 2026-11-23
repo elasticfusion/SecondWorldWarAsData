@@ -23,7 +23,7 @@ def test_group_queries_are_wwii_scoped_and_disambiguated(tmp_path, queued_finds)
     )
     seen = []
 
-    def fake_search(q, url, limit=10):
+    def fake_search(q, url, limit=10, start=0):
         seen.append(q)
         return [
             {

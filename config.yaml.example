@@ -264,6 +264,7 @@ dedup:
 
 openserp:
   results_per_query: 5                 # results per OpenSERP query (each one may cost a Grok verify)
+  max_result_pages: 3                  # a productive entity's re-search goes one result page deeper, up to this many pages
   max_images_per_entity: 3
   max_web_results_per_entity: 3
   rate_limit_seconds: 5                # Polite spacing between OpenSERP queries (serial)

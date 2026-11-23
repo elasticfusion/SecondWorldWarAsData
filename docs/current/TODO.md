@@ -974,6 +974,20 @@ Findings:
 - **DONE (2026-11-23) - `openserp.results_per_query` is read** (it was ignored: every query asked for 5). Default
   5; `config.yaml.example` and the three profile overlays set 5 (their 10/20/30 never took effect), so behaviour
   is unchanged. Deeper results for productive entities come from paging (next).
+- **DONE (2026-11-23) - paging: a productive entity's next search goes one result page deeper (owner, option 3).**
+  A cursor per entity (`openserp_page`, `<type>#<ULID>`, api-cache, 365 days) sets the OpenSERP `start` offset of
+  its FIND queries (people web results, place sources, event sources, group textual categories; image queries are
+  never paged). After a search that counts as searched (`commit_paging`, from `_search_entity` and the SQS
+  worker): the cap stopped it -> the same page next time (its leftover relevant pages are queued then); it saw a
+  relevant page (newly queued, or queued by an earlier search) -> one page deeper, up to
+  `openserp.max_result_pages` (3) pages, then the first page again; nothing relevant -> the first page. A failed
+  search or an OpenSERP error leaves the cursor. Our OpenSERP (v0.8.12) passes `start` to Google, Bing and
+  Yandex; an engine that ignores it returns the first page again (already-queued pages cost nothing). Log
+  `OBSERV openserp.page` (entity, start, next, reason) for every decision; metric `pages_deeper`. A stored cursor
+  that is not a short ASCII number on a page boundary in range is ignored and said (`bad_page_cursor`); a failed
+  cursor write is said and does not fail the search. `reset_metrics` now clears every counter (three used
+  counters were never reset and carried between runs in a long-lived worker). The cursor is stored at settle time,
+  before the record write: a failed write re-searches from the new page.
 - **FIX (owner 2026-11-17) - key relevance on (URL, entity); keep page state per URL.**
   - Store the Grok relevance verdict under (full-URL hash, entity ULID), in one cache, with one
     retention constant (drop the 60-character URL key and the 30-day `search_cache` TTL for it).

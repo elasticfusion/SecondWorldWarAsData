@@ -252,6 +252,9 @@ def process_message(
         return "defer"
     if outcome in ("empty", "excluded", "rejected"):
         _record_miss(storage, trace, outcome, entity_path)
+    oe.commit_paging(
+        trace
+    )  # where this entity's next search starts (as the directory driver)
 
     # Mark + persist (write-then-delete: the message is deleted only after a successful write).
     data["openserp_searched"] = True

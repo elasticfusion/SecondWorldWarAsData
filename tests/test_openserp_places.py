@@ -41,7 +41,7 @@ def test_places_openserp_searches_each_variant(tmp_path, queued_finds):
     )
     seen = []
 
-    def fake(q, url, limit=10):
+    def fake(q, url, limit=10, start=0):
         seen.append(q)
         return [
             {
