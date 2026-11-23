@@ -675,3 +675,297 @@ def test_the_prompt_renders_with_the_subject_and_caption():
         page_title="Shermans",
     )
     assert "M4 Sherman" in text and "Normandy 1944" in text and '"period_photo"' in text
+
+
+# --- nothing is stored for a "no"; the decision is (owner 2026-11-23) --------------------------
+
+
+def _stored_pages():
+    pages = find_pages._LOCAL_DIR / "pages"
+    return sorted(p.name for p in pages.iterdir()) if pages.exists() else []
+
+
+def test_a_no_stores_neither_the_photo_nor_its_page(web):
+    images, _ = web
+    images["https://img.example.org/sherman1.png"] = _png()
+    grok = _Grok(vision=[{"relevant": "no", "reason": "a Panther"}])
+    assert wp.find_photos([_result(1)], SUBJECT, grok, [], 3) == []
+    assert _stored_pages() == []
+    photos = find_pages._PHOTO_LOCAL_DIR
+    assert not any(photos.iterdir())
+    decided = wp.decision_for(
+        "https://img.example.org/sherman1.png", SUBJECT.entity_key
+    )
+    assert decided["verdict"] == "no" and decided["reason"] == "a Panther"
+    assert decided["page_url"] == PAGE and decided["sha256"].startswith("sha256:")
+
+
+def test_a_batch_queued_vision_request_stores_no_page(web):
+    from src.grok_client import BatchModeCollecting
+
+    images, _ = web
+    images["https://img.example.org/sherman1.png"] = _png()
+    with pytest.raises(BatchModeCollecting):
+        wp.find_photos(
+            [_result(1)], SUBJECT, _Grok(vision=[BatchModeCollecting("q")]), [], 3
+        )
+    assert _stored_pages() == []  # the answer comes later: nothing kept meanwhile
+
+
+def test_a_rejected_url_is_never_downloaded_again_for_that_entity(web):
+    images, fetched = web
+    images["https://img.example.org/sherman1.png"] = _png()
+    grok = _Grok(vision=[{"relevant": "no"}])
+    wp.find_photos([_result(1)], SUBJECT, grok, [], 3)
+    fetched.clear()
+    assert wp.find_photos([_result(1)], SUBJECT, grok, [], 3) == []
+    assert fetched == [] and len(grok.text_asked) == 1  # no download, no Grok request
+    assert oe.get_metrics()["photos_ruled_out"] == 1
+
+
+def test_another_entity_may_still_take_a_url_one_entity_rejected(web):
+    images, fetched = web
+    images["https://img.example.org/sherman1.png"] = _png()
+    grok = _Grok(vision=[{"relevant": "no"}, {"relevant": "yes"}])
+    wp.find_photos([_result(1)], SUBJECT, grok, [], 3)
+    other = wp.Subject(
+        "equipment#01HOTHER00000000000000000", "Photo of M4A3", "M4A3", "M4A3"
+    )
+    assert len(wp.find_photos([_result(1)], other, grok, [], 3)) == 1
+
+
+@pytest.mark.parametrize(
+    "body,why",
+    [(None, "not_an_image"), (b"<html>not an image</html>" * 50, "undecodable")],
+)
+def test_a_url_that_is_not_a_usable_image_is_ruled_out_for_everyone(
+    web, monkeypatch, body, why
+):
+    images, fetched = web
+    url = "https://img.example.org/sherman1.png"
+    if body is None:
+        monkeypatch.setattr(
+            "src.extraction.images.fetch_image_bytes_with_reason",
+            lambda u: fetched.append(u) or (None, None, "not_an_image"),
+        )
+    else:
+        images[url] = body
+    wp.find_photos([_result(1)], SUBJECT, _Grok(), [], 3)
+    assert wp.decision_for(url)["verdict"] == "unusable"
+    fetched.clear()
+    other = wp.Subject(
+        "equipment#01HOTHER00000000000000000", "Photo of M4A3", "M4A3", "M4A3"
+    )
+    assert wp.find_photos([_result(1)], other, _Grok(), [], 3) == []
+    assert fetched == []  # nobody downloads it again
+
+
+def test_a_timeout_rules_nothing_out(web, monkeypatch):
+    monkeypatch.setattr(
+        "src.extraction.images.fetch_image_bytes_with_reason",
+        lambda u: (None, None, "fetch_error"),
+    )
+    wp.find_photos([_result(1)], SUBJECT, _Grok(), [], 3)
+    assert wp.decision_for("https://img.example.org/sherman1.png") is None
+
+
+def test_an_accepted_photo_is_recorded_and_rules_nothing_out(web):
+    images, _ = web
+    images["https://img.example.org/sherman1.png"] = _png()
+    wp.find_photos([_result(1)], SUBJECT, _Grok(), [], 3)
+    url = "https://img.example.org/sherman1.png"
+    assert wp.decision_for(url, SUBJECT.entity_key)["verdict"] == "yes"
+    assert not wp._ruled_out(url, SUBJECT)
+
+
+def test_a_retracted_photo_and_its_copies_are_not_taken_again(web):
+    images, fetched = web
+    body = _pattern(3)
+    images["https://img.example.org/sherman1.png"] = body
+    (photo,) = wp.find_photos([_result(1)], SUBJECT, _Grok(), [], 3)
+    record = [photo, {"url": "https://other.example/keep.png"}]
+    assert wp.retract(record, photo["url"], SUBJECT, "an M3 Lee, not a Sherman")
+    assert [i["url"] for i in record] == ["https://other.example/keep.png"]
+    fetched.clear()
+    assert wp.find_photos([_result(1)], SUBJECT, _Grok(), record, 3) == []
+    assert fetched == []  # the URL: ruled out
+    copy = {**_result(1), "url": "https://mirror.example.net/s.png"}
+    images[copy["url"]] = body
+    grok = _Grok()
+    assert wp.find_photos([copy], SUBJECT, grok, record, 3) == []
+    assert (
+        grok.vision_asked == []
+    )  # a copy elsewhere: the bytes are a "no" for this entity
+
+
+def test_the_retract_script_takes_a_photo_off_a_record(tmp_path):
+    import json as _json
+
+    from scripts import retract_photo
+
+    d = tmp_path / "output" / "equipment"
+    d.mkdir(parents=True)
+    f = d / "M4_Sherman.json"
+    rec = {
+        "EquipmentID": "01HEQUIPMENT0000000000000",
+        "common_name": "M4 Sherman",
+        "images": [
+            {"url": "https://img.example.org/s.png", "sha256": "sha256:" + "a" * 64}
+        ],
+    }
+    f.write_text(_json.dumps(rec))
+    args = [
+        "--file",
+        str(f),
+        "--url",
+        "https://img.example.org/s.png",
+        "--reason",
+        "M3 Lee",
+    ]
+    assert retract_photo.main(args + ["--dry-run"]) == 0
+    assert _json.loads(f.read_text())["images"]  # a dry run changes nothing
+    assert retract_photo.main(args) == 0
+    assert _json.loads(f.read_text())["images"] == []
+    decided = wp.decision_for(
+        "https://img.example.org/s.png", "equipment#01HEQUIPMENT0000000000000"
+    )
+    assert decided["verdict"] == "retracted" and decided["reason"] == "M3 Lee"
+    assert retract_photo.main(args) == 1  # nothing left to retract
+
+
+def test_an_unresolvable_host_rules_nothing_out(web, monkeypatch):
+    # the fetcher says "ssrf_blocked" when DNS fails too: never a block for everyone
+    monkeypatch.setattr(
+        "src.extraction.images.fetch_image_bytes_with_reason",
+        lambda u: (None, None, "ssrf_blocked"),
+    )
+    wp.find_photos([_result(1)], SUBJECT, _Grok(), [], 3)
+    assert wp.decision_for("https://img.example.org/sherman1.png") is None
+
+
+def test_unusable_bytes_seen_again_elsewhere_are_ruled_out_for_everyone(web):
+    images, _ = web
+    junk = b"<html>not an image</html>" * 50
+    images["https://img.example.org/sherman1.png"] = junk
+    wp.find_photos([_result(1)], SUBJECT, _Grok(), [], 3)
+    copy = {**_result(1), "url": "https://mirror.example.net/j.png"}
+    images[copy["url"]] = junk
+    wp.find_photos(
+        [copy], SUBJECT, _Grok(), [], 3
+    )  # the cached verdict keeps "unusable"
+    assert wp.decision_for(copy["url"])["verdict"] == "unusable"
+
+
+def test_a_yes_whose_photo_could_not_be_stored_is_stored_next_run(web, monkeypatch):
+    from src.utils.find_queue import FindNotStored
+
+    images, _ = web
+    images["https://img.example.org/sherman1.png"] = _png()
+    real = find_pages.keep_photo
+    down = {"on": True}
+    monkeypatch.setattr(
+        find_pages,
+        "keep_photo",
+        lambda b, e: {"photo_kept": False} if down["on"] else real(b, e),
+    )
+    grok = _Grok()
+    with pytest.raises(FindNotStored):
+        wp.find_photos([_result(1)], SUBJECT, grok, [], 3)
+    assert _stored_pages() == []  # the page waits for the photo
+    down["on"] = False
+    (photo,) = wp.find_photos(
+        [_result(1)], SUBJECT, grok, [], 3
+    )  # a "yes" rules nothing out
+    assert photo["page_sha256"] and len(grok.vision_asked) == 1
+
+
+def test_an_unsure_is_not_taken(web):
+    images, _ = web
+    images["https://img.example.org/sherman1.png"] = _png()
+    wp.find_photos([_result(1)], SUBJECT, _Grok(vision=[{"relevant": "unsure"}]), [], 3)
+    decided = wp.decision_for(
+        "https://img.example.org/sherman1.png", SUBJECT.entity_key
+    )
+    assert decided["verdict"] == "unsure"
+
+
+@pytest.mark.parametrize(
+    "folder,ids,want",
+    [
+        ("people", {"PersonID": "01HP"}, "person#01HP"),
+        ("places", {"PlaceID": "01HL"}, "place#01HL"),
+        ("people_groups", {"PeopleGroupID": "01HG"}, "people_group#01HG"),
+        ("equipment", {"EquipmentID": "01HE"}, "equipment#01HE"),
+    ],
+)
+def test_the_retract_script_keys_match_the_finders(tmp_path, folder, ids, want):
+    from scripts import retract_photo
+    from src.utils.find_queue import entity_origin
+
+    path = tmp_path / folder / "x.json"
+    assert retract_photo._subject(path, ids).entity_key == want
+    kind = retract_photo.ENTITIES[folder]
+    if kind != "equipment":  # equipment queues no finds
+        origin = entity_origin(kind, ids)
+        assert f"{origin.entity_type}#{origin.entity_id}" == want
+
+
+def test_a_refused_record_write_rules_nothing_out(tmp_path, monkeypatch):
+    import json as _json
+
+    from scripts import retract_photo
+
+    d = tmp_path / "output" / "equipment"
+    d.mkdir(parents=True)
+    f = d / "x.json"
+    f.write_text(
+        _json.dumps(
+            {"EquipmentID": "01HE", "images": [{"url": "https://i.example/a.png"}]}
+        )
+    )
+    monkeypatch.setattr(
+        "src.utils.file_lock.write_json_with_lock", lambda *a, **k: False
+    )
+    args = ["--file", str(f), "--url", "https://i.example/a.png", "--reason", "r"]
+    assert retract_photo.main(args) == 1
+    assert wp.decision_for("https://i.example/a.png", "equipment#01HE") is None
+
+
+def test_record_only_rules_a_url_out_without_touching_the_record(tmp_path):
+    import json as _json
+
+    from scripts import retract_photo
+
+    d = tmp_path / "output" / "equipment"
+    d.mkdir(parents=True)
+    f = d / "x.json"
+    f.write_text(_json.dumps({"EquipmentID": "01HE", "images": []}))
+    args = ["--file", str(f), "--url", "https://i.example/a.png", "--reason", "r"]
+    assert retract_photo.main(args + ["--record-only"]) == 0
+    assert (
+        wp.decision_for("https://i.example/a.png", "equipment#01HE")["verdict"]
+        == "retracted"
+    )
+
+
+def test_a_url_unusable_for_everyone_is_looked_at_again_after_a_month(web, monkeypatch):
+    from src.utils import search_cache
+
+    kept = {}
+    real = search_cache.cache_result
+
+    def spy(source, query, result, negative_days=None, positive_days=None):
+        kept[(source, query)] = positive_days
+        return real(source, query, result, negative_days, positive_days)
+
+    monkeypatch.setattr(search_cache, "cache_result", spy)
+    monkeypatch.setattr(
+        "src.extraction.images.fetch_image_bytes_with_reason",
+        lambda u: (None, None, "not_an_image"),  # a hotlink page served to us, perhaps
+    )
+    wp.find_photos([_result(1)], SUBJECT, _Grok(), [], 3)
+    key = (
+        wp._DECISION_SOURCE,
+        wp._decision_key("https://img.example.org/sherman1.png", ""),
+    )
+    assert kept[key] == wp.UNUSABLE_DAYS

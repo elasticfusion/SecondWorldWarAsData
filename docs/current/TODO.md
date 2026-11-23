@@ -965,6 +965,22 @@ Findings:
   re-read is not traced twice in the review log. Open: the batch answer is positional (an index-keyed answer
   would catch a reordered reply). Trade-off: a query's candidates are
   all asked even when the per-entity cap is reached after the first few.
+- **DONE (2026-11-23) - web photos: nothing stored for a "no"; decisions recorded instead (owner).** A photo's
+  page is held in memory for the caption and stored only when the photo is accepted (before, it was kept
+  before Grok decided and stayed after a "no"; in Grok batch mode it was kept while the answer was pending).
+  Every decision is a small permanent JSON record (`web_photos._record_decision`, api-cache `photo_decision_v1`,
+  10-year TTL): a URL vision said "no"/"unsure" to is never downloaded again for that entity (relevance is per
+  entity: another entity is still asked); a URL that is not a usable image (not an image, too large, blocked,
+  undecodable) is not downloaded again by anyone for 30 days (it may only be a hotlink/challenge page served to
+  us); a fetch timeout or DNS failure rules nothing out. The (bytes, entity)
+  verdict is permanent too (was 90 days). `web_photos.retract` / `scripts/retract_photo.py` takes a kept photo
+  off a record and rules out its URL and its bytes (a copy elsewhere) for that entity; the stored bytes stay
+  (content-addressed, may back another record; no reference index - dev, owner 2026-11-23: no cleanup of what
+  is already stored). The text pre-filter's "no" keeps its 90-day cache (title-only evidence). Metrics
+  `photos_ruled_out`, `photos_retracted`. OPEN: a photo ClamAV quarantines is not retracted from its record
+  automatically (the drain does not know the record); no tool to clear a wrong decision (unblock);
+  `--record-only` rules out the URL but not the bytes (the sha is gone with the entry); decision records keep
+  raw URLs (a signed query string would persist).
 - **DONE (2026-11-23) - ClamAV on for every binary object (owner).** It was already on in dev (ClamAV image in
   ECR, trigger `AV_SCAN_ENABLED=true`), but binaries written by tasks skipped it: source-page images
   (`output/images/files/`), person portraits and award files (`award_source_pages`), unit patches and other

@@ -15,8 +15,17 @@ the page it is on):
 4. **Grok vision** - is the image a relevant photo of the subject, and is it a period (1939-1945)
    photograph. Every kept photo is confirmed by vision; a Grok failure is never a "no": it raises
    ``VerifyFailed`` and the entity is left unsearched (asked again next run).
-5. **Kept** - the photo's bytes under their checksum in the AV staging area (``unscanned/``):
-   only a clean ClamAV scan promotes them to production (``find_pages.keep_photo``).
+5. **Kept** - only a confirmed photo is stored (owner 2026-11-23: nothing is stored for a "no"):
+   its bytes under their checksum (they wait in ``unscanned/`` for a clean ClamAV scan,
+   ``find_pages.keep_photo``) and the page it is on, without its active content. Until then the
+   page is held in memory only, for the caption.
+
+Every decision is recorded permanently as a small JSON record (``_record_decision``) instead of
+the data: a photo URL Grok vision said "no" or "unsure" to is never downloaded again for that
+entity, and a URL that is not a usable image (not an image, too large, undecodable) is never
+downloaded again for anyone. Relevance is per entity (a photo that is not Patton may be Bradley);
+only entity-independent faults block a URL for everyone. ``retract`` takes a kept photo back off
+a record the same way (``scripts/retract_photo.py``).
 
 An accepted photo carries its full provenance: image URL, page URL and kept page, checksum,
 perceptual hash, caption, the vision verdict and reason, the period flag, and the owner's
@@ -40,6 +49,16 @@ logger = logging.getLogger(__name__)
 
 CACHE_TYPE = "photo_relevance_vision"  # request-bound (request_identity.REQUEST_BOUND)
 _VERDICT_SOURCE = "photo_vision_v1"
+_DECISION_SOURCE = "photo_decision_v1"
+# decisions are kept as long as the cache keeps anything: in effect, permanently
+DECISION_DAYS = 3650
+RETRACTED, UNUSABLE = "retracted", "unusable"
+# a URL that is "not an image" for everyone may only be a hotlink or challenge page served to us:
+# looked at again after a month (relevance decisions per entity stay)
+UNUSABLE_DAYS = 30
+# fetch failures that are about the URL itself, not this attempt. NOT "ssrf_blocked": the fetcher
+# also gives it when DNS fails (a resolver hiccup must never block a URL for everyone)
+_UNUSABLE_FETCH = frozenset({"not_an_image", "too_large"})
 YES, NO, UNSURE = "yes", "no", "unsure"
 _ANSWERS = (YES, NO, UNSURE)
 COPYRIGHT_ASSUMED = (
@@ -106,7 +125,7 @@ def find_photos(
     if wanted <= 0 or not grok_client:
         return []
     known = _Known.of(existing)
-    fresh = _fresh(results, known)
+    fresh = _fresh(results, known, subject)
     if not fresh:
         return []
     photos: List[Dict[str, Any]] = []
@@ -120,17 +139,24 @@ def find_photos(
     return photos
 
 
-def _fresh(results: List[Dict[str, Any]], known: _Known) -> List[Dict[str, Any]]:
-    """Results with a safe image URL that the record does not hold yet, once each."""
+def _fresh(
+    results: List[Dict[str, Any]], known: _Known, subject: Subject
+) -> List[Dict[str, Any]]:
+    """Results with a safe image URL that the record does not hold yet and that no earlier
+    decision rules out (for this entity, or for everyone), once each."""
     from src.utils.find_queue import is_queueable
 
     out: List[Dict[str, Any]] = []
     seen: Set[str] = set()
     for r in results or []:
         url = r.get("url") or ""
-        if url and url not in known.urls and url not in seen and is_queueable(url):
-            seen.add(url)
-            out.append(r)
+        if not url or url in known.urls or url in seen or not is_queueable(url):
+            continue
+        seen.add(url)
+        if _ruled_out(url, subject):
+            _metric("photos_ruled_out")  # decided before: not downloaded again
+            continue
+        out.append(r)
     return out
 
 
@@ -168,6 +194,10 @@ def _check(
     if body is None:
         _metric("photos_fetch_failed")
         logger.debug("photo not fetched (%s): %s", why, scrub(r["url"])[:120])
+        if (
+            why in _UNUSABLE_FETCH
+        ):  # about the URL itself: never fetched again, for anyone
+            _record_decision(r, None, {"verdict": UNUSABLE, "reason": why})
         return None
     sha = content_sha256(body)
     phash = _compute_image_hash(body)
@@ -177,15 +207,157 @@ def _check(
     known.shas.add(sha)  # decided for this entity in this search, whatever the verdict
     verdict = _cached_verdict(sha, subject)
     if verdict is not None and verdict["relevant"] != YES:
-        _metric("photos_rejected")
+        _rejected(r, subject, sha, verdict)  # the same bytes, judged before
         return None
     page = _page(r)
     if verdict is None:
         verdict = _ask_and_keep(sha, body, r, page, subject, grok_client)
     if verdict["relevant"] != YES:
-        _metric("photos_rejected")
+        _rejected(r, subject, sha, verdict)
         return None
+    _record_decision(
+        r, subject, {"verdict": YES, "sha256": sha, "reason": verdict["reason"]}
+    )
     return _accepted(r, body, ext, phash, page, verdict)
+
+
+def _rejected(
+    r: Dict[str, Any], subject: Subject, sha: str, verdict: Dict[str, Any]
+) -> None:
+    """A "no" (or "unsure"): nothing is stored but the decision, so the URL is never fetched
+    again for this entity - or for anyone, when the bytes are not a usable image."""
+    _metric("photos_rejected")
+    decision = {
+        "verdict": verdict["relevant"],
+        "sha256": sha,
+        "reason": verdict["reason"],
+    }
+    _record_decision(r, subject, decision)
+    if verdict.get("unusable"):
+        _record_decision(r, None, {**decision, "verdict": UNUSABLE})
+
+
+# --- decisions: small permanent JSON records instead of the data ---------------------------
+
+
+def _decision_key(url: str, entity_key: str) -> str:
+    """``entity_key`` "" is a decision for every entity (an unusable URL)."""
+    return json.dumps(["url", url, entity_key])
+
+
+def _record_decision(
+    r: Dict[str, Any], subject: Optional[Subject], decision: Dict[str, Any]
+) -> bool:
+    """Keep what was decided about ``r``'s image URL (provenance: the page, when, why). Returns
+    False when it could not be kept (said)."""
+    from src.utils.search_cache import cache_result
+
+    entity_key = subject.entity_key if subject else ""
+    record = {
+        **decision,
+        "url": r.get("url"),
+        "page_url": r.get("page_url") or None,
+        "entity": entity_key or None,
+        "decided_at": _dt.datetime.now(_dt.timezone.utc).isoformat(),
+    }
+    try:
+        cache_result(
+            _DECISION_SOURCE,
+            _decision_key(str(r.get("url") or ""), entity_key),
+            json.dumps(record),
+            positive_days=(
+                UNUSABLE_DAYS if record["verdict"] == UNUSABLE else DECISION_DAYS
+            ),
+        )
+        return True
+    except Exception as e:  # noqa: BLE001 - the photo is still judged; said, not fatal
+        logger.warning(
+            "OBSERV web_photos.decision_not_recorded err=%s status=warn - the URL may be fetched "
+            "again later. Check the task role's access to the api-cache table",
+            type(e).__name__,
+        )
+        return False
+
+
+def decision_for(url: str, entity_key: str = "") -> Optional[Dict[str, Any]]:
+    """The recorded decision on ``url`` for ``entity_key`` ("" = for every entity), or None."""
+    from src.utils.search_cache import get_cached
+
+    raw = get_cached(_DECISION_SOURCE, _decision_key(url, entity_key))
+    try:
+        record = json.loads(raw) if raw else None
+    except ValueError:
+        return None
+    return record if isinstance(record, dict) and record.get("verdict") else None
+
+
+def _ruled_out(url: str, subject: Subject) -> bool:
+    """A URL that is not a usable image (for anyone), or one this entity's photos rule out (a
+    "no", an "unsure", a retraction). A "yes" rules nothing out."""
+    for entity_key in ("", subject.entity_key):
+        decided = decision_for(url, entity_key)
+        if decided and decided["verdict"] != YES:
+            return True
+    return False
+
+
+def retract(images: List[Any], url: str, subject: Subject, reason: str) -> bool:
+    """Take a kept photo back off a record (a person, or a later check, says it is not the
+    subject): ``take_off`` removes its entry, ``record_retraction`` rules out its URL AND its bytes
+    for this entity (a copy elsewhere included). Returns True when an entry was removed. The stored
+    bytes stay (content-addressed: they may back another record's photo)."""
+    gone = take_off(images, url)
+    record_retraction(gone, url, subject, reason)
+    return bool(gone)
+
+
+def take_off(images: List[Any], url: str) -> List[Dict[str, Any]]:
+    """Remove the entries for ``url`` from ``images`` (in place); returns them."""
+    gone = [i for i in images if isinstance(i, dict) and i.get("url") == url]
+    images[:] = [i for i in images if i not in gone]
+    return gone
+
+
+def record_retraction(
+    gone: List[Dict[str, Any]], url: str, subject: Subject, reason: str
+) -> bool:
+    """Rule out ``url`` (and the bytes of each removed entry) for this entity. Returns False when
+    a decision could not be recorded (said): the caller must not report success."""
+    why = scrub(reason)[:300] or "retracted"
+    ok = all(_retract_one(img, url, subject, why) for img in gone or [{"url": url}])
+    if gone:
+        _metric("photos_retracted", len(gone))
+        logger.info(
+            "OBSERV web_photos.retracted entity=%s count=%d recorded=%s",
+            subject.entity_key,
+            len(gone),
+            ok,
+        )
+    return ok
+
+
+def _retract_one(img: Dict[str, Any], url: str, subject: Subject, why: str) -> bool:
+    from src.utils.search_cache import cache_result
+
+    r = {"url": url, "page_url": img.get("source_page_url")}
+    ok = _record_decision(r, subject, {"verdict": RETRACTED, "reason": why})
+    if not img.get("sha256"):
+        return ok
+    try:  # the same bytes elsewhere are a "no" for this entity too
+        cache_result(
+            _VERDICT_SOURCE,
+            _verdict_key(img["sha256"], subject),
+            json.dumps({"relevant": NO, "period_photo": UNSURE, "reason": why}),
+            positive_days=DECISION_DAYS,
+        )
+        return ok
+    except Exception as e:  # noqa: BLE001 - said; the caller reports it
+        logger.warning(
+            "OBSERV web_photos.decision_not_recorded err=%s status=warn - a copy of the photo "
+            "may be taken again. Check access to the api-cache table",
+            type(e).__name__,
+        )
+        return False
 
 
 def _verdict_key(sha: str, subject: Subject) -> str:
@@ -225,7 +397,7 @@ def _ask_and_keep(
         _VERDICT_SOURCE,
         _verdict_key(sha, subject),
         json.dumps(verdict),
-        positive_days=oe._URL_FETCH_RETENTION_DAYS,
+        positive_days=DECISION_DAYS,
     )
     return verdict
 
@@ -240,8 +412,13 @@ def _ask(
     from src.utils.prompt_loader import render_prompt
 
     prepared, problem = _prepare_image_for_vision(body)
-    if prepared is None:
-        return {"relevant": NO, "period_photo": UNSURE, "reason": scrub(problem)[:200]}
+    if prepared is None:  # about the bytes, not the entity: unusable for everyone
+        return {
+            "relevant": NO,
+            "period_photo": UNSURE,
+            "reason": scrub(problem)[:200],
+            "unusable": True,
+        }
     prompt = render_prompt(
         "photo_relevance_vision",
         subject=scrub(subject.subject)[:200],
@@ -271,20 +448,26 @@ def _parse(answer: Any) -> Optional[Dict[str, Any]]:
     if not isinstance(answer, dict) or answer.get("relevant") not in _ANSWERS:
         return None
     period = answer.get("period_photo")
-    return {
+    verdict = {
         "relevant": answer["relevant"],
         "period_photo": period if period in _ANSWERS else UNSURE,
         "reason": scrub(str(answer.get("reason") or ""))[:300],
     }
+    if (
+        answer.get("unusable") is True
+    ):  # kept on a cached verdict: a copy elsewhere is unusable too
+        verdict["unusable"] = True
+    return verdict
 
 
 # --- the page the photo is on -----------------------------------------------------------------
 
 
 def _page(r: Dict[str, Any]) -> Dict[str, Any]:
-    """The page the photo is on, kept (without active content) and read for the caption:
-    ``caption``, ``page_title`` and the kept page's fields. A page that cannot be fetched leaves
-    the result's title as the caption (``page_kept`` False)."""
+    """The page the photo is on, read for the caption: ``caption``, ``page_title``, its HTML
+    (held in memory: kept only if the photo is accepted, ``_accepted``) or the fields of the copy
+    kept before. A page that cannot be fetched leaves the result's title as the caption.
+    """
     page_url = r.get("page_url") or ""
     html, kept = _page_html(page_url) if page_url else (None, {})
     if html is None:
@@ -304,12 +487,15 @@ def _page(r: Dict[str, Any]) -> Dict[str, Any]:
         )
         return {"caption": r.get("title") or "", "page_title": "", "page_kept": False}
     caption, title = caption_for(html, r["url"], page_url)
-    return {**kept, "caption": caption or r.get("title") or "", "page_title": title}
+    page = {**kept, "caption": caption or r.get("title") or "", "page_title": title}
+    if not kept.get("page_kept"):
+        page["html"] = html  # not stored yet: only for a photo that is accepted
+    return page
 
 
 def _page_html(page_url: str) -> "tuple[Optional[str], Dict[str, Any]]":
     """``(the page's HTML, its kept-page fields)``: the copy kept before (no fetch), else a fresh
-    SSRF-safe fetch, kept now. ``(None, {})`` when the page cannot be had."""
+    SSRF-safe fetch (NOT stored here). ``(None, {})`` when the page cannot be had."""
     from src.utils import find_pages
     from src.utils.find_queue import is_queueable
     from src.utils.url_hygiene import fetch_text_safe
@@ -327,13 +513,7 @@ def _page_html(page_url: str) -> "tuple[Optional[str], Dict[str, Any]]":
     html, status = fetch_text_safe(page_url, timeout=_PAGE_TIMEOUT_S, headers=_HEADERS)
     if status != 200 or not html:
         return None, {}
-    kept = find_pages.keep(page_url, html)
-    if not kept["page_kept"]:
-        return (
-            None,
-            {},
-        )  # too large or too complex to keep: not read for a caption either
-    return html, kept
+    return html, {}
 
 
 def caption_for(html: str, image_url: str, page_url: str) -> "tuple[str, str]":
@@ -396,6 +576,10 @@ def _accepted(
         # a confirmed photo that could not be stored: the entity is left unsearched (its verdict
         # is cached, so the next run stores it without asking Grok again)
         raise FindNotStored(clean_for_log(r["url"]))
+    if page.get("html"):  # the page is stored only now, for a photo that is kept
+        page.update(find_pages.keep(r.get("page_url") or "", page.pop("html")))
+        if not page.get("page_kept"):
+            _metric("photos_page_not_kept")  # find_pages said why (too large / complex)
     _metric("photos_accepted")
     now = _dt.datetime.now(_dt.timezone.utc).isoformat()
     return {
