@@ -181,9 +181,10 @@ def cmd_deploy(args):
         # (UsePreviousValue) rather than blanking it to "" — an empty image makes
         # every ECS TaskDef fail with "Container.image should not be null or
         # empty" (root cause of the 2026-07 ComputeStack rollback).
-        # allow_previous=False for OPTIONAL images (video/av) that may not exist on
-        # the stack yet: UsePreviousValue errors for a never-before-set parameter,
-        # so fall back to "" (their templates treat "" as "resource not created").
+        # allow_previous=False for the OPTIONAL video image, which may not exist on the
+        # stack yet: UsePreviousValue errors for a never-before-set parameter, so fall
+        # back to "" (its template treats "" as "resource not created"). The AV image is
+        # mandatory: --av-image is required, so it always has a value here.
         if value:
             return {"ParameterKey": key, "ParameterValue": value}
         if action == "update" and allow_previous:
@@ -208,8 +209,8 @@ def cmd_deploy(args):
                 _image_param("OpenSerpImageUri", args.openserp_image),
                 _image_param("PipelineImageUri", args.pipeline_image),
                 _image_param("VideoImageUri", args.video_image),
-                # AvImageUri is a NEW parameter (not on the deployed stack yet) —
-                # UsePreviousValue would error, so force "" when no image is given.
+                # AvImageUri is MANDATORY (ClamAV on for every binary): --av-image is
+                # required, and the template rejects an empty value.
                 _image_param("AvImageUri", args.av_image, allow_previous=False),
                 {
                     "ParameterKey": "NotificationEmail",
@@ -345,8 +346,9 @@ def main():
     )
     deploy_parser.add_argument(
         "--av-image",
-        default=None,
-        help="ECR image URI for the separate ClamAV scanning container (optional)",
+        required=True,
+        help="ECR image URI for the separate ClamAV scanning container (REQUIRED: ClamAV "
+        "scans every binary object)",
     )
     deploy_parser.add_argument(
         "--notification-email",

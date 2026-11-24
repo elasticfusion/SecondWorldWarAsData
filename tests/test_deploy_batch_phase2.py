@@ -186,7 +186,7 @@ def _deploy(monkeypatch, cf, batch):
         openserp_image="o",
         pipeline_image="p",
         video_image=None,
-        av_image=None,
+        av_image="a.dkr.ecr/wwii-clamav:latest",
         notification_email="e@x",
         multi_doc="false",
         dry_run=False,

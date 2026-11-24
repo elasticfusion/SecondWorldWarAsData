@@ -209,7 +209,9 @@ decision 2026-10-01:
   submitter-freeze path. An empty queue launches no scan task: clean -> production path, infected ->
   `quarantine/`, unscannable -> stays in `unscanned/` and is retried. A single-drainer lock
   (`_acquire_drain_lock`) serialises drains. `scripts/deploy_all.sh` builds the ClamAV image when it
-  is missing and refuses to deploy without it. Exempt by design: a book's own figures
+  is missing and refuses to deploy without it, and the template itself requires `AvImageUri`
+  (non-empty; no `HasAvImage` condition: the scan and signature-update resources always exist and
+  `AV_SCAN_ENABLED` is always `true`). Exempt by design: a book's own figures
   (`contentrepository/.../_figures/`), cut by the pipeline from an already-scanned PDF.
 - **Not built:** Excel/PowerPoint to text converters (the Office section above). `.xlsx`/`.pptx`
   are scanned as binaries but `src/ingestion` has no converter for them.

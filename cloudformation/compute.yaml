@@ -89,14 +89,17 @@ Parameters:
       only created when supplied.
   AvImageUri:
     Type: String
-    Default: ""
+    MinLength: 1
+    AllowedPattern: ".+/.+"
+    ConstraintDescription: >-
+      REQUIRED - the ClamAV image URI (ClamAV is on for every binary object, owner 2026-11-23)
     Description: >-
       ECR image URI for the SEPARATE ClamAV container (Dockerfile.clamav:
       clamscan + freshclam + S3 signature sync). Kept separate from the pipeline
       image for isolation (scans untrusted bytes in a minimal least-privilege
       container), independent lifecycle, and the ~1GB daily-updated signature DB.
-      Optional: the AV scan + signature-update resources are only created when
-      supplied (same pattern as VideoImageUri).
+      MANDATORY: the AV scan + signature-update resources always exist and the
+      trigger always scans (owner 2026-11-23: ClamAV on for every binary object).
   BatchPollerIntervalMinutes:
     Type: Number
     Default: 5
@@ -141,7 +144,6 @@ Parameters:
 
 Conditions:
   HasVideoImage: !Not [!Equals [!Ref VideoImageUri, ""]]
-  HasAvImage: !Not [!Equals [!Ref AvImageUri, ""]]
 
 Resources:
   # --- ECS Cluster ---
@@ -384,14 +386,12 @@ Resources:
   # Demand-launched by the trigger over binary keys (pdf/image/video/office).
   # Kept separate from the pipeline image for isolation + the ~1GB signature DB.
   AvScanLogGroup:
-    Condition: HasAvImage
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub /ecs/${EnvironmentName}-wwii-av-scan
       RetentionInDays: 30
 
   AvScanTaskDef:
-    Condition: HasAvImage
     Type: AWS::ECS::TaskDefinition
     Properties:
       Family: !Sub ${EnvironmentName}-wwii-av-scan
@@ -428,7 +428,6 @@ Resources:
   # freshclam signature-update job: refreshes the ClamAV virus DB to S3 so the
   # scan task syncs current signatures (the DB updates daily). Scheduled daily.
   AvSignatureUpdateTaskDef:
-    Condition: HasAvImage
     Type: AWS::ECS::TaskDefinition
     Properties:
       Family: !Sub ${EnvironmentName}-wwii-av-freshclam
@@ -459,7 +458,6 @@ Resources:
               awslogs-stream-prefix: freshclam
 
   AvFreshclamSchedule:
-    Condition: HasAvImage
     Type: AWS::Events::Rule
     Properties:
       Name: !Sub ${EnvironmentName}-wwii-av-freshclam
@@ -665,10 +663,8 @@ Resources:
           PHASE1_TASK_DEF: !Ref Phase1TaskDef
           PHASE0_TASK_DEF: !Ref Phase0TaskDef
           PHASE0_VIDEO_TASK_DEF: !Sub ${EnvironmentName}-wwii-phase0-video
-          # AV scanning (binary-only, demand-launched). Opt-in; enable after the
-          # ClamAV image is deployed. Task def name is static so the trigger can
-          # reference it even when the HasAvImage-gated resource isn't created yet.
-          AV_SCAN_ENABLED: !If [HasAvImage, 'true', 'false']
+          # AV scanning (binary-only, demand-launched): always on (AvImageUri is mandatory).
+          AV_SCAN_ENABLED: 'true'
           AV_SCAN_TASK_DEF: !Sub ${EnvironmentName}-wwii-av-scan
           PHASE2_TASK_DEF: !Ref Phase2TaskDef
           PHASE3_TASK_DEF: !Ref Phase3TaskDef

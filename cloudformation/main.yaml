@@ -27,8 +27,10 @@ Parameters:
     Description: ECR image URI for the separate video-processing container (optional)
   AvImageUri:
     Type: String
-    Default: ''
-    Description: ECR image URI for the separate ClamAV scanning container (optional)
+    MinLength: 1
+    AllowedPattern: ".+/.+"
+    ConstraintDescription: REQUIRED - the ClamAV image URI (ClamAV is on for every binary object)
+    Description: ECR image URI for the separate ClamAV scanning container (REQUIRED)
   NotificationEmail:
     Type: String
     Default: ''

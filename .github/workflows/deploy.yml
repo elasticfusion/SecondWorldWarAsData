@@ -171,6 +171,9 @@ jobs:
 
       - name: Deploy stack
         run: |
+          # ClamAV is mandatory (AvImageUri has no default): the scanner image in this account's ECR
+          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          AV_IMAGE_URI="${ACCOUNT_ID}.dkr.ecr.${AWS_REGION:-us-east-1}.amazonaws.com/wwii-clamav:latest"
           aws cloudformation deploy \
             --stack-name "wwii-pipeline-${{ env.ENV_NAME }}" \
             --template-file cloudformation/main.yaml \
@@ -180,5 +183,6 @@ jobs:
               LambdaCodeBucket=${{ env.TEMPLATE_BUCKET }} \
               LambdaCodeKey=lambda/code.zip \
               PipelineImageUri=${{ needs.build-container.outputs.image_uri || '' }} \
+              AvImageUri="$AV_IMAGE_URI" \
             --capabilities CAPABILITY_NAMED_IAM \
             --no-fail-on-empty-changeset
