@@ -835,8 +835,10 @@ rejected item stays rejected; an approved item starts Phase 0.
   way (provider `llm-find`) instead of `biography_sources[]`. Metrics `finds_queued` / `finds_already_queued` /
   `finds_failed` are in the summary line, and `finds_failed` raises an anomaly. A record with no ULID is not searched and not marked searched (an error names it; the central write guard mints a missing primary key and production holds none, so this means a writer bypassed the guard: `scripts/check_raw_writes.sh`); a page the queue
   cannot store leaves the entity unsearched (SQS: deferred), so the next run asks again. Records written by earlier
-  runs keep their old entries (no migration). Left: the people web search is still gated on
-  `military_awards` being empty (now only an award extraction fills it): replace it with a queue/marker check;
+  runs keep their old entries (no migration). DONE 2026-11-24: the people web search is no longer gated on
+  `military_awards` (only an award extraction fills it); repeats are bounded by the 90-day `openserp_searched`
+  marker, the queue (`already_queued`: no fetch or Grok request for a queued URL) and the paging cursor. People
+  with awards are now web-searched too (more OpenSERP queries; Grok only for new URLs). Left:
   `entities_enriched` is not counted in a batch round-2 pass where every page was already queued. STILL OPEN in this step: the checksum re-check.**
 - **DONE (Group 3 step H, 2026-11-23) - the fetched page is kept for Phase 0.** `src/utils/find_pages.py`: the page a
   find was judged on (live, or the Internet Archive copy) is stored once under its checksum
@@ -852,9 +854,11 @@ rejected item stays rejected; an approved item starts Phase 0.
   cache hit now carries the page's real fetch time, not "now". The submit no longer reads a local file named by
   the queue item (`quarantine_path` / `retrieved_path`; no writer set them, and a tampered item could have
   published any file the Lambda can read). Pages over 25 MB are not kept (`OBSERV find_pages.oversized`).
-  **OPEN (security review 2026-11-23):** the URL-review UI's single "affirm" path
-  (`urlreview_ui_handler`, `fetch_review.affirm_fetch_find`) still takes `quarantine_path` from the queue item as
-  `SourceMetadata.original_path`; trace what ingestion reads from it, and drop it or pin it to a quarantine root. Left: rejected finds' pages are not deleted (small; no lifecycle rule, since a pending find may wait
+  **DONE 2026-11-24 (was OPEN, security review 2026-11-23):** the URL-review UI's single "affirm" path no longer
+  takes `quarantine_path` from the queue item. Traced: the `SourceMetadata` it built was discarded by the UI and
+  never ingested; `affirm_fetch_find(event)` now only records AFFIRMED and returns the source id
+  (`find_source_id`, shared with the submit), or None (UI: 500, `OBSERV fetch_find.affirm_not_stored`) when the
+  decision could not be stored - it used to report success either way. The affirmed batch submits the kept page. Left: rejected finds' pages are not deleted (small; no lifecycle rule, since a pending find may wait
   indefinitely); the review UI does not yet show whether a page was kept.
 - **HIGH *refactor* - DECISION (owner 2026-11-17): a page OpenSERP finds and Grok confirms goes to the
   human URL-review queue; approval submits it to Phase 0.** Today `process_positive_url`

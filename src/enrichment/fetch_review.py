@@ -1,14 +1,15 @@
 """Human-review + promotion bridge for TEXTUAL fetch-provenance finds.
 
 Principle (owner): a positive textual find (e.g. a Wayback snapshot) is enqueued for human
-review; **on affirm** it flows through the SAME path as a deliberately-uploaded book — it becomes
-a ``SourceMetadata`` record handed to the ingestion front-end (Phase 0/1), rather than being
-written directly as facts by an enrichment side-channel.
+review; **on affirm** it flows through the SAME path as a deliberately-uploaded book: the affirmed
+batch (``submit_affirmed_batch``) uploads the page kept when the find was judged to the
+``contentrepository/`` front door (Phase 0), rather than being written directly as facts by an
+enrichment side-channel.
 
 This closes the gap identified in docs/archive/2026-11-16/FETCH_PROVENANCE_DESIGN.md: ``source_retrieval``
 already quarantines internet content for review, but nothing promoted an AFFIRMED item into
-ingestion. ``affirm_fetch_find`` is that bridge (minimal function/CLI first; a UI can call it
-later). Reuses: fetch_provenance (the review_status), source_retrieval quarantine, SourceMetadata.
+ingestion. ``affirm_fetch_find`` records the decision and ``submit_affirmed_batch`` is the bridge.
+Reuses: fetch_provenance (the review_status) and find_pages (the kept page).
 
 All operations are fail-safe and never process content automatically — promotion only stages a
 source for the normal pipeline; extraction remains the pipeline's job.
@@ -340,56 +341,42 @@ def exclude_fetch_find(
     return {"scope": scope, "ok": bool(ok and rejected), "host": host}
 
 
-def affirm_fetch_find(
-    fetch_event: Dict[str, Any], quarantine_path: Path, *, media_type: str = "html"
-) -> Optional["SourceMetadata"]:  # type: ignore[name-defined] # noqa: F821
-    """Promote an AFFIRMED textual find into a SourceMetadata for ingestion — the SAME front door
-    as an uploaded book. Returns the SourceMetadata (staged, not yet extracted) or None on failure.
+def find_source_id(fetch_event_id: str) -> str:
+    """The Phase 0 source id (and slug) an affirmed find is submitted under: ``fetchfind-<id>``."""
+    return f"fetchfind-{fetch_event_id}"
 
-    ``fetch_event`` is the stored provenance record; ``quarantine_path`` is the reviewed, affirmed
-    content already downloaded by source_retrieval's quarantine. Fail-safe.
+
+def affirm_fetch_find(fetch_event: Dict[str, Any]) -> Optional[str]:
+    """Record a reviewer's AFFIRM on a textual find. Returns the source id it will be submitted
+    under (``find_source_id``), or None when the decision could not be stored (the find stays
+    pending, so the reviewer is told and may retry).
+
+    No content is read here: ``submit_affirmed_batch`` later submits the page kept when the find
+    was judged (``find_pages``, checked against its checksum), so nothing on the queue item -
+    no path, no URL - chooses what is ingested. Fail-safe.
     """
-    try:
-        from src.ingestion.source_metadata import SourceMetadata
+    from src.utils import fetch_provenance as _fp
+    from src.utils.find_queue import clean_for_log
 
-        endpoint = fetch_event.get("endpoint", "")
-        summary = fetch_event.get("result_summary") or ""
-        # Capture the archive snapshot URL as the acquisition provenance when present.
-        acq_url = endpoint
-        if "->" in summary:
-            acq_url = summary.split("->", 1)[1].strip() or endpoint
-
-        src = SourceMetadata(
-            source_id=f"fetchfind-{fetch_event.get('fetch_event_id', '')}",
-            original_path=Path(quarantine_path),
-            media_type=media_type,  # type: ignore[arg-type]
-            acquisition_method="web_archive_affirmed",
-            acquisition_url=acq_url,
-            capture_date=fetch_event.get("queried_at"),
-            notes=(
-                "Promoted from an affirmed textual fetch-provenance find "
-                f"(provider={fetch_event.get('provider')}, "
-                f"fetch_event_id={fetch_event.get('fetch_event_id')}). "
-                "Enters ingestion like an uploaded book."
-            ),
-        )
+    fid = fetch_event.get("fetch_event_id") or ""
+    if fid and set_review_status(fid, _fp.AFFIRMED):
         logger.info(
-            "OBSERV fetch_find.affirmed provider=%s fetch_event_id=%s -> source_id=%s staged for ingestion",
-            fetch_event.get("provider"),
-            fetch_event.get("fetch_event_id"),
-            src.source_id,
+            "OBSERV fetch_find.affirmed provider=%s fetch_event_id=%s -> source_id=%s "
+            "(submitted to Phase 0 by the next affirmed batch)",
+            clean_for_log(fetch_event.get("provider"), 40),
+            clean_for_log(fid, 40),
+            find_source_id(fid),
         )
-        from src.utils import fetch_provenance as _fp
-
-        set_review_status(fetch_event.get("fetch_event_id", ""), _fp.AFFIRMED)
-        return src
-    except Exception as e:  # noqa: BLE001 - promotion must never crash a review action
-        logger.warning(
-            "fetch_find affirm failed for %s: %s",
-            fetch_event.get("fetch_event_id"),
-            e,
-        )
-        return None
+        return find_source_id(fid)
+    observe_warn(
+        "fetch_find",
+        "affirm_not_stored",
+        fetch_event_id=clean_for_log(fid, 40),
+        note="the reviewer's affirm could not be stored, so the find is still pending and will "
+        "not be submitted. Retry it in the URL-review UI; if it fails again check the cache "
+        "table (DynamoDB) access of the URL-review Lambda and its logs",
+    )
+    return None
 
 
 def _safe_token(value: str, fallback: str) -> str:
@@ -602,7 +589,7 @@ def _submit_one_find(
     from src.utils.url_hygiene import scrub
 
     fid = find.get("fetch_event_id", "")
-    source_id = f"fetchfind-{fid}"
+    source_id = find_source_id(fid)
     try:
         body = _find_content_bytes(find)
         digest = _content_sha256(body)

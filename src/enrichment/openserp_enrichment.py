@@ -2325,15 +2325,17 @@ def _collect_person_candidates(f, name: str, data: Dict, openserp_url: str) -> D
     facts = _person_query_terms(data)
 
     # Web query from people.yaml web_results (facts-sharpened); skip award-domain + ibiblio
-    # hits (award sites are sourced authoritatively elsewhere).
-    if not data.get("military_awards"):
-        web_hits: List[Dict[str, str]] = []
-        start = _page_start(find_queue.entity_origin("person", data, query=name))
-        for q in _render_queries("people", "web_results", name=name, facts=facts):
-            web_hits.extend(_search_openserp(q, openserp_url, start=start))
-        person_candidates["web_results"] = [
-            h for h in web_hits if not _skip_result(h.get("url", ""))
-        ]
+    # hits (award sites are sourced authoritatively elsewhere). Repeats are bounded by the
+    # 90-day openserp_searched marker (the person), the queue (a URL already queued costs no
+    # fetch or Grok request) and the paging cursor - not by military_awards, which only an
+    # award extraction fills and which says nothing about the pages found.
+    web_hits: List[Dict[str, str]] = []
+    start = _page_start(find_queue.entity_origin("person", data, query=name))
+    for q in _render_queries("people", "web_results", name=name, facts=facts):
+        web_hits.extend(_search_openserp(q, openserp_url, start=start))
+    person_candidates["web_results"] = [
+        h for h in web_hits if not _skip_result(h.get("url", ""))
+    ]
     return person_candidates
 
 

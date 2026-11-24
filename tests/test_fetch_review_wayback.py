@@ -1,6 +1,6 @@
 """Task #4: a Wayback positive find emits a TEXTUAL fetch-provenance event (enqueued for human
-review), and an AFFIRMED find promotes into a SourceMetadata — the SAME ingestion door as an
-uploaded book (not a direct-write side-channel).
+review), and an AFFIRMED find is submitted through the SAME ingestion door as an uploaded book
+(not a direct-write side-channel).
 """
 
 import json
@@ -73,27 +73,13 @@ def test_list_pending_surfaces_textual_finds(_local_store):
     assert pending[0]["review_status"] == fp.PENDING
 
 
-def test_affirm_promotes_to_source_metadata(_local_store, tmp_path):
-    """Affirming a textual find yields a SourceMetadata staged for ingestion (book door)."""
-    quarantine = tmp_path / "quarantined.html"
-    quarantine.write_text("<html>archived article</html>")
-    event = {
-        "fetch_event_id": "01HX7YZABCDEFGHJKMNPQRSTVW",
-        "provider": "wayback",
-        "endpoint": "https://archive.org/wayback/available",
-        "queried_at": "2026-10-22T00:00:00+00:00",
-        "result_summary": "snapshot 1996 -> https://web.archive.org/web/1996/http://x.com",
-        "kind": fp.TEXTUAL,
-        "review_status": fp.AFFIRMED,
-    }
-    src = fetch_review.affirm_fetch_find(event, quarantine, media_type="html")
-    assert src is not None
-    assert src.source_id == "fetchfind-01HX7YZABCDEFGHJKMNPQRSTVW"
-    assert src.original_path == quarantine
-    assert src.acquisition_method == "web_archive_affirmed"
-    # Acquisition provenance = the archive snapshot URL (traceable back to the fetch event).
-    assert src.acquisition_url == "https://web.archive.org/web/1996/http://x.com"
-    assert src.media_type == "html"
+def test_the_submit_uses_the_affirmed_source_id():
+    """The id the UI reports on affirm is the one the affirmed batch submits under."""
+    assert fetch_review.find_source_id("01HX7YZABCDEFGHJKMNPQRSTVW") == (
+        "fetchfind-01HX7YZABCDEFGHJKMNPQRSTVW"
+    )
+    text = Path("src/enrichment/fetch_review.py").read_text()
+    assert text.count('f"fetchfind-') == 1  # one place builds it
 
 
 def test_availability_api_failure_emits_error_event(_local_store):

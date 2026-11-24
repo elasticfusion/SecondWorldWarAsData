@@ -1,7 +1,6 @@
 """Lambda URL-review UI handler: routes, affirm->stage, reject->won't-do, fail-safe."""
 
 import json
-import types
 import lambda_handlers.urlreview_ui_handler as H
 
 
@@ -66,12 +65,13 @@ def test_affirm_stages_source(monkeypatch):
         "fetch_event_id": "e1",
         "provider": "wayback",
         "endpoint": "http://x",
-        "quarantine_path": "/q/x.html",
+        "quarantine_path": "/etc/passwd",  # a tampered item: never read
     }
+    seen = []
     monkeypatch.setattr("src.enrichment.fetch_review.list_pending", lambda: [find])
     monkeypatch.setattr(
         "src.enrichment.fetch_review.affirm_fetch_find",
-        lambda f, p, **k: types.SimpleNamespace(source_id="fetchfind-e1"),
+        lambda f, *a, **k: seen.append((f, a, k)) or "fetchfind-e1",
     )
     r = H.handler(
         _ev(
@@ -87,6 +87,25 @@ def test_affirm_stages_source(monkeypatch):
         and d["decision"] == "affirmed"
         and d["staged_source_id"] == "fetchfind-e1"
     )
+    assert seen == [(find, (), {})]  # the find only: no path is passed on
+
+
+def test_an_affirm_that_was_not_stored_is_a_failure(monkeypatch):
+    find = {"fetch_event_id": "e1", "provider": "openserp-find", "endpoint": "http://x"}
+    monkeypatch.setattr("src.enrichment.fetch_review.list_pending", lambda: [find])
+    monkeypatch.setattr(
+        "src.enrichment.fetch_review.set_review_status", lambda *a, **k: False
+    )
+    r = H.handler(
+        _ev(
+            "POST",
+            "/urlreview/api/action",
+            {"fetch_event_id": "e1", "decision": "affirm"},
+        ),
+        None,
+    )
+    d = json.loads(r["body"])
+    assert r["statusCode"] == 500 and d["ok"] is False and d["staged_source_id"] is None
 
 
 def test_bad_action_400(monkeypatch):

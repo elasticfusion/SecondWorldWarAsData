@@ -88,9 +88,7 @@ def test_reject_persists_status(_local):
     assert _events(_local, "openserp-find")[0]["review_status"] == fp.REJECTED
 
 
-def test_affirm_persists_affirmed_status(_local, tmp_path):
-    q = tmp_path / "doc.html"
-    q.write_text("<html>archived</html>")
+def test_affirm_persists_affirmed_status(_local):
     fid = fp.record_fetch_event(
         provider="openserp-find",
         endpoint="https://archive.org/wayback/available",
@@ -99,8 +97,7 @@ def test_affirm_persists_affirmed_status(_local, tmp_path):
         result_summary="snapshot 1996 -> https://web.archive.org/web/1996/http://x",
     )
     event = next(e for e in fetch_review.list_pending() if e["fetch_event_id"] == fid)
-    src = fetch_review.affirm_fetch_find(event, q)
-    assert src is not None
+    assert fetch_review.affirm_fetch_find(event) == f"fetchfind-{fid}"
     assert _events(_local, "openserp-find")[0]["review_status"] == fp.AFFIRMED
     assert fetch_review.list_pending() == []
 
@@ -128,3 +125,11 @@ def test_set_review_status_preserves_sibling_records(_local):
     assert evs[fids[0]]["review_status"] == fp.PENDING  # sibling untouched
     assert evs[fids[1]]["review_status"] == fp.REJECTED  # target updated
     assert evs[fids[2]]["review_status"] == fp.PENDING  # sibling untouched
+
+
+def test_an_affirm_without_an_id_stores_nothing(_local, caplog):
+    import logging
+
+    with caplog.at_level(logging.WARNING):
+        assert fetch_review.affirm_fetch_find({"provider": "openserp-find"}) is None
+    assert "affirm_not_stored" in caplog.text

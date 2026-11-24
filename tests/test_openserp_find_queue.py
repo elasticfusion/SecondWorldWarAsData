@@ -315,3 +315,21 @@ def test_every_searched_kind_needs_a_ulid():
             assert oe.lacks_identity(entity, {field: bad}) is True, (entity, bad)
     # the people_groups schema says GroupID; some code writes PeopleGroupID: both are read
     assert oe.lacks_identity("people_groups", {"PeopleGroupID": ok}) is False
+
+
+def test_a_person_with_awards_is_still_web_searched(monkeypatch):
+    """military_awards (filled only by an award extraction) no longer gates the web search."""
+    sent = []
+    monkeypatch.setattr(
+        oe,
+        "_search_openserp",
+        lambda q, u, **k: sent.append(q) or [{"url": URL, "title": "John Doe"}],
+    )
+    data = {
+        "PersonID": "01HPERSON",
+        "name": "John Doe",
+        "military_awards": [{"award": "Bronze Star"}],
+    }
+    c = oe._collect_person_candidates(None, "John Doe", data, "http://serp")
+    assert sent and c["web_results"]
+    assert {h["url"] for h in c["web_results"]} == {URL}
