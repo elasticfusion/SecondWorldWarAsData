@@ -1589,7 +1589,12 @@ and its bad chapter 8 events answer could not be inspected afterwards. Caching i
   these are unsourced.
 
 #### Older backlog - HIGH list
-- **[HIGH · extraction/enrichment] Group records have NO `group_name`/`name` field — ALL group enrichment + OpenSERP skipped.**
+- **DONE (verified 2026-11-24) - [HIGH · extraction/enrichment] Group records have NO `group_name`/`name` field — ALL group enrichment + OpenSERP skipped.**
+  Fixed by b047782b (#655: `additionalProperties: False` silently dropped group fields; `_coerce_group_schema_keys`
+  strips only unmodeled keys, loudly). Evidence: the local Phase 2 snapshot of 2026-11-17 (`tmp/phase3-review/imgcheck/
+  people_groups/`, not in git) has `group_name` on 1,113 of 1,113 group records. Regression test
+  `tests/test_find_or_create_concurrency.py::test_a_saved_group_keeps_its_name`; a group still found without a name
+  is said (`OBSERV groups.enrich_skip_no_name`, and the OpenSERP no-name anomaly from fa8c92f0). Original finding:
   Found in the synchronous XChannel-8 E2E (2026-10-28): Phase 2 wrote people_groups records whose ONLY keys are
   `nationality`, `event_mentions`, `GroupID`, `_schema_version`, `_last_updated` — the unit name (e.g. "1st Division")
   survives ONLY in the filename + `event_mentions[].Sub_event_Name`, never as a top-level field. Group enrichment gates on
@@ -2169,7 +2174,14 @@ Not yet re-reviewed step by step; each keeps its old number ("was gap N"), which
 still uses in its text. `EP` = `ecs_entrypoint.py`, `OE` = `src/enrichment/openserp_enrichment.py`,
 `P3` = `phase3_enrich_data.py`.
 
-- **HIGH (was gap 2) - An outage or open breaker marks entities as searched for 90 days.** Every driver
+- **DONE (1.2d/1.2f; verified 2026-11-24) - HIGH (was gap 2) - An outage or open breaker marks entities as searched for 90 days.**
+  Every driver goes through `_search_entity` -> `_settle`: an entity whose queries errored with none answering is
+  `unavailable` (`search_outcome`) and is NOT marked (`entities_unavailable`); an open breaker stops the phase
+  (`_stop_openserp_down` -> `ServiceUnreachable`, owner D8c) before anything is stamped; the SQS worker
+  (`openserp_worker.py`) resets the breaker after its pause and defers, without marking, an unavailable entity.
+  Tests: `test_openserp_review_log.py::test_openserp_unavailable_is_not_a_search` (driver path),
+  `test_openserp_driver_prelude.py` and `test_openserp_search_cache.py` (breaker -> `ServiceUnreachable`); the
+  worker's reset and no-mark branch have no test yet. Original finding: Every driver
   stamps the entity after trying, even when every query returned `[]` (`OE:1418`, called
   unconditionally). Only people and equipment without results are rescued, by the reset in the entry that was gap 6.
   Groups, places and source sections lose their window. The SQS worker is worse: it never resets its
@@ -2267,7 +2279,10 @@ synced to `tmp/phase3-review/imgcheck/content/`): 31 source sections, one per ev
   position in the run; a general gap for late writes under `output/content/`.
 
 #### Older backlog - HIGH list
-- **[HIGH · provenance] event_provenance stamp read the WRONG source_section path (fix STAGED, pending PR).**
+- **DONE (merged; verified 2026-11-24) - [HIGH · provenance] event_provenance stamp read the WRONG source_section path.**
+  `event_provenance._build_event_section_index` reads every section through `source_sections.iter_section_files`
+  (the nested `content/<book>/source_section/` layout and the old top-level one); tests
+  `test_provenance_hardening.py` (nested path) and `test_source_section_enrich_in_place.py`. Original finding:
   Found same E2E: `OBSERV event_provenance.stamp resolved=0 reason=no_source_sections` even though 2 source_section records
   existed — they live at `content/<book>/source_section/*.json`, but `_build_event_section_index` read top-level
   `output/source_section/`. Fixed locally to glob BOTH (nested + top-level) + a regression test; verified against the real

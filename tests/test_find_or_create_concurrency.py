@@ -156,3 +156,31 @@ def test_groups_find_or_create_cross_process(tmp_path: Path) -> None:
     _run_workers(_GROUP_WORKER, [str(groups_dir), str(index_file), str(barrier)])
     files = [p for p in groups_dir.glob("*.json") if p.name != "index.json"]
     assert len(files) == 1, f"cross-process duplicate groups: {[p.name for p in files]}"
+
+
+def test_a_saved_group_keeps_its_name(tmp_path: Path) -> None:
+    """Group 5 HIGH (2026-10-28): records without group_name skipped every group enrichment and
+    OpenSERP search. The name must be a top-level field of the saved record."""
+    import json
+
+    from src.extraction.people_groups import _save_group
+
+    groups_dir = tmp_path / "people_groups"
+    groups_dir.mkdir()
+    f = _save_group(
+        groups_dir,
+        groups_dir / "index.json",
+        {
+            "group_name": "1st Infantry Division",
+            "nationality": "USA",
+            "event_mentions": [],
+            "delivered_unit": "x",  # an unmodeled key the model invented: stripped, not the record
+        },
+        "B",
+        "A",
+        "S",
+    )
+    saved = json.loads(f.read_text())
+    assert (
+        saved["group_name"] == "1st Infantry Division" and "delivered_unit" not in saved
+    )
