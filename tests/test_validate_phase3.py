@@ -29,7 +29,7 @@ def _compliant_person(pid="01HX7YZABCDEFGHJKMNPQRSTVW", link_key="wikipedia_url"
     return {
         "PersonID": pid,
         "name": "Courtney Hodges",
-        "_schema_version": "2.27",  # schema-current-fixture entity=people
+        "_schema_version": "2.28",  # schema-current-fixture entity=people
         "enrichment_status": "enriched",
         "biographical_profile": {
             link_key: "https://en.wikipedia.org/wiki/Courtney_Hodges"
@@ -193,7 +193,7 @@ def test_p3a5_group_structured_facts_source_is_attribution(tmp_path):
         tmp_path / "people_groups" / "g1.json",
         {
             "GroupID": "01HX7YZABCDEFGHJKMNPQRSTVW",
-            "_schema_version": "2.29",
+            "_schema_version": "2.30",  # schema-current-fixture entity=people_groups
             "enrichment_status": "enriched",
             "enrichment_data": {
                 "_source": {

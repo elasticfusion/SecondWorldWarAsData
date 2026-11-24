@@ -42,7 +42,7 @@ def world(monkeypatch, queued_finds, tmp_path):
     monkeypatch.setattr(oe, "prefetch_relevance", lambda *a, **k: 0)
     state = {"starts": [], "relevant": set(), "error": False}
 
-    def search(q, url, limit=None, start=0):
+    def search(q, url, limit=None, start=0, images=False):
         state["starts"].append(start)
         if state["error"]:
             oe._trace_query(q, "error")
@@ -270,13 +270,3 @@ def test_every_decision_is_logged(world, caplog):
     with caplog.at_level(logging.INFO):
         run()  # nothing relevant on the first page: unchanged, still said
     assert "OBSERV openserp.page entity=place#01HPLACE start=0 next=0" in caplog.text
-
-
-def test_a_group_image_category_at_its_cap_does_not_hold_the_page():
-    trace = oe._new_trace("people_groups", "f", {}, "x")
-    with oe._tracing(trace):
-        trace["paging"] = {"start": 5, "capped": False, "new": 0, "known": 0}
-        oe._group_capped(False)
-        assert trace["paging"]["capped"] is False
-        oe._group_capped(True)
-        assert trace["paging"]["capped"] is True

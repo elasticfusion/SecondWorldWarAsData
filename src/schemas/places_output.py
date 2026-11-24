@@ -9,6 +9,7 @@ from src.schemas import (
     ulid_field,
     url_field,
 )
+from src.schemas.photo_fields import WEB_PHOTO_PROPERTIES
 
 PLACES_OUTPUT_SCHEMA = {
     "$schema": "http://json-schema.org/draft-07/schema#",
@@ -50,7 +51,11 @@ PLACES_OUTPUT_SCHEMA = {
         # wikipedia_checked_at is stamped even on a miss so it is not re-fetched.
         "wikipedia_url": make_nullable("string"),
         "wikipedia_checked_at": make_nullable("string"),
-        "images": {"type": ["array", "null"], "items": {"type": ["object", "string"]}},
+        # an entry is a web photo (src/enrichment/web_photos, its fields named) or a legacy URL
+        "images": {
+            "type": ["array", "null"],
+            "items": {"type": ["object", "string"], "properties": WEB_PHOTO_PROPERTIES},
+        },
         # OpenSERP (Phase 3) web/source results for the place + gate.
         "web_results": {
             "type": ["array", "null"],

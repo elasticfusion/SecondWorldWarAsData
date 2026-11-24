@@ -377,7 +377,8 @@ negative TTL (`search_cache.py:77-80`). `_verify_result` stores the literal stri
 truthy, so a NO verdict lives 30 days, not 7. The Grok response cache then keeps the same answer for
 the same prompt for up to 90 days, so a repeat costs no API call.
 
-Weakened keys: `_apply_verified_images` for people (`OE:1235`) passes no snippet or URL, so people
+Weakened keys (2026-11-24: `_apply_verified_images` is gone; people photos are now vision-checked
+by `find_entity_photos`): `_apply_verified_images` for people (`OE:1235`) passed no snippet or URL, so people
 image verdicts are keyed and judged on title and context only. The truncation to 50, 50 and 60
 characters can collide.
 

@@ -6,6 +6,9 @@ Usage:
     python scripts/debug_searches.py [--section all|nara|archive|gutenberg|openserp|wikipedia]
 
 Requires: GROK_API_KEY env var (or in .env), config.yaml with API keys
+
+Side effects: the same code paths as the pipeline, so Grok is billed and the portrait section
+stores kept photos (S3 ``unscanned/``), their pages and photo decision records.
 """
 
 import argparse
@@ -429,8 +432,8 @@ def section_openserp(config, grok_client):
         print(f"  OpenSERP not available at {openserp_url} — SKIPPING")
         return
 
+    from src.enrichment import openserp_enrichment as oe
     from src.enrichment.openserp_enrichment import (
-        search_person_images,
         search_military_awards,
         search_equipment_images,
     )
@@ -444,7 +447,9 @@ def section_openserp(config, grok_client):
     if not people:
         people = [{"name": "Dwight D. Eisenhower"}, {"name": "George S. Patton"}]
 
-    print("\n  Portrait Images (search_person_images, until Grok-confirmed):")
+    print(
+        "\n  Portrait Images (web photos: image search + Grok vision, until one is kept):"
+    )
     found_portrait = False
     for p in people:
         if found_portrait:
@@ -454,8 +459,13 @@ def section_openserp(config, grok_client):
 
         queries = render_search_queries("people", "portrait_images", name=name)
         print(f"    {name} (query: {queries[0] if queries else 'N/A'})")
-        results = search_person_images(name, openserp_url, grok_client)
-        print(f"      {len(results)} Grok-confirmed results")
+        record = dict(p, images=[])  # a copy: the sampled record on disk is not changed
+        if not oe._apply_person_photos(
+            {"openserp_url": openserp_url}, record, name, grok_client, max_images=1
+        ):
+            print("      no photo kept (or the record has no PersonID)")
+        results = record["images"]
+        print(f"      {len(results)} vision-confirmed photos")
         for r in results[:2]:
             print(f"      → {r.get('title', '')[:50]} | {r.get('url', '')[:50]}")
         if results:

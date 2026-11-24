@@ -46,23 +46,30 @@ def test_awards_use_yaml_templates():
     assert all("John Smith" in q for q in seen)
 
 
-def test_verify_and_apply_dedupes_existing_urls():
-    data = {"images": [{"url": "http://dup", "source": "x"}], "military_awards": []}
-    cand = {
-        "image_results": [
-            {"url": "http://dup", "title": "John Smith"},
-            {"url": "http://new", "title": "John Smith"},
-        ],
-        "web_results": [],
-    }
-    with patch.object(oe, "_verify_result", return_value=True):
-        changed = oe._verify_and_apply(
-            cand, data, "John Smith", object(), max_images=5, max_web=5
+def test_person_photos_fill_only_the_room_left_and_skip_what_is_held():
+    data = {"PersonID": "01HJOHN", "images": [{"url": "http://dup", "source": "x"}]}
+    seen = {}
+
+    def fake(subject, queries, url, grok, existing, wanted):
+        seen.update(
+            wanted=wanted, existing=[i["url"] for i in existing], key=subject.entity_key
         )
-    urls = [i["url"] for i in data["images"]]
-    assert changed
-    assert urls.count("http://dup") == 1  # not duplicated
-    assert "http://new" in urls
+        return [{"url": "http://new", "vision_verified": True}]
+
+    with patch.object(oe, "find_entity_photos", side_effect=fake):
+        changed = oe._verify_and_apply(
+            {"openserp_url": "http://serp", "web_results": []},
+            data,
+            "John Smith",
+            object(),
+            max_images=3,
+            max_web=5,
+        )
+    assert changed and [i["url"] for i in data["images"]] == [
+        "http://dup",
+        "http://new",
+    ]
+    assert seen == {"wanted": 2, "existing": ["http://dup"], "key": "person#01HJOHN"}
 
 
 def test_validate_before_write_rejects_bad_allows_good():

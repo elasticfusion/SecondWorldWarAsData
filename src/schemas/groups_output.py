@@ -7,6 +7,7 @@ from src.schemas import (
     make_nullable,
     ulid_field,
 )
+from src.schemas.photo_fields import WEB_PHOTO_PROPERTIES
 
 GROUPS_OUTPUT_SCHEMA = {
     "$schema": "http://json-schema.org/draft-07/schema#",
@@ -65,7 +66,11 @@ GROUPS_OUTPUT_SCHEMA = {
         },
         "military_hierarchy": {"type": ["object", "array", "string", "null"]},
         "enrichment_data": {"type": ["object", "null"]},
-        "images": {"type": ["array", "null"], "items": {"type": ["object", "string"]}},
+        # an entry is a web photo (src/enrichment/web_photos, its fields named) or a legacy URL
+        "images": {
+            "type": ["array", "null"],
+            "items": {"type": ["object", "string"], "properties": WEB_PHOTO_PROPERTIES},
+        },
         # Single highest-resolution, Grok-vision-confirmed unit patch / insignia,
         # downloaded + durably stored (ARTIFACT_STORE_DESIGN.md M0). Null until one
         # is confirmed (null-over-fake). local_path is relative to the artifacts/ store.

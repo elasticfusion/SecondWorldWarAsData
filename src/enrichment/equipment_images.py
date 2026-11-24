@@ -412,11 +412,6 @@ def _process(
         if _strip_enrichment(rec):
             counts["generic_cleaned"] += 1
     elif scope == SPECIFIC:
-        from src.enrichment.web_photos import drop_infected
-
-        drop_infected(
-            rec.get("images") or []
-        )  # a file ClamAV deleted: the entry goes too
         _queue_existing(rec)
         _add_article_candidates(rec, counts)
         _verify_pending(rec, grok_client, wanted, counts)

@@ -965,6 +965,20 @@ Findings:
   re-read is not traced twice in the review log. Open: the batch answer is positional (an index-keyed answer
   would catch a reordered reply). Trade-off: a query's candidates are
   all asked even when the per-entity cap is reached after the first few.
+- **DONE (2026-11-23) step 2 of web photos: people, places and groups (owner).** One shared path,
+  `openserp_enrichment.find_entity_photos` (image search -> batched text pre-filter -> photo + page downloaded
+  -> Grok vision -> decisions recorded; queries consumed lazily), used by equipment
+  (`search_equipment_images`), people (`_apply_person_photos`: portrait queries; replaces the web-search +
+  title-check path), places (`_enrich_place_images`: WWII-scoped image queries per name variant) and groups
+  (`_apply_group_photos`: insignia/photo queries; the `images` category no longer goes through the web search).
+  Each fills the record up to `openserp.max_images_per_entity` (a Wikipedia portrait from Phase 2 counts), keys
+  its verdicts on `<type>#<ULID>` (no ULID: no photos), and skips award sites and HyperWar pages (HyperWar is
+  ingested as a source). A Phase 3 step (`infected_photos`, every run, not gated) removes photos ClamAV found
+  infected from all four entity types. Schemas: one shared definition of the web-photo fields
+  (`src/schemas/photo_fields.py`); people 2.28, places 2.31, people_groups 2.30 (additive).
+  Cost bound: each entity may spend at most `openserp.max_photo_checks_per_entity` (default 10) photo checks
+  (download + Grok vision) per run across all its queries, whatever the verdicts; places use their first 3
+  name variants. People are photo-searched whenever the record has room (not only when it has no image).
 - **DONE (2026-11-23) - web photos: nothing stored for a "no"; decisions recorded instead (owner).** A photo's
   page is held in memory for the caption and stored only when the photo is accepted (before, it was kept
   before Grok decided and stayed after a "no"; in Grok batch mode it was kept while the answer was pending).
@@ -2293,7 +2307,7 @@ Findings:
   §1).
 - **LOW (was gap 23)** - Dead or unwired code: `enrich_with_advanced_features`,
   `search_academic_sources`, `_verify_results_batch`, `_prefilter_verify_cache`,
-  `_parse_batch_verdicts`, `search_person_images` and `search_military_awards` (used only by
+  `_parse_batch_verdicts`, ~~`search_person_images`~~ (deleted 2026-11-24) and `search_military_awards` (used only by
   `scripts/utils/debug_searches.py`), `equipment._extract_media_with_openserp` chain,
   `situational_geocode`, `url_content_verdict.evaluate`, `phase3_retry.py` (copied by `Dockerfile:49`,
   no caller), ~~`lambda_handlers/phase3_handler.py`~~ (deleted 2026-11-20), `--no-references`,

@@ -571,7 +571,7 @@
         "1st_infantry_division.json": {
           "GroupID": "PK006100000000000000000000",
           "_last_updated": "<stamped>",
-          "_schema_version": "2.29",
+          "_schema_version": "2.30",
           "aliases": [
             "Big Red One"
           ],
@@ -606,7 +606,7 @@
         "panzer_lehr.json": {
           "GroupID": "PK006200000000000000000000",
           "_last_updated": "<stamped>",
-          "_schema_version": "2.29",
+          "_schema_version": "2.30",
           "aliases": [],
           "country_of_origin": "",
           "event_mentions": [],

@@ -10,6 +10,7 @@ from src.schemas import (
     ulid_field,
     url_field,
 )
+from src.schemas.photo_fields import WEB_PHOTO_PROPERTIES
 
 PEOPLE_OUTPUT_SCHEMA = {
     "$schema": "http://json-schema.org/draft-07/schema#",
@@ -149,6 +150,8 @@ PEOPLE_OUTPUT_SCHEMA = {
             "items": {
                 "type": "object",
                 "properties": {
+                    # a web photo's fields (src/enrichment/web_photos; 2.28)
+                    **WEB_PHOTO_PROPERTIES,
                     "url": {"type": "string"},
                     "title": make_nullable("string"),
                     "source": make_nullable("string"),

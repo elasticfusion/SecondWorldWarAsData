@@ -112,16 +112,33 @@ def _metric(key: str, n: int = 1) -> None:
     oe._metric(key, n)
 
 
+class Budget:
+    """How many photo checks (download + Grok vision) one entity may still spend, across all
+    its image queries. Every check counts, whatever the verdict."""
+
+    def __init__(self, n: int) -> None:
+        self._left = max(0, int(n))
+
+    def spend(self) -> None:
+        self._left = max(0, self._left - 1)
+
+    def spent(self) -> bool:
+        return self._left <= 0
+
+
 def find_photos(
     results: List[Dict[str, Any]],
     subject: Subject,
     grok_client: Any,
     existing: List[Any],
     wanted: int,
+    budget: Optional[Budget] = None,
 ) -> List[Dict[str, Any]]:
     """Up to ``wanted`` new photos of ``subject`` from one image query's ``results``, each
     confirmed by Grok vision, as image entries for the record (``existing``: its images, for
-    duplicates). Raises ``VerifyFailed`` (no usable Grok answer) and ``BatchModeCollecting``.
+    duplicates). ``budget``: the entity's photo checks left (none: unbounded); no check is
+    made once it is spent. Raises ``VerifyFailed`` (no usable Grok answer) and
+    ``BatchModeCollecting``.
     """
     if wanted <= 0 or not grok_client:
         return []
@@ -133,6 +150,10 @@ def find_photos(
     for r in _prefilter(fresh, subject, grok_client):
         if len(photos) >= wanted:
             break
+        if budget is not None:
+            if budget.spent():
+                break
+            budget.spend()
         photo = _check(r, subject, grok_client, known)
         if photo is not None:
             photos.append(photo)
@@ -354,6 +375,63 @@ def drop_infected(images: List[Any]) -> int:
             len(bad),
         )
     return len(bad)
+
+
+PHOTO_ENTITY_DIRS = ("equipment", "people", "places", "people_groups")
+
+
+def drop_infected_photos(output_root: Any) -> int:
+    """The Phase 3 sweep (every run, every record of the photo-bearing entities): remove each
+    photo ClamAV found infected (``drop_infected``) and write the record back. Returns the number
+    removed. Only records holding a stored photo are checked (one marker lookup per photo).
+    """
+    from pathlib import Path
+
+    from src.utils.file_lock import write_json_with_lock
+
+    if _s3_and_bucket()[0] is None:
+        return 0
+    removed = 0
+    for entity in PHOTO_ENTITY_DIRS:
+        for f in sorted((Path(output_root) / entity).glob("*.json")):
+            data = _with_stored_photos(f)
+            if data is None:
+                continue
+            n = drop_infected(data["images"])
+            if not n:
+                continue
+            if write_json_with_lock(f, data, entity=entity):
+                removed += n
+            else:
+                _metric("photos_infected_write_blocked")
+                logger.error(
+                    "OBSERV web_photos.infected_write_blocked record=%s photos=%d: the record "
+                    "still lists %d photo(s) ClamAV found infected (deleted from S3) because the "
+                    "schema guard blocked its write. Fix the record's schema errors (see the "
+                    "guard's log line) and rerun Phase 3",
+                    f.name,
+                    n,
+                    n,
+                )
+    return removed
+
+
+def _with_stored_photos(f: Any) -> Optional[Dict[str, Any]]:
+    """The record at ``f`` when it holds at least one stored photo, else None (unreadable
+    records are reported by their own step)."""
+    try:
+        text = f.read_text(encoding="utf-8")
+        if '"local_path"' not in text:  # no stored photo: skip the parse
+            return None
+        data = json.loads(text)
+    except (OSError, ValueError, RecursionError):
+        return None
+    images = data.get("images") if isinstance(data, dict) else None
+    if isinstance(images, list) and any(
+        isinstance(i, dict) and i.get("local_path") for i in images
+    ):
+        return data
+    return None
 
 
 def retract(images: List[Any], url: str, subject: Subject, reason: str) -> bool:

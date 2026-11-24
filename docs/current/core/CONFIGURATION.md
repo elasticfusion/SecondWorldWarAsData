@@ -378,8 +378,9 @@ See `config/domain_blacklist.yaml` for filtering unwanted domains.
 
 ```yaml
 openserp:
-  results_per_query: 10
+  results_per_query: 5
   max_images_per_entity: 3
+  max_photo_checks_per_entity: 10  # photo downloads + Grok vision checks per entity per run (1-100)
   max_web_results_per_entity: 3
   rate_limit_seconds: 5            # spacing between serial OpenSERP queries
   request_timeout_seconds: 60      # per-query HTTP timeout

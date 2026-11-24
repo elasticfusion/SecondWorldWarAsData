@@ -53,9 +53,14 @@ def test_apply_path_counts_items_and_fetches(monkeypatch):
     monkeypatch.setattr(oe, "_url_verdict_cached", lambda url: None)
     monkeypatch.setattr(oe, "_cache_url_verdict", lambda *a, **k: None)
     monkeypatch.setattr(oe, "_name_initial_matches", lambda *a, **k: True)
+    monkeypatch.setattr(
+        oe,
+        "find_entity_photos",
+        lambda *a, **k: [{"url": "http://img/1", "vision_verified": True}],
+    )
     data: dict = {"PersonID": "01HJOHN"}
     candidate = {
-        "image_results": [{"url": "http://img/1", "title": "John Doe"}],
+        "openserp_url": "http://serp",
         "web_results": [
             {"url": "http://bio/1", "title": "John Doe", "description": "x"}
         ],

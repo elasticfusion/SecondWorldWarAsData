@@ -23,7 +23,7 @@ def test_group_queries_are_wwii_scoped_and_disambiguated(tmp_path, queued_finds)
     )
     seen = []
 
-    def fake_search(q, url, limit=10, start=0):
+    def fake_search(q, url, limit=10, start=0, **k):
         seen.append(q)
         return [
             {
@@ -34,6 +34,13 @@ def test_group_queries_are_wwii_scoped_and_disambiguated(tmp_path, queued_finds)
 
     with (
         patch.object(oe, "_openserp_reachable", return_value=True),
+        patch.object(
+            oe,
+            "find_entity_photos",
+            return_value=[
+                {"url": "http://img.example.org/p.jpg", "vision_verified": True}
+            ],
+        ),
         patch.object(oe, "_search_openserp", side_effect=fake_search),
         patch.object(oe, "_verify_result", return_value=True),
         patch(
@@ -120,6 +127,7 @@ def test_a_second_run_queues_no_duplicates_and_spends_nothing(queued_finds):
         "source": "openserp",
     }
     with (
+        patch.object(oe, "find_entity_photos", return_value=[]),  # pages only, here
         patch.object(
             oe,
             "_search_openserp",

@@ -41,7 +41,7 @@ def test_places_openserp_searches_each_variant(tmp_path, queued_finds):
     )
     seen = []
 
-    def fake(q, url, limit=10, start=0):
+    def fake(q, url, limit=10, start=0, **k):
         seen.append(q)
         return [
             {
@@ -53,6 +53,13 @@ def test_places_openserp_searches_each_variant(tmp_path, queued_finds):
 
     with (
         patch.object(oe, "_openserp_reachable", return_value=True),
+        patch.object(
+            oe,
+            "find_entity_photos",
+            return_value=[
+                {"url": "http://img.example.org/p.jpg", "vision_verified": True}
+            ],
+        ),
         patch.object(oe, "_search_openserp", side_effect=fake),
         patch.object(oe, "_verify_result", return_value=True),
         patch.object(

@@ -691,6 +691,14 @@ def _ingest_in_doc_map_links(out, grok_client, ext_config) -> int:
     return int(summary.get("recycled", 0))
 
 
+def _drop_infected_photos(out) -> int:
+    """Photos ClamAV found infected (the drain deleted the file) leave their records
+    (src/enrichment/web_photos.drop_infected_photos). Returns photos removed."""
+    from src.enrichment.web_photos import drop_infected_photos
+
+    return drop_infected_photos(out)
+
+
 def _resolve_equipment_images(out, grok_client, config) -> int:
     """Vision-checked equipment images (src/enrichment/equipment_images). Returns images verified."""
     from src.enrichment.equipment_images import resolve_equipment_images
@@ -822,6 +830,9 @@ def _run_enrichment_steps(args, config, grok_client, source_stats, max_workers) 
     # Document links, photos and the provenance stamp - not web search, never gated by OpenSERP
     if not args.people_only:
         total_enriched += _run_document_link_steps(args, config, grok_client, _run_step)
+
+    # Photos whose file ClamAV deleted leave their records (every run, every record: not gated)
+    _run_step("infected_photos", lambda: _drop_infected_photos(args.output_dir))
 
     # Equipment images: candidates for SPECIFIC equipment only (qualified Wikipedia article +
     # any OpenSERP candidates above), each confirmed by Grok vision; generic records are cleaned.

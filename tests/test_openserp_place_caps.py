@@ -47,11 +47,27 @@ def test_new_finds_stop_at_the_cap_and_no_more_queries_are_sent(monkeypatch):
 
 
 def test_images_stop_at_the_cap(monkeypatch):
-    sent = _searches(monkeypatch)
-    monkeypatch.setattr(oe, "_verify_result", lambda *a, **k: True)
+    from src.enrichment import web_photos
+
+    sent = []
+
+    def image_search(q, url, limit=None):
+        sent.append(q)
+        return [{"url": f"https://i.example/{len(sent)}-{n}.jpg"} for n in range(5)]
+
+    monkeypatch.setattr(oe, "_search_openserp_images", image_search)
+    monkeypatch.setattr(
+        web_photos,
+        "find_photos",
+        lambda results, subject, grok, existing, wanted, **k: [
+            {"url": r["url"]} for r in results[:wanted]
+        ],
+    )
     data = {"PlaceID": "01HPL"}
     assert oe._enrich_place_images(data, ["Metz", "Mes"], "Metz", "u", object(), 3)
-    assert len(data["images"]) == 3 and len(sent) == 1
+    assert (
+        len(data["images"]) == 3 and len(sent) == 1
+    )  # no second query, no second name
 
 
 def test_a_place_with_its_images_is_not_image_searched(monkeypatch):
@@ -60,6 +76,7 @@ def test_a_place_with_its_images_is_not_image_searched(monkeypatch):
         "PlaceID": "01HPL",
         "images": [{"url": f"https://e.org/{i}"} for i in range(3)],
     }
+    monkeypatch.setattr(oe, "_search_openserp_images", lambda *a, **k: sent.append(a))
     assert oe._enrich_place_images(data, ["Metz"], "Metz", "u", object(), 3) is False
     assert sent == []
 

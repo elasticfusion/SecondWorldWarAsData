@@ -4,6 +4,7 @@ bytes never judged twice for an entity, and every kept photo confirmed by Grok v
 """
 
 import io
+from pathlib import Path
 import logging
 from unittest import mock
 
@@ -595,7 +596,7 @@ def test_an_image_on_an_excluded_page_is_dropped(monkeypatch):
 def test_equipment_photos_come_from_the_image_search(monkeypatch):
     seen = {}
 
-    def find(results, subject, grok, existing, wanted):
+    def find(results, subject, grok, existing, wanted, **k):
         seen.update(subject=subject, wanted=wanted)
         return [{"url": "https://img.example.org/s.png", "vision_verified": True}]
 
@@ -1065,20 +1066,46 @@ def test_a_record_drops_a_photo_clamav_deleted_and_nobody_takes_it_again(monkeyp
     assert wp._ruled_out("https://img.example.org/bad.png", other)  # for everyone
 
 
-def test_the_equipment_step_drops_infected_photos(monkeypatch):
-    from src.enrichment import equipment_images as ei
+def test_the_phase3_sweep_drops_infected_photos_from_every_entity(
+    monkeypatch, tmp_path
+):
+    import json as _json
 
-    dropped = []
+    from src.ingestion import av_scan
+
+    s3 = _AvS3({av_scan.infected_marker("output/photos/files/bad.png")})
+    monkeypatch.setattr(wp, "_s3_and_bucket", lambda: (s3, "b"))
+    bad = {
+        "url": "https://i.example/bad.png",
+        "local_path": "output/photos/files/bad.png",
+    }
+    ok = {"url": "https://i.example/ok.png", "local_path": "output/photos/files/ok.png"}
+    for entity, idf in (("people", "PersonID"), ("places", "PlaceID"),
+                        ("people_groups", "GroupID"), ("equipment", "EquipmentID")):  # fmt: skip
+        (tmp_path / entity).mkdir()
+        rec = {idf: "01HX7YZABCDEFGHJKMNPQRSTVW", "name": "x", "images": [bad, ok]}
+        (tmp_path / entity / "r.json").write_text(_json.dumps(rec))
+    writes = []
     monkeypatch.setattr(
-        wp, "drop_infected", lambda images: dropped.append(len(images)) or 0
+        "src.utils.file_lock.write_json_with_lock",
+        lambda f, d, entity=None: writes.append(
+            (entity, [i["url"] for i in d["images"]])
+        )
+        or True,
     )
-    monkeypatch.setattr(ei, "record_scope", lambda rec, g: ei.SPECIFIC)
-    monkeypatch.setattr(ei, "_add_article_candidates", lambda rec, c: None)
-    monkeypatch.setattr(ei, "_verify_pending", lambda *a: None)
-    ei._process(
-        {"images": [{"url": "u", "local_path": "p"}]}, None, 3, ei._new_counts()
-    )
-    assert dropped == [1]
+    assert wp.drop_infected_photos(tmp_path) == 4
+    assert sorted(e for e, _ in writes) == [
+        "equipment",
+        "people",
+        "people_groups",
+        "places",
+    ]
+    assert all(urls == ["https://i.example/ok.png"] for _, urls in writes)
+
+
+def test_phase3_runs_the_sweep_every_time():
+    text = Path("phase3_enrich_data.py").read_text()
+    assert '_run_step("infected_photos"' in text
 
 
 def test_without_a_bucket_nothing_is_checked():
@@ -1194,3 +1221,268 @@ def test_a_not_found_marker_is_quiet(caplog):
     with caplog.at_level(logging.WARNING):
         assert av_scan.was_infected(_S3(), "b", "output/photos/files/a.png") is False
     assert "infected_check_failed" not in caplog.text
+
+
+# --- step 2: people, places and groups get vision-confirmed photos too -------------------------
+
+
+def _capture(monkeypatch):
+    seen = {}
+
+    def fake(subject, queries, url, grok, existing, wanted):
+        seen.update(
+            key=subject.entity_key,
+            wanted=wanted,
+            queries=list(queries),
+            what=subject.what_counts,
+        )
+        return [_photo_entry()]
+
+    monkeypatch.setattr(oe, "find_entity_photos", fake)
+    return seen
+
+
+def _photo_entry():
+    return {
+        "url": "https://img.example.org/p.jpg",
+        "source": "openserp",
+        "candidate_source": "openserp",
+        "caption": "c",
+        "source_page_url": PAGE,
+        "page_sha256": "sha256:" + "a" * 64,
+        "sha256": "sha256:" + "b" * 64,
+        "phash": "ffff0000ffff0000",
+        "local_path": "output/photos/files/b.jpg",
+        "vision_check": "verified",
+        "vision_verified": True,
+        "vision_reason": "r",
+        "vision_checked_at": "2026-11-23T00:00:00+00:00",
+        "period_photo": "yes",
+        "copyright_status": "assumed_public_domain",
+        "candidate_added_at": "2026-11-23T00:00:00+00:00",
+    }
+
+
+def _valid(entity, record):
+    import jsonschema
+
+    from src.schemas.entity_registry import ENTITY_REGISTRY, load_schema
+
+    spec = next(x for x in ENTITY_REGISTRY if x.name == entity)
+    jsonschema.validate(record["images"], load_schema(spec)["properties"]["images"])
+
+
+def test_a_person_gets_portraits_from_the_image_search(monkeypatch):
+    seen = _capture(monkeypatch)
+    data = {
+        "PersonID": "01HX7YZABCDEFGHJKMNPQRSTVW",
+        "name": "John Doe",
+        "images": [{"url": "w"}],
+    }
+    assert oe._apply_person_photos({"openserp_url": "u"}, data, "John Doe", object(), 3)
+    assert seen["key"] == "person#01HX7YZABCDEFGHJKMNPQRSTVW" and seen["wanted"] == 2
+    assert seen["queries"] and all("John Doe" in q for q in seen["queries"])
+    assert "not someone else of the same name" in seen["what"]
+    _valid("people", data)
+
+
+def test_a_person_with_a_full_record_is_not_photo_searched(monkeypatch):
+    seen = _capture(monkeypatch)
+    data = {
+        "PersonID": "01HX7YZABCDEFGHJKMNPQRSTVW",
+        "images": [{"url": str(i)} for i in range(3)],
+    }
+    assert (
+        oe._apply_person_photos({"openserp_url": "u"}, data, "J", object(), 3) is False
+    )
+    assert seen == {}
+
+
+def test_a_place_gets_photos_for_every_name_variant(monkeypatch):
+    seen = _capture(monkeypatch)
+    data = {"PlaceID": "01HX7YZABCDEFGHJKMNPQRSTVW", "current_name": "Metz"}
+    assert oe._enrich_place_images(data, ["Metz", "Mes"], "Metz", "u", object(), 3)
+    assert seen["key"] == "place#01HX7YZABCDEFGHJKMNPQRSTVW" and seen["wanted"] == 3
+    assert any("Mes" in q for q in seen["queries"]) and all(
+        "WWII" in q or "1944" in q for q in seen["queries"]
+    )  # WWII-scoped queries
+    _valid("places", data)
+
+
+def test_a_group_gets_photos_of_its_soldiers_and_insignia(monkeypatch):
+    seen = _capture(monkeypatch)
+    monkeypatch.setattr(oe, "_entity_caps", lambda i=None, w=None: (3, 3))
+    data = {"GroupID": "01HX7YZABCDEFGHJKMNPQRSTVW", "group_name": "3rd Armored"}
+    origin = oe.find_queue.entity_origin("people_group", data)
+    assert oe._apply_group_photos(data, "3rd Armored", "US", "u", object(), origin)
+    assert seen["key"] == "people_group#01HX7YZABCDEFGHJKMNPQRSTVW"
+    assert any("insignia" in q.lower() for q in seen["queries"])
+    _valid("people_groups", data)
+
+
+def test_records_without_an_id_get_no_photos(monkeypatch):
+    seen = _capture(monkeypatch)
+    assert (
+        oe._apply_person_photos({"openserp_url": "u"}, {"name": "X"}, "X", object(), 3)
+        is False
+    )
+    assert (
+        oe._enrich_place_images(
+            {"current_name": "Metz"}, ["Metz"], "Metz", "u", None, 3
+        )
+        is False
+    )
+    assert seen == {}
+
+
+def test_find_entity_photos_stops_sending_queries_once_it_has_enough(monkeypatch):
+    sent = []
+    monkeypatch.setattr(
+        oe, "_search_openserp_images", lambda q, u: sent.append(q) or [_result(1)]
+    )
+    monkeypatch.setattr(
+        wp, "find_photos", lambda r, s, g, e, wanted, **k: [_photo_entry()] * wanted
+    )
+    out = oe.find_entity_photos(SUBJECT, iter(["q1", "q2", "q3"]), "u", object(), [], 2)
+    assert len(out) == 2 and sent == ["q1"]
+
+
+def test_photos_from_hyperwar_pages_are_skipped(monkeypatch):
+    got = []
+    monkeypatch.setattr(
+        oe,
+        "_search_openserp_images",
+        lambda q, u: [
+            {
+                "url": "https://cdn.example/a.jpg",
+                "page_url": "https://www.ibiblio.org/hyperwar/x",
+            },
+            {"url": "https://cdn.example/b.jpg", "page_url": PAGE},
+        ],
+    )
+    monkeypatch.setattr(
+        wp, "find_photos", lambda r, *a, **k: got.extend(x["url"] for x in r) or []
+    )
+    oe.find_entity_photos(SUBJECT, ["q"], "u", object(), [], 3)
+    assert got == ["https://cdn.example/b.jpg"]  # HyperWar is ingested as a source
+
+
+# --- the per-entity budget of photo checks ------------------------------------------------------
+
+
+def test_the_budget_stops_the_checks_whatever_the_verdicts(web):
+    images, fetched = web
+    for n in range(1, 6):
+        images[f"https://img.example.org/sherman{n}.png"] = _pattern(n)
+    grok = _Grok(vision=[{"relevant": "no"}] * 5)
+    budget = wp.Budget(2)
+    results = [_result(n) for n in range(1, 6)]
+    assert wp.find_photos(results, SUBJECT, grok, [], 3, budget=budget) == []
+    assert len(fetched) == 2 and len(grok.vision_asked) == 2  # rejections count
+    assert budget.spent()
+    assert wp.find_photos(results, SUBJECT, grok, [], 3, budget=budget) == []
+    assert len(fetched) == 2  # a spent budget downloads nothing more
+
+
+def test_the_budget_is_shared_by_every_query_of_an_entity(monkeypatch):
+    sent, checks = [], []
+    monkeypatch.setattr(
+        oe, "_search_openserp_images", lambda q, u: sent.append(q) or [_result(1)]
+    )
+
+    def find(results, subject, grok, existing, wanted, budget=None):
+        for _ in range(3):  # three rejected candidates per query
+            budget.spend()
+            checks.append(1)
+        return []
+
+    monkeypatch.setattr(wp, "find_photos", find)
+    monkeypatch.setattr(oe, "_photo_check_budget", lambda: 5)
+    oe.reset_metrics()
+    out = oe.find_entity_photos(SUBJECT, iter(["q1", "q2", "q3"]), "u", object(), [], 2)
+    assert out == [] and sent == ["q1", "q2"]  # q3 is never sent
+    assert oe.get_metrics()["photos_budget_spent"] == 1
+    oe.reset_metrics()
+
+
+def test_the_budget_comes_from_config_and_an_out_of_range_value_is_the_default(
+    monkeypatch,
+):
+    for cfg, want in (({}, 10), ({"max_photo_checks_per_entity": 4}, 4),
+                      ({"max_photo_checks_per_entity": 10_000}, 10)):  # fmt: skip
+        monkeypatch.setattr(
+            "src.utils.config.load_config", lambda *a, _c=cfg, **k: {"openserp": _c}
+        )
+        assert oe._photo_check_budget() == want
+
+
+def test_a_place_photo_search_uses_its_first_names_only(monkeypatch):
+    sent = []
+    monkeypatch.setattr(
+        oe, "find_entity_photos", lambda s, queries, *a: sent.extend(queries) or []
+    )
+    names = ["Metz", "Mes", "Metzig", "Divodurum", "Mettis"]
+    oe._enrich_place_images({"PlaceID": "01HPL"}, names, "Metz", "u", object(), 3)
+    assert sent and not any(("Divodurum" in q or "Mettis" in q) for q in sent)
+    assert any("Metzig" in q for q in sent)
+
+
+def test_a_group_without_an_id_is_not_searched(monkeypatch):
+    monkeypatch.setattr(oe, "_search_openserp", lambda *a, **k: 1 / 0)
+    monkeypatch.setattr(oe, "find_entity_photos", lambda *a, **k: 1 / 0)
+    data = {"group_name": "101st Airborne Division", "nationality": "USA"}
+    assert (
+        oe._apply_group_categories(
+            data, "101st Airborne Division", "USA", "u", object()
+        )
+        is False
+    )
+
+
+def test_a_sweep_write_the_guard_blocks_is_reported_not_counted(
+    monkeypatch, tmp_path, caplog
+):
+    import json as _json
+
+    from src.ingestion import av_scan
+
+    s3 = _AvS3({av_scan.infected_marker("output/photos/files/bad.png")})
+    monkeypatch.setattr(wp, "_s3_and_bucket", lambda: (s3, "b"))
+    (tmp_path / "people").mkdir()
+    rec = {"PersonID": "01HX7YZABCDEFGHJKMNPQRSTVW", "name": "x",
+           "images": [{"url": "https://i.example/bad.png", "local_path": "output/photos/files/bad.png"}]}  # fmt: skip
+    (tmp_path / "people" / "r.json").write_text(_json.dumps(rec))
+    monkeypatch.setattr(
+        "src.utils.file_lock.write_json_with_lock", lambda f, d, entity=None: False
+    )
+    oe.reset_metrics()
+    with caplog.at_level(logging.ERROR):
+        assert wp.drop_infected_photos(tmp_path) == 0
+    assert (
+        "OBSERV web_photos.infected_write_blocked record=r.json photos=1" in caplog.text
+    )
+    assert oe.get_metrics()["photos_infected_write_blocked"] == 1
+    oe.reset_metrics()
+
+
+def test_a_record_without_a_stored_photo_is_not_parsed(tmp_path):
+    f = tmp_path / "r.json"
+    f.write_text("[" * 100_000)  # would blow the parser's recursion limit
+    assert wp._with_stored_photos(f) is None
+    f.write_text('{"images": [{"local_path": "x"}]' + "[" * 100_000)
+    assert wp._with_stored_photos(f) is None  # unparseable: skipped, not raised
+
+
+def test_a_budget_spent_on_the_last_query_is_still_counted(monkeypatch):
+    monkeypatch.setattr(oe, "_search_openserp_images", lambda q, u: [_result(1)])
+
+    def find(results, subject, grok, existing, wanted, budget=None):
+        budget.spend()
+        return []
+
+    monkeypatch.setattr(wp, "find_photos", find)
+    monkeypatch.setattr(oe, "_photo_check_budget", lambda: 1)
+    oe.reset_metrics()
+    assert oe.find_entity_photos(SUBJECT, ["only"], "u", object(), [], 2) == []
+    assert oe.get_metrics()["photos_budget_spent"] == 1
+    oe.reset_metrics()

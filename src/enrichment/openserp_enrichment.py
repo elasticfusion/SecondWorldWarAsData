@@ -172,6 +172,8 @@ _METRIC_KEYS = (
     "photos_ruled_out",  # a URL decided before (a "no", unusable, retracted): not fetched again
     "photos_retracted",  # kept photos taken back off a record (web_photos.retract)
     "photos_infected_dropped",  # photos whose file ClamAV deleted, removed from their record
+    "photos_infected_write_blocked",  # records the schema guard kept from losing an infected photo
+    "photos_budget_spent",  # entities whose photo-check budget ran out before enough photos
     # an entity whose queries only errored (OpenSERP unavailable): left unsearched
     "entities_unavailable",
     "results_site_excluded",  # results dropped for an excluded site
@@ -596,9 +598,19 @@ def _live_search(
             mapped = _mapped_results(resp.json(), images)
             _breaker_record_success()
             return mapped
-        logger.warning("OpenSERP [%s]: HTTP %d", query[:60], resp.status_code)
+        logger.warning(
+            "OpenSERP [%s]: HTTP %d - no results for this query (counted toward the circuit "
+            "breaker); many of these: check the OpenSERP service health and its logs",
+            find_queue.clean_for_log(query, 60),
+            resp.status_code,
+        )
     except Exception as e:  # noqa: BLE001 - any failure: no answer, counted
-        logger.warning("OpenSERP [%s]: %s", query[:60], e)
+        logger.warning(
+            "OpenSERP [%s]: %s - no results for this query (counted toward the circuit "
+            "breaker); many of these: check the OpenSERP service health and its logs",
+            find_queue.clean_for_log(query, 60),
+            find_queue.clean_for_log(e, 200),
+        )
     _breaker_record_failure()
     raise _SearchFailed(query[:60])
 
@@ -1807,41 +1819,6 @@ def _name_initial_matches(person_name: str, result_title: str) -> bool:
     return True
 
 
-def search_person_images(
-    person_name: str,
-    openserp_url: str,
-    grok_client: Any = None,
-    max_results: int = 3,
-    facts: str = "",
-) -> List[Dict[str, str]]:
-    """Search for portrait images of a person (query sharpened with the person's own facts)."""
-    queries = _render_queries(
-        "people", "portrait_images", name=person_name, facts=facts
-    )
-    images = []
-    for query in queries:
-        results = _search_openserp(query, openserp_url)
-        for r in results:
-            url = r.get("url", "")
-            title = r.get("title", "")
-            if not url:
-                continue
-            # Pre-filter: skip results that clearly aren't about this person
-            if not _name_initial_matches(person_name, title):
-                continue
-            if _verify_result(
-                title,
-                f"Photo of {person_name}",
-                grok_client,
-                snippet=r.get("description", ""),
-                url=url,
-            ):
-                images.append({"url": url, "title": title, "source": "openserp"})
-                if len(images) >= max_results:
-                    return images
-    return images
-
-
 def search_equipment_images(
     equipment_name: str,
     openserp_url: str,
@@ -1883,19 +1860,79 @@ def search_equipment_images(
         year=year,
         facts=facts,
     )
+    return find_entity_photos(
+        subject, queries, openserp_url, grok_client, existing or [], wanted
+    )
+
+
+def find_entity_photos(
+    subject: Any,
+    queries: Any,
+    openserp_url: str,
+    grok_client: Any,
+    existing: List[Any],
+    wanted: int,
+) -> List[Dict[str, Any]]:
+    """Up to ``wanted`` new photos of one entity (``web_photos``: an OpenSERP IMAGE search, a
+    batched text pre-filter, the photo + its page downloaded, every photo confirmed by Grok
+    vision, decisions recorded). ``queries`` is consumed lazily: no query is sent once enough
+    photos are found, or once the entity's budget of photo checks is spent
+    (``openserp.max_photo_checks_per_entity``: each download + vision check counts, whatever
+    the verdict - rejected candidates bound the cost too). Shared by equipment, people, places
+    and groups."""
+    from src.enrichment import web_photos
+
     images: List[Dict[str, Any]] = []
+    if wanted <= 0:
+        return images
+    budget = web_photos.Budget(_photo_check_budget())
     for query in queries:
-        results = _search_openserp_images(query, openserp_url)
+        if budget.spent():
+            break
+        results = [  # award sites (sourced by the award adapters) and HyperWar (in the corpus)
+            r
+            for r in _search_openserp_images(query, openserp_url)
+            if not (
+                _skip_result(r.get("url", "")) or _skip_result(r.get("page_url", ""))
+            )
+        ]
         images += web_photos.find_photos(
             results,
             subject,
             grok_client,
-            list(existing or []) + images,
+            list(existing) + images,
             wanted - len(images),
+            budget=budget,
         )
         if len(images) >= wanted:
             break
+    if budget.spent() and len(images) < wanted:
+        _metric("photos_budget_spent")
     return images
+
+
+def _photo_check_budget() -> int:
+    from src.utils.config import load_config
+
+    cfg = load_config().get("openserp", {})
+    return _config_int(cfg, "max_photo_checks_per_entity", 10, hi=100)
+
+
+# the most name variants a place's photo queries use (each variant is 2 image queries)
+_PLACE_PHOTO_VARIANTS = 3
+
+
+def _room_for(data: Dict, max_images: int) -> int:
+    """How many more photos the record may take (``max_images`` on the record in all)."""
+    return max(0, max_images - len([i for i in data.get("images") or [] if i]))
+
+
+def _add_photos(data: Dict, photos: List[Dict[str, Any]]) -> bool:
+    if not photos:
+        return False
+    data["images"] = list(data.get("images") or []) + photos
+    _metric("items_added", len(photos))
+    return True
 
 
 # --- Academic/Media Search ---
@@ -2134,39 +2171,44 @@ def _verify_and_apply(
     max_images: int,
     max_web: int,
 ) -> bool:
-    """Verify OpenSERP results with Grok and apply to entity data."""
-    img_changed = _apply_verified_images(candidate, data, name, grok_client, max_images)
+    """Photos (``_apply_person_photos``: image search + Grok vision) and web pages (queued for
+    review) for one person."""
+    if find_queue.entity_origin("person", data, query=name) is None:
+        return False  # no ULID (find_queue logged it once): nothing is searched for it
+    img_changed = _apply_person_photos(candidate, data, name, grok_client, max_images)
     web_changed = _apply_verified_web(candidate, data, name, grok_client, max_web)
     return img_changed or web_changed
 
 
-def _apply_verified_images(
+def _apply_person_photos(
     candidate: Dict, data: Dict, name: str, grok_client: Any, max_images: int
 ) -> bool:
-    """Verify each image result (name-initial gate + Grok) and append up to max_images."""
-    existing_image_urls = {
-        i.get("url") for i in (data.get("images") or []) if isinstance(i, dict)
-    }
-    changed = False
-    for r in candidate.get("image_results", []):
-        url = r.get("url", "")
-        title = r.get("title", "")
-        if (
-            not url
-            or url in existing_image_urls
-            or not _name_initial_matches(name, title)
-        ):
-            continue
-        if _verify_result(title, f"Photo of {name} WWII", grok_client):
-            data.setdefault("images", []).append(
-                {"url": url, "title": title, "source": "openserp"}
-            )
-            existing_image_urls.add(url)
-            _metric("items_added")
-            changed = True
-            if len(data.get("images", [])) >= max_images:
-                break
-    return changed
+    """Portraits of the person from an OpenSERP image search, each confirmed by Grok vision, until
+    the record holds ``max_images``."""
+    from src.enrichment import web_photos
+
+    room = _room_for(data, max_images)
+    origin = find_queue.entity_origin("person", data, query=name)
+    if room == 0 or origin is None or not candidate.get("openserp_url"):
+        return False
+    facts = _person_query_terms(data)
+    subject = web_photos.Subject(
+        entity_key=_entity_key(origin),
+        text_context=f"Photo of {name} WWII",
+        subject=f"{name} ({facts})" if facts else name,
+        what_counts=f"a photograph of {name} himself or herself (a portrait, or a photo in "
+        "which this person is identifiable) - not someone else of the same name or unit",
+    )
+    queries = _render_queries("people", "portrait_images", name=name, facts=facts)
+    photos = find_entity_photos(
+        subject,
+        queries,
+        candidate["openserp_url"],
+        grok_client,
+        data.get("images") or [],
+        room,
+    )
+    return _add_photos(data, photos)
 
 
 def _apply_verified_web(
@@ -2269,24 +2311,18 @@ def _equipment_query_terms(data: Dict) -> str:
 
 
 def _collect_person_candidates(f, name: str, data: Dict, openserp_url: str) -> Dict:
-    """Build the OpenSERP candidate bundle for one person: a portrait-image search
-    (skipped if a Wikipedia portrait was already captured in Phase 2) + a web search
-    (awards/bio/academic), both augmented with People-JSON facts and filtered of
-    award/ibiblio domains."""
-    person_candidates: Dict = {"file": f, "name": name, "data": data}
+    """Build the OpenSERP candidate bundle for one person: a web search (awards/bio/academic),
+    augmented with People-JSON facts and filtered of award/ibiblio domains. Portraits are not
+    searched here (``_apply_person_photos``, lazily, while the record has room)."""
+    # photos are searched by _apply_person_photos (an image search, lazily, only while the record
+    # has room): the candidate carries the OpenSERP URL for it
+    person_candidates: Dict = {
+        "file": f,
+        "name": name,
+        "data": data,
+        "openserp_url": openserp_url,
+    }
     facts = _person_query_terms(data)
-
-    # Phase 2 already captures the Wikipedia portrait (people enrichment); do NOT re-fetch
-    # Wikipedia here (Phase 3 is OpenSERP-only). Only run the OpenSERP image search when the
-    # record has no image yet. Queries come from people.yaml (facts-sharpened), unifying this
-    # path with search_person_images rather than a hardcoded query string.
-    if not data.get("images"):
-        hits: List[Dict[str, str]] = []
-        for q in _render_queries("people", "portrait_images", name=name, facts=facts):
-            hits.extend(_search_openserp(q, openserp_url))
-        person_candidates["image_results"] = [
-            h for h in hits if not _skip_result(h.get("url", ""))
-        ]
 
     # Web query from people.yaml web_results (facts-sharpened); skip award-domain + ibiblio
     # hits (award sites are sourced authoritatively elsewhere).
@@ -2767,13 +2803,9 @@ def _prefetch_group_pages(
     origin: Any,
     group_name: str,
     seen: set,
-    textual: bool,
 ) -> None:
-    """One batched relevance request for a group query's textual results (the category loop's own
-    filter: not seen yet, and the group's name in the title). Images are verified one by one.
-    """
-    if not textual:
-        return
+    """One batched relevance request for a group query's results (the category loop's own
+    filter: not seen yet, and the group's name in the title)."""
 
     def keep(r: Dict[str, Any]) -> bool:
         return r["url"] not in seen and _group_name_matches(
@@ -2781,17 +2813,6 @@ def _prefetch_group_pages(
         )
 
     prefetch_relevance(results, context, grok_client, origin, keep=keep)
-
-
-def _group_capped(textual: bool) -> None:
-    """Only the paged (textual) categories decide the paging."""
-    if textual:
-        _page_note("capped")
-
-
-def _group_page_start(origin: Any, textual: bool) -> int:
-    """Textual group categories are paged (their pages are queued finds); images are not."""
-    return _page_start(origin) if textual else 0
 
 
 def _group_openserp_category(
@@ -2804,9 +2825,9 @@ def _group_openserp_category(
     *,
     origin: Any,
 ) -> List[Dict[str, Any]]:
-    """Run one people_groups.yaml query category (images|web_results|veterans_association).
-    Images are returned (verify-only). A textual page is queued for human review under ``origin``
-    and the pages newly queued are returned."""
+    """Run one people_groups.yaml page category (web_results|veterans_association): each page is
+    queued for human review under ``origin`` and the pages newly queued are returned. The
+    category is paged (``openserp_page``). Photos are ``_apply_group_photos``."""
     from src.utils.search_query_loader import render_search_queries
 
     queries = render_search_queries(
@@ -2815,16 +2836,9 @@ def _group_openserp_category(
     out: List[Dict[str, str]] = []
     seen: set = set()
     context = f"{group_name} ({nationality}) in WWII"
-    # Images have no article to summarize -> verify-only. Textual categories
-    # (web_results, veterans_association) are fetched + summarized with pos/neg URL caching.
-    textual = category != "images"
     for query in queries:
-        results = _search_openserp(
-            query, openserp_url, start=_group_page_start(origin, textual)
-        )
-        _prefetch_group_pages(
-            results, context, grok_client, origin, group_name, seen, textual
-        )
+        results = _search_openserp(query, openserp_url, start=_page_start(origin))
+        _prefetch_group_pages(results, context, grok_client, origin, group_name, seen)
         for r in results:
             url = r.get("url", "")
             title = r.get("title", "")
@@ -2833,26 +2847,19 @@ def _group_openserp_category(
             seen.add(
                 url
             )  # one look per URL per category, however many queries return it
-            if textual:
-                processed = find_page(
-                    url,
-                    title,
-                    r.get("description", ""),
-                    context,
-                    grok_client,
-                    origin,
-                    extra={"category": category},
-                )
-                if processed:
-                    out.append(processed)
-                    seen.add(url)
-            elif _verify_result(
-                title, context, grok_client, snippet=r.get("description", ""), url=url
-            ):
-                out.append({"url": url, "title": title, "source": "openserp"})
-                seen.add(url)
+            processed = find_page(
+                url,
+                title,
+                r.get("description", ""),
+                context,
+                grok_client,
+                origin,
+                extra={"category": category},
+            )
+            if processed:
+                out.append(processed)
             if len(out) >= max_results:
-                _group_capped(textual)
+                _page_note("capped")
                 return out
     return out
 
@@ -2947,6 +2954,40 @@ def enrich_one_group(
     return changed
 
 
+def _apply_group_photos(
+    data: Dict,
+    name: str,
+    nationality: str,
+    openserp_url: str,
+    grok_client: Any,
+    origin: Any,
+) -> bool:
+    """Photos of the unit (its people, insignia, equipment) from an OpenSERP image search, each
+    confirmed by Grok vision, until the record holds ``openserp.max_images_per_entity``.
+    """
+    from src.enrichment import web_photos
+    from src.utils.search_query_loader import render_search_queries
+
+    room = _room_for(data, _entity_caps()[0])
+    if room == 0 or origin is None:
+        return False
+    unit = f"{name} ({nationality})" if nationality else name
+    subject = web_photos.Subject(
+        entity_key=_entity_key(origin),
+        text_context=f"Photo of {unit} in WWII",
+        subject=f"{unit}, in World War II",
+        what_counts=f"a photograph of {name}: its soldiers, insignia, equipment or actions, "
+        "identifiable as this unit - not another unit or a modern reenactment",
+    )
+    queries = render_search_queries(
+        "people_groups", "images", name=name, nationality=nationality
+    )
+    photos = find_entity_photos(
+        subject, queries, openserp_url, grok_client, data.get("images") or [], room
+    )
+    return _add_photos(data, photos)
+
+
 def _apply_group_categories(
     data: Dict,
     name: str,
@@ -2954,17 +2995,17 @@ def _apply_group_categories(
     openserp_url: str,
     grok_client: Any,
 ) -> bool:
-    """Run each people_groups query category (images/web_results/veterans_association). Images are
-    appended (dedup against existing). Pages (web_results, veterans associations) are queued for
-    human review and written to no record. Returns True if anything was added or queued.
+    """Find a people_group's photos (``_apply_group_photos``: vision-confirmed, appended) and
+    queue its pages (web_results, veterans associations) for human review - pages are written
+    to no record. Returns True if anything was added or queued.
     """
-    changed = False
     origin = find_queue.entity_origin("people_group", data, query=name)
-    for category, field in (
-        ("images", "images"),
-        ("web_results", None),
-        ("veterans_association", None),
-    ):
+    if origin is None:
+        return False  # no ULID (find_queue logged it once): nothing is searched for it
+    changed = _apply_group_photos(
+        data, name, nationality, openserp_url, grok_client, origin
+    )
+    for category in ("web_results", "veterans_association"):
         results = _group_openserp_category(
             name,
             nationality,
@@ -2974,17 +3015,7 @@ def _apply_group_categories(
             max_results=3,
             origin=origin,
         )
-        if not results:
-            continue
-        if field is None:  # queued pages: held in the queue, not written here
-            changed = True
-            continue
-        existing = data.get(field) or []
-        existing_urls = {r.get("url") for r in existing if isinstance(r, dict)}
-        added = [r for r in results if r.get("url") not in existing_urls]
-        if added:
-            data[field] = existing + added
-            _metric("items_added", len(added))
+        if results:  # queued pages: held in the queue, not written here
             changed = True
     return changed
 
@@ -3183,22 +3214,6 @@ def _place_results(variants: list, category: str, openserp_url: str, start: int 
             yield _search_openserp(q, openserp_url, start=start)
 
 
-def _new_place_photo(
-    r: Dict[str, Any], existing: set, primary: str, grok_client: Any
-) -> bool:
-    """A result not on the record yet that Grok confirms is a photo of the place."""
-    url = r.get("url", "")
-    if not url or url in existing:
-        return False
-    return _verify_result(
-        r.get("title", ""),
-        f"Photo of {primary} (WWII place)",
-        grok_client,
-        snippet=r.get("description", ""),
-        url=url,
-    )
-
-
 def _enrich_place_images(
     data: Dict,
     variants: list,
@@ -3207,26 +3222,32 @@ def _enrich_place_images(
     grok_client: Any,
     max_images: int,
 ) -> bool:
-    """Images (verify-only): search each name variant, Grok-verify each hit, append new ones,
-    until the record holds ``max_images`` (a place that has them is not image-searched).
-    """
-    images = data.get("images") or []
-    existing_img_urls = {i.get("url") for i in images if isinstance(i, dict)}
-    if len(images) >= max_images:
+    """Photos of the place (WWII-scoped image queries per name variant) from an OpenSERP image
+    search, each confirmed by Grok vision, until the record holds ``max_images`` (a place that has
+    them is not image-searched; the remaining variants' queries are not sent)."""
+    from src.enrichment import web_photos
+    from src.utils.search_query_loader import render_search_queries
+
+    room = _room_for(data, max_images)
+    origin = find_queue.entity_origin("place", data, query=primary)
+    if room == 0 or origin is None:
         return False
-    changed = False
-    for results in _place_results(variants, "images", openserp_url):
-        for r in results:
-            url = r.get("url", "")
-            if _new_place_photo(r, existing_img_urls, primary, grok_client):
-                data.setdefault("images", []).append(
-                    {"url": url, "title": r.get("title", ""), "source": "openserp"}
-                )
-                existing_img_urls.add(url)
-                changed = True
-                if len(data["images"]) >= max_images:
-                    return changed
-    return changed
+    subject = web_photos.Subject(
+        entity_key=_entity_key(origin),
+        text_context=f"Photo of {primary} (WWII place)",
+        subject=f"{primary}, in World War II",
+        what_counts=f"a photograph of {primary} itself (its streets, buildings, landscape or "
+        "the fighting there) - not another place of the same name",
+    )
+    queries = (  # the first few names: the budget bounds the cost, these the queries
+        q
+        for v in variants[:_PLACE_PHOTO_VARIANTS]
+        for q in render_search_queries("places", "images", name=v)
+    )
+    photos = find_entity_photos(
+        subject, queries, openserp_url, grok_client, data.get("images") or [], room
+    )
+    return _add_photos(data, photos)
 
 
 def _enrich_place_sources(
