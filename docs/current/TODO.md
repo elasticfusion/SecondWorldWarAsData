@@ -825,6 +825,30 @@ finder, verdicts keyed on (URL, entity), checksum re-check of approved URLs.
 **Test:** restore, run: the queue holds finds (not search calls); no duplicates on a second run; a
 rejected item stays rejected; an approved item starts Phase 0.
 
+#### Step: known-malicious links (owner 2026-11-24)
+
+- **DONE (2026-11-24) - links to known-malicious sites are found and eliminated (owner: "use the free version; we'll
+  convert when the commercial components are in place").** `src/utils/link_safety.py`, Google Safe Browsing Lookup
+  API v4 (free, NON-COMMERCIAL only). Checked: OpenSERP results before any Grok request (`_drop_flagged`, one
+  batched request per query; `results_flagged`), every pinned GET (`url_hygiene._pinned_get_once`: `safe_get`,
+  `url_fetch` and each redirect hop, image downloads, every `vet_url_for_fetch` caller; `LinkFlagged`), every find
+  before a human sees it (`find_queue`), every link/image source in a kept page (`find_pages.keep` ->
+  `strip_flagged_links`: links read as a browser does - tab/CR/LF and edge control characters dropped, backslash
+  and `https:host` forms, relative and `//host` resolved; a web link that cannot be read safely (userinfo, a host
+  `clean_url` refuses) is removed, never kept unchecked; at most 5,000 per page; href/src
+  removed, text kept; `page_links_removed` on the find). The URL asked about keeps its query (Safe Browsing lists
+  exact URLs); the alert defangs it (`hxxps://host[.]tld`). After an unanswered request the API is left alone 60 s. A
+  flagged URL is recorded (`link_flagged_v1`, 10 years: threats, when, where seen, "Advisory provided by Google")
+  and alerted once (Slack + email); `scripts/allow_link.py` clears a false positive (an allow record wins over later
+  flags). Clean answers kept 30 days (`link_safety.clean_days`); no answer = not blocked, not cached, counted
+  warning. Key: secret `<env>-wwii-pipeline/safe-browsing-api-key` (ECS loads it into `SAFE_BROWSING_API_KEY`);
+  without it the check is off and says so once per process.
+  **OPEN:** create the key (owner); before the paid tiers launch switch `_lookup` to Google Web Risk (commercial;
+  first 100,000 lookups/month free); `safe_get` asks about the `clean_url` form (identity query only), so a
+  listing that depends on other query parameters is missed there; links inside uploaded
+  documents' own text (Phase 0 Markdown) are not cleaned (fetched pages are, before Phase 0 sees them); pages kept
+  before a link was flagged keep it (re-checked only when fetched again).
+
 #### Step: OpenSERP group (PHASE3_MAP §3)
 
 - **DONE (Group 3 step B, 2026-11-21) - queue routing: `openserp_enrichment.find_page` verifies, fetches and

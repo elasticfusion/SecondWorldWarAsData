@@ -172,6 +172,7 @@ _METRIC_KEYS = (
     "photos_ruled_out",  # a URL decided before (a "no", unusable, retracted): not fetched again
     "photos_retracted",  # kept photos taken back off a record (web_photos.retract)
     "photos_infected_dropped",  # photos whose file ClamAV deleted, removed from their record
+    "results_flagged",  # search results dropped as possibly malicious (link_safety)
     "photos_infected_write_blocked",  # records the schema guard kept from losing an infected photo
     "photos_budget_spent",  # entities whose photo-check budget ran out before enough photos
     # an entity whose queries only errored (OpenSERP unavailable): left unsearched
@@ -425,10 +426,25 @@ def _openserp_reachable(openserp_url: str) -> bool:
         return False
 
 
+def _drop_flagged(results: List[Dict]) -> List[Dict]:
+    """Remove results whose URL (or, for an image, its page) is known to be malicious
+    (``link_safety``: one batched check per query, before any Grok request or fetch)."""
+    from src.utils import link_safety
+
+    urls = [u for r in results for u in (r.get("url"), r.get("page_url")) if u]
+    bad = link_safety.flagged(urls, seen_in="openserp result")
+    if not bad:
+        return results
+    kept = [r for r in results if not (r.get("url") in bad or r.get("page_url") in bad)]
+    _metric("results_flagged", len(results) - len(kept))
+    return kept
+
+
 def _drop_excluded_domains(results: List[Dict]) -> List[Dict]:
     """Remove results whose host is on the persistent site-level denylist (operator/Grok exclusions).
     Fail-safe: if the registry is unavailable, return results unchanged (never block a search).
     """
+    results = _drop_flagged(results)  # before the registry: it must not depend on it
     try:
         from src.utils.url_registry import is_domain_excluded
     except Exception:  # noqa: BLE001
@@ -1662,6 +1678,7 @@ def _find_params(processed: Dict[str, Any], extra: Optional[Dict[str, Any]]) -> 
         "retrieved_at",
         "page_kept",
         *find_pages.PAGE_FIELDS,
+        *find_pages.OPTIONAL_PAGE_FIELDS,
     )
     return {**{k: processed[k] for k in keep if k in processed}, **(extra or {})}
 

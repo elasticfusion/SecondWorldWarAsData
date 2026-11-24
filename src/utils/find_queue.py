@@ -152,9 +152,13 @@ def _refusal(provider: str, verdict: str, url: str) -> Optional[str]:
         return None
     if verdict != RELEVANT:
         return None  # nobody is shown a link Grok has not called relevant
+    from src.utils import link_safety
     from src.utils.url_hygiene import clean_url
 
-    return clean_url(url) or None
+    clean = clean_url(url) or None
+    if clean and link_safety.is_flagged(clean, seen_in=f"find ({provider})"):
+        return None  # nobody is shown a possibly malicious link (alerted when flagged)
+    return clean
 
 
 def _clean_value(v: Any, depth: int = 0) -> Any:

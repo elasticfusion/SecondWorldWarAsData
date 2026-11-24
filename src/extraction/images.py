@@ -49,21 +49,34 @@ def fetch_image_bytes(url: str) -> Tuple[Optional[bytes], Optional[str]]:
 TRANSIENT_FETCH_REASONS = frozenset({"fetch_timeout", "bad_status_transient"})
 
 
+def _vetted(url: str) -> "tuple[str, str]":
+    """(the clean URL, "") when the image may be downloaded, else ("", why): not a safe URL, or
+    known to be malicious (``link_safety``: the URL as given, its query included; alerted when
+    flagged)."""
+    from src.utils import link_safety
+    from src.utils.url_hygiene import clean_url
+
+    cleaned = clean_url(url)
+    if not cleaned:
+        logger.debug("image fetch blocked (scheme/host): %s", url)
+        return "", "ssrf_blocked"
+    if link_safety.is_flagged(url, seen_in="image download"):
+        return "", "flagged"
+    return cleaned, ""
+
+
 def fetch_image_bytes_with_reason(url: str):
     """Like ``fetch_image_bytes`` but ALSO returns a specific ``reason`` string on failure so the
     caller's OBSERV line can distinguish a real SSRF block from a benign not-an-image rejection
     (the single ``ssrf_or_invalid`` reason previously conflated: ssrf_blocked / not_an_image /
     fetch_error / too_large). Returns (bytes, ext, "ok") on success, (None, None, <reason>) on
     failure."""
-    from src.utils.url_hygiene import clean_url
-
     figure = _book_figure(url)
     if figure is not None:
         return figure
-    cleaned = clean_url(url)
-    if not cleaned:
-        logger.debug("image fetch blocked (scheme/host): %s", url)
-        return None, None, "ssrf_blocked"
+    cleaned, blocked = _vetted(url)
+    if blocked:
+        return None, None, blocked
     resp, resp_reason = _safe_image_response_with_reason(cleaned)
     if resp is None:
         return None, None, resp_reason

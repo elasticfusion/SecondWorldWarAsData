@@ -860,6 +860,22 @@ def _load_secrets():
             logger.info("Loaded NARA API key from Secrets Manager")
         except Exception as e:  # noqa: BLE001 - NARA key optional; never block the run
             _alert_nara_key_missing(nara_secret, e)
+    # Google Safe Browsing key (link_safety: known-malicious links). Optional: without it the
+    # check is off and link_safety says so once per process
+    if not os.environ.get("SAFE_BROWSING_API_KEY"):
+        env = os.environ.get("ENV_NAME", "dev")
+        sb_secret = os.environ.get(
+            "SAFE_BROWSING_SECRET_ID", f"{env}-wwii-pipeline/safe-browsing-api-key"
+        )
+        try:
+            sm = sm or boto3.client("secretsmanager", region_name=REGION)
+            resp = sm.get_secret_value(SecretId=sb_secret)
+            os.environ["SAFE_BROWSING_API_KEY"] = resp["SecretString"].strip()
+            logger.info("Loaded Safe Browsing API key from Secrets Manager")
+        except Exception as e:  # noqa: BLE001 - optional; link_safety reports it is off
+            logger.info(
+                "Safe Browsing API key not loaded (%s): %s", sb_secret, type(e).__name__
+            )
     # xAI Management API key: reads the live credit balance (task 1.1c), Grok phases only. It
     # can buy credit and manage keys, so it is held in grok_balance, NOT os.environ: no phase
     # subprocess inherits it. Its absence is alerted by _preflight_balance_check (which stops

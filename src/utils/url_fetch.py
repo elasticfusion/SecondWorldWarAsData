@@ -174,6 +174,13 @@ def fetch(url: str, timeout: int = _DEFAULT_TIMEOUT) -> FetchResult:
     clean = clean_url(url)
     if not clean:
         return FetchResult(url=url or "", source=SKIP, detail="non-clean url")
+    from src.utils import link_safety
+
+    # before the registry and any Wayback fallback; the URL as given (its query included)
+    if link_safety.is_flagged(url, seen_in="url_fetch"):  # alerted when first flagged
+        return FetchResult(
+            url=clean, source=SKIP, detail="flagged as possibly malicious"
+        )
 
     action, rec = url_registry.decide(clean)
     if action == url_registry.SKIP_KNOWN:

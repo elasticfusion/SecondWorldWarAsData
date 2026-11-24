@@ -389,6 +389,11 @@ def _pinned_get_once(cleaned_url, host, vetted_ips, *, timeout, headers):
     import requests
     from requests.adapters import HTTPAdapter
 
+    from src.utils import link_safety
+
+    # every pinned GET - each redirect hop included - is refused for a known-malicious URL
+    if link_safety.is_flagged(cleaned_url, seen_in=f"fetch ({host[:60]})"):
+        raise link_safety.LinkFlagged("possibly malicious (Google Safe Browsing)")
     scheme = urlparse(cleaned_url).scheme
     parts = urlparse(cleaned_url)
     port = parts.port

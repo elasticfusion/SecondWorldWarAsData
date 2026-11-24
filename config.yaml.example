@@ -326,3 +326,10 @@ logging:
 find_recheck:
   interval_days: 180                   # days between checks of one approved find's page
   max_per_run: 50                      # most finds checked per Phase 3 run (oldest check first)
+
+# Known-malicious links (src/utils/link_safety): Google Safe Browsing v4, free, NON-COMMERCIAL use
+# only - switch to Google Web Risk before the paid tiers launch. On once the secret
+# <env>-wwii-pipeline/safe-browsing-api-key exists.
+link_safety:
+  enabled: true                        # false: no checks (and no "no key" warning)
+  clean_days: 30                       # how long a URL found clean is not asked about again

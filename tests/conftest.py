@@ -237,6 +237,18 @@ def _private_fetch_events(monkeypatch, tmp_path_factory):
     monkeypatch.setattr(fp, "_LOCAL_SEEN", {})
 
 
+@pytest.fixture(autouse=True)
+def _no_link_safety(monkeypatch):
+    """src/utils/link_safety asks Google Safe Browsing about URLs: off in every test (never a live
+    request, even with a real key in the environment), and its breaker reset. Its own tests turn
+    it on against a fake API."""
+    from src.utils import link_safety
+
+    monkeypatch.delenv(link_safety.KEY_ENV, raising=False)
+    monkeypatch.setattr(link_safety, "_config", lambda: {"enabled": False})
+    monkeypatch.setitem(link_safety._breaker, "until", 0.0)
+
+
 @pytest.fixture
 def queued_finds():
     """A reader of the review-queue events this test queued (fetch_provenance local store)."""

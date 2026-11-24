@@ -355,6 +355,7 @@ def test_the_run_monitor_alerts_hourly_per_task(monkeypatch):
 def test_the_management_key_is_loaded_for_grok_phases_only(monkeypatch, script, loaded):
     monkeypatch.setenv("GROK_API_KEY", "set")
     monkeypatch.setenv("NARA_API_KEY", "set")
+    monkeypatch.setenv("SAFE_BROWSING_API_KEY", "set")
     monkeypatch.setenv("ENV_NAME", "dev")
     monkeypatch.setattr(ee, "_current_phase_script", script)
     sm = mock.Mock()

@@ -390,6 +390,22 @@ Read in `src/enrichment/openserp_enrichment.py` (`load_config().get("openserp")`
 
 ---
 
+## Link safety and find re-check
+
+```yaml
+link_safety:
+  enabled: true        # Google Safe Browsing v4 (free, non-commercial); on once the key secret exists
+  clean_days: 30       # how long a URL found clean is not asked about again
+find_recheck:
+  interval_days: 180   # days between checks of one approved find's page
+  max_per_run: 50      # most finds re-checked per Phase 3 run
+```
+
+Read by `src/utils/link_safety.py` and `src/enrichment/find_recheck.py`. The Safe Browsing key is the secret
+`<env>-wwii-pipeline/safe-browsing-api-key` (loaded by `ecs_entrypoint._load_secrets`).
+
+---
+
 ## AWS Configuration
 
 Settings for AWS deployment mode. Set `enabled: true` to use S3/DynamoDB instead of local filesystem.

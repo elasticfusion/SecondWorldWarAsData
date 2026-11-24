@@ -58,6 +58,8 @@ PAGE_FIELDS = (
     "page_archived_url",
     "page_wayback_capture_timestamp",
 )
+# set only when it applies: links to possibly malicious sites taken out (link_safety)
+OPTIONAL_PAGE_FIELDS = ("page_links_removed",)
 
 
 def content_sha256(data: bytes) -> str:
@@ -175,6 +177,9 @@ def keep(
     safe = _stripped(url, html)
     if safe is None:
         return {"page_kept": False}
+    from src.utils.link_safety import strip_flagged_links
+
+    safe, links_removed = strip_flagged_links(safe, page_url=url)
     body = safe.encode("utf-8")
     url_path = _url_path(url)
     if not body or not url_path:
@@ -188,6 +193,10 @@ def keep(
         )
         return {"page_kept": False}
     fields = _page_fields(body, provenance or {})
+    if (
+        links_removed
+    ):  # provenance: the kept page is not byte-for-byte what the site served
+        fields["page_links_removed"] = links_removed
     sha = fields["page_sha256"]
     store = _storage()
     page_path = _page_path(sha)
@@ -237,6 +246,7 @@ def lookup(url: str) -> Dict[str, Any]:
         if url_path and store.exists(url_path):
             pointer = store.read_json(url_path)
             fields = {k: pointer.get(k) for k in PAGE_FIELDS}
+            fields.update({k: pointer[k] for k in OPTIONAL_PAGE_FIELDS if k in pointer})
             if _page_path(str(fields.get("page_sha256") or "")):
                 return {**fields, "page_kept": True}
     except Exception as e:  # noqa: BLE001 - no page: the caller says so

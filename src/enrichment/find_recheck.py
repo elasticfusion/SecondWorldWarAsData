@@ -275,6 +275,7 @@ def _queue_changed(
         ],  # no new Grok request: the approved verdict
         **{k: v for k, v in params.items() if k == "category"},
         **{k: page.get(k) for k in find_pages.PAGE_FIELDS},
+        **{k: page[k] for k in find_pages.OPTIONAL_PAGE_FIELDS if k in page},
         "page_kept": True,
     }
     status = find_queue.enqueue_find(
