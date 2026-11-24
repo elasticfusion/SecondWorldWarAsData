@@ -12,6 +12,11 @@ into that HIGH's group; (2) Phase 3 processing order next: groups 4-14 follow th
 step consumes the previous one's output; (3) priority last, inside a group. Entries are moved verbatim;
 each keeps its original heading ("####") so its context travels with it.
 
+**UI work is deferred (owner 2026-11-24):** every UI element (review UI, clearing a photo decision,
+`needs_review` tooling, showing kept pages) waits until the end, once all UI requirements are known. Code
+work proceeds with the HIGH items in this order: Group 8 map files, Group 5 group names, Group 11 outage
+marking, Group 9 ibiblio volumes, Group 6 place parents, Group 12 provenance path, Group 0 image rebuild.
+
 **Test cycle for every group:** `python3 scripts/phase_snapshot.py restore --name phase2-2026-11-17`;
 deploy the group's branch (owner approval); run Phase 3 for `USA-E-XChannel` (owner approval for Grok
 spend); run `scripts/validate_phase3.py` and `scripts/validate_provenance.py`; compare with the Group 0
@@ -969,22 +974,33 @@ What exists (verified in code; no OpenSERP keys are in DynamoDB yet, Phase 3 has
 - OpenSERP search responses themselves are not cached; a re-searched entity sends every query again.
 
 Findings:
-- **HIGH - a page approved for one entity is attached to other entities without being checked.** Both
+- **DONE (Group 3 step I, 2026-11-23; closed 2026-11-24) - HIGH - a page approved for one entity is attached to other entities without being checked.**
+  Fixed by the (URL, entity) relevance key below (`test_one_entitys_no_is_not_another_entitys_answer`); a cached
+  summary is reused only after this entity's own relevance verdict. Original finding: Both
   verdicts are keyed on the URL alone, but relevance is per (URL, entity): the registry's own design says
   so (`url_registry.py` header, "the relevance verdict is keyed on (url, entity) so one entity's verdict
   is never reused for another"). A cached summary short-circuits before `_verify_result` (`OE:827-836`), so
   any later entity whose search returns the same URL gets it. People and groups have only a title/name
   check first (`_name_initial_matches`, `_group_name_matches`); places (`OE:2117`) and source sections
   (`OE:1180`) have none.
-- **MED - a page rejected for one entity is skipped for every entity for 90 days.** Same cause: `REJECT`
+- **DONE (Group 3 step I; closed 2026-11-24) - MED - a page rejected for one entity is skipped for every entity for 90 days.**
+  A "no" is now per entity (same key); only an unfetchable page (`REJECT`, page state) is URL-wide. Original: Same cause: `REJECT`
   is URL-global, so a page irrelevant to unit A is never considered for unit B. Fix for both: key the
   relevance verdict on (URL, entity ULID); keep fetch state and the page summary URL-global (reuse the
   page, re-ask only relevance).
-- **MED - the two caches disagree.** The `openserp_verify` key truncates the URL to 60 characters
+- **DONE (Group 3 step I; closed 2026-11-24) - MED - the two caches disagree.** `_verify_key` keys on the full
+  URL (a JSON list, no truncation; `test_urls_sharing_a_long_prefix_do_not_share_an_answer`) and both the
+  relevance verdict and the URL verdict keep for `_URL_FETCH_RETENTION_DAYS` (90;
+  `test_a_verdict_is_kept_for_the_page_retention_window`). Original finding: The `openserp_verify` key truncates the URL to 60 characters
   (`OE:434`, `OE:492`: context[:50] | title[:50] | url[:60]), so different URLs with a common prefix share an
   answer; and it uses `search_cache` TTLs (30 days, `src/utils/search_cache.py:17`) while the URL verdict
   uses 90. Use the full URL hash and one retention constant.
-- **MED - the 90-day re-check of a good URL changes nothing.** When the summary expires the page is
+- **DONE (closed 2026-11-24) - MED - the 90-day re-check of a good URL changes nothing.** Finds are no longer
+  written onto entity records (they wait in the review queue), so there is no record entry to go stale: a URL
+  already queued for an entity costs no fetch and no Grok request
+  (`test_a_page_already_in_the_queue_costs_no_fetch_and_no_grok_request`); a cache hit carries the page's real
+  fetch time (`_from_cached_summary`, step H); and approved pages are re-checked by checksum with
+  `last_checked_at`, `status` and history (`find_recheck`, owner decision 2026-11-24). Original finding: When the summary expires the page is
   fetched and summarized again (a paid Grok request), but every caller skips a URL already on the record
   (`existing_award_urls`, `existing_src_urls`, `seen`), so the new summary is discarded. The record keeps
   the old summary, gets no last-checked date, and a page that has since died stays linked. A cache hit
@@ -1899,7 +1915,14 @@ Code at `main` 17fe5296. Map vision (`prompts/map_vision.yaml`) returns a `depic
 (`openserp_maps.py:607`). It flattens `depicted` to prose and writes `contentrepository/map-<id>/` (a
 meta.yaml + content.md pair) so the map re-enters Phase 1 -> 2 -> 3 as a new "book".
 
-- **HIGH - the map-as-source files never reach S3, so all extracted map data is lost.** The write goes to
+- **DONE (2026-11-24) - HIGH - the map-as-source files never reach S3, so all extracted map data is lost.**
+  Maps are no longer recycled: what Grok vision says a map shows is stored on its Map record
+  (`src/extraction/map_depicted`: `depicted` + `depicted_provenance` - verdict, kind, model, RequestID, checked_at,
+  image_url, found_in; maps schema 2.27), which the Phase 3 sync uploads with the other entity records. In-doc maps:
+  `map_link_source.read_in_doc_maps`, run after `persist_map_entities` (so the record exists); OpenSERP maps: on the
+  record `openserp_maps._process_search_result` writes. A map already read (either verdict) is never sent to vision
+  again; no answer records nothing (asked again next run). `map_source_adapter` (the recycle) and the in-doc map
+  dedup claims are removed. Original finding: The write goes to
   `/app/contentrepository` -> `WORKDIR/content` on the container. Neither the periodic sync (`EP:401`,
   `output/` and `artifacts/` only) nor the Phase 3 final sync (`EP:3470`, entity dirs + artifacts) uploads
   that directory, so the files vanish when the task exits and no Phase 1 run is ever triggered. The Grok
@@ -1911,7 +1934,13 @@ meta.yaml + content.md pair) so the map re-enters Phase 1 -> 2 -> 3 as a new "bo
   as a duplicate. Fix with the upload: claim after the source is durably in S3, or release the claim on
   failure.
 - **HIGH *refactor* - DECISION (owner 2026-11-17): write map vision results straight into the entity
-  JSON with the existing entity writers; stop recycling maps as prose sources.** Today `depicted` is
+  JSON with the existing entity writers; stop recycling maps as prose sources.** PART DONE 2026-11-24: recycling
+  stopped and `depicted` + provenance stored on the Map record (entry above). OPEN: link the units, places and
+  dates it shows to their entity records (below), behind `map_depicted.is_legible` (the M7 gate, 0.35). OPEN:
+  OpenSERP maps record no RequestID (`_verify_map_relevance` does not return it: return it and record it); a map
+  routed from Phase 2 image vision (`map_vision_checked_at`) is asked a second, separate vision question for
+  `depicted` (reuse one answer); the config keys `recycle_in_doc_maps` / `max_recycled_per_doc` keep their old
+  names (they now gate the vision read). Today `depicted` is
   turned into sentences ("Units depicted on the map: ...") and Phase 2 re-extracts them with Grok: a
   second paid request per map, and the unit-at-place-at-time link is lost. Nothing is stored on the Map
   record, and nothing links the derived entities back to the `MapID` (no Phase 1/2 code reads the

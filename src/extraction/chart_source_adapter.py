@@ -1,6 +1,6 @@
 """Chart-as-source-document adapter (M6, multimodal epic).
 
-Analogous to ``map_source_adapter`` (docs/current/design/MAP_AS_SOURCE_DOCUMENT.md): a vision-read
+Modelled on the retired map-as-source adapter (docs/current/design/MAP_AS_SOURCE_DOCUMENT.md): a vision-read
 organization / command-structure chart (e.g. the naval command chart at fn23) becomes a SOURCE that
 flows through the normal pipeline — Phase-1 parse -> Phase-2 event -> people_groups + command
 relationships via the shared ``event_mentions`` spine — with NO chart-specific pipeline logic.
@@ -27,7 +27,7 @@ from src.utils.observe import observe_warn  # noqa: E402
 from src.grok_client import BatchModeCollecting
 
 # source_type marker so downstream consumers + validation distinguish CHART-DERIVED (vision-inferred
-# command structure) events from prose-stated ones. Mirrors map_source_adapter.MAP_SOURCE_TYPE.
+# command structure) events from prose-stated ones.
 CHART_SOURCE_TYPE = "chart"
 
 _MAX_DESC_CHARS = 8000

@@ -49,5 +49,35 @@ MAPS_OUTPUT_SCHEMA = {
         # an already-classified image to Grok — the don't-resubmit guarantee).
         "is_map": {"type": ["boolean", "null"]},
         "map_vision_checked_at": make_nullable("string"),
+        # What the map shows (Grok map vision, src/extraction/map_depicted; added 2.27): the vision
+        # block, or null when the image was judged not a relevant map, and where the answer came from.
+        "depicted": {
+            "type": ["object", "null"],
+            "additionalProperties": False,
+            "properties": {
+                "units": {"type": "array", "items": {"type": "string"}},
+                "places": {"type": "array", "items": {"type": "string"}},
+                "movements": {"type": "array", "items": {"type": "string"}},
+                "front_line_or_sector": {"type": "string"},
+                "date_or_window": {"type": "string"},
+                "operation": {"type": "string"},
+                "description": {"type": "string"},
+                "legibility_confidence": {"type": "number", "minimum": 0, "maximum": 1},
+            },
+        },
+        "depicted_provenance": {
+            "type": ["object", "null"],
+            "additionalProperties": False,
+            "required": ["verdict", "kind", "checked_at"],
+            "properties": {
+                "verdict": {"enum": ["depicted", "not_relevant"]},
+                "kind": {"type": "string"},
+                "model": make_nullable("string"),
+                "request_id": make_nullable("string"),
+                "checked_at": {"type": "string"},
+                "image_url": make_nullable("string"),
+                "found_in": make_nullable("string"),
+            },
+        },
     },
 }

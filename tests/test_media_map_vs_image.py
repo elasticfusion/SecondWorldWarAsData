@@ -8,6 +8,7 @@ Phase 0 source_url resolution, and the Phase 2/3 entity-dir sync list.
 
 import io
 import json
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -423,10 +424,10 @@ def test_document_media_steps_run_without_openserp(monkeypatch, tmp_path):
     assert ran == ["in_doc_map_links", "image_map_vision"]
 
 
-def test_in_doc_maps_persist_always_but_recycle_only_when_enabled(
+def test_in_doc_maps_persist_always_but_are_read_only_when_enabled(
     monkeypatch, tmp_path
 ):
-    """Map ENTITIES always persist; the paid relevance-vision recycle keeps its cost gate."""
+    """Map ENTITIES always persist; the paid vision read keeps its cost gate."""
     import phase3_enrich_data as p3
     import src.extraction.map_link_source as mls
 
@@ -438,14 +439,14 @@ def test_in_doc_maps_persist_always_but_recycle_only_when_enabled(
         mls, "persist_map_entities", lambda *a, **k: calls.append("persist")
     )
     monkeypatch.setattr(
-        mls, "ingest_in_doc_map_links", lambda *a, **k: calls.append("recycle") or {}
+        mls, "read_in_doc_maps", lambda *a, **k: calls.append("read") or {}
     )
     # external_maps.enabled (OpenSERP web search) must NOT switch the recycle on by itself.
     p3._ingest_in_doc_map_links(tmp_path, None, {"enabled": True})
     assert calls == ["persist"]
     calls.clear()
     p3._ingest_in_doc_map_links(tmp_path, None, {"recycle_in_doc_maps": True})
-    assert calls == ["recycle", "persist"]
+    assert calls == ["persist", "read"]
 
 
 def test_all_converters_share_one_meta_builder():
@@ -548,7 +549,7 @@ def test_in_doc_maps_persist_even_when_follow_links_disabled(monkeypatch, tmp_pa
         mls, "persist_map_entities", lambda *a, **k: calls.append("persist")
     )
     monkeypatch.setattr(
-        mls, "ingest_in_doc_map_links", lambda *a, **k: calls.append("recycle") or {}
+        mls, "read_in_doc_maps", lambda *a, **k: calls.append("read") or {}
     )
     cfg = {"recycle_in_doc_maps": True, "follow_in_doc_links": False}
     p3._ingest_in_doc_map_links(tmp_path, None, cfg)
@@ -581,16 +582,20 @@ def test_uploader_controlled_source_host_cannot_widen_the_fetch_allowlist(
         "_source_url": "https://evil.example/x.html",
         "maps": [{"url": "https://evil.example/maps/a.jpg", "map_id": "A"}],
     }
-    out = mls.ingest_in_doc_map_links([doc], object())
-    assert not fetched and out["skipped"] == 1 and out["fetched"] == 0
+    out = mls.read_in_doc_maps([doc], object(), Path("/nonexistent"))
+    assert not fetched and out["skipped"] == 1 and out["read"] == 0
 
 
-def test_recycle_cap_limits_paid_calls_and_alerts(monkeypatch):
+def test_the_read_cap_limits_paid_calls_and_alerts(monkeypatch):
     import src.extraction.map_link_source as mls
 
     alerts, asked = [], []
     monkeypatch.setattr(mls, "observe_warn", lambda *a, **k: alerts.append((a, k)))
     monkeypatch.setattr(mls, "_ssrf_safe_image_url", lambda u: u)
+    monkeypatch.setattr(
+        mls, "_map_file", lambda *a: Path("/m.json")
+    )  # each has a record
+    monkeypatch.setattr(mls, "_read_record", lambda f: {})  # none read yet
     monkeypatch.setattr(
         mls, "_vision_depicted", lambda *a, **k: asked.append(a[2]) or None
     )
@@ -598,8 +603,8 @@ def test_recycle_cap_limits_paid_calls_and_alerts(monkeypatch):
         {"url": f"https://www.ibiblio.org/hyperwar/x/maps/m{i}.jpg", "map_id": str(i)}
         for i in range(10)
     ]
-    out = mls.ingest_in_doc_map_links(
-        [{"book": "B", "maps": maps}], object(), max_per_doc=3
+    out = mls.read_in_doc_maps(
+        [{"book": "B", "maps": maps}], object(), Path("/nonexistent"), max_per_doc=3
     )
     assert len(asked) == 3 and out["links"] == 3 and out["skipped"] == 3 + 7
     assert alerts and alerts[0][0][1] == "cap_hit" and alerts[0][1]["note"]

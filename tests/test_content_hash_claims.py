@@ -108,22 +108,6 @@ def test_an_intra_corpus_document_whose_upload_fails_is_queued_next_run(
     assert ic._upload_batch_item(b"<html>vol</html>", "VOL1") is True
 
 
-@pytest.mark.parametrize("stored", [True, False])
-def test_an_in_doc_map_keeps_its_claim_only_when_stored(table, monkeypatch, stored):
-    from src.extraction import map_link_source as mls
-
-    url = "https://www.ibiblio.org/hyperwar/maps/m1.jpg"
-    monkeypatch.setattr(mls, "_ssrf_safe_image_url", lambda u: u)
-    monkeypatch.setattr(mls, "_host_allowed", lambda u, h: True)
-    monkeypatch.setattr(mls, "_vision_depicted", lambda *a: {"units": ["1st Army"]})
-    monkeypatch.setattr(mls, "_recycle_as_source", lambda *a: stored)
-    summary = {k: 0 for k in ("skipped", "fetched", "verified", "deduped", "recycled")}
-    mls._ingest_one_link(
-        {"url": url, "map_id": "m1"}, None, {}, ("ibiblio.org",), 5, summary
-    )
-    assert bool(_claimed(table, mls._map_digest(url))) is stored
-
-
 def test_a_claim_that_errored_is_never_released(monkeypatch):
     """Fail-open: nothing was claimed, so a failed write must not delete a claim an earlier
     run holds for the same (deterministic) source id."""
@@ -135,15 +119,3 @@ def test_a_claim_that_errored_is_never_released(monkeypatch):
             assert new  # proceed: dedup never blocks a real submit
             raise RuntimeError("S3 down")
     t.delete_item.assert_not_called()
-
-
-def test_a_map_whose_claim_errored_does_not_release(monkeypatch):
-    from src.extraction import map_link_source as mls
-
-    released = []
-    monkeypatch.setattr(mls, "_recycle_as_source", lambda *a: False)
-    monkeypatch.setattr(fr, "release_content_hash", lambda d, s: released.append(d))
-    mls._store_claimed_map("m1", "t", "https://x/m.jpg", {}, won=False)
-    assert released == []
-    mls._store_claimed_map("m1", "t", "https://x/m.jpg", {}, won=True)
-    assert len(released) == 1

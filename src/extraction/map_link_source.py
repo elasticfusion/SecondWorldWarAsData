@@ -1,23 +1,24 @@
-"""In-document map-link ingestion (multimodal gap M1).
+"""In-document map links (multimodal gap M1): read each map with Grok vision, keep the answer.
 
-HyperWar chapters link author-curated, high-quality maps directly from the narrative, e.g.
-``[Map VIII](maps/USA-E-XChannel-VIII.jpg)``. The parser now resolves those links to absolute URLs
-into ``parsed.json -> maps[]`` (see parser.extract_maps base_url). This module FOLLOWS each such
-link and feeds it into the EXISTING map-as-source machinery:
+HyperWar chapters link author-curated maps from the narrative, e.g.
+``[Map VIII](maps/USA-E-XChannel-VIII.jpg)``. The parser resolves those links into
+``parsed.json -> maps[]``; ``persist_map_entities`` makes each one a Map record (URL-keyed, with the
+chapters that cite it). ``read_in_doc_maps`` then asks Grok vision what each map shows and stores the
+answer ON that Map record (``map_depicted``: ``depicted`` + ``depicted_provenance``):
 
-    link -> SSRF-safe fetch gate (+ same-host/ibiblio allowlist) -> Grok vision verify + `depicted`
-         -> global content-hash dedup -> recycle as a map-as-source (contentrepository/ source pair)
+    link -> SSRF-safe image gate (+ ibiblio / configured host allowlist) -> Map record already read?
+         -> Grok vision (map_vision prompt) -> depicted + provenance on the Map record
 
-It reuses the map_vision prompt (search_external_maps._build_verification_prompt), the vision call
-(grok_client.extract_json_with_image), the content-hash dedup (fetch_review._claim_content_hash),
-and the map_source_adapter render/recycle — only the DISCOVERY front-end (an in-document link vs an
-OpenSERP web search) is new (map spec §3.1 + the OpenSERP map path). Pure of pipeline side effects
-beyond writing the source pair; fail-safe (never raises into the phase).
+A map already read is never sent to vision again. Maps are no longer recycled as prose sources under
+``contentrepository/map-<id>/`` (owner decision 2026-11-17: on ECS those files were never uploaded,
+so every answer was lost, and Phase 2 paid to read the prose again). Fail-safe: never raises into the
+phase.
 """
 
 from __future__ import annotations
 
 import logging
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
@@ -32,8 +33,9 @@ from src.utils.batch_pending import Pending
 # same-host-as-the-document is also allowed. Everything else is skipped (defense-in-depth beyond the
 # SSRF IP gate — an in-doc link should point at the document's own asset host, not arbitrary sites).
 _ALLOWED_MAP_HOSTS = ("ibiblio.org",)
-# Per-document ceiling on recycled map links (cost: one vision call + one new source each).
+# Per-document ceiling on maps read (cost: one Grok vision call each).
 DEFAULT_MAX_LINKS_PER_DOC = 50
+VISION_KIND = "in_doc_map_vision"
 
 
 def _ssrf_safe_image_url(url: str):
@@ -67,9 +69,9 @@ def _vision_depicted(
     context: Dict[str, str],
     image_timeout: int,
 ) -> Optional[Dict[str, Any]]:
-    """Run the map_vision verify+extract on a direct image URL. Returns the `depicted` dict for an
-    approved map, or None (rejected / error / not a map). Reuses the shared verification prompt.
-    """
+    """Run the map_vision verify+extract on a direct image URL. Returns Grok's answer (a dict) or
+    None when there is no usable answer (an error: nothing is recorded, so it is asked again).
+    Reuses the shared verification prompt."""
     from src.extraction.search_external_maps import _build_verification_prompt
 
     prompt = _build_verification_prompt(
@@ -84,107 +86,125 @@ def _vision_depicted(
         result = grok_client.extract_json_with_image(
             prompt=prompt,
             image_url=img_url,
-            cache_type="in_doc_map_vision",
+            cache_type=VISION_KIND,
             image_timeout=image_timeout,
         )
     except BatchModeCollecting:
         raise  # queued for the batch, not an answer: the caller must not stamp or cache a verdict
     except Exception as e:  # noqa: BLE001 - a vision error must not crash the ingest
-        logger.debug("in-doc map vision errored for %s: %s", img_url[:120], e)
-        return None
-    if not isinstance(result, dict) or not result.get("is_relevant"):
-        return None
-    depicted = result.get("depicted")
-    return depicted if isinstance(depicted, dict) and depicted else None
-
-
-def _recycle_as_source(
-    map_id: str, map_title: str, img_url: str, depicted: Dict[str, Any]
-) -> bool:
-    """Write the vision `depicted` as a map-as-source pair via the SHARED adapter recycle (the same
-    single writer used by the OpenSERP map path — reuse, one write location). Fail-safe.
-    """
-    try:
-        from src.extraction.map_source_adapter import recycle_map_as_source
-
-        return recycle_map_as_source(
-            map_id=map_id, map_title=map_title, source_url=img_url, depicted=depicted
+        observe_warn(
+            "map_link",
+            "vision_error",
+            url=img_url[:120],
+            err=type(e).__name__,
+            note="no answer: nothing is recorded, so the map is asked about again next run",
         )
-    except Exception as e:  # noqa: BLE001
-        observe_warn("map_link", "error", map=map_id, reason=str(e)[:120])
-        return False
+        return None
+    return result if isinstance(result, dict) else None
 
 
-def ingest_in_doc_map_links(
+def read_in_doc_maps(
     parsed_docs: List[Dict[str, Any]],
     grok_client: Any,
+    maps_dir: Path,
     *,
     image_timeout: int = 30,
     allowed_hosts: "tuple[str, ...]" = (),
     max_per_doc: int = DEFAULT_MAX_LINKS_PER_DOC,
 ) -> Dict[str, int]:
-    """For each parsed doc's ``maps[]`` (in-document map links), follow the link and recycle an
-    approved map as a source. Returns a summary dict. Fail-safe; emits OBSERV map_link.* lines.
+    """For each parsed doc's ``maps[]`` (in-document map links) whose Map record exists
+    (``persist_map_entities`` runs first) and has not been read, ask Grok vision what it shows and
+    store the answer on the record. Returns a summary dict. Fail-safe; emits OBSERV map_link.*.
 
-    LOOP GUARD: a map-derived source (book=map-*) is skipped so an ingested map can't re-trigger this.
+    LOOP GUARD: a document of a map-derived source (book=map-*, made before maps stopped being
+    recycled) is skipped.
     """
     pending = Pending()
-    summary = {
-        "links": 0,
-        "fetched": 0,
-        "verified": 0,
-        "recycled": 0,
-        "skipped": 0,
-        "deduped": 0,
-    }
+    summary = {"links": 0, "read": 0, "depicted": 0, "already": 0, "skipped": 0}
+    url_index = _load_url_index(maps_dir / "index.json")
     for doc in parsed_docs:
         if not isinstance(doc, dict):
             continue
         book = str(doc.get("book", ""))
         if book.startswith("map-"):
-            continue  # loop guard: do not follow a map-source's own map links
+            continue  # loop guard
         maps = [m for m in (doc.get("maps") or []) if isinstance(m, dict)]
+        maps = _capped(maps, max_per_doc, book, summary)
         context = _doc_context(doc)
-        if len(maps) > max_per_doc:
-            # Cost cap: each link is a paid vision call + a new source document. Never silent.
-            observe_warn(
-                "map_link",
-                "cap_hit",
-                note=(
-                    f"this document has {len(maps)} map links; only the first {max_per_doc} are "
-                    "recycled (each costs a Grok vision call and a new source). Raise "
-                    "external_maps.max_recycled_per_doc if that many maps are expected, else "
-                    "check the document for junk links"
-                ),
-                book=book,
-                links=len(maps),
-                cap=max_per_doc,
-            )
-            summary["skipped"] += len(maps) - max_per_doc
-            maps = maps[:max_per_doc]
         with book_scope(book):  # the vision answer must echo THIS document's BookID
             for m in maps:
                 summary["links"] += 1
                 pending.call(  # a queued vision request: every link queues its own, raise once at the end
-                    _ingest_one_link,
+                    _read_one_link,
                     m,
-                    grok_client,
-                    context,
-                    tuple(allowed_hosts),
-                    image_timeout,
+                    _MapRead(grok_client, context, tuple(allowed_hosts), image_timeout),
+                    _map_file(maps_dir, url_index, m),
+                    book,
                     summary,
                 )
     logger.info(
-        "OBSERV map_link.summary links=%d fetched=%d verified=%d recycled=%d deduped=%d skipped=%d",
+        "OBSERV map_link.summary links=%d read=%d depicted=%d already=%d skipped=%d",
         summary["links"],
-        summary["fetched"],
-        summary["verified"],
-        summary["recycled"],
-        summary["deduped"],
+        summary["read"],
+        summary["depicted"],
+        summary["already"],
         summary["skipped"],
     )
     pending.raise_if_queued()  # batch rounds: the step is pending, the next pass has the answers
     return summary
+
+
+@dataclass(frozen=True)
+class _MapRead:
+    """What reading a map needs: the client, the document's context, the allowed hosts, timeout."""
+
+    grok_client: Any
+    context: Dict[str, str]
+    allowed_hosts: "tuple[str, ...]"
+    image_timeout: int
+
+
+def _capped(
+    maps: List[Dict[str, Any]], max_per_doc: int, book: str, summary: Dict[str, int]
+) -> List[Dict[str, Any]]:
+    if len(maps) <= max_per_doc:
+        return maps
+    # Cost cap: each map read is a paid vision call. Never silent.
+    observe_warn(
+        "map_link",
+        "cap_hit",
+        note=(
+            f"this document has {len(maps)} map links; only the first {max_per_doc} are read "
+            "(each costs a Grok vision call). Raise external_maps.max_recycled_per_doc if that "
+            "many maps are expected, else check the document for junk links"
+        ),
+        book=book,
+        links=len(maps),
+        cap=max_per_doc,
+    )
+    summary["skipped"] += len(maps) - max_per_doc
+    return maps[:max_per_doc]
+
+
+def _map_file(
+    maps_dir: Path, url_index: Dict[str, str], m: Dict[str, Any]
+) -> Optional[Path]:
+    """The Map record of an in-document map (by its URL), or None when there is none."""
+    name = (
+        url_index.get(str(m.get("url", "") or "").strip())
+        if isinstance(url_index, dict)
+        else None
+    )
+    if (
+        not isinstance(name, str)
+        or not name.endswith(".json")
+        or name == "index.json"
+        or "/" in name
+        or "\\" in name
+    ):
+        return None
+    f = maps_dir / name
+    return f if f.is_file() else None
 
 
 def _doc_context(doc: Dict[str, Any]) -> Dict[str, str]:
@@ -199,106 +219,93 @@ def _doc_context(doc: Dict[str, Any]) -> Dict[str, str]:
     }
 
 
-def _ingest_one_link(
+def _read_one_link(
     m: Dict[str, Any],
-    grok_client: Any,
-    context: Dict[str, str],
-    allowed_hosts: "tuple[str, ...]",
-    image_timeout: int,
+    how: _MapRead,
+    map_file: Optional[Path],
+    book: str,
     summary: Dict[str, int],
 ) -> None:
-    """Fetch+verify+recycle one in-document map link (mutates ``summary``). Fail-safe."""
+    """Read one in-document map with vision and store the answer on its Map record (mutates
+    ``summary``). Fail-safe."""
+    from src.extraction import map_depicted
+
     url = str(m.get("url", ""))
-    map_id = str(m.get("map_id", "") or "").strip() or "maplink"
-    map_title = str(m.get("description", "") or f"Map {map_id}")
+    map_title = str(m.get("description", "") or f"Map {m.get('map_id') or ''}".strip())
     try:
         cleaned = _ssrf_safe_image_url(url)
-        if not cleaned or not _host_allowed(cleaned, allowed_hosts):
+        if not cleaned or not _host_allowed(cleaned, how.allowed_hosts):
             logger.info("OBSERV map_link.skipped url=%s reason=ssrf_or_host", url[:120])
             summary["skipped"] += 1
             return
-        summary["fetched"] += 1
-        depicted = _vision_depicted(
-            grok_client, cleaned, map_title, context, image_timeout
-        )
-        if not depicted:
-            logger.info(
-                "OBSERV map_link.skipped url=%s reason=not_relevant_map", cleaned[:120]
+        if map_file is None:
+            observe_warn(
+                "map_link",
+                "no_map_record",
+                url=cleaned[:120],
+                note="the map has no Map record (persist_map_entities did not make one), so "
+                "it is not read; see the maps.persist_summary line",
             )
             summary["skipped"] += 1
             return
-        summary["verified"] += 1
-        _claim_and_store(map_id, map_title, cleaned, depicted, summary)
+        if map_depicted.was_read(_read_record(map_file)):
+            summary["already"] += 1  # never sent to vision twice
+            return
+        answer = _vision_depicted(
+            how.grok_client, cleaned, map_title, how.context, how.image_timeout
+        )
+        if answer is None:
+            summary["skipped"] += 1
+            return
+        _store_answer(map_file, answer, cleaned, book, how.grok_client, summary)
     except BatchModeCollecting:
         raise  # queued for the batch: not an answer, not a failure
     except Exception as e:  # noqa: BLE001 - one bad link must not crash the ingest
-        observe_warn("map_link", "error", map=map_id, reason=str(e)[:120])
+        observe_warn("map_link", "error", url=url[:120], reason=str(e)[:120])
         summary["skipped"] += 1
 
 
-def _claim_and_store(
-    map_id: str,
-    map_title: str,
-    cleaned: str,
-    depicted: Dict[str, Any],
+def _read_record(map_file: Path) -> Any:
+    import json as _json
+
+    try:
+        return _json.loads(map_file.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+
+
+def _store_answer(
+    map_file: Path,
+    answer: Dict[str, Any],
+    image_url: str,
+    book: str,
+    grok_client: Any,
     summary: Dict[str, int],
 ) -> None:
-    """Global exact-content dedup (the fetch_review registry, keyed by the map URL), then recycle
-    the verified map as a source. Mutates ``summary``."""
-    from src.enrichment.fetch_review import CLAIM_DUPLICATE, CLAIM_WON
+    from src.extraction import map_depicted
 
-    claim = _claim_map(cleaned)
-    if claim == CLAIM_DUPLICATE:
-        logger.info("OBSERV map_link.deduped url=%s", cleaned[:120])
-        summary["deduped"] += 1
+    verdict = map_depicted.verdict_for(answer)
+    depicted = answer.get("depicted")
+    prov = map_depicted.provenance(
+        verdict,
+        kind=VISION_KIND,
+        model=map_depicted.model_for(grok_client, VISION_KIND),
+        request_id=map_depicted.answer_request_id(answer),
+        image_url=image_url,
+        found_in=book,
+    )
+    if not map_depicted.store(map_file, depicted, prov):
+        summary["skipped"] += 1  # map_depicted said why
         return
-    if _store_claimed_map(map_id, map_title, cleaned, depicted, claim == CLAIM_WON):
-        logger.info(
-            "OBSERV map_link.recycled map=%s url=%s -> contentrepository/ "
-            "(re-enters pipeline for event derivation)",
-            map_id,
-            cleaned[:120],
-        )
-        summary["recycled"] += 1
-    else:
-        summary["skipped"] += 1
-
-
-def _store_claimed_map(
-    map_id: str, title: str, url: str, depicted: Dict[str, Any], won: bool = True
-) -> bool:
-    """Recycle a claimed map; when it is not written (False or a raise) give back the dedup claim
-    this attempt won, so a later run retries it instead of skipping it as a duplicate (task
-    1.6). A claim that errored (fail-open) was not taken here and is never released."""
-    stored = False
-    try:
-        stored = _recycle_as_source(map_id, title, url, depicted)
-    finally:
-        if not stored and won:
-            from src.enrichment.fetch_review import release_content_hash
-
-            digest = _map_digest(url)
-            release_content_hash(digest, f"maplink-{digest[:16]}")
-    return stored
-
-
-def _claim_map(url: str) -> str:
-    """Claim an in-doc map by URL in the global content-hash registry: fetch_review CLAIM_WON,
-    CLAIM_DUPLICATE or CLAIM_ERROR (fail-OPEN: proceed without a claim)."""
-    from src.enrichment.fetch_review import CLAIM_ERROR, _claim_content_hash
-
-    try:
-        digest = _map_digest(url)
-        return _claim_content_hash(digest, f"maplink-{digest[:16]}")
-    except Exception:  # noqa: BLE001
-        return CLAIM_ERROR
-
-
-def _map_digest(url: str) -> str:
-    """The content-hash registry digest for an in-doc map (keyed by its URL)."""
-    import hashlib
-
-    return "sha256:" + hashlib.sha256(url.encode("utf-8")).hexdigest()
+    summary["read"] += 1
+    if verdict == map_depicted.DEPICTED:
+        summary["depicted"] += 1
+    logger.info(
+        "OBSERV map_link.read map=%s verdict=%s url=%s",
+        map_file.stem,
+        verdict,
+        image_url[:120],
+    )
 
 
 def persist_map_entities(
@@ -311,7 +318,7 @@ def persist_map_entities(
     """Step 5a — persist a Map ENTITY per in-document map, keyed by URL, ACCUMULATING each chapter's
     reference footprint (roman-numeral campaign foldouts are shared across chapters/books). Reuses
     map_common.find_or_create_map_by_url (URL find-or-create + append) + base_map_record. Distinct
-    from ingest_in_doc_map_links (which recycles a map as a SOURCE document): this writes the Map
+    from read_in_doc_maps (which stores what a map shows on this record): this writes the Map
     entity record + its cross-chapter references[]. Fail-safe; emits OBSERV maps.persist_summary.
     The url_index persists in maps_dir/index.json so accumulation survives across docs AND runs.
     """
@@ -326,7 +333,7 @@ def persist_map_entities(
             continue
         book = str(doc.get("book", ""))
         if book.startswith("map-"):
-            continue  # loop guard (mirror ingest_in_doc_map_links)
+            continue  # loop guard (mirror read_in_doc_maps)
         for m in doc.get("maps") or []:
             if isinstance(m, dict):
                 pending.call(  # a queued vision request must not skip the index save below

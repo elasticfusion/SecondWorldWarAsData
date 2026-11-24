@@ -256,8 +256,8 @@ def _run_document_media_steps(args, config, grok_client, run_step) -> int:
     produced = 0
     # M1: IN-DOCUMENT map links (author-curated maps linked from the narrative, e.g.
     # [Map VIII](maps/*.jpg)) -> Map entities ALWAYS (Phase 2 skips these as images, so not
-    # persisting them would lose them); the paid map-as-source recycle stays behind
-    # external_maps.recycle_in_doc_maps (+ follow_in_doc_links). Fail-safe.
+    # persisting them would lose them); the paid vision read of what each shows (stored on the Map
+    # record) stays behind external_maps.recycle_in_doc_maps. Fail-safe.
     produced += run_step(
         "in_doc_map_links",
         lambda: _ingest_in_doc_map_links(out, grok_client, ext_config),
@@ -641,34 +641,21 @@ def _recycle_in_doc_maps(ext_config) -> bool:
 
 
 def _ingest_in_doc_map_links(out, grok_client, ext_config) -> int:
-    """Persist parsed docs' maps[] (in-document map links) as Map entities — ALWAYS — and, only when
-    external_maps.recycle_in_doc_maps, also recycle each as a map-as-source (a paid Grok place-relevance vision
-    call + re-ingestion per map; unchanged cost gate). Returns the count recycled. Fail-safe.
+    """Persist parsed docs' maps[] (in-document map links) as Map entities - ALWAYS - and, only when
+    external_maps.recycle_in_doc_maps, read each map not read yet with Grok vision and store what it
+    shows on its Map record (src/extraction/map_link_source.read_in_doc_maps; one paid vision call
+    per map, never repeated). Returns the number of maps read. Fail-safe.
     """
-    from src.extraction.map_link_source import ingest_in_doc_map_links
+    from src.extraction.map_link_source import persist_map_entities, read_in_doc_maps
 
     docs = _load_parsed_docs(out)
     if not docs:
         return 0
     summary: dict = {}
-    recycle = _recycle_in_doc_maps(ext_config)
-    pending = Pending()  # batch rounds: the persist below still queues its own requests
-    if recycle:
-        summary = (
-            pending.call(
-                ingest_in_doc_map_links,
-                docs,
-                grok_client,
-                image_timeout=ext_config.get("image_download_timeout", 30),
-                allowed_hosts=tuple(ext_config.get("allowed_hosts") or ()),
-                max_per_doc=int(ext_config.get("max_recycled_per_doc", 50)),
-            )
-            or {}
-        )
-    # Step 5a: persist Map ENTITIES (URL-keyed, cross-chapter footprint accumulation) alongside the
-    # map-as-source recycle above. Reuses find_or_create_map_by_url (dedup + append across chapters).
-    from src.extraction.map_link_source import persist_map_entities
-
+    read = _recycle_in_doc_maps(ext_config)
+    pending = Pending()  # batch rounds: both calls queue their own requests
+    # Step 5a FIRST: the Map records (URL-keyed, cross-chapter footprint), so vision has a record
+    # to store its answer on
     pending.call(
         persist_map_entities,
         docs,
@@ -677,18 +664,32 @@ def _ingest_in_doc_map_links(out, grok_client, ext_config) -> int:
         output_root=out,
         grok_client=grok_client,
     )
+    if read:
+        summary = (
+            pending.call(
+                read_in_doc_maps,
+                docs,
+                grok_client,
+                out / "maps",
+                image_timeout=ext_config.get("image_download_timeout", 30),
+                allowed_hosts=tuple(ext_config.get("allowed_hosts") or ()),
+                max_per_doc=int(ext_config.get("max_recycled_per_doc", 50)),
+            )
+            or {}
+        )
     logging.getLogger("root").info(
-        "OBSERV phase3.step name=in_doc_map_links docs=%d recycle=%s links=%d recycled=%d "
-        "deduped=%d skipped=%d status=ok",
+        "OBSERV phase3.step name=in_doc_map_links docs=%d vision=%s links=%d read=%d "
+        "depicted=%d already=%d skipped=%d status=ok",
         len(docs),
-        ("on" if recycle else "off(external_maps.recycle_in_doc_maps=false)"),
+        ("on" if read else "off(external_maps.recycle_in_doc_maps=false)"),
         summary.get("links", 0),
-        summary.get("recycled", 0),
-        summary.get("deduped", 0),
+        summary.get("read", 0),
+        summary.get("depicted", 0),
+        summary.get("already", 0),
         summary.get("skipped", 0),
     )
     pending.raise_if_queued()  # batch rounds: the step is pending, the next pass has the answers
-    return int(summary.get("recycled", 0))
+    return int(summary.get("read", 0))
 
 
 def _recheck_finds(config) -> int:

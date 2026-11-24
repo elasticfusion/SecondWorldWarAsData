@@ -1,5 +1,12 @@
 # Map as a source document — spec
 
+> **SUPERSEDED (2026-11-24, owner decision 2026-11-17).** Maps are no longer recycled as source
+> documents: on ECS the `contentrepository/map-<id>/` files were never uploaded (all answers lost),
+> and Phase 2 paid to read the prose again. What vision says a map shows is now stored on the Map
+> record (`src/extraction/map_depicted`, maps schema 2.27); `map_source_adapter.py` is removed. Linking
+> the units, places and dates to entity records is the open next step (docs/current/TODO.md, Group 8).
+> The text below is kept as history.
+
 **Status:** IMPLEMENTED (checked 2026-11-17), with deviations from the spec text below. Files: `src/extraction/map_source_adapter.py`
 (`recycle_map_as_source` is the single writer; `render_map_markdown`, `render_map_meta_yaml`, `build_map_parsed_source`, `build_map_source_metadata`),
 callers `openserp_maps._recycle_map_as_source` (OpenSERP path, only when `external_maps.enabled`) and `map_link_source._recycle_as_source`

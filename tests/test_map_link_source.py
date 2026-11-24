@@ -1,7 +1,9 @@
-"""M1: follow in-document map links -> map-as-source."""
+"""M1: in-document map links -> what each map shows, kept on its Map record (map_depicted)."""
 
 import json
 from pathlib import Path
+
+import pytest
 
 import src.extraction.map_link_source as MLS
 
@@ -48,157 +50,179 @@ def test_host_allowed():
     assert MLS._host_allowed("https://notcdn.example/m.jpg", ("cdn.example",)) is False
 
 
-# --- ingest: fetch -> vision -> recycle ---
-def test_ingest_recycles_relevant_map(tmp_path, monkeypatch):
-    monkeypatch.chdir(tmp_path)
-    monkeypatch.setattr(MLS, "_ssrf_safe_image_url", lambda u: u)  # pass SSRF gate
-    # vision approves + returns depicted
+# --- read: vision -> what the map shows, on the Map record ---
+_URL = "https://www.ibiblio.org/x/maps/VIII.jpg"
+_DEPICTED = {
+    "units": ["101st Airborne"],
+    "places": ["Ste. Mère-Église"],
+    "description": "Airborne drop zones map.",
+    "legibility_confidence": 0.9,
+}
+
+
+class _GC:
+    def __init__(self, answer=None):
+        self.asked = 0
+        self.answer = answer or {
+            "is_relevant": True,
+            "depicted": dict(_DEPICTED),
+            "RequestID": "abcdef0123456789",
+        }
+
+    def extract_json_with_image(self, **k):
+        self.asked += 1
+        return self.answer
+
+    def _get_model(self, kind):
+        return "grok-vision-test"
+
+
+def _docs(url=_URL, book="XChannel"):
+    return [
+        {
+            "book": book,
+            "chapter_title": "The Sixth of June",
+            "maps": [{"url": url, "map_id": "VIII", "description": "Map VIII"}],
+        }
+    ]
+
+
+@pytest.fixture
+def maps_dir(tmp_path, monkeypatch):
+    """A Map record for _URL (as persist_map_entities makes it), the SSRF gate passed."""
+    import json
+
+    monkeypatch.setattr(MLS, "_ssrf_safe_image_url", lambda u: u)
     import src.extraction.search_external_maps as SEM
 
     monkeypatch.setattr(SEM, "_build_verification_prompt", lambda *a, **k: "PROMPT")
-
-    class _GC:
-        def extract_json_with_image(self, **k):
-            return {
-                "is_relevant": True,
-                "is_government_map": True,
-                "depicted": {
-                    "units": ["101st Airborne"],
-                    "places": ["Ste. Mère-Église"],
-                    "description": "Airborne drop zones map.",
-                },
-            }
-
-    monkeypatch.setattr(MLS, "_claim_map", lambda url: "won")
-    docs = [
-        {
-            "book": "XChannel",
-            "chapter_title": "The Sixth of June",
-            "maps": [
-                {
-                    "url": "https://www.ibiblio.org/x/maps/VIII.jpg",
-                    "map_id": "VIII",
-                    "description": "Map VIII",
-                }
-            ],
-        }
-    ]
-    out = MLS.ingest_in_doc_map_links(docs, _GC())
-    assert out["recycled"] == 1 and out["verified"] == 1
-    base = tmp_path / "contentrepository" / "map-VIII"
-    assert (base / "map-VIII-meta.yaml").is_file()
-    assert "101st Airborne" in (base / "map-VIIIa-content.md").read_text()
+    d = tmp_path / "maps"
+    d.mkdir()
+    rec = {
+        "MapID": "01HX7YZABCDEFGHJKMNPQRSTVW",
+        "map_title": "Map VIII",
+        "source_url": _URL,
+    }
+    (d / "m.json").write_text(json.dumps(rec))
+    (d / "index.json").write_text(json.dumps({_URL: "m.json"}))
+    return d
 
 
-def test_ingest_skips_off_host(tmp_path, monkeypatch):
-    monkeypatch.chdir(tmp_path)
-    monkeypatch.setattr(MLS, "_ssrf_safe_image_url", lambda u: u)
-    docs = [
-        {
-            "book": "X",
-            "maps": [
-                {
-                    "url": "https://evil.example/m.jpg",
-                    "map_id": "Z",
-                    "description": "Map Z",
-                }
-            ],
-        }
-    ]
-    out = MLS.ingest_in_doc_map_links(docs, object())
-    assert out["recycled"] == 0 and out["skipped"] == 1
+def _record(d):
+    import json
+
+    return json.loads((d / "m.json").read_text())
 
 
-def test_ingest_loop_guard_skips_map_source_docs(tmp_path, monkeypatch):
-    monkeypatch.chdir(tmp_path)
-    called = {"n": 0}
-    monkeypatch.setattr(
-        MLS,
-        "_ingest_one_link",
-        lambda *a, **k: called.__setitem__("n", called["n"] + 1),
+def test_what_a_map_shows_is_kept_on_its_record_with_provenance(maps_dir):
+    out = MLS.read_in_doc_maps(_docs(), _GC(), maps_dir)
+    assert out["read"] == 1 and out["depicted"] == 1
+    rec = _record(maps_dir)
+    assert rec["depicted"]["units"] == ["101st Airborne"]
+    prov = rec["depicted_provenance"]
+    assert prov["verdict"] == "depicted" and prov["kind"] == "in_doc_map_vision"
+    assert (
+        prov["request_id"] == "abcdef0123456789" and prov["model"] == "grok-vision-test"
     )
-    # a map-derived doc (book=map-*) must be skipped entirely
-    docs = [
-        {
-            "book": "map-01ABC",
-            "maps": [{"url": "https://ibiblio.org/m.jpg", "map_id": "A"}],
-        }
-    ]
-    out = MLS.ingest_in_doc_map_links(docs, object())
-    assert out["links"] == 0 and called["n"] == 0
+    assert prov["image_url"] == _URL and prov["found_in"] == "XChannel"
+    from src.schemas.maps_output import MAPS_OUTPUT_SCHEMA
+    import jsonschema
+
+    jsonschema.validate(rec, MAPS_OUTPUT_SCHEMA)
 
 
-def test_ingest_deduped(tmp_path, monkeypatch):
+def test_nothing_is_written_to_contentrepository(maps_dir, tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
-    monkeypatch.setattr(MLS, "_ssrf_safe_image_url", lambda u: u)
-    import src.extraction.search_external_maps as SEM
+    MLS.read_in_doc_maps(_docs(), _GC(), maps_dir)
+    assert not (tmp_path / "contentrepository").exists()
 
-    monkeypatch.setattr(SEM, "_build_verification_prompt", lambda *a, **k: "P")
 
-    class _GC:
+def test_a_map_already_read_is_never_sent_to_vision_again(maps_dir):
+    gc = _GC()
+    MLS.read_in_doc_maps(_docs(), gc, maps_dir)
+    out = MLS.read_in_doc_maps(_docs(), gc, maps_dir)
+    assert gc.asked == 1 and out["already"] == 1
+
+
+def test_a_not_relevant_answer_is_recorded_and_not_asked_again(maps_dir):
+    gc = _GC({"is_relevant": False})
+    MLS.read_in_doc_maps(_docs(), gc, maps_dir)
+    rec = _record(maps_dir)
+    assert (
+        rec["depicted"] is None
+        and rec["depicted_provenance"]["verdict"] == "not_relevant"
+    )
+    MLS.read_in_doc_maps(_docs(), gc, maps_dir)
+    assert gc.asked == 1
+
+
+def test_no_answer_records_nothing(maps_dir, monkeypatch):
+    class _Broken(_GC):
         def extract_json_with_image(self, **k):
-            return {"is_relevant": True, "depicted": {"description": "x"}}
+            self.asked += 1
+            raise RuntimeError("down")
 
-    monkeypatch.setattr(MLS, "_claim_map", lambda url: "duplicate")  # already seen
-    docs = [
-        {
-            "book": "X",
-            "maps": [
-                {
-                    "url": "https://ibiblio.org/m.jpg",
-                    "map_id": "A",
-                    "description": "Map A",
-                }
-            ],
-        }
-    ]
-    out = MLS.ingest_in_doc_map_links(docs, _GC())
-    assert out["deduped"] == 1 and out["recycled"] == 0
+    gc = _Broken()
+    out = MLS.read_in_doc_maps(_docs(), gc, maps_dir)
+    assert out["read"] == 0 and "depicted_provenance" not in _record(maps_dir)
+    MLS.read_in_doc_maps(_docs(), gc, maps_dir)
+    assert gc.asked == 2  # asked again next run
 
 
-def test_ingest_failsafe_on_bad_doc():
-    # non-dict docs / missing fields must not raise
-    out = MLS.ingest_in_doc_map_links([None, {"maps": "notalist"}, {}], object())  # type: ignore[list-item]
-    assert out["recycled"] == 0
+def test_a_map_without_a_record_is_not_read(maps_dir, caplog):
+    import logging
+
+    gc = _GC()
+    with caplog.at_level(logging.WARNING):
+        out = MLS.read_in_doc_maps(
+            _docs("https://www.ibiblio.org/x/maps/IX.jpg"), gc, maps_dir
+        )
+    assert gc.asked == 0 and out["skipped"] == 1 and "no_map_record" in caplog.text
 
 
-def test_ingest_trusts_only_configured_hosts_not_the_documents_own(
-    tmp_path, monkeypatch
-):
-    """A map link on a non-ibiblio host is fetched ONLY if the host is in the operator's
-    external_maps.allowed_hosts; the document's own (uploader-supplied) _source_url host is NOT
-    trusted."""
-    monkeypatch.chdir(tmp_path)
-    monkeypatch.setattr(MLS, "_ssrf_safe_image_url", lambda u: u)
-    import src.extraction.search_external_maps as SEM
+def test_read_skips_off_host(maps_dir):
+    gc = _GC()
+    out = MLS.read_in_doc_maps(_docs("https://evil.example/m.jpg"), gc, maps_dir)
+    assert out["skipped"] == 1 and gc.asked == 0
 
-    monkeypatch.setattr(SEM, "_build_verification_prompt", lambda *a, **k: "P")
-    monkeypatch.setattr(MLS, "_claim_map", lambda url: "won")
 
-    class _GC:
-        def extract_json_with_image(self, **k):
-            return {"is_relevant": True, "depicted": {"description": "map"}}
+def test_read_loop_guard_skips_map_source_docs(maps_dir):
+    gc = _GC()
+    out = MLS.read_in_doc_maps(_docs(book="map-01ABC"), gc, maps_dir)
+    assert out["links"] == 0 and gc.asked == 0
 
-    def _docs():
-        return [
-            {
-                "book": "SomeBook",
-                "_source_url": "https://archive.example/books/x/ch8.html",
-                "maps": [
-                    {
-                        "url": "https://archive.example/books/x/maps/m.jpg",
-                        "map_id": "M",
-                        "description": "Map M",
-                    }
-                ],
-            }
+
+def test_read_failsafe_on_bad_doc(tmp_path):
+    out = MLS.read_in_doc_maps([None, {"maps": "notalist"}, {}], object(), tmp_path)  # type: ignore[list-item]
+    assert out["read"] == 0
+
+
+def test_read_trusts_only_configured_hosts_not_the_documents_own(maps_dir):
+    import json
+
+    url = "https://archive.example/books/x/maps/m.jpg"
+    (maps_dir / "index.json").write_text(json.dumps({url: "m.json"}))
+    docs = _docs(url)
+    docs[0]["_source_url"] = "https://archive.example/books/x/ch8.html"
+    assert MLS.read_in_doc_maps(docs, _GC(), maps_dir)["read"] == 0
+    assert (
+        MLS.read_in_doc_maps(docs, _GC(), maps_dir, allowed_hosts=("archive.example",))[
+            "read"
         ]
-
-    assert MLS.ingest_in_doc_map_links(_docs(), _GC())["recycled"] == 0
-    out = MLS.ingest_in_doc_map_links(
-        _docs(), _GC(), allowed_hosts=("archive.example",)
+        == 1
     )
-    assert out["recycled"] == 1
+
+
+def test_a_blocked_record_write_is_said_and_retried(maps_dir, monkeypatch, caplog):
+    import logging
+
+    monkeypatch.setattr(
+        "src.utils.file_lock.write_json_with_lock", lambda *a, **k: False
+    )
+    gc = _GC()
+    with caplog.at_level(logging.ERROR):
+        out = MLS.read_in_doc_maps(_docs(), gc, maps_dir)
+    assert out["read"] == 0 and "OBSERV map_depicted.write_blocked" in caplog.text
 
 
 def test_the_url_index_is_saved_after_each_document(tmp_path, monkeypatch):

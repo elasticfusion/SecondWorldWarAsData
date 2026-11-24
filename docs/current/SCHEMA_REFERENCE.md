@@ -1,7 +1,7 @@
 # JSON Schema Reference
 
 **Last Updated:** 2026-11-20
-**Schema Version:** per-entity (see `ENTITY_SCHEMA_VERSIONS` in `src/schemas/__init__.py`; as of 2026-11-23: places 2.31, equipment 2.31, people_groups 2.30, bibliography 2.31, images 2.29, people 2.28, casualties 2.27, maps 2.26, source_section 2.26, events/dates/weather/logistics 2.25, map_features 2.24) — there is no single global number
+**Schema Version:** per-entity (see `ENTITY_SCHEMA_VERSIONS` in `src/schemas/__init__.py`; as of 2026-11-23: places 2.31, equipment 2.31, people_groups 2.30, bibliography 2.31, images 2.29, people 2.28, casualties 2.27, maps 2.27, source_section 2.26, events/dates/weather/logistics 2.25, map_features 2.24) — there is no single global number
 
 > **Equipment 2.29+ (2026-11-07):** `identity_scope` (specific | generic | unresolved) decides enrichment: generic mentions are kept but never searched; named vessels are resolved to one ship by date (`identity_resolution`). Images are Phase 3 only, and an image counts as attached only when `images[].vision_check == "verified"` (`vision_verified: true`).
 
@@ -652,9 +652,23 @@ Note: `source_metadata` is open (provenance keys vary by source); `findings`, `b
   "local_image_path": "path|null",
   "file_format": "png|jpg|null",
   "storage_backend": "local|s3",
-  "extracted_date": "2026-03-15T..."
+  "extracted_date": "2026-03-15T...",
+  "depicted": {
+    "units": ["28th Infantry Division"], "places": ["Schmidt"], "movements": ["..."],
+    "front_line_or_sector": "...", "date_or_window": "2-8 November 1944", "operation": "...",
+    "description": "...", "legibility_confidence": 0.8
+  },
+  "depicted_provenance": {
+    "verdict": "depicted|not_relevant", "kind": "in_doc_map_vision|external_maps_verification",
+    "model": "...|null", "request_id": "...|null", "checked_at": "2026-11-24T...",
+    "image_url": "https://...", "found_in": "<book slug>|openserp"
+  }
 }
 ```
+
+`depicted` (2.27) is what Grok map vision says the map shows (null when the image was judged not a
+relevant map); `depicted_provenance` records where that answer came from. A map with
+`depicted_provenance` is never sent to vision again (`src/extraction/map_depicted`).
 
 Note: Maps use `Sub_eventID` (underscore) — inconsistent with images/bibliography which use hyphen.
 

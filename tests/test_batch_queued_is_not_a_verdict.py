@@ -428,35 +428,34 @@ def test_in_doc_map_links_visit_every_link_and_raise_once(monkeypatch):
 
     seen = []
     monkeypatch.setattr(
-        ml, "_ingest_one_link", lambda m, *a: seen.append(m["url"]) or _raise()
+        ml, "_read_one_link", lambda m, *a: seen.append(m["url"]) or _raise()
     )
     docs = [
         {"book": "B", "maps": [{"url": f"https://x.org/{i}.png"} for i in range(3)]}
     ]
     with pytest.raises(BatchModeCollecting):
-        ml.ingest_in_doc_map_links(docs, Q(), allowed_hosts=("x.org",))
+        ml.read_in_doc_maps(docs, Q(), Path("/nonexistent"), allowed_hosts=("x.org",))
     assert len(seen) == 3
 
 
 def test_one_in_doc_map_link_does_not_warn_or_count_skipped_when_queued(
-    monkeypatch, caplog
+    monkeypatch, caplog, tmp_path
 ):
     from src.extraction import map_link_source as ml
 
     monkeypatch.setattr(ml, "_ssrf_safe_image_url", lambda u: u)
     monkeypatch.setattr(ml, "_host_allowed", lambda *a: True)
     monkeypatch.setattr(ml, "_vision_depicted", lambda *a, **k: _raise())
-    summary = {
-        "links": 0,
-        "fetched": 0,
-        "verified": 0,
-        "recycled": 0,
-        "deduped": 0,
-        "skipped": 0,
-    }
+    summary = {"links": 0, "read": 0, "depicted": 0, "already": 0, "skipped": 0}
+    rec = tmp_path / "m.json"
+    rec.write_text('{"MapID": "01HX7YZABCDEFGHJKMNPQRSTVW"}')
     with pytest.raises(BatchModeCollecting):
-        ml._ingest_one_link(
-            {"url": "https://x.org/a.png"}, Q(), {}, ("x.org",), 5, summary
+        ml._read_one_link(
+            {"url": "https://x.org/a.png"},
+            ml._MapRead(Q(), {}, ("x.org",), 5),
+            rec,
+            "B",
+            summary,
         )
     assert summary["skipped"] == 0
 
@@ -566,8 +565,9 @@ def test_queued_entities_count_against_max_items(tmp_path, monkeypatch):
     assert len(searched) == 4
 
 
-def test_in_doc_map_persist_still_runs_when_the_link_ingest_queued(monkeypatch):
-    """The persist step queues its own vision requests in the same round (one batch wait, not two)."""
+def test_in_doc_map_read_still_runs_when_the_persist_queued(monkeypatch):
+    """Both queue their requests in the same round (one batch wait, not two); the Map records are
+    persisted first, so the read has a record to store its answer on."""
     import phase3_enrich_data as P
     from src.extraction import map_link_source as ml
 
@@ -576,15 +576,15 @@ def test_in_doc_map_persist_still_runs_when_the_link_ingest_queued(monkeypatch):
     monkeypatch.setattr(P, "_recycle_in_doc_maps", lambda cfg: True)
     monkeypatch.setattr(
         ml,
-        "ingest_in_doc_map_links",
-        lambda *a, **k: calls.append("ingest") or _raise(),
+        "read_in_doc_maps",
+        lambda *a, **k: calls.append("read") or _raise(),
     )
     monkeypatch.setattr(
         ml, "persist_map_entities", lambda *a, **k: calls.append("persist") or _raise()
     )
     with pytest.raises(BatchModeCollecting):
         P._ingest_in_doc_map_links(Path("/tmp/x"), Q(), {})
-    assert calls == ["ingest", "persist"]
+    assert calls == ["persist", "read"]
 
 
 # --- registry ------------------------------------------------------------------------------------

@@ -482,6 +482,11 @@ def _create_map_record(
     }
 
 
+_MAP_VISION_KIND = (
+    "external_maps_verification"  # search_external_maps._verify_map_relevance
+)
+
+
 def _process_search_result(
     result: dict,
     place_name: str,
@@ -578,8 +583,26 @@ def _process_search_result(
     )
 
     output_file = output_dir / f"{map_record['MapID']}.json"
+    from src.extraction import map_depicted
     from src.utils.file_lock import write_json_with_lock
 
+    # what the map shows (the vision answer that approved it), kept on the record with provenance
+    # (owner 2026-11-17: no longer recycled as a prose source)
+    map_depicted.apply(
+        map_record,
+        depicted,
+        map_depicted.provenance(
+            map_depicted.verdict_for(
+                {"is_relevant": is_relevant, "depicted": depicted}
+            ),
+            kind=_MAP_VISION_KIND,
+            model=map_depicted.model_for(grok_client, _MAP_VISION_KIND),
+            # _verify_map_relevance does not return the answer's RequestID (TODO Group 8, OPEN)
+            request_id=None,
+            image_url=approved_image_url or url,
+            found_in="openserp",
+        ),
+    )
     # external_maps records ARE maps records (MapID + MAPS_OUTPUT_SCHEMA). The guard resolves the
     # entity from the PATH and now ALIASES output/external_maps/ -> the 'maps' schema (see
     # _resolve_entity_type), so this write is schema-validated + counted by validation_stats under
@@ -594,53 +617,7 @@ def _process_search_result(
 
     logger.info(f"   ✅ Imported: {title[:60]}")
     downloaded_urls.add(url)
-    # Recycle the approved map as a SOURCE DOCUMENT (map-as-source): render the vision `depicted`
-    # block into a parsed-source under contentrepository/ so the map re-enters the normal pipeline
-    # (Phase 1->2->3) and an EVENT (+ people_groups/places/dates) is derived from it. Fail-safe +
-    # gated on depicted being present (no depicted -> catalog record only, no event derivation).
-    _recycle_map_as_source(
-        map_id=map_record["MapID"],
-        map_title=title,
-        approved_image_url=approved_image_url or "",
-        depicted=depicted,
-        source_url=url,
-    )
     return True, 0
-
-
-def _recycle_map_as_source(
-    *,
-    map_id: str,
-    map_title: str,
-    approved_image_url: str,
-    depicted: Any,
-    source_url: str,
-) -> bool:
-    """Write an approved map's vision ``depicted`` as a RAW SOURCE (meta.yaml + content.md) under
-    ``contentrepository/map-<id>/`` so it re-enters the normal pipeline via the content-uploaded
-    front door (Phase 1 parse -> Phase 2 event extraction -> Phase 3 enrich), exactly like a book
-    chapter (map-as-source P1, spec §3.1 Option B). Fail-safe: never raises; returns True iff a
-    source was written. Gated on `depicted` being present (no depicted -> catalog record only).
-    """
-    try:
-        if not isinstance(depicted, dict) or not depicted:
-            logger.info(
-                "OBSERV map_source.skipped map=%s reason=no_depicted "
-                "(catalog record only, no event derivation)",
-                map_id,
-            )
-            return False
-        from src.extraction.map_source_adapter import recycle_map_as_source
-
-        return recycle_map_as_source(
-            map_id=map_id,
-            map_title=map_title,
-            source_url=source_url,
-            depicted=depicted,
-        )
-    except Exception as e:  # noqa: BLE001 - recycle must never crash the map import
-        observe_warn("map_source", "error", map=map_id, reason=str(e)[:120])
-        return False
 
 
 def _is_map_derived_only(event_mentions: Any) -> bool:
