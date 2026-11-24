@@ -691,6 +691,13 @@ def _ingest_in_doc_map_links(out, grok_client, ext_config) -> int:
     return int(summary.get("recycled", 0))
 
 
+def _recheck_finds(config) -> int:
+    """Re-check approved finds by checksum (src/enrichment/find_recheck). Returns finds checked."""
+    from src.enrichment.find_recheck import run
+
+    return run(config)
+
+
 def _drop_infected_photos(out) -> int:
     """Photos ClamAV found infected (the drain deleted the file) leave their records
     (src/enrichment/web_photos.drop_infected_photos). Returns photos removed."""
@@ -833,6 +840,11 @@ def _run_enrichment_steps(args, config, grok_client, source_stats, max_workers) 
 
     # Photos whose file ClamAV deleted leave their records (every run, every record: not gated)
     _run_step("infected_photos", lambda: _drop_infected_photos(args.output_dir))
+
+    # Approved finds whose re-check is due: unchanged -> recorded, changed -> queued for review
+    # (no Grok request). Not a web search, so not gated by use_openserp; capped per run.
+    if not args.people_only:
+        _run_step("find_recheck", lambda: _recheck_finds(config))
 
     # Equipment images: candidates for SPECIFIC equipment only (qualified Wikipedia article +
     # any OpenSERP candidates above), each confirmed by Grok vision; generic records are cleaned.

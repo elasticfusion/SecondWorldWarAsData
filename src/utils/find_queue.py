@@ -232,11 +232,14 @@ def enqueue_find(
     summary: str,
     params: Optional[Dict[str, Any]] = None,
     legacy_key: Optional[tuple] = None,
+    revision: str = "",
 ) -> str:
     """Queue one found URL for human review. Returns ``ENQUEUED``, ``ALREADY_QUEUED`` (an earlier
     run queued it: pending, approved, rejected or submitted), ``REFUSED`` (no positive Grok verdict,
     an unsafe URL, or a provider that is not a find provider) or ``FAILED`` (the event could not be
     stored after retries: nothing is recorded, so the next run queues it again). Never raises.
+    ``revision``: a later version of a find already queued for this entity (``find_recheck``: the
+    changed page's checksum) - its own item, queued once per revision.
     """
     clean = _refusal(provider, verdict, url)
     if clean is None:
@@ -255,7 +258,7 @@ def enqueue_find(
                 request_params=_event_params(verdict, origin, params),
                 result_summary=_text(summary, 300),
             ),
-            (origin.key, clean),
+            (origin.key, clean, revision) if revision else (origin.key, clean),
         )
     except Exception as e:  # noqa: BLE001 - queueing must never crash a step
         _note_outcome(True)  # an unexpected error counts toward the breaker too

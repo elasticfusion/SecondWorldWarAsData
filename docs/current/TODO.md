@@ -839,7 +839,7 @@ rejected item stays rejected; an approved item starts Phase 0.
   `military_awards` (only an award extraction fills it); repeats are bounded by the 90-day `openserp_searched`
   marker, the queue (`already_queued`: no fetch or Grok request for a queued URL) and the paging cursor. People
   with awards are now web-searched too (more OpenSERP queries; Grok only for new URLs). Left:
-  `entities_enriched` is not counted in a batch round-2 pass where every page was already queued. STILL OPEN in this step: the checksum re-check.**
+  `entities_enriched` is not counted in a batch round-2 pass where every page was already queued. DONE 2026-11-24: the checksum re-check (`src/enrichment/find_recheck.py`, below).**
 - **DONE (Group 3 step H, 2026-11-23) - the fetched page is kept for Phase 0.** `src/utils/find_pages.py`: the page a
   find was judged on (live, or the Internet Archive copy) is stored once under its checksum
   (`find-pages/pages/<sha256>.html` in the data bucket, write-once; `output/_find_pages/` locally) with a per-URL
@@ -1098,7 +1098,23 @@ Findings:
   - Stop stamping `fetched_at` on a cache hit; carry the real fetch time from the cached entry.
   - Cache OpenSERP search responses per query for the same window, so a re-searched entity does not
     resend every query.
-- **FIX - DECISION (owner 2026-11-17): a good URL is re-checked by checksum, and changed pages are
+- **DONE (2026-11-24) - re-check of approved finds by checksum (owner "do it", 2026-11-24).**
+  `src/enrichment/find_recheck.py`, a Phase 3 step (`find_recheck`, not gated by `use_openserp`; the pipeline task
+  has the AWS-mode registry and cache, the trigger Lambda does not). Affirmed and submitted finds whose page is older
+  than `find_recheck.interval_days` (180) are fetched again through `url_fetch`, at most `find_recheck.max_per_run`
+  (50) per run, oldest first. The TEXT checksum (`find_pages.text_sha256`: active content, markup, whitespace
+  dropped) is compared with the kept page's. Unchanged: recorded, no Grok. Changed: the new page is kept and queued
+  as a NEW find of the same entity (`recheck_of`, `previous_page_sha256`, `previous_summary`; once per page
+  revision, `enqueue_find(revision=)`); the approved find, its page and its Phase 0 source stay (the cited
+  version; slugs never change; the URL's page pointer is not moved, so cached summaries keep their page); the
+  relevance verdict is carried from the approved find (`relevancy_from`; the review line says "not re-judged"), no
+  Grok request. A changed find is not checked again (its new version is, once approved). Dead (gone, archive-only,
+  or registry-dead): recorded with the date first seen dead, kept page intact, checked again after the interval.
+  Transient: retried in 14 days (state kept), claim released; a change that could not be kept/queued: 1-day
+  backoff. The comparison is of text only: a changed link or image with the same text is not a change. Records: `find_recheck_v1` per find id (10
+  years) with the last 10 states. `OBSERV find_recheck.summary` per run. Supersedes the plan below (written before
+  finds went to the queue: it updated entries on entities, which no longer hold finds).
+- **SUPERSEDED (see above) - DECISION (owner 2026-11-17): a good URL is re-checked by checksum, and changed pages are
   updated.** At the re-check date:
   - Fetch the page through `url_fetch.fetch` (registry, politeness, SSRF checks, Wayback fallback) and
     hash the content (reuse `fetch_review._content_sha256`, `src/enrichment/fetch_review.py:464`; one

@@ -133,19 +133,14 @@ def _page_fields(body: bytes, prov: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def keep(
-    url: str, html: str, provenance: Optional[Dict[str, Any]] = None
-) -> Dict[str, Any]:
-    """Store the page ``url`` gave (``html``, live or archived) and point the URL at it. Returns the
-    page fields for the find (``PAGE_FIELDS``), or ``{"page_kept": False}`` when it could not be
-    stored (logged as an error; the find is still queued, and the reviewer sees no page).
-    """
+def _stripped(url: str, html: str) -> Optional[str]:
+    """The page without its active content, or None (empty, or too complex: said)."""
     from src.utils.html_safety import PageTooComplex, strip_active_content
 
     if not (html or "").strip():
-        return {"page_kept": False}
+        return None
     try:
-        safe = strip_active_content(html)
+        return strip_active_content(html)
     except PageTooComplex as e:
         from src.utils.find_queue import clean_for_log
         from src.utils.observe import observe_warn_counted
@@ -161,6 +156,24 @@ def keep(
             url=clean_for_log(url),
             why=str(e)[:200],
         )
+        return None
+
+
+def keep(
+    url: str,
+    html: str,
+    provenance: Optional[Dict[str, Any]] = None,
+    point: bool = True,
+) -> Dict[str, Any]:
+    """Store the page ``url`` gave (``html``, live or archived) and point the URL at it. Returns the
+    page fields for the find (``PAGE_FIELDS``), or ``{"page_kept": False}`` when it could not be
+    stored (logged as an error; the find is still queued, and the reviewer sees no page).
+    ``point=False``: store the page only - the URL keeps pointing at the page it gave before (a
+    re-checked page that changed is not what the cached summary describes, and no human has
+    approved it yet).
+    """
+    safe = _stripped(url, html)
+    if safe is None:
         return {"page_kept": False}
     body = safe.encode("utf-8")
     url_path = _url_path(url)
@@ -184,7 +197,10 @@ def keep(
         return {"page_kept": False}
     # the page is stored, so this find has it even if the pointer fails (a later cache hit then
     # has none, and says so)
-    _with_retry("pointer", lambda: store.write_json(url_path, {"url": url, **fields}))
+    if point:
+        _with_retry(
+            "pointer", lambda: store.write_json(url_path, {"url": url, **fields})
+        )
     logger.info(
         "OBSERV find_pages.kept bytes=%d fetched_bytes=%d source=%s %s",
         len(body),
@@ -193,6 +209,23 @@ def keep(
         sha[:20],
     )
     return {**fields, "page_kept": True}
+
+
+_TAG_RE = re.compile(r"<[^>]*>")
+_SPACE_RE = re.compile(r"\s+")
+
+
+def text_sha256(html: str) -> str:
+    """``sha256:<hex>`` of a page's TEXT: active content stripped (``html_safety``, as ``keep``
+    does), then markup dropped, entities decoded and whitespace collapsed - so a page that only
+    changes its scripts, ads markup or layout has the same text checksum. Raises
+    ``PageTooComplex`` like ``keep``."""
+    import html as _html
+
+    from src.utils.html_safety import strip_active_content
+
+    text = _html.unescape(_TAG_RE.sub(" ", strip_active_content(html or "")))
+    return content_sha256(_SPACE_RE.sub(" ", text).strip().encode("utf-8"))
 
 
 def lookup(url: str) -> Dict[str, Any]:

@@ -321,3 +321,8 @@ logging:
   console: true
   debug_message_preview_chars: 500
   debug_response_preview_chars: 500
+
+# Re-check of approved finds by checksum (src/enrichment/find_recheck; a Phase 3 step, no Grok)
+find_recheck:
+  interval_days: 180                   # days between checks of one approved find's page
+  max_per_run: 50                      # most finds checked per Phase 3 run (oldest check first)

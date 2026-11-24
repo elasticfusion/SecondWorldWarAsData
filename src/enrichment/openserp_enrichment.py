@@ -458,8 +458,14 @@ def _drop_excluded_domains(results: List[Dict]) -> List[Dict]:
 _DEFAULT_RESULTS_PER_QUERY = 5
 
 
-def _config_int(cfg: Dict[str, Any], key: str, default: int, hi: int = 1000) -> int:
-    """``openserp.<key>`` as a whole number from 1 to ``hi``; anything else is said (once, then
+def _config_int(
+    cfg: Dict[str, Any],
+    key: str,
+    default: int,
+    hi: int = 1000,
+    section: str = "openserp",
+) -> int:
+    """``<section>.<key>`` as a whole number from 1 to ``hi``; anything else is said (once, then
     every 500th read: one typo must not flood the log) and ``default`` used."""
     raw = cfg.get(key, default)
     if isinstance(raw, int) and not isinstance(raw, bool) and 1 <= raw <= hi:
@@ -467,11 +473,11 @@ def _config_int(cfg: Dict[str, Any], key: str, default: int, hi: int = 1000) -> 
     from src.utils.observe import observe_warn_counted
 
     observe_warn_counted(
-        "openserp",
+        section,
         f"bad_{key}",
         key=(key,),
         every=500,
-        note=f"not a whole number from 1 to {hi}; using {default}. Fix openserp.{key} in "
+        note=f"not a whole number from 1 to {hi}; using {default}. Fix {section}.{key} in "
         "config.yaml",
         value=str(raw)[:20],
     )
