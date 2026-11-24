@@ -171,6 +171,7 @@ _METRIC_KEYS = (
     "photos_not_kept",
     "photos_ruled_out",  # a URL decided before (a "no", unusable, retracted): not fetched again
     "photos_retracted",  # kept photos taken back off a record (web_photos.retract)
+    "photos_infected_dropped",  # photos whose file ClamAV deleted, removed from their record
     # an entity whose queries only errored (OpenSERP unavailable): left unsearched
     "entities_unavailable",
     "results_site_excluded",  # results dropped for an excluded site

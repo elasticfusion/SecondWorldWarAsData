@@ -71,11 +71,13 @@ def test_clean_promoted_to_prod():
     assert out.clean_keys == ["output/maps/files/clean.jpg"]
 
 
-def test_infected_to_quarantine_prefix_swap():
+def test_an_infected_pipeline_file_is_deleted_not_quarantined():
+    # owner 2026-11-23: a file the pipeline fetched (never an upload) is just deleted
     s3, out = _run({"virus": Verdict.INFECTED})
-    assert "quarantine/output/maps/files/virus.jpg" in s3.objs
     assert "unscanned/output/maps/files/virus.jpg" not in s3.objs
-    assert "quarantine/output/maps/files/virus.jpg" in out.quarantined_keys
+    assert not any(k.startswith("quarantine/") for k in s3.objs)
+    assert "av-scan/infected/output/maps/files/virus.jpg.json" in s3.objs
+    assert "unscanned/output/maps/files/virus.jpg" in out.quarantined_keys
 
 
 def test_unscannable_stays_in_unscanned():
@@ -101,10 +103,8 @@ def test_zones_mirror_prod_structure():
     # a nested prod path keeps its structure under every zone (move = prefix swap)
     s3 = FakeS3()
     s3.objs["unscanned/output/maps/files/sub/x.jpg"] = b"x"
-    scan_staged_binaries(
-        s3, "b", list(s3.objs), MockScanner({"x.jpg": Verdict.INFECTED})
-    )
-    assert "quarantine/output/maps/files/sub/x.jpg" in s3.objs
+    scan_staged_binaries(s3, "b", list(s3.objs), MockScanner({"x.jpg": Verdict.CLEAN}))
+    assert "output/maps/files/sub/x.jpg" in s3.objs
 
 
 def test_clean_but_promote_failed_is_loud_not_silent(monkeypatch):
@@ -183,7 +183,7 @@ def test_infected_freeze_receives_identity_captured_before_delete(monkeypatch):
         "freeze_submitter",
         lambda s3, bucket, identity, **k: captured.update(identity=identity),
     )
-    key = "unscanned/output/maps/files/virus.jpg"
+    key = "unscanned/contentrepository/user-x/virus.jpg"  # an UPLOAD: frozen + quarantined
     s3 = IdentityS3(key)
     scan_staged_binaries(s3, "b", [key], MockScanner({"virus": Verdict.INFECTED}))
     assert (

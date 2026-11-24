@@ -38,6 +38,7 @@ import base64
 import datetime as _dt
 import json
 import logging
+import threading
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Set
 from urllib.parse import urljoin, urlparse
@@ -52,7 +53,7 @@ _VERDICT_SOURCE = "photo_vision_v1"
 _DECISION_SOURCE = "photo_decision_v1"
 # decisions are kept as long as the cache keeps anything: in effect, permanently
 DECISION_DAYS = 3650
-RETRACTED, UNUSABLE = "retracted", "unusable"
+RETRACTED, UNUSABLE, INFECTED = "retracted", "unusable", "infected"
 # a URL that is "not an image" for everyone may only be a hotlink or challenge page served to us:
 # looked at again after a month (relevance decisions per entity stay)
 UNUSABLE_DAYS = 30
@@ -299,6 +300,60 @@ def _ruled_out(url: str, subject: Subject) -> bool:
         if decided and decided["verdict"] != YES:
             return True
     return False
+
+
+_S3: Dict[str, Any] = {}  # one S3 client per process (made under the lock)
+_S3_LOCK = threading.Lock()
+
+
+def _s3_and_bucket() -> "tuple[Any, str]":
+    """(S3 client, data bucket), or (None, "") with no bucket (local runs)."""
+    import os
+
+    bucket = os.environ.get("S3_BUCKET", "").strip()
+    if not bucket:
+        return None, ""
+    with _S3_LOCK:
+        if "client" not in _S3:
+            import boto3
+
+            region = os.environ.get("AWS_REGION", "us-east-1")
+            _S3["client"] = boto3.client("s3", region_name=region)
+        return _S3["client"], bucket
+
+
+def drop_infected(images: List[Any]) -> int:
+    """Remove the photos whose file ClamAV found infected (the drain deleted it,
+    ``av_scan.was_infected``) from a record's ``images`` (in place), and rule out each URL for
+    EVERYONE, permanently. Returns the number removed. No bucket (local runs): nothing to check.
+    """
+    from src.ingestion.av_scan import was_infected
+
+    s3, bucket = _s3_and_bucket()
+    if s3 is None:
+        return 0
+    bad = [
+        i
+        for i in images
+        if isinstance(i, dict)
+        and i.get("local_path")
+        and was_infected(s3, bucket, str(i["local_path"]))
+    ]
+    for img in bad:
+        images.remove(img)
+        if img.get("url"):
+            r = {"url": img["url"], "page_url": img.get("source_page_url")}
+            _record_decision(
+                r, None, {"verdict": INFECTED, "reason": "ClamAV: infected"}
+            )
+    if bad:
+        _metric("photos_infected_dropped", len(bad))
+        logger.warning(
+            "OBSERV web_photos.infected_dropped count=%d status=warn - photos ClamAV found "
+            "infected were removed from their record and their URLs ruled out",
+            len(bad),
+        )
+    return len(bad)
 
 
 def retract(images: List[Any], url: str, subject: Subject, reason: str) -> bool:

@@ -77,7 +77,10 @@ def test_full_drain_chunked():
     out = drain_unscanned(s3, "b", Sc(), chunk_size=3)  # 8 files -> 3 chunks
     assert len(out.clean_keys) == 7 and len(out.quarantined_keys) == 1
     assert "output/maps/files/m0.jpg" in s3.objs  # promoted
-    assert "quarantine/output/maps/files/virus.jpg" in s3.objs
+    # a pipeline-fetched infected file is deleted (owner 2026-11-23), its marker left
+    assert "unscanned/output/maps/files/virus.jpg" not in s3.objs
+    assert "quarantine/output/maps/files/virus.jpg" not in s3.objs
+    assert "av-scan/infected/output/maps/files/virus.jpg.json" in s3.objs
     assert "unscanned/.keep" in s3.objs  # excluded, not dispositioned
     assert "unscanned/.scan-lock" not in s3.objs  # lock released
 

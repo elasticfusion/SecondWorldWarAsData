@@ -969,3 +969,228 @@ def test_a_url_unusable_for_everyone_is_looked_at_again_after_a_month(web, monke
         wp._decision_key("https://img.example.org/sherman1.png", ""),
     )
     assert kept[key] == wp.UNUSABLE_DAYS
+
+
+# --- an infected photo is deleted, and its record entry dropped (owner 2026-11-23) ------------
+
+
+class _AvS3:
+    def __init__(self, present=()):
+        self.objects, self.deleted, self.puts = set(present), [], {}
+
+    def delete_object(self, Bucket, Key):
+        self.deleted.append(Key)
+        self.objects.discard(Key)
+
+    def put_object(self, Bucket, Key, Body):
+        self.puts[Key] = Body
+        self.objects.add(Key)
+
+    def head_object(self, Bucket, Key):
+        if Key not in self.objects:
+            raise KeyError(Key)
+
+
+def _infected_result(key):
+    from src.ingestion import av_scan
+
+    return av_scan.ScanResult(key, av_scan.Verdict.INFECTED, signature="Eicar-Test")
+
+
+def test_an_infected_fetched_photo_is_deleted_not_quarantined(monkeypatch):
+    from src.ingestion import av_scan
+
+    alerts = []
+    monkeypatch.setattr(
+        "src.utils.observe.publish_alert", lambda s, m, **k: alerts.append(s) or True
+    )
+    s3 = _AvS3({"unscanned/output/photos/files/abc.png"})
+    out = av_scan.AvOutcome()
+    av_scan._disposition_staged(
+        _infected_result("unscanned/output/photos/files/abc.png"),
+        out,
+        s3,
+        "b",
+        "us-east-1",
+    )
+    assert s3.deleted == ["unscanned/output/photos/files/abc.png"]
+    assert not any(k.startswith("quarantine/") for k in s3.puts)  # deleted, not kept
+    assert av_scan.was_infected(s3, "b", "output/photos/files/abc.png")
+    assert alerts and "deleted" in alerts[0]
+
+
+def test_an_infected_upload_is_still_quarantined_and_reviewed(monkeypatch):
+    from src.ingestion import av_scan
+
+    moved, reviewed = [], []
+    monkeypatch.setattr(
+        av_scan, "_move_key", lambda c, b, src, dst: moved.append(dst) or True
+    )
+    monkeypatch.setattr(av_scan, "_submitter_identity", lambda *a: "")
+    monkeypatch.setattr(
+        av_scan, "reject_to_review", lambda *a, **k: reviewed.append(a[2])
+    )
+    monkeypatch.setattr(av_scan, "freeze_submitter", lambda *a, **k: None)
+    key = "unscanned/contentrepository/user-x/book.pdf"
+    av_scan._disposition_staged(
+        _infected_result(key), av_scan.AvOutcome(), _AvS3(), "b", ""
+    )
+    assert moved == ["quarantine/contentrepository/user-x/book.pdf"] and reviewed == [
+        key
+    ]
+
+
+def test_a_record_drops_a_photo_clamav_deleted_and_nobody_takes_it_again(monkeypatch):
+    from src.ingestion import av_scan
+
+    s3 = _AvS3({av_scan.infected_marker("output/photos/files/bad.png")})
+    monkeypatch.setattr(wp, "_s3_and_bucket", lambda: (s3, "b"))
+    images = [
+        {
+            "url": "https://img.example.org/bad.png",
+            "local_path": "output/photos/files/bad.png",
+        },
+        {
+            "url": "https://img.example.org/ok.png",
+            "local_path": "output/photos/files/ok.png",
+        },
+        {"url": "https://wiki.example.org/w.jpg"},  # no stored file: not checked
+    ]
+    assert wp.drop_infected(images) == 1
+    assert [i["url"] for i in images] == [
+        "https://img.example.org/ok.png",
+        "https://wiki.example.org/w.jpg",
+    ]
+    other = wp.Subject("person#01HP", "c", "s", "w")
+    assert wp._ruled_out("https://img.example.org/bad.png", other)  # for everyone
+
+
+def test_the_equipment_step_drops_infected_photos(monkeypatch):
+    from src.enrichment import equipment_images as ei
+
+    dropped = []
+    monkeypatch.setattr(
+        wp, "drop_infected", lambda images: dropped.append(len(images)) or 0
+    )
+    monkeypatch.setattr(ei, "record_scope", lambda rec, g: ei.SPECIFIC)
+    monkeypatch.setattr(ei, "_add_article_candidates", lambda rec, c: None)
+    monkeypatch.setattr(ei, "_verify_pending", lambda *a: None)
+    ei._process(
+        {"images": [{"url": "u", "local_path": "p"}]}, None, 3, ei._new_counts()
+    )
+    assert dropped == [1]
+
+
+def test_without_a_bucket_nothing_is_checked():
+    assert (
+        wp.drop_infected([{"url": "u", "local_path": "output/photos/files/x.png"}]) == 0
+    )
+
+
+def test_the_marker_is_written_before_the_delete(monkeypatch):
+    from src.ingestion import av_scan
+
+    order = []
+
+    class _S3:
+        def put_object(self, Bucket, Key, Body):
+            order.append("mark")
+
+        def delete_object(self, Bucket, Key):
+            order.append("delete")
+
+    monkeypatch.setattr("src.utils.observe.publish_alert", lambda *a, **k: True)
+    av_scan._disposition_staged(
+        _infected_result("unscanned/output/photos/files/a.png"),
+        av_scan.AvOutcome(),
+        _S3(),
+        "b",
+        "",
+    )
+    assert order == ["mark", "delete"]
+
+
+def test_a_failed_delete_is_said_in_the_alert(monkeypatch, caplog):
+    import logging
+
+    from src.ingestion import av_scan
+
+    alerts = []
+    monkeypatch.setattr(
+        "src.utils.observe.publish_alert", lambda s, m, **k: alerts.append(m) or True
+    )
+
+    class _S3(_AvS3):
+        def delete_object(self, Bucket, Key):
+            raise RuntimeError("AccessDenied")
+
+    with caplog.at_level(logging.ERROR):
+        av_scan._disposition_staged(
+            _infected_result("unscanned/output/maps/files/m.jpg"),
+            av_scan.AvOutcome(),
+            _S3(),
+            "b",
+            "",
+        )
+    assert "OBSERV av.infected_delete_failed" in caplog.text
+    assert "DELETE FAILED" in alerts[0] and "NOT cleaned up automatically" in alerts[0]
+
+
+@pytest.mark.parametrize(
+    "key",
+    [
+        "unscanned/output/content/Book/fig.png",  # derived from an upload
+        "unscanned/ocr-output/Book/page.png",
+        "unscanned/contentrepository/user-x/book.pdf",
+    ],
+)
+def test_anything_not_fetched_from_the_web_is_quarantined_not_deleted(monkeypatch, key):
+    from src.ingestion import av_scan
+
+    moved = []
+    monkeypatch.setattr(
+        av_scan, "_move_key", lambda c, b, s, d: moved.append(d) or True
+    )
+    monkeypatch.setattr(av_scan, "_submitter_identity", lambda *a: "")
+    monkeypatch.setattr(av_scan, "reject_to_review", lambda *a, **k: None)
+    monkeypatch.setattr(av_scan, "freeze_submitter", lambda *a, **k: None)
+    s3 = _AvS3({key})
+    av_scan._disposition_staged(_infected_result(key), av_scan.AvOutcome(), s3, "b", "")
+    assert moved and moved[0].startswith("quarantine/") and s3.deleted == []
+
+
+def test_an_unreadable_marker_is_said_not_silent(caplog):
+    import logging
+
+    from src.ingestion import av_scan
+    from src.utils import observe
+
+    observe._counts.clear()
+
+    class _Denied(Exception):
+        response = {"Error": {"Code": "AccessDenied"}}
+
+    class _S3:
+        def head_object(self, Bucket, Key):
+            raise _Denied()
+
+    with caplog.at_level(logging.WARNING):
+        assert av_scan.was_infected(_S3(), "b", "output/photos/files/a.png") is False
+    assert "infected_check_failed" in caplog.text
+
+
+def test_a_not_found_marker_is_quiet(caplog):
+    import logging
+
+    from src.ingestion import av_scan
+
+    class _Missing(Exception):
+        response = {"Error": {"Code": "404"}}
+
+    class _S3:
+        def head_object(self, Bucket, Key):
+            raise _Missing()
+
+    with caplog.at_level(logging.WARNING):
+        assert av_scan.was_infected(_S3(), "b", "output/photos/files/a.png") is False
+    assert "infected_check_failed" not in caplog.text

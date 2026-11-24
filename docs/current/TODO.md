@@ -977,8 +977,13 @@ Findings:
   off a record and rules out its URL and its bytes (a copy elsewhere) for that entity; the stored bytes stay
   (content-addressed, may back another record; no reference index - dev, owner 2026-11-23: no cleanup of what
   is already stored). The text pre-filter's "no" keeps its 90-day cache (title-only evidence). Metrics
-  `photos_ruled_out`, `photos_retracted`. OPEN: a photo ClamAV quarantines is not retracted from its record
-  automatically (the drain does not know the record); no tool to clear a wrong decision (unblock);
+  `photos_ruled_out`, `photos_retracted`. An infected photo is deleted by the drain (not quarantined) and the
+  next Phase 3 pass drops its record entry and rules its URL out for everyone (`drop_infected`; owner
+  2026-11-23; equipment wired, the other entities with step 2). Only files under the fetched prefixes
+  (`av_scan.FETCHED_PREFIXES`) are deleted; an upload or a binary derived from one keeps the quarantine path.
+  OPEN: clearing a wrong decision is a UI item (see "UI - clear a wrong photo decision"); an infected map image,
+  page image (`output/images` `local_copy`) or portrait is deleted but the record naming it is not cleaned up
+  (the alert says so) and the writer may fetch and stage it again;
   `--record-only` rules out the URL but not the bytes (the sha is gone with the entry); decision records keep
   raw URLs (a signed query string would persist).
 - **DONE (2026-11-23) - ClamAV on for every binary object (owner).** It was already on in dev (ClamAV image in
@@ -3939,3 +3944,11 @@ under its intended root inside the guard (pipeline-wide, not one site).
 Eventually add a UI option to sort bibliography records by their number of mentions (the entries in
 a record's `mentions` / `event_mentions`), highest first. Applies to the bibliography listing in the
 site/review UIs. Count from the stored mentions, not a new field that could drift.
+
+## UI - clear a wrong photo decision (owner 2026-11-23)
+Add to the review UI: list the web-photo decisions (`web_photos` decision records, api-cache
+`photo_decision_v1`: verdict, entity, image URL, page URL, Grok's reason, date) and let a person clear
+one that was wrong - a "no"/"unsure" for an entity, an "unusable" for everyone, a retraction - so the
+URL is looked at again. Clearing must also clear the (bytes, entity) verdict (`photo_vision_v1`) when it
+says "no", or the same bytes are refused again. Keep a record of who cleared what and why
+(provenance). Today a wrong decision can only be removed by deleting the DynamoDB item by hand.

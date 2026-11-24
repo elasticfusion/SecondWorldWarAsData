@@ -199,7 +199,14 @@ decision 2026-10-01:
   re-invokes itself for the rest (`OBSERV av.phase_drain ... more=`) - only while it decides
   something; phase chaining never waits on it. The first chunk always runs, each drain starts at a
   random key (an undecidable chunk cannot starve the rest), and a chunk ClamAV returns no verdict for
-  stops the drain with `OBSERV av.drain_no_verdict` (error; the schedule retries in 15 min). An empty queue launches no scan task: clean -> production path, infected ->
+  stops the drain with `OBSERV av.drain_no_verdict` (error; the schedule retries in 15 min). An
+  infected file the PIPELINE fetched from the web (`av_scan.FETCHED_PREFIXES`: photos, map and page
+  images, portraits, award files, downloaded originals) is DELETED, not kept in `quarantine/` (owner
+  2026-11-23): the drain writes a marker `av-scan/infected/<key>.json` first, then deletes, and
+  alerts (Slack + email); the next Phase 3 pass removes the
+  record's entry and rules the URL out for everyone (`web_photos.drop_infected`, in the equipment
+  step). Anything else - an upload, or a binary derived from one - keeps the quarantine + review +
+  submitter-freeze path. An empty queue launches no scan task: clean -> production path, infected ->
   `quarantine/`, unscannable -> stays in `unscanned/` and is retried. A single-drainer lock
   (`_acquire_drain_lock`) serialises drains. `scripts/deploy_all.sh` builds the ClamAV image when it
   is missing and refuses to deploy without it. Exempt by design: a book's own figures
