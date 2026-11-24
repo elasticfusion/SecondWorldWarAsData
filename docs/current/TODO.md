@@ -848,6 +848,32 @@ rejected item stays rejected; an approved item starts Phase 0.
   listing that depends on other query parameters is missed there; links inside uploaded
   documents' own text (Phase 0 Markdown) are not cleaned (fetched pages are, before Phase 0 sees them); pages kept
   before a link was flagged keep it (re-checked only when fetched again).
+- **TODO (owner 2026-11-24) - tiered link check: open-source lists first, Google only for what they do not flag.**
+  Cuts Google requests (quota, and the per-lookup cost once on Web Risk) and keeps most URLs from leaving our
+  systems. Design (to confirm when built):
+  - **Tier 1 - open-source blocklists, checked locally.** A daily job downloads the lists to the data bucket
+    (`link-lists/<source>/<date>`, with each list's source URL, licence and fetch time as provenance) and builds
+    one lookup set of normalized hosts and exact URLs (`link_safety.normalize`). Candidates:
+    [Phishing.Database](https://github.com/Phishing-Database/Phishing.Database),
+    [PhishIndex](https://github.com/PhishIndex/phishindex-blocklist) (MIT, commercial use allowed),
+    [HaGeZi threat-intelligence lists](https://github.com/hagezi/dns-blocklists) (check the licence),
+    [PhishTank](https://phishtank.com/) (free key), and abuse.ch URLhaus (free key is non-commercial: only until
+    the paid tiers). Confirm each licence allows our use before adding it; drop any that do not.
+  - **Tier 2 - Google.** Only URLs no tier-1 list flags are sent to Safe Browsing (Web Risk once commercial), in
+    the existing batches and with the existing clean cache.
+  - **One decision path.** A hit at either tier is handled the same way (not fetched, not queued, removed from
+    kept pages, `link_flagged_v1` record, one alert, `scripts/allow_link.py` override). The record names the tier
+    and list that flagged it (`provider: openlist:<source>` or `google-safe-browsing-v4`); the alert carries
+    Google's attribution only for a Google hit (Safe Browsing terms).
+  - **Granularity.** Most open lists are domain-level: a domain hit flags every URL on that host. Hosts that also
+    serve legitimate content (shared hosting, URL shorteners, large platforms) need an exclusion list so one bad
+    page does not remove a whole site; record the match type (domain / exact URL) on the flag record.
+  - **Observability.** Per run: list sizes and age, hits per tier, URLs sent to Google. A list older than 3 days
+    (download failing) is an actionable alert; a missing tier 1 falls through to Google (said, never silent).
+  - **Cost.** Lists are a few MB; held in memory per process (or a compact set in S3), no per-lookup cost.
+  - Built inside `link_safety.flagged` (the one chokepoint), so callers do not change. Tests: tier-1 hit never
+    reaches Google, tier-1 miss goes to Google, stale list alert, licence/provenance on the record, domain vs
+    exact-URL matching, exclusion list.
 
 #### Step: OpenSERP group (PHASE3_MAP §3)
 
