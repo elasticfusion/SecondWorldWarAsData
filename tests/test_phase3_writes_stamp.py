@@ -85,4 +85,4 @@ def test_a_refused_parent_link_is_not_counted(tmp_path, monkeypatch, caplog):
     monkeypatch.setattr(pl, "write_json_with_lock", lambda *a, **k: False)
     assert pl.link_parent_place_ids(places) == 0
     assert "OBSERV places.parent_link_refused place=sedan.json" in caplog.text
-    assert "linked=0 refused=1 status=warn" in caplog.text
+    assert "linked=0 " in caplog.text and "refused=1 status=warn" in caplog.text

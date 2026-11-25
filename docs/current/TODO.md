@@ -1626,7 +1626,15 @@ How it works (`main` 2ddeffcc):
   countries named, 10 have a place record.
 
 Findings (nothing enforces the hierarchy beyond a name match):
-- **HIGH - a parent is chosen by name alone.** No geography-type check (a town can become the parent of
+- **DONE (2026-11-24) - HIGH - a parent is chosen by name alone.** `places.link_parent_place_ids` /
+  `_find_parent_id`: a parent must be a container (region/state < country < continent) coarser than the child;
+  of the hierarchy field's own type first, else any coarser container the field names (a mislabelled field -
+  `country: Devon` for the region Devon - still links, counted `field_mismatch`); every place with a name or
+  alias is a candidate (no last-one-wins); several candidates = `ambiguous` (not guessed; warned with the names);
+  a link closing a cycle is refused; outcomes counted (`OBSERV places.parent_link linked field_mismatch ambiguous
+  cycle not_found refused`). Dry run on the 2026-11-17 Phase 2 places (994): 123 linked (old: 127), 4 field
+  mismatches, 46 not found; the 5 links that changed were wrong before (3 continents under Europe, Yalta under
+  the Crimea peninsula, the Meuse under the city of Liege). Tests `tests/test_place_parents.py`. Original finding: No geography-type check (a town can become the parent of
   a region if it shares the region's name: Luxembourg city vs country, Georgia), no disambiguation, and
   the index keeps the last record for a duplicated name or alias (`places.py:589-592`). No cycle check
   beyond self. Fix: the parent must be a coarser `geography_type` (village/town/city < region < country
