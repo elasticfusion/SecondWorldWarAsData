@@ -1936,6 +1936,29 @@ both: count the books and chapters affected (local, read-only).
   (3) Grok SEMANTIC ONLY. Replace `_identify_record_group`/`_identify_nara_record`; parse
   `archive_reference_number` to the bare RG.
 
+- **[MED · owner 2026-11-25] An abbreviated unit in a note does not say which unit it is: resolve it from the
+  chapter's units before searching NARA.** Green Book notes cite records by a short unit name, e.g.
+  "CCR AAR 23 Dec": CCR (Combat Command Reserve) exists in every armored division, so the note alone cannot
+  say whose after-action report it is, and a NARA search (unit records, RG 407) needs the division. The
+  division is often not in the few paragraphs around the note marker; finding it may take knowing which
+  units the chapter discusses (its order of battle). Same for CCA/CCB, "1st Bn", "Task Force X", "TF
+  Hogan", regiment numbers without a division, and German "Kampfgruppe <name>". Approach (deterministic
+  first, cost first):
+  1. Build a per-chapter unit context from what Phase 2 already extracted: the people_groups records whose
+     `event_mentions` point at the chapter's events, with their parent units (`parent_organization`); a
+     combat command or battalion takes its division from there. No new Grok request when one candidate fits.
+  2. When several divisions fit (two armored divisions in one chapter), use the closest mention before the
+     note marker and the note's date against each unit's dates in the chapter; still ambiguous = record
+     the candidates and do not guess (same rule as place parents), for human review (UI, deferred).
+  3. Only then, if needed, ask Grok once per chapter with the chapter's unit list (not per note), and record
+     the answer's source as model-derived.
+  4. Store the resolved unit on the bibliography record with how it was resolved (`unit_resolved_by`:
+     chapter_context / proximity / grok / unresolved) and the people_groups ID (provenance), and use it in
+     the NARA query (`_identify_nara_record`, the structured RG 407 search above).
+  5. Count it: OBSERV resolved / ambiguous / unresolved per book.
+  Depends on: the Phase 1/2 citation-loss gaps (Group 7 "Citations lost before Phase 3"), which drop some
+  of these notes before Phase 3 sees them.
+
 - **[HIGH] Phase-3 bibliography resolution: re-attempt + concurrency.** (1) The resolver SKIPS records
   with a terminal `search_status` so an improved resolver never re-runs on `not_found` — treat
   `not_found` as NON-terminal (re-attempt until genuinely resolved; consider a resolver-version
