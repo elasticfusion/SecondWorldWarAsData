@@ -124,11 +124,14 @@ verify_stack_images() {  # $1 = stack, then ParamKey=<pinned uri> ...: hard stop
     echo "  ✗ could not read $stack: $status - check CloudFormation access. Hard stop." >&2
     return 1
   fi
-  if [ "$status" != CREATE_COMPLETE ] && [ "$status" != UPDATE_COMPLETE ]; then
-    echo "  ✗ $stack is $status, not CREATE_COMPLETE/UPDATE_COMPLETE - its images are not settled;" >&2
+  # UPDATE_COMPLETE_CLEANUP_IN_PROGRESS: the update is committed (it can no longer roll back),
+  # only old resources are being removed; deploy_aws.py returns in it (seen 2026-11-25)
+  case "$status" in CREATE_COMPLETE | UPDATE_COMPLETE | UPDATE_COMPLETE_CLEANUP_IN_PROGRESS) ;; *)
+    echo "  ✗ $stack is $status, not settled (CREATE_COMPLETE, UPDATE_COMPLETE or" >&2
+    echo "    UPDATE_COMPLETE_CLEANUP_IN_PROGRESS; a rollback state means the old images are back);" >&2
     echo "    check the stack events (aws cloudformation describe-stack-events --stack-name $stack). Hard stop." >&2
-    return 1
-  fi
+    return 1 ;;
+  esac
   for pair in "$@"; do
     key="${pair%%=*}"
     want="${pair#*=}"

@@ -334,7 +334,28 @@ def test_verify_names_every_mismatch(ecr):
 
 
 @pytest.mark.parametrize(
-    "status", ["UPDATE_IN_PROGRESS", "UPDATE_ROLLBACK_COMPLETE", "ROLLBACK_COMPLETE"]
+    "status",
+    ["CREATE_COMPLETE", "UPDATE_COMPLETE", "UPDATE_COMPLETE_CLEANUP_IN_PROGRESS"],
+)
+def test_verify_accepts_a_committed_stack(ecr, status):
+    uri = f"{REGISTRY}/wwii-clamav@{OLD}"
+    r, _ = ecr(
+        f'verify_stack_images s "AvImageUri={uri}"',
+        {},
+        params={"s": {"AvImageUri": uri}},
+        status=status,
+    )
+    assert r.returncode == 0, r.stderr
+
+
+@pytest.mark.parametrize(
+    "status",
+    [
+        "UPDATE_IN_PROGRESS",
+        "UPDATE_ROLLBACK_COMPLETE",
+        "ROLLBACK_COMPLETE",
+        "UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS",
+    ],
 )
 def test_verify_needs_a_settled_stack(ecr, status):
     uri = f"{REGISTRY}/wwii-clamav@{OLD}"
