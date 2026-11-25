@@ -2249,7 +2249,13 @@ def _verify_match(candidate_title: str, verbatim: str, grok_client: Any) -> bool
         grok_client: Grok API client for verification.
     """
     if not grok_client:
-        return True
+        # fail closed like every other verifier: an unverified match is worse than a miss (a miss
+        # is searched again next run; an accepted wrong URL is stamped as the citation's copy)
+        logger.warning(
+            "OBSERV bib.verify_unavailable reason=no_grok_client status=warn - a match was "
+            "rejected unverified; check that the resolver was given a Grok client (the API key)"
+        )
+        return False
 
     # Determine if verbatim is a URL (from search) or citation text
     url = verbatim if verbatim.startswith("http") else None
@@ -2281,8 +2287,15 @@ Return ONLY "YES" or "NO"."""
             return accepted
         except BatchModeCollecting:
             raise  # queued for the batch: not an answer, not a failure
-        except Exception:
-            return True
+        except (
+            Exception
+        ) as e:  # noqa: BLE001 - fail closed (see the no-client case above)
+            logger.warning(
+                "OBSERV bib.verify_title_error err=%s status=warn - the match was rejected "
+                "unverified and is searched again next run; check the Grok errors in this log",
+                type(e).__name__,
+            )
+            return False
 
     # URL found — verify page content matches the citation
     return _verify_url_content(url, citation_text, grok_client)

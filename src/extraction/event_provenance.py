@@ -122,9 +122,9 @@ def stamp_event_source_sections(out: Path) -> int:
     stamped = 0
     scanned = 0
     try:
+        # notes events (``*-notes-event.json``) included: they have their own source sections and
+        # sub-events that entities are extracted from, so their chain must reach the section too
         for ef in (Path(out) / "content").rglob("*-event.json"):
-            if ef.name.endswith("-notes-event.json"):
-                continue
             scanned += 1
             if _stamp_one_event(ef, index):
                 stamped += 1

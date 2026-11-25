@@ -210,8 +210,6 @@ Resources:
                 Effect: Allow
                 Action:
                   - lambda:InvokeFunction
-                  - lambda:PutFunctionConcurrency
-                  - lambda:DeleteFunctionConcurrency
                 Resource:
                   - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${EnvironmentName}-wwii-*
               - Sid: SchedulerManage
@@ -434,8 +432,6 @@ Resources:
                 Effect: Allow
                 Action:
                   - lambda:InvokeFunction
-                  - lambda:PutFunctionConcurrency
-                  - lambda:DeleteFunctionConcurrency
                 Resource:
                   - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${EnvironmentName}-wwii-*
               - Sid: SchedulerManagement

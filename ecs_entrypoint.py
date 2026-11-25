@@ -4972,65 +4972,46 @@ def _stamp_schema_versions() -> None:
     never stamped at all.)"""
     from src.schemas import SCHEMA_VERSION, inject_metadata, needs_migration
 
-    env = os.environ.get("ENV_NAME", "dev")
-    trigger_fn = f"{env}-wwii-trigger"
-    lam = boto3.client("lambda", region_name=REGION)
-
-    # Disable trigger Lambda during stamping
-    try:
-        lam.put_function_concurrency(
-            FunctionName=trigger_fn, ReservedConcurrentExecutions=0
-        )
-        logger.info("Disabled trigger Lambda for schema migration")
-    except Exception as e:
-        logger.warning("Could not disable trigger Lambda: %s", e)
-
-    try:
-        output = Path("/app/output")
-        dirs = [
-            "weather",
-            "people",
-            "people_groups",
-            "places",
-            "equipment",
-            "dates",
-            "casualties",
-            "logistics",
-            "maps",
-            "bibliography",
-        ]
-        skip = {
-            "index.json",
-            "duplicate_report.json",
-            "not_duplicates.json",
-            "not_related.json",
-            "review_queue.json",
-            ".processed_events.json",
-        }
-        updated = 0
-        for d in dirs:
-            p = output / d
-            if not p.exists():
-                continue
-            updated += _stamp_entity_dir(p, d, skip, needs_migration, inject_metadata)
-        # Event files -> entity 'events'
-        content = output / "content"
-        if content.exists():
-            for f in content.rglob("*-event.json"):
-                updated += _stamp_file(f, needs_migration, inject_metadata, "events")
-        logger.info(
-            "Schema migration: stamped %d files (per-entity versions; max v%s)",
-            updated,
-            SCHEMA_VERSION,
-        )
-
-    finally:
-        # Re-enable trigger Lambda (always, even on crash)
-        try:
-            lam.delete_function_concurrency(FunctionName=trigger_fn)
-            logger.info("Re-enabled trigger Lambda")
-        except Exception as e:
-            logger.warning("Could not re-enable trigger Lambda: %s", e)
+    # No trigger-Lambda disable here (removed 2026-11-25): stamping rewrites only this task's local
+    # files (they reach S3 at the later syncs), so the disable protected nothing, while it throttled
+    # every pipeline event and, if the task was killed mid-stamp, left the trigger off with no alert.
+    output = Path("/app/output")
+    dirs = [
+        "weather",
+        "people",
+        "people_groups",
+        "places",
+        "equipment",
+        "dates",
+        "casualties",
+        "logistics",
+        "maps",
+        "bibliography",
+    ]
+    skip = {
+        "index.json",
+        "duplicate_report.json",
+        "not_duplicates.json",
+        "not_related.json",
+        "review_queue.json",
+        ".processed_events.json",
+    }
+    updated = 0
+    for d in dirs:
+        p = output / d
+        if not p.exists():
+            continue
+        updated += _stamp_entity_dir(p, d, skip, needs_migration, inject_metadata)
+    # Event files -> entity 'events'
+    content = output / "content"
+    if content.exists():
+        for f in content.rglob("*-event.json"):
+            updated += _stamp_file(f, needs_migration, inject_metadata, "events")
+    logger.info(
+        "Schema migration: stamped %d files (per-entity versions; max v%s)",
+        updated,
+        SCHEMA_VERSION,
+    )
 
 
 def _held_lock_keys() -> list:

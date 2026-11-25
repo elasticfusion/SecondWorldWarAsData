@@ -1447,7 +1447,7 @@ tries, abort if never ready) -> `_clear_title_cache_if_reprocess` -> `_load_secr
   reconcile published (`_publish_reconcile_barrier`, "so it is comparable with Phase 3's download
   coverage"), but `_observe_bibliography_download_coverage` (`EP:1629`) compares the S3 listing with
   the local count and never reads it; it is only logged (`EP:1460-1466`).
-- **MED - schema stamping switches the whole pipeline's trigger off for a local-only job.**
+- FIXED IN CODE, NOT YET VALIDATED (2026-11-25: the disable/re-enable is removed, and so is `lambda:Put/DeleteFunctionConcurrency` from the Lambda and ECS task roles, its only use; `tests/test_schema_stamp_entity.py`) - **MED - schema stamping switches the whole pipeline's trigger off for a local-only job.**
   `_stamp_schema_versions` (`EP:3690`, run by every Phase 3 task right after the download) sets the
   trigger Lambda's reserved concurrency to 0 (`EP:3708`) while it rewrites files on the task's local
   disk, and removes the limit in a `finally` (`EP:3756`). Stamping touches no S3 object (the files
@@ -1911,7 +1911,7 @@ both: count the books and chapters affected (local, read-only).
   refused (counted). `clean_url` now rejects a port that is not a number instead of raising.
 
 #### Carried over from PHASE3_MAP.md §6 (found by the 2026-11-17 documentation review) (moved here from Group 11)
-- **MED (was gap 20) - Bibliography verifier is fail-open in one place.** `_verify_match` accepts on a
+- FIXED IN CODE, NOT YET VALIDATED (2026-11-25: no client or a Grok error now rejects, with `OBSERV bib.verify_unavailable` / `bib.verify_title_error`; `tests/test_bibliography_verify_fail_closed.py`) - **MED (was gap 20) - Bibliography verifier is fail-open in one place.** `_verify_match` accepts on a
   Grok error or without a client; every other verifier fails closed.
 
 #### Older backlog - MED list
@@ -2370,7 +2370,7 @@ referential-integrity check resolves. Deterministic, no Grok. Live data (`output
 synced to `tmp/phase3-review/imgcheck/content/`): 31 source sections, one per event (21 chapter events +
 10 notes events), and no event or sub-event carries `SourceSectionID` yet.
 
-- **MED - notes events are never stamped.** The walk skips `*-notes-event.json` (`event_provenance.py`,
+- FIXED IN CODE, NOT YET VALIDATED (2026-11-25: the skip is removed; dry run on the Phase 2 snapshot stamped all 31 events, the 10 notes events included, through the schema guard; `tests/test_provenance_hardening.py`) - **MED - notes events are never stamped.** The walk skips `*-notes-event.json` (`event_provenance.py`,
   `stamp_event_source_sections`), but those events have source sections too (10 of 31) and carry
   sub-events (e.g. `chapter2full-notes-event.json`, 42 sub-events) from which entities are extracted
   (`supplemental.py:1243`). Their entities' chain stops at the event. Stamp them as well, unless there

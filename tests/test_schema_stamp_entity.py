@@ -99,3 +99,23 @@ def test_stamp_entity_dir_refuses_unknown_entity(tmp_path):
     assert (
         json.loads((p / "one.json").read_text())["_schema_version"] == "2.0"
     )  # untouched
+
+
+def test_stamping_never_touches_the_trigger_lambda(monkeypatch):
+    """Stamping rewrites only local files: it must not throttle the trigger Lambda (a task killed
+    mid-stamp used to leave the whole pipeline's trigger at concurrency 0, with no alert).
+    """
+
+    def no_aws(service, *a, **k):
+        raise AssertionError(f"schema stamping called AWS ({service})")
+
+    monkeypatch.setattr(E.boto3, "client", no_aws)
+    E._stamp_schema_versions()  # /app/output is absent here: every directory is skipped
+
+
+def test_no_role_may_change_lambda_concurrency():
+    """The stamping disable was the only use; the grant is gone (least privilege)."""
+    from pathlib import Path
+
+    iam = (Path(E.__file__).parent / "cloudformation" / "iam.yaml").read_text()
+    assert "FunctionConcurrency" not in iam
