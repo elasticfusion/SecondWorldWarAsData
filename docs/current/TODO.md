@@ -2303,18 +2303,18 @@ still uses in its text. `EP` = `ecs_entrypoint.py`, `OE` = `src/enrichment/opens
   enqueues nothing; the worker searches generic equipment, lacks a reachability probe and loses its
   metrics; the autoscaler starts workers for any message although the pool size is 0 (PHASE3_MAP.md
   §3.12).
-- **MED (was gap 11) - `openserp_manager` cannot tell OpenSERP's task from pipeline work.** It matches
+- FIXED IN CODE, NOT YET VALIDATED (2026-11-25: OpenSERP's tasks are found with `list_tasks(serviceName=...)`, all pages; `tests/unit/test_openserp_manager_tasks.py`) - **MED (was gap 11) - `openserp_manager` cannot tell OpenSERP's task from pipeline work.** It matches
   "openserp" in task ARNs (`openserp_manager.py:31,81`), which never contain it, so the idle monitor
   never tears down while OpenSERP runs. After a failed Phase 3 (no scale-down at `EP:1053-1069`, lock
   held up to 2 h) only the hourly reaper remains, and it also requires no held lock.
-- **MED (was gap 13) - External maps cannot work on ECS.** `search_with_openserp` runs
+- FIXED IN CODE, NOT YET VALIDATED (2026-11-25: a failed search (tool missing, error, timeout, bad output) returns None and logs `OBSERV openserp_maps.search_failed`; the place is not marked searched. The tool is still not in the image: the feature stays off; `tests/test_openserp_maps_failure_not_answer.py`) - **MED (was gap 13) - External maps cannot work on ECS.** `search_with_openserp` runs
   `./tools/search_maps`, which is not copied into the image (`Dockerfile` has no `tools/` line), and
   only logs the `/mega/search` URL. The failure returns `[]`, and the place is still marked searched in
   the search history (`openserp_maps.py:718`). Off by default (`external_maps.enabled: false`).
-- **MED (was gap 14) - `--max-items` does not bound OpenSERP searches** for equipment, groups, places
+- FIXED IN CODE, NOT YET VALIDATED (2026-11-25: the equipment, groups, places and source-section drivers cap the entities searched (`_at_max_items`); `tests/test_openserp_max_items_bounds_searches.py`) - **MED (was gap 14) - `--max-items` does not bound OpenSERP searches** for equipment, groups, places
   and source sections. The cap tests the enriched count, so records that yield nothing keep being
   searched. Only people limit the candidates collected.
-- **MED (was gap 15) - Places OpenSERP is under-instrumented and uncapped.** No `_record_eligible`, no
+- FIXED IN CODE, NOT YET VALIDATED (2026-11-25: places now pass the name gate and count `entities_eligible`; image hits were already counted in `items_added`, and `results_per_query` is used; one search per name variant stays by design) - **MED (was gap 15) - Places OpenSERP is under-instrumented and uncapped.** No `_record_eligible`, no
   name gate, no result cap, once per name variant, and image hits are not counted in `items_added`.
   `openserp.results_per_query` is unused (limit fixed at 5).
 - **MED (was gap 19) - OpenSERP image items lack provenance beyond the URL.** No query, engine or

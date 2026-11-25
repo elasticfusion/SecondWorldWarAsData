@@ -19,16 +19,35 @@ ENV_NAME = os.getenv("ENV_NAME", "dev")
 IDLE_MINUTES = int(os.getenv("IDLE_MINUTES", "30"))
 
 
+def _task_arns(ecs, cluster, **filters):
+    """Every RUNNING task ARN in ``cluster`` matching ``filters`` (all pages: list_tasks returns
+    at most 100 per call)."""
+    arns = []
+    for page in ecs.get_paginator("list_tasks").paginate(
+        cluster=cluster, desiredStatus="RUNNING", **filters
+    ):
+        arns.extend(page.get("taskArns", []))
+    return arns
+
+
+def _running_tasks(ecs, cluster, service):
+    """(pipeline task ARNs, every running task ARN). OpenSERP's own tasks are named by asking for
+    the service's tasks: a task ARN never contains the service name, so matching "openserp" in
+    the ARN (the old check) counted OpenSERP as pipeline work and it never tore itself down.
+    """
+    every = _task_arns(ecs, cluster)
+    own = set(_task_arns(ecs, cluster, serviceName=service))
+    return [t for t in every if t not in own], every
+
+
 def _force_teardown_if_nat_too_old(ecs, cluster, service, region):
     """Guardrail: if NAT has been up >2h with NO pipeline tasks, force teardown (unless a lock is
     held, meaning a task is likely starting). Returns the action dict, or None to continue the
     normal idle-check path. Preserves every route + log line exactly."""
     if not _nat_too_old(max_hours=2):
         return None
-    running = ecs.list_tasks(cluster=cluster, desiredStatus="RUNNING")
-    task_arns = running.get("taskArns", [])
+    pipeline_tasks, _ = _running_tasks(ecs, cluster, service)
     # Only openserp or nothing — no pipeline work happening
-    pipeline_tasks = [t for t in task_arns if "openserp" not in t]
     if not pipeline_tasks:
         # Double-check: is a lock held? (task may be starting or between PROVISIONING/RUNNING)
         if _any_lock_held():
@@ -76,9 +95,7 @@ def handler(event, _context):
     # tasks — otherwise an idle openserp task counts as "active work" and the service perpetually
     # blocks its own teardown (the 8-day NAT/Fargate cost leak found 2026-10-08). Only a real
     # pipeline/phase task should keep networking up.
-    running = ecs.list_tasks(cluster=cluster, desiredStatus="RUNNING")
-    all_arns = running.get("taskArns", [])
-    pipeline_arns = [t for t in all_arns if "openserp" not in t]
+    pipeline_arns, all_arns = _running_tasks(ecs, cluster, service)
     task_count = len(pipeline_arns)
 
     if task_count > 0:
@@ -111,6 +128,14 @@ def handler(event, _context):
             IDLE_MINUTES,
         )
         return {"action": "none", "last_active_min_ago": minutes_ago}
+
+    # A held lock or NAT lease means a pipeline task is starting (it scales OpenSERP up before its
+    # RunTask shows as running): same guard as the 2-hour path, so OpenSERP is not cut under it
+    if _any_lock_held():
+        logger.info(
+            "Idle check: a lock or NAT lease is held - task likely starting, no teardown"
+        )
+        return {"action": "none", "reason": "lock held"}
 
     # Idle long enough — tear down
     logger.info("Idle for %d+ minutes — tearing down", IDLE_MINUTES)

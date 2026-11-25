@@ -196,6 +196,25 @@ def _metric(key: str, n: int = 1) -> None:
         _metrics[key] = _metrics.get(key, 0) + n
 
 
+def _attempts_so_far() -> int:
+    """Entity searches STARTED so far in this process (``_search_entity``), settled or not."""
+    with _metrics_lock:
+        return _metrics.get("search_attempts", 0)
+
+
+def _at_max_items(
+    max_items: Optional[int], searched_at_start: int, pending: Any
+) -> bool:
+    """``--max-items`` bounds the entity searches a driver STARTS (plus the ones queued for a
+    batch), not the ones it enriched: counting only enriched records kept searching every record
+    that yielded nothing (TODO gap 14). A search whose verdict failed counts too: its OpenSERP
+    queries and Grok calls were spent. The drivers run one after another, so the metric's growth
+    since the driver started is that driver's own searches."""
+    if not max_items:
+        return False
+    return (_attempts_so_far() - searched_at_start) + pending.queued >= max_items
+
+
 def _record_eligible() -> None:
     """Count a record that IS a candidate for search (passed the name/recency gate). This is the
     expected-yield baseline used by write_metrics to flag `searched << eligible` starvation.
@@ -1054,6 +1073,9 @@ def _search_entity(
     """
     if lacks_identity(entity, data):
         return None  # left unsearched: nothing is spent on it
+    _metric(
+        "search_attempts"
+    )  # spend starts here: --max-items counts it (_at_max_items)
     trace = _new_trace(entity, f, data, name)
     try:
         with _tracing(trace):
@@ -2582,11 +2604,12 @@ def enrich_equipment_with_openserp(
 
     enriched = 0
     pending = Pending()
+    searched_at_start = _attempts_so_far()
     for f in sorted(equipment_dir.glob("*.json")):
         if f.name in SKIP_FILES:
             continue
         # queued requests count too: a batch round must not queue more than --max-items entities
-        if max_items and enriched + pending.queued >= max_items:
+        if _at_max_items(max_items, searched_at_start, pending):
             break
         if pending.call(_process_equipment_file, f, openserp_url, grok_client):
             enriched += 1
@@ -2709,11 +2732,12 @@ def enrich_source_sections_with_openserp(
 
     enriched = 0
     pending = Pending()
+    searched_at_start = _attempts_so_far()
     n_records = 0
     for f, data in _iter_loadable_files(iter_section_files(output_root)):
         n_records += 1
         # queued requests count too: a batch round must not queue more than --max-items entities
-        if max_items and enriched + pending.queued >= max_items:
+        if _at_max_items(max_items, searched_at_start, pending):
             break
         if pending.call(
             _process_one_source_section, f, data, openserp_url, grok_client
@@ -2904,9 +2928,10 @@ def enrich_groups_with_openserp(
 
     enriched = 0
     pending = Pending()
+    searched_at_start = _attempts_so_far()
     for f, data in _iter_loadable_records(groups_dir):
         # queued requests count too: a batch round must not queue more than --max-items entities
-        if max_items and enriched + pending.queued >= max_items:
+        if _at_max_items(max_items, searched_at_start, pending):
             break
 
         name = data.get("group_name", "")
@@ -3155,9 +3180,10 @@ def enrich_places_with_openserp(
 
     enriched = 0
     pending = Pending()
+    searched_at_start = _attempts_so_far()
     for f, data in _iter_loadable_records(places_dir):
         # queued requests count too: a batch round must not queue more than --max-items entities
-        if max_items and enriched + pending.queued >= max_items:
+        if _at_max_items(max_items, searched_at_start, pending):
             break
 
         variants = place_name_variants(data)
@@ -3168,6 +3194,11 @@ def enrich_places_with_openserp(
             continue
 
         primary = variants[0]
+        # the same name gate + eligible count as the other drivers (TODO gap 15): the
+        # searched/eligible starvation check in write_metrics had no places baseline
+        if not _usable_entity_name(primary, min_len=2):
+            continue
+        _record_eligible()
         changed = pending.call(
             _search_entity,
             "places",

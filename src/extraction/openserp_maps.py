@@ -281,10 +281,12 @@ def search_with_openserp(
     date: Optional[str],
     limit: int = 50,
     openserp_url: str = "http://localhost:7001",
-) -> List[Dict[str, Any]]:
+) -> Optional[List[Dict[str, Any]]]:
     """Search for maps using OpenSERP (real search engines).
 
-    Returns: List of search results with url, title, description, engine
+    Returns: List of search results with url, title, description, engine; ``[]`` when the search
+    answered with nothing; ``None`` when it FAILED (tool missing or erroring, timeout, bad output),
+    which is not an answer: the caller must not mark the place searched (TODO gap 13).
     """
     try:
         # Build search query
@@ -322,17 +324,31 @@ def search_with_openserp(
         )
 
         if result.returncode != 0:
-            logger.warning(f"OpenSERP search failed: {result.stderr}")
-            return []
-
-        return json.loads(result.stdout)
+            return _search_failed(place_name, f"exit {result.returncode}")
+        found = json.loads(result.stdout)
+        if not isinstance(found, list):
+            return _search_failed(place_name, "output is not a list")
+        return found
 
     except subprocess.TimeoutExpired:
-        logger.warning(f"OpenSERP search timed out for {place_name} (>120s)")
-        return []
+        return _search_failed(place_name, "timeout >120s")
+    except FileNotFoundError:
+        return _search_failed(place_name, "./tools/search_maps is not in this image")
     except Exception as e:  # pylint: disable=broad-exception-caught
-        logger.warning(f"OpenSERP search error: {e}")
-        return []
+        return _search_failed(place_name, type(e).__name__)
+
+
+def _search_failed(place_name: str, reason: str) -> Optional[List[Dict[str, Any]]]:
+    """Log a failed external map search (not an answer: the place stays unsearched)."""
+    logger.warning(
+        "OBSERV openserp_maps.search_failed place=%r reason=%s status=warn - the place is left "
+        "unsearched and is tried again next run; if the tool is missing, build it "
+        "(go build -o tools/search_maps tools/search_maps.go) and COPY it in the Dockerfile, or set "
+        "external_maps.enabled: false",
+        place_name[:80],
+        reason,
+    )
+    return None
 
 
 def _get_event_context(place_data: dict) -> tuple[str, Optional[str]]:
@@ -697,6 +713,12 @@ def _process_place_file(
         place_name, date, limit=search_limit, openserp_url=openserp_url
     )
 
+    if results is None:
+        return (
+            0,
+            0,
+            0,
+        )  # the search failed (said by _search_failed): not an answer, not marked
     if not results:
         logger.info("   ⚠ No results from OpenSERP")
         history.mark_searched(place_name)  # an answer: nothing found
