@@ -1677,6 +1677,23 @@ Owner: no NARA key -> leave archive-path records for the next run (D8b); NARA no
 bibliography JSON; Archive.org / Gutenberg finds through G3.
 **Test:** restore, run; non-citations gone from S3; finds in the queue; NARA online copies trusted.
 
+#### Citations lost before Phase 3 (found 2026-11-24; owner: to-do)
+Both lose bibliography records silently - a provenance gap for professional historians. Deterministic (no Grok);
+they take effect when a book is re-parsed and Phase 2 re-run (a pipeline run: owner approval). First step for
+both: count the books and chapters affected (local, read-only).
+- **TODO - HIGH - Phase 1 does not recognise some HyperWar notes sections.** In local `XChannel` chapter 6
+  (`chapter6k-content.md`) the notes are written `> [[116](<#cn116>)] NEPTUNE, ... cf. [Charles H. Taylor]
+  _[Omaha Beachhead](...#page31)_ ...`; `src/notes._find_section` returns no notes, so they stay body paragraphs
+  and the parsed footnotes carry only a self-link (`...USA-E-XChannel-5.html#fn116`) with no text. Phase 2 then
+  makes no bibliography record (it builds them from note text), and the citation-link and `held_in_corpus` steps
+  cannot see them. Fix in Phase 1, with a test on this format.
+- **TODO - HIGH - notes-only chapters never become bibliography records.** Phase 1 writes a chapter titled
+  Footnotes/Endnotes only to `*-footnotes.json` / `*-endnotes.json` (`phase1_parse._process_document` ->
+  `_save_footnotes_chapter`), no `*-parsed.json`. Phase 2's deterministic bibliography pass reads only
+  `*-parsed.json` (`phase2_extract.py`, `rglob("*-parsed.json")`) although `extract_bibliography_deterministic`'s
+  docstring says it reads `*-endnotes.json` too. Fix: Phase 2 also reads the notes-only files (or Phase 1 writes
+  them in the parsed shape), then Phase 3's citation step reads them as well.
+
 #### Step: EP _download_inputs (PHASE3_MAP §1 "What EP _download_inputs does") (moved here from Group 4)
 - **MED - records the merge folds into another stay in S3 as duplicates.** The reconcile's near-title
   pass merges whole canonical records (`bib_<a>.json` into `bib_<b>.json`) and deletes the merged-away
@@ -2089,13 +2106,8 @@ Findings:
   in several records, or a record whose notes link two volumes, is not guessed; unchanged marks are not rewritten;
   a mark that no longer holds is cleared (only after a run that read every citation record). Checked: the Phase 2
   merge (`_merge_bib_fields`) updates the surviving record in place, so its mark stays; a mark only on a merged-away
-  record is dropped and rebuilt by the next Phase 3 run. OPEN: a chapter that is ONLY notes (titled
-  Footnotes/Endnotes) is written by Phase 1 to `*-endnotes.json` / `*-footnotes.json`, which this step does not read:
-  its links are neither indexed nor marked - check whether Phase 2 makes bibliography records from those files and,
-  if so, read them here too.
-  OPEN (Phase 1, found here): in some HyperWar imports the notes section is not recognised (e.g. local `XChannel`
-  chapter 6: `> [[116](<#cn116>)] ...` stays a body paragraph), so those notes have no text and no bibliography
-  record, and their citations cannot be marked - check `src/notes._find_section` against these files.
+  record is dropped and rebuilt by the next Phase 3 run. Two upstream gaps limit it (Group 7, "Citations lost
+  before Phase 3"): unrecognised HyperWar notes sections, and notes-only chapters.
   OPEN: a non-interactive volume import (`scripts/import_hyperwar_html.py`
   prompts for metadata) for the owner-approved batches. Original finding: The linked page (often one chapter)
   becomes its own book, slug `intracorpus-<volume>-<sha12>` (`book_slug` = filename stem). The slug is
