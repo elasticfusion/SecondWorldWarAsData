@@ -57,8 +57,11 @@ build_scan_push() {
   fi
   trivy_scan "$tag" "$blocking" || exit 1
   docker tag "$tag:latest" "$image"
+  docker tag "$tag:latest" "${image%:*}:$DEPLOY_TAG"
   docker push "$image"
-  echo "  Pushed: $image"
+  docker push "${image%:*}:$DEPLOY_TAG"  # the tag pin_image pins (unique to this run)
+  note_built "$repo"
+  echo "  Pushed: $image ($DEPLOY_TAG)"
 }
 
 # --- Deployed code must be committed (task 0.2, 2026-11-18) ---
@@ -108,6 +111,11 @@ require_committed_tree() {
 require_committed_tree
 cd "$DEPLOY_ROOT"  # every build below uses the tree that was just checked
 
+# Images go to the stacks by digest (scripts/image_pin.sh). DEPLOY_TAG is unique to this run.
+DEPLOY_TAG="deploy-$(date -u +%Y%m%dT%H%M%SZ)-${HEAD_SHA:0:12}"
+source scripts/image_pin.sh
+pin() { ensure_lifecycle "$1" && pin_image "$1"; }  # $1 = repo; prints the pinned uri
+
 # --- OCR Standalone Mode ---
 if [ "$1" = "--ocr-standalone" ]; then
     REGION="us-east-1"
@@ -144,6 +152,8 @@ if [ "$1" = "--ocr-standalone" ]; then
         build_scan_push Dockerfile.paddle wwii-paddle wwii-paddle "$PADDLE_IMAGE" 0
     fi
 
+    CHANDRA_IMAGE=$(pin wwii-chandra) || exit 1
+    PADDLE_IMAGE=$(pin wwii-paddle) || exit 1
     echo ""
     echo "=== 2. Validating CloudFormation ==="
     set +e
@@ -215,6 +225,9 @@ if [ "$1" = "--ocr-standalone" ]; then
             aws cloudformation wait stack-update-complete --stack-name $STACK_NAME --region $REGION 2>/dev/null || true
         echo "  Stack status: $(aws cloudformation describe-stacks --stack-name $STACK_NAME --region $REGION --query 'Stacks[0].StackStatus' --output text)"
     fi
+    _pins=("ChandraImageUri=$CHANDRA_IMAGE" "PaddleImageUri=$PADDLE_IMAGE")
+    verify_stack_images "$STACK_NAME" "${_pins[@]}" || exit 1
+    mark_live "$ENV" "${_pins[@]#*=}" || exit 1
 
     echo ""
     echo "=== OCR Deploy Complete ==="
@@ -532,7 +545,10 @@ else
   pip-audit -r requirements.txt --severity high 2>&1 | tail -10 || { echo "  ✗ pip-audit found vulnerabilities — aborting deploy"; exit 1; }
   echo "  pip-audit: OK"
   docker tag wwii-pipeline:latest $PIPELINE_IMAGE
+  docker tag wwii-pipeline:latest "${PIPELINE_IMAGE%:*}:$DEPLOY_TAG"
   docker push $PIPELINE_IMAGE || { echo "  ✗ docker push FAILED — hard stop"; exit 1; }
+  docker push "${PIPELINE_IMAGE%:*}:$DEPLOY_TAG" || { echo "  ✗ docker push FAILED — hard stop"; exit 1; }
+  note_built wwii-pipeline
 fi
 # HARD freshness assertion: the pipeline image MUST have been pushed during THIS run. A silent
 # no-push (e.g. a swallowed build/push failure) previously left a STALE image deployed undetected
@@ -557,6 +573,7 @@ if [ "${AV_BUILD:-0}" = "1" ]; then build_scan_push Dockerfile.clamav wwii-clama
 # Resolve pass-through: only pass an optional image flag if that repo+tag exists.
 VIDEO_ARG=""; AV_ARG=""
 if aws ecr describe-images --repository-name wwii-video --region $REGION --image-ids imageTag=latest >/dev/null 2>&1; then
+  VIDEO_IMAGE=$(pin wwii-video) || exit 1
   VIDEO_ARG="--video-image $VIDEO_IMAGE"; echo "  video image present → passing $VIDEO_IMAGE"
 fi
 # ClamAV is ON for every binary (owner 2026-11-23): a missing image is built now, and a deploy
@@ -566,12 +583,16 @@ if ! aws ecr describe-images --repository-name wwii-clamav --region $REGION --im
   build_scan_push Dockerfile.clamav wwii-clamav wwii-clamav "$AV_IMAGE" 1
 fi
 if aws ecr describe-images --repository-name wwii-clamav --region $REGION --image-ids imageTag=latest >/dev/null 2>&1; then
+  AV_IMAGE=$(pin wwii-clamav) || exit 1
   AV_ARG="--av-image $AV_IMAGE"; echo "  clamav image present → passing $AV_IMAGE (AV scanning ENABLED)"
 else
   echo "  ✗ clamav image still absent after the build: NOT deploying with AV scanning off. Fix the"
   echo "    Dockerfile.clamav build (or ECR access) and re-run. Hard stop."; exit 1
 fi
 
+# The stacks get each image by digest (pin_image above): the `:latest` URIs were only for the push.
+PIPELINE_IMAGE=$(pin wwii-pipeline) || exit 1
+OPENSERP_IMAGE=$(pin wwii-openserp) || exit 1
 echo ""
 echo "=== 5. Deploying CloudFormation ==="
 # Check stack is in a deployable state
@@ -586,6 +607,12 @@ aws s3 sync cloudformation/ s3://$TEMPLATE_BUCKET/cloudformation/ --region $REGI
     || { echo "  ✗ cloudformation/ S3 sync failed — hard stop"; exit 1; }
 python3 scripts/deploy_aws.py deploy --env $ENV --region $REGION --template-bucket $TEMPLATE_BUCKET --pipeline-image $PIPELINE_IMAGE --openserp-image $OPENSERP_IMAGE $VIDEO_ARG $AV_ARG $BATCH_ARG --notification-email $EMAIL \
     || { echo "  ✗ CloudFormation deploy (deploy_aws.py) FAILED — hard stop (expected infra did not deploy)"; exit 1; }
+# The stack must now run every pinned image (a rolled-back stack would keep the old ones); only
+# then do they become live-$ENV (scripts/image_pin.sh: the tag no lifecycle rule selects).
+_pins=("PipelineImageUri=$PIPELINE_IMAGE" "OpenSerpImageUri=$OPENSERP_IMAGE" "AvImageUri=$AV_IMAGE")
+[ -n "$VIDEO_ARG" ] && _pins+=("VideoImageUri=$VIDEO_IMAGE")
+verify_stack_images "wwii-pipeline-$ENV" "${_pins[@]}" || exit 1
+mark_live "$ENV" "${_pins[@]#*=}" || exit 1
 
 echo ""
 echo "=== 5b. Archiving the deployed config.yaml ==="

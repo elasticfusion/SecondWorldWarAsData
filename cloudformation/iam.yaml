@@ -538,6 +538,9 @@ Resources:
                   - ecr:GetDownloadUrlForLayer
                   - ecr:BatchGetImage
                   - ecr:PutImage
+                  # scripts/image_pin.sh: read a digest/tags, drop a live image's deploy- tags
+                  - ecr:DescribeImages
+                  - ecr:BatchDeleteImage
                   - ecr:InitiateLayerUpload
                   - ecr:UploadLayerPart
                   - ecr:CompleteLayerUpload

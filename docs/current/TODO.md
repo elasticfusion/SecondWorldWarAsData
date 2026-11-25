@@ -96,16 +96,36 @@ Phase 3 once on the restored Phase 2 data as the baseline every later group is c
     1. **Deploy-on-merge:** a CI job (or documented post-merge step) that rebuilds + pushes the pipeline
        image and re-registers the ECS phase task defs when `main` changes — close the merge≠deploy gap.
        (CI currently runs lint+test on PRs only; it does NOT build/push the Docker image.)
-    2. **Pin task defs by image DIGEST, not the mutable `:latest`** (+ stamp the git SHA as an image tag/label)
-       so "which commit is live" is unambiguous/auditable (this bug was invisible because task defs point at
-       `:latest`).
-    3. **Emit the running git SHA in a startup OBSERV** (`OBSERV pipeline.version sha=<...>` at phase start)
-       so any run's logs self-identify the code version (no more reverse-engineering "did this run have M2?").
+    2. DONE (2026-11-25) **Pin task defs by image DIGEST, not the mutable `:latest`.**
+       `scripts/image_pin.sh` (sourced by `deploy_all.sh` and the CI `deploy.yml`) gives every stack image
+       parameter `<repo>@sha256:...` (pipeline, openserp, video, clamav; chandra/paddle in
+       `--ocr-standalone`). A build is pushed under a `deploy-<UTC>-<sha12>` tag unique to the run and
+       pinned through it, so a concurrent push that moves `:latest` cannot change the pin; an image the run
+       did not build is pinned from `:latest` and not tagged (a `deploy-` tag left on a live image by a
+       failed run would let the count rule expire it). Right after the stack update,
+       `verify_stack_images` hard-stops unless the stack is `*_COMPLETE` and runs every pin, then
+       `mark_live` moves `live-<env>` onto each pin and drops its `deploy-` tags. The lifecycle policy the deploy now owns per repo: keep the newest 2
+       `deploy-` images (in-flight/failed; chandra is ~17 GB), expire untagged 14 days after push. No rule
+       selects `live-<env>`, so a failed deploy or another env cannot expire a live image; a superseded one
+       becomes untagged and expires. The CI role gains `ecr:DescribeImages` + `ecr:BatchDeleteImage`
+       (not `PutLifecyclePolicy`). Guarded by `tests/test_deploy_image_pin.py`. Rolling back to an older
+       task-def revision is not supported (its image may have expired): redeploy the older commit.
+       Left: two deploys of one env must not overlap (no deploy lock; the later `mark_live` wins and the
+       other image keeps no live tag); the CI path relies on `deploy_all.sh` having set each repo's
+       lifecycle policy once, passes an empty `PipelineImageUri` on a `cloudformation-only` run
+       (pre-existing), and does not re-pin openserp/video; the CI role's `ecr:BatchDeleteImage` on
+       `wwii-*` (no tag-level condition exists) lets a compromised main-branch workflow delete images.
+       Narrow: a build byte-identical to the live image, then a failure between its push and
+       `pin_image` (e.g. the clamav build), leaves the run's `deploy-` tag on the live image until the
+       next successful `mark_live`; two more failed builds in between would let rule 1 expire it
+       (hardening: the drop-if-live check right after the push, or an EXIT trap).
+    3. DONE (task 0.2, `OBSERV pipeline.version sha=<commit>+cfg-<hash>`, built in via `--build-arg GIT_SHA`)
+       **Emit the running git SHA in a startup OBSERV**.
   NOTE: my first diagnosis ("image from Oct 13") was WRONG — I misread the task-def registeredAt as the image
   push time; the image is ~1 day old but predates the M1/M2 afternoon merges.
 
 #### Older backlog - LOW list
-- **[LOW · deploy-provenance] `scripts/deploy_all.sh` doesn't pass `--build-arg GIT_SHA`** so the pipeline image's
+- **DONE (task 0.2: `build_scan_push` passes it) [LOW · deploy-provenance] `scripts/deploy_all.sh` doesn't pass `--build-arg GIT_SHA`** so the pipeline image's
   `GIT_SHA` env/label is `unknown` (cosmetic provenance gap; image content is still current main). Pass
   `--build-arg GIT_SHA=$(git rev-parse HEAD)` in `build_scan_push`.
 

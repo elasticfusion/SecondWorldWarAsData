@@ -92,11 +92,18 @@ jobs:
         env:
           REGISTRY: ${{ steps.ecr-login.outputs.registry }}
         run: |
-          IMAGE_URI="$REGISTRY/${{ env.ECR_REPO }}:${{ github.sha }}"
-          docker tag ${{ env.ECR_REPO }}:${{ github.sha }} "$IMAGE_URI"
+          # the stack gets the image by digest, pinned through the run's unique deploy- tag
+          # (scripts/image_pin.sh, shared with scripts/deploy_all.sh). PREREQUISITE: this role cannot
+          # set the repos' lifecycle policy; scripts/deploy_all.sh must have run once to set it.
+          DEPLOY_TAG="deploy-$(date -u +%Y%m%dT%H%M%SZ)-${GITHUB_SHA:0:12}"
+          docker tag ${{ env.ECR_REPO }}:${{ github.sha }} "$REGISTRY/${{ env.ECR_REPO }}:$DEPLOY_TAG"
           docker tag ${{ env.ECR_REPO }}:${{ github.sha }} "$REGISTRY/${{ env.ECR_REPO }}:latest"
-          docker push "$IMAGE_URI"
+          docker push "$REGISTRY/${{ env.ECR_REPO }}:$DEPLOY_TAG"
           docker push "$REGISTRY/${{ env.ECR_REPO }}:latest"
+          REGION="$AWS_REGION" ECR_REPO="$REGISTRY"
+          source scripts/image_pin.sh
+          note_built "${{ env.ECR_REPO }}"
+          IMAGE_URI=$(pin_image "${{ env.ECR_REPO }}")
           echo "image_uri=$IMAGE_URI" >> "$GITHUB_OUTPUT"
 
   # ─── Build and deploy Lambda code ───
@@ -170,10 +177,15 @@ jobs:
         run: aws s3 sync cloudformation/ "s3://${{ env.TEMPLATE_BUCKET }}/cloudformation/"
 
       - name: Deploy stack
+        env:
+          PIPE: ${{ needs.build-container.outputs.image_uri }}
         run: |
           # ClamAV is mandatory (AvImageUri has no default): the scanner image in this account's ECR
           ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-          AV_IMAGE_URI="${ACCOUNT_ID}.dkr.ecr.${AWS_REGION:-us-east-1}.amazonaws.com/wwii-clamav:latest"
+          REGION="$AWS_REGION" ECR_REPO="${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+          DEPLOY_TAG="deploy-$(date -u +%Y%m%dT%H%M%SZ)-${GITHUB_SHA:0:12}"
+          source scripts/image_pin.sh
+          AV_IMAGE_URI=$(pin_image wwii-clamav)
           aws cloudformation deploy \
             --stack-name "wwii-pipeline-${{ env.ENV_NAME }}" \
             --template-file cloudformation/main.yaml \
@@ -186,3 +198,8 @@ jobs:
               AvImageUri="$AV_IMAGE_URI" \
             --capabilities CAPABILITY_NAMED_IAM \
             --no-fail-on-empty-changeset
+          # the stack must run the pins; only then are they live-<env> (no lifecycle rule selects it)
+          PINS=("AvImageUri=$AV_IMAGE_URI")
+          [ -n "$PIPE" ] && PINS+=("PipelineImageUri=$PIPE")
+          verify_stack_images "wwii-pipeline-${{ env.ENV_NAME }}" "${PINS[@]}"
+          mark_live "${{ env.ENV_NAME }}" "${PINS[@]#*=}"
