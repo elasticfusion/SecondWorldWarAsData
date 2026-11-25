@@ -2040,18 +2040,38 @@ which starts Phase 0 like an uploaded book. Gated by `links.intra_corpus` (defau
 ("was gap 3").
 
 Findings:
-- **HIGH - it ingests one page, not the volume, under a hash slug.** The linked page (often one chapter)
+- **DONE (2026-11-24, owner "yes and go") - HIGH - it ingests one page, not the volume, under a hash slug.**
+  History: the owner's M8 entry (2026-10-27, 6bd08a9d, LOW "polish") asked only to mark citations of other
+  volumes as internal links; the implementation (bb4ac30b, PR #594) added the one-page upload citing an owner
+  directive to queue cited documents that is recorded nowhere else (no TODO, design doc, steering or saved agent
+  log). Owner 2026-11-24: every volume will be ingested in the end, under its own name, in approved batches.
+  Done: the upload is removed (no fetch, no `contentrepository/` write, no Phase 1->3 spend); a book whose source
+  URL is its volume's `index.html` is now recognised as that volume (`intra_corpus._volume_of`; before, its own
+  pages counted as citations of another volume and would have been re-uploaded: 2,469 XChannel, 800 Lorraine and
+  646 Ardennes links in the local corpus); the citation index `src/extraction/corpus_links.py` (data bucket
+  `corpus-links/`, per book: `volumes/<book>.json` = the volume a book is, `citations/<volume>/<book>.json` = each
+  citation's SourceSectionID, chapter, URL and page; `ingest-list.json` = every cited volume, pending (most cited
+  first, with its index URL) or held (`held_as`: the books that are it, matched by volume key, never slug). Dry
+  run on the local corpus: 9 cited volumes pending (USA-E-Supreme 16 links, USA-A-Omaha 10, USA-A-Utah 6, ...).
+  Citations are keyed on Phase 1's `chapter_number` (titles repeat); a book with an unreadable document keeps its
+  last index (`corpus_links.book_skipped`); `volume_index_url` is only ever an https ibiblio URL (a future importer
+  fetches it). OPEN: `ingest-list.json` is last-writer-wins between parallel Phase 3 tasks (rebuilt each run, so
+  eventually consistent). OPEN: connect a held volume's citations to its records (a link on the citing source section; the bibliography
+  entry marked in-corpus with the BookID); a non-interactive volume import (`scripts/import_hyperwar_html.py`
+  prompts for metadata) for the owner-approved batches; the local corpus holds USA-E-XChannel twice (`XChannel`,
+  `CrossChannelAttack`). Original finding: The linked page (often one chapter)
   becomes its own book, slug `intracorpus-<volume>-<sha12>` (`book_slug` = filename stem). The slug is
   immutable, so a later proper ingestion of the whole volume under its real name duplicates it, and
   each other cited page of the same volume becomes another one-page book. `_should_queue` dedups by
   volume within a run only (`:168`). Queue the volume (its table of contents) once, under its volume
   slug.
-- **MED - the corpus-graph edges are thrown away.** `process_doc_links` returns them and the caller only
+- **PART DONE (2026-11-24) - MED - the corpus-graph edges are thrown away.** Cross-volume edges are kept in the
+  citation index (`corpus_links`); same-volume page anchors are still only counted. Original: `process_doc_links` returns them and the caller only
   counts them (`phase3_enrich_data.py:579`); nothing writes them. Persist them on the source section
   (or a link record), with the citing paragraph.
-- **MED - the dedup claim is taken before the upload.** `_register_content_hash_if_new` runs before
+- **DONE (2026-11-24: the upload is removed) - MED - the dedup claim is taken before the upload.** `_register_content_hash_if_new` runs before
   `put_object` (`:212`, `:222`); a failed upload is never retried (same flaw as the map-as-source entry).
-- **LOW - the fetch bypasses `url_fetch`** (registry, politeness, Wayback). DRY: use `url_fetch.fetch`.
+- **DONE (2026-11-24: nothing is fetched any more) - LOW - the fetch bypasses `url_fetch`** (registry, politeness, Wayback).
 - Same wrong-section attribution as `link_asset_review` (one SourceSectionID per book).
 
 #### Consolidate link_asset_review and intra_corpus_links into one document-links step (owner question 2026-11-17)

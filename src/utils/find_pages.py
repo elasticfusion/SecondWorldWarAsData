@@ -87,6 +87,13 @@ def _storage(prefix: str = S3_PREFIX, local_dir: Optional[Path] = None) -> Any:
         return _STORES[key]
 
 
+def data_bucket_storage(prefix: str, local_dir: Path) -> Any:
+    """A store for ``prefix`` in the data bucket (``S3_BUCKET``), else ``local_dir``: the one way
+    pipeline-owned files outside ``output/`` are kept (find pages, the corpus citation index).
+    """
+    return _storage(prefix, local_dir)
+
+
 def _page_path(sha: str) -> Optional[str]:
     m = _SHA_RE.fullmatch(sha or "")
     return f"pages/{m.group(1)}.html" if m else None

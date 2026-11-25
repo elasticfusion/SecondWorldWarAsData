@@ -238,6 +238,17 @@ def _private_fetch_events(monkeypatch, tmp_path_factory):
 
 
 @pytest.fixture(autouse=True)
+def _private_corpus_links(monkeypatch, tmp_path_factory):
+    """The corpus citation index (src/extraction/corpus_links) goes to a private local directory
+    per test (find_pages' bucket is off in tests), never the repo's output/."""
+    from src.extraction import corpus_links
+
+    monkeypatch.setattr(
+        corpus_links, "_LOCAL_DIR", tmp_path_factory.mktemp("corpus_links")
+    )
+
+
+@pytest.fixture(autouse=True)
 def _no_link_safety(monkeypatch):
     """src/utils/link_safety asks Google Safe Browsing about URLs: off in every test (never a live
     request, even with a real key in the environment), and its breaker reset. Its own tests turn

@@ -394,9 +394,8 @@ def _run_document_link_steps(args, config, grok_client, run_step) -> int:
             "image_place_link",
             lambda: _link_images_to_places(out, grok_client),
         )
-    # M8: recognize links to OTHER in-corpus ibiblio volumes -> mark internal corpus-graph edges
-    # (ULID-attributed) + QUEUE a not-yet-ingested cited document as another batch. Gated by
-    # links.intra_corpus (default on).
+    # M8: index the links to OTHER ibiblio volumes (ULID-attributed citations + the list of cited
+    # volumes to ingest; nothing fetched or uploaded). Gated by links.intra_corpus (default on).
     if config.get("links", {}).get("intra_corpus", True):
         enriched += run_step(
             "intra_corpus_links",
@@ -419,9 +418,10 @@ def _stamp_event_provenance(out) -> int:
     return stamp_event_source_sections(out)
 
 
-def _load_parsed_docs(out) -> list:
+def _load_parsed_docs(out, unreadable_books=None) -> list:
     """Load all parsed.json docs under out/content (shared by the M1 map-link + M3 image-person
-    steps). Fail-safe: returns [] on any error."""
+    steps). ``unreadable_books``: a set that receives the book (``content/<book>/``) of each parsed
+    file that could not be read. Fail-safe: returns [] on any error."""
     import json
     import logging
 
@@ -436,6 +436,9 @@ def _load_parsed_docs(out) -> list:
             doc = load_record(pf, "parsed_docs")
             if doc is None:
                 unreadable += 1
+                if unreadable_books is not None:
+                    rel = pf.relative_to(out / "content").parts
+                    unreadable_books.add(rel[0] if len(rel) > 1 else "")
             else:
                 docs.append(doc)
     except Exception as exc:  # noqa: BLE001
@@ -578,46 +581,85 @@ def _link_images_to_places(out, grok_client) -> int:
 
 
 def _process_intra_corpus_links(out) -> int:
-    """M8: recognize links to OTHER in-corpus ibiblio volumes, record internal corpus-graph edges
-    (ULID-attributed), and queue a not-yet-ingested cited document as another batch. Returns the
-    count of documents queued. Fail-safe."""
-    from src.extraction.intra_corpus import (
-        _corpus_volumes_present,
-        process_doc_links,
-    )
+    """M8: index the links to OTHER ibiblio volumes (src/extraction/corpus_links): per book, the
+    volume it is and every volume it cites (ULID-attributed, with chapter and page), then the
+    ingestion list of cited volumes not yet in the corpus. Nothing is fetched or uploaded (owner
+    2026-11-24). Returns the number of books indexed. Fail-safe."""
+    from src.extraction import corpus_links
+    from src.extraction.intra_corpus import _corpus_volumes_present
 
-    docs = _load_parsed_docs(out)
+    unreadable: set = set()
+    docs = _load_parsed_docs(out, unreadable)
     if not docs:
         return 0
-    book_to_section = _book_section_index(out)
-    corpus_volumes = _corpus_volumes_present(out)
-    queued: set = set()
-    totals = {"edges": 0, "anchors": 0, "queued": 0, "skipped": 0}
+    books, totals = _citations_by_book(docs, _book_section_index(out))
+    for book in unreadable & set(books):
+        books[book][
+            "error"
+        ] = True  # a chapter is missing: do not rewrite from the rest
+    indexed = sum(
+        _index_book(corpus_links, book, entry) for book, entry in books.items()
+    )
+    listing = corpus_links.build_ingest_list(_corpus_volumes_present(out))
+    logging.getLogger("root").info(
+        "OBSERV phase3.step name=intra_corpus_links books=%d edges=%d anchors=%d cited=%d "
+        "volumes_pending=%d status=ok",
+        indexed,
+        totals["edges"],
+        totals["anchors"],
+        totals["cited"],
+        listing["pending"],
+    )
+    return indexed
+
+
+def _citations_by_book(docs, book_to_section) -> tuple:
+    """Each parsed document's cross-volume edges, grouped by book: (books, totals)."""
+    from src.extraction.intra_corpus import process_doc_links
+
+    books: dict = {}  # book -> {"source_url", "chapters", "error"}
+    totals = {"edges": 0, "anchors": 0, "cited": 0}
     for doc in docs:
         if not isinstance(doc, dict):
             continue
+        book = str(doc.get("book", ""))
+        source_url = doc.get("_source_url", "") or ""
         s = process_doc_links(
-            _doc_link_content(doc),
-            doc.get("_source_url", "") or "",
-            str(doc.get("book", "")),
-            out=out,
-            book_to_section=book_to_section,
-            corpus_volumes=corpus_volumes,
-            queued=queued,
+            _doc_link_content(doc), source_url, book, book_to_section=book_to_section
         )
-        totals["edges"] += len(s.get("edges", []))
+        entry = books.setdefault(
+            book, {"source_url": source_url, "chapters": [], "error": False}
+        )
+        entry["source_url"] = entry["source_url"] or source_url
+        entry["chapters"].append(
+            {
+                "chapter": doc.get("chapter_number"),  # Phase 1's id (chapterN[a-z])
+                "chapter_title": doc.get("chapter_title"),
+                "edges": s["edges"],
+            }
+        )
+        entry["error"] = entry["error"] or bool(s.get("error"))
+        totals["edges"] += len(s["edges"])
         totals["anchors"] += int(s.get("anchors", 0))
-        totals["queued"] += int(s.get("queued", 0))
-        totals["skipped"] += int(s.get("skipped", 0))
-    logging.getLogger("root").info(
-        "OBSERV phase3.step name=intra_corpus_links edges=%d anchors=%d queued=%d skipped=%d "
-        "status=ok",
-        totals["edges"],
-        totals["anchors"],
-        totals["queued"],
-        totals["skipped"],
-    )
-    return totals["queued"]
+        totals["cited"] += int(s.get("cited", 0))
+    return books, totals
+
+
+def _index_book(corpus_links, book: str, entry: dict) -> int:
+    """Record one book's citations (1), or skip it (0): no name, or a document whose links could
+    not be read - rewriting now would drop them, so its last complete index stays."""
+    if not book:
+        return 0
+    if entry["error"]:
+        logger.warning(
+            "OBSERV corpus_links.book_skipped book=%r status=warn - a document's links could "
+            "not be read, so this book's citation index is not rewritten this run; see the "
+            "OBSERV intra_corpus.error line and fix the parsed document",
+            book[:80],
+        )
+        return 0
+    corpus_links.record_book(book, entry["source_url"], entry["chapters"])
+    return 1
 
 
 def _book_section_index(out):

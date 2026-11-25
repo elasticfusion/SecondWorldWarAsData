@@ -95,19 +95,6 @@ def test_a_find_whose_upload_fails_is_not_lost(table, monkeypatch):
     assert result["submitted"] == 1
 
 
-def test_an_intra_corpus_document_whose_upload_fails_is_queued_next_run(
-    table, monkeypatch
-):
-    from src.extraction import intra_corpus as ic
-
-    client = mock.Mock()
-    client.put_object.side_effect = RuntimeError("S3 down")
-    monkeypatch.setattr(fr, "_s3_client_and_bucket", lambda: (client, "bucket"))
-    assert ic._upload_batch_item(b"<html>vol</html>", "VOL1") is False
-    client.put_object.side_effect = None
-    assert ic._upload_batch_item(b"<html>vol</html>", "VOL1") is True
-
-
 def test_a_claim_that_errored_is_never_released(monkeypatch):
     """Fail-open: nothing was claimed, so a failed write must not delete a claim an earlier
     run holds for the same (deterministic) source id."""

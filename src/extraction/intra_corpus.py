@@ -1,22 +1,25 @@
-"""Intra-corpus document links (M8, multimodal epic — final).
+"""Intra-corpus document links (M8): citations of OTHER ibiblio HyperWar volumes, indexed.
 
-HyperWar chapters cite OTHER in-corpus volumes — "Utah Beach to Cherbourg", "Omaha Beachhead",
-"Small Unit Actions" — and cross-reference pages within the same volume ("#page329"). The
-deterministic bibliography pass already turns these into bibliography records; what was missing is
-(a) recognizing that a cited link IS another document we have or can ingest, marking it as an
-INTERNAL corpus-graph edge (with ULID attribution), and (b) owner directive: QUEUE a cited in-corpus
-document we don't yet have as ANOTHER BATCH to be processed — through the same content-uploaded front
-door an uploaded book uses, so it enters Phase 1->2->3 and joins the corpus.
+HyperWar chapters cite OTHER volumes - "Utah Beach to Cherbourg", "Omaha Beachhead", "Small Unit
+Actions" - and cross-reference pages within the same volume ("#page329"). ``process_doc_links``
+classifies every link of a parsed document (``classify_link``) and returns a corpus-graph edge for each
+in-corpus one, attributed to the citing SourceSectionID. The cross-volume edges are kept in the
+citation index (``src/extraction/corpus_links``): every volume cited, by whom, at which page, and
+whether we hold it yet - the list of volumes to ingest and of the records to update when each arrives.
 
-Reuse-first: the HyperWar recognizer (hyperwar_biblio), the M4 link extractor, the M5
-book->SourceSectionID index, the batch front door (contentrepository/_system -> content-uploaded ->
-one Phase-1 launch), and the SSRF-safe fetch. Fail-safe; everything observable (OBSERV intra_corpus.*).
+History (owner 2026-11-24): the original M8 entry (2026-10-27, commit 6bd08a9d) asked only to mark these
+citations as internal links. The implementation (bb4ac30b, PR #594) also fetched the ONE cited page and
+uploaded it as its own book (``intracorpus-<volume>-<sha12>``, a permanent slug), citing an unrecorded owner
+directive to queue cited documents. That made each cited page a duplicate of the volume to come, started
+Phase 1->2->3 (Grok spend) without approval, and - because a book whose source URL is its volume's
+``index.html`` was not recognised as that volume - would have re-uploaded a book's own pages. The upload is
+removed: every volume will be ingested (owner), under its own name, from the ingestion list.
 """
 
 from __future__ import annotations
 
-import hashlib
 import logging
+import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -24,15 +27,29 @@ logger = logging.getLogger(__name__)
 
 from src.utils.observe import observe_warn  # noqa: E402
 
+# a volume's own index page (``.../hyperwar/USA/USA-E-XChannel/index.html`` or ``.../USA-E-XChannel/``):
+# the source URL most HyperWar books are imported from. The volume key has a hyphen
+# (``USA-E-XChannel``), so a section index such as ``/hyperwar/USA/index.html`` is not a volume.
+_VOLUME_INDEX = re.compile(
+    r"https?://[^\s]*?/hyperwar/(?:[^\s/]+/)*?(?P<vol>[A-Za-z0-9]+(?:-[A-Za-z0-9]+)+)/"
+    r"(?:index\.html?)?(?:[#?][^\s]*)?$",
+    re.I,
+)
+
 
 def _volume_of(url: str) -> Optional[str]:
-    """The HyperWar volume key for a URL, or None if it is not a recognizable in-corpus volume page.
-    Reuses the authoritative hyperwar_biblio recognizer. Fail-safe."""
+    """The HyperWar volume key for a URL, or None if it is not a recognizable in-corpus volume
+    page: a page of the volume (the authoritative hyperwar_biblio recognizer) or its index page.
+    Fail-safe."""
     try:
         from src.enrichment.hyperwar_biblio import _parse_volume
 
+        url = (url or "")[:2048]  # both recognisers are bounded on an untrusted link
         parsed = _parse_volume(url)
-        return parsed[0] if parsed else None
+        if parsed:
+            return parsed[0]
+        m = _VOLUME_INDEX.match(url)
+        return m.group("vol") if m else None
     except Exception:  # noqa: BLE001
         return None
 
@@ -95,8 +112,15 @@ def _edge(
         "from_SourceSectionID": from_section_id or None,
         "to_url": url,
         "to_volume": target_vol,
+        "to_page": _page_anchor(url),
         "kind": kind,  # 'same_volume_anchor' | 'in_corpus_doc'
     }
+
+
+def _page_anchor(url: str) -> Optional[str]:
+    """The printed-page anchor a link points at (``#page329`` -> ``page329``), if any."""
+    frag = (url or "").partition("#")[2]
+    return frag[:40] if frag.lower().startswith("page") else None
 
 
 def process_doc_links(
@@ -104,17 +128,15 @@ def process_doc_links(
     source_url: str,
     book: str,
     *,
-    out: Path,
     book_to_section: Dict[str, str],
-    corpus_volumes: set,
-    queued: set,
-    enqueue: bool = True,
 ) -> Dict[str, Any]:
-    """For one parsed doc: classify every link, record internal corpus-graph edges (ULID-attributed),
-    and QUEUE any in-corpus document not already in the corpus / already queued as another batch.
-    Returns {edges, anchors, queued, skipped}. Fail-safe."""
+    """For one parsed doc: classify every link and return the internal corpus-graph edges
+    (ULID-attributed). Returns {edges, anchors, cited}: ``cited`` counts the links to another
+    volume. Nothing is fetched or uploaded (the citation index records them). Fail-safe.
+    """
     edges: List[Dict[str, Any]] = []
-    counts = {"anchors": 0, "queued": 0, "skipped": 0}
+    counts = {"anchors": 0, "cited": 0}
+    error = False
     try:
         from src.extraction.link_assets import extract_link_assets
 
@@ -123,124 +145,16 @@ def process_doc_links(
             kind = classify_link(la.url, source_url)
             if kind == "external":
                 continue
-            target_vol = _volume_of(la.url)
-            edges.append(_edge(section_id, la.url, kind, target_vol))
-            if kind == "same_volume_anchor":
-                counts["anchors"] += 1
-                continue
-            # in_corpus_doc -> queue as another batch unless already present/queued
-            if _should_queue(target_vol, corpus_volumes, queued):
-                if enqueue and _queue_as_batch(la.url, target_vol):
-                    queued.add(target_vol)
-                    counts["queued"] += 1
-                    logger.info(
-                        "OBSERV intra_corpus.queued volume=%s url=%s from_section=%s",
-                        target_vol,
-                        la.url,
-                        section_id or "-",
-                    )
-                else:
-                    counts["skipped"] += 1
-            else:
-                counts["skipped"] += 1
-                logger.info(
-                    "OBSERV intra_corpus.in_corpus_present volume=%s (already in corpus/queued)",
-                    target_vol,
-                )
+            edges.append(_edge(section_id, la.url, kind, _volume_of(la.url)))
+            counts["anchors" if kind == "same_volume_anchor" else "cited"] += 1
     except Exception as e:  # noqa: BLE001 - must never crash the pipeline
+        error = True
         observe_warn("intra_corpus", "error", reason=str(e)[:120])
     logger.info(
-        "OBSERV intra_corpus.summary book=%s edges=%d anchors=%d queued=%d skipped=%d",
-        book,
+        "OBSERV intra_corpus.summary book=%r edges=%d anchors=%d cited=%d",
+        str(book)[:80],
         len(edges),
         counts["anchors"],
-        counts["queued"],
-        counts["skipped"],
+        counts["cited"],
     )
-    return {
-        "edges": edges,
-        "anchors": counts["anchors"],
-        "queued": counts["queued"],
-        "skipped": counts["skipped"],
-    }
-
-
-def _should_queue(target_vol: Optional[str], corpus_volumes: set, queued: set) -> bool:
-    """Queue only a recognizable volume we don't already have and haven't queued this run."""
-    return (
-        bool(target_vol)
-        and target_vol not in corpus_volumes
-        and target_vol not in queued
-    )
-
-
-def _fetch_corpus_doc_body(url: str) -> Optional[bytes]:
-    """SSRF-safe fetch the in-corpus doc's HTML as bytes, or None (blocked/non-200/empty). Fail-safe."""
-    try:
-        from src.utils.url_hygiene import fetch_text_safe
-
-        text, status = fetch_text_safe(url)
-        if not text:
-            logger.info(
-                "OBSERV intra_corpus.queue_skipped reason=fetch_%s url=%s", status, url
-            )
-            return None
-        return text.encode("utf-8", "replace")
-    except Exception as e:  # noqa: BLE001
-        observe_warn("intra_corpus", "error", url=url, reason=str(e)[:120])
-        return None
-
-
-def _upload_batch_item(body: bytes, volume: Optional[str]) -> bool:
-    """Content-hash-deduped upload of the doc body to the content-uploaded batch front door
-    (contentrepository/_system/...). Reuses the fetch_review S3 client + dedup registry. Fail-safe.
-    """
-    try:
-        from src.enrichment.fetch_review import _s3_client_and_bucket, claimed_content
-
-        client, bucket = _s3_client_and_bucket()
-        if client is None:
-            logger.info(
-                "OBSERV intra_corpus.queue_skipped reason=no_bucket volume=%s", volume
-            )
-            return False
-        digest = hashlib.sha256(body).hexdigest()
-        source_id = f"intracorpus-{(volume or 'vol')}-{digest[:12]}"
-        # a failed upload gives the claim back (task 1.6): the document is queued next run
-        with claimed_content(digest, source_id) as new:
-            if not new:
-                logger.info(
-                    "OBSERV intra_corpus.queue_deduped %s volume=%s",
-                    digest[:20],
-                    volume,
-                )
-                return False
-            safe_vol = (
-                "".join(c for c in str(volume or "vol") if c.isalnum() or c in "._-")[
-                    :60
-                ]
-                or "vol"
-            )
-            key = f"contentrepository/_system/{safe_vol}/{source_id}.html"
-            client.put_object(
-                Bucket=bucket,
-                Key=key,
-                Body=body,
-                ContentType="text/html; charset=utf-8",
-            )
-        return True
-    except Exception as e:  # noqa: BLE001
-        logger.warning(
-            "OBSERV intra_corpus.error volume=%s reason=%s", volume, str(e)[:120]
-        )
-        return False
-
-
-def _queue_as_batch(url: str, volume: Optional[str]) -> bool:
-    """QUEUE an in-corpus document as another processing batch: SSRF-safe fetch its HTML, then upload
-    to the content-uploaded batch front door so it enters Phase 1->2->3 like an uploaded book.
-    Content-hash deduped. Fail-safe; returns True iff queued."""
-    body = _fetch_corpus_doc_body(url)
-    if body is None:
-        return False
-    return _upload_batch_item(body, volume)
+    return {"edges": edges, **counts, "error": error}
