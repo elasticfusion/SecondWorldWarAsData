@@ -54,8 +54,11 @@ def _parse_yaml_metadata(yaml_file: Path) -> Metadata:
         author=data.get("author", ""),
         chapter_title=data.get("chapter_title", ""),
         license=data.get("license", "Public Domain"),
-        copyright_date=data.get("copyright_date", ""),
+        copyright_date=str(data.get("copyright_date") or ""),
         source_url=data.get("source_url", ""),
+        edition=str(data.get("edition") or ""),
+        source_key=str(data.get("source_key") or ""),
+        source_format=str(data.get("source_format") or ""),
     )
 
 
@@ -1507,6 +1510,10 @@ def parse_content_file(
         series=metadata.series,
         license=metadata.license,
         source_url=metadata.source_url,
+        copyright_date=metadata.copyright_date,
+        edition=metadata.edition,
+        source_key=metadata.source_key,
+        source_format=metadata.source_format,
         file_path=file_path,
     )
 

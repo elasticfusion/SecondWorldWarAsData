@@ -2056,10 +2056,32 @@ Findings:
   Citations are keyed on Phase 1's `chapter_number` (titles repeat); a book with an unreadable document keeps its
   last index (`corpus_links.book_skipped`); `volume_index_url` is only ever an https ibiblio URL (a future importer
   fetches it). OPEN: `ingest-list.json` is last-writer-wins between parallel Phase 3 tasks (rebuilt each run, so
-  eventually consistent). OPEN: connect a held volume's citations to its records (a link on the citing source section; the bibliography
-  entry marked in-corpus with the BookID); a non-interactive volume import (`scripts/import_hyperwar_html.py`
-  prompts for metadata) for the owner-approved batches; the local corpus holds USA-E-XChannel twice (`XChannel`,
-  `CrossChannelAttack`). Original finding: The linked page (often one chapter)
+  eventually consistent).
+  DONE (2026-11-24, owner rule: "the PDF is the defining doc; ibiblio supports it; reference the edition and
+  chapter; HTML only: determine the chapter and call it a day"): `corpus_links.write_links` connects each citation of
+  a HELD volume to its defining copy (`defining_copy`: a PDF first, then another upload, then HTML; then edition
+  recorded; then first slug) -> `links/<citing book>.json`: the cited BookID, format, edition, copyright date and
+  chapter (found from the page the citing book printed, against the copy's chapter page ranges), `page_as_cited`
+  (a pointer, not a claim about the copy), `match` (`chapter` | `volume`: never guessed), the supporting copies.
+  A regenerable layer, rebuilt each run; the original records are not touched. The edition reaches it through the
+  book: Phase 1 now carries the chapter meta's `edition`, `copyright_date` and `source_key` into each parsed
+  document (`parser.Metadata`, `phase1_parse._doc_to_dict`); documents parsed before have none until reparsed (the
+  link then says edition null / format by source URL). A PDF book whose slug is its volume key (`USA-E-XChannel`)
+  counts as holding it. Data fix: `CrossChannelAttack`'s chapter metas said copyright 1950 (an import typo; the book
+  prints "First Printed 1951"); corrected to 1951. `XChannel` and `CrossChannelAttack` are the same transcription
+  (21 byte-identical chapters): supporting copies of the PDF book. A page two chapters share is not guessed
+  (`match: volume`, `candidate_chapters`); a book counts as holding a volume by its source URL, or - only with no
+  source URL - by a `<country>-<letter>-<volume>` slug (`volume_basis: slug`); a copy whose format is unknown (parsed
+  before Phase 1 carried `source_key`/`source_format`) never defines a volume. The format is never inferred from a
+  source URL (a PDF of a HyperWar volume has an ibiblio URL too): the uploaded object's extension (`source_key`),
+  else the meta's declared `source_format` - `scripts/import_hyperwar_html.py` now writes `source_format: html`, and
+  the 8 local HyperWar imports (196 chapter metas: ArdennesIbiblioTest, BreakoutAndPursuit, CrossChannelAttack,
+  RoerDams, TheArdennesBattleOfTheBulge, TheLorraineCampaign, TheSiegfriedLineCampaign, XChannel) were marked;
+  their S3 copies are not (re-sync or re-import before relying on it in AWS). OPEN (security review): once contributor uploads
+  exist, accept a slug claim only for operator uploads (a contributor could name a PDF after a volume); whatever
+  renders `links/` / `volumes/` (static site, API) must HTML-escape edition and titles and allow only http(s) URLs.
+  OPEN: the bibliography entry marked in-corpus with the BookID; a non-interactive volume import (`scripts/import_hyperwar_html.py`
+  prompts for metadata) for the owner-approved batches. Original finding: The linked page (often one chapter)
   becomes its own book, slug `intracorpus-<volume>-<sha12>` (`book_slug` = filename stem). The slug is
   immutable, so a later proper ingestion of the whole volume under its real name duplicates it, and
   each other cited page of the same volume becomes another one-page book. `_should_queue` dedups by

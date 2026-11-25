@@ -119,6 +119,13 @@ class Metadata:
     license: str = ""
     copyright_date: str = ""
     source_url: str = ""
+    # the printing the text comes from ("CMH Pub 7-4-1", "Second printing 1965"; Phase 0
+    # book_metadata) and the uploaded object it was made from (its extension says pdf / html / ...)
+    edition: str = ""
+    source_key: str = ""
+    source_format: str = (
+        ""  # set by the HyperWar import ("html"); Phase 0 uploads have source_key
+    )
 
 
 @dataclass
@@ -133,6 +140,10 @@ class MarkdownDocument:  # pylint: disable=too-many-instance-attributes
     series: str
     license: str
     source_url: str = ""
+    copyright_date: str = ""
+    edition: str = ""
+    source_key: str = ""
+    source_format: str = ""
 
     paragraphs: List[Paragraph] = field(default_factory=list)
     images: List[Image] = field(default_factory=list)

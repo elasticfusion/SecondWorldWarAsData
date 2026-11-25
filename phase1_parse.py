@@ -39,6 +39,11 @@ def _doc_to_dict(doc):
         "author": doc.author,
         "series": doc.series,
         "license": doc.license,
+        # the printing and the uploaded object: a reference to this text names its edition
+        "copyright_date": getattr(doc, "copyright_date", "") or None,
+        "edition": getattr(doc, "edition", "") or None,
+        "source_key": getattr(doc, "source_key", "") or None,
+        "source_format": getattr(doc, "source_format", "") or None,
         "source_file": _repo_relative(doc.file_path),
         "_source_url": doc.source_url,
         "paragraphs": [_paragraph_dict(p) for p in doc.paragraphs],

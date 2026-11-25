@@ -628,13 +628,18 @@ def _citations_by_book(docs, book_to_section) -> tuple:
             _doc_link_content(doc), source_url, book, book_to_section=book_to_section
         )
         entry = books.setdefault(
-            book, {"source_url": source_url, "chapters": [], "error": False}
+            book, {"source_url": source_url, "chapters": [], "error": False, "info": {}}
         )
         entry["source_url"] = entry["source_url"] or source_url
+        for key in ("edition", "copyright_date", "source_key", "source_format"):
+            entry["info"][key] = entry["info"].get(key) or doc.get(
+                key
+            )  # the book's own meta
         entry["chapters"].append(
             {
                 "chapter": doc.get("chapter_number"),  # Phase 1's id (chapterN[a-z])
                 "chapter_title": doc.get("chapter_title"),
+                **_page_range(doc),
                 "edges": s["edges"],
             }
         )
@@ -643,6 +648,18 @@ def _citations_by_book(docs, book_to_section) -> tuple:
         totals["anchors"] += int(s.get("anchors", 0))
         totals["cited"] += int(s.get("cited", 0))
     return books, totals
+
+
+def _page_range(doc) -> dict:
+    """The printed pages a parsed document spans (its paragraphs' page numbers)."""
+    pages = [
+        n
+        for p in doc.get("paragraphs") or []
+        if isinstance(p, dict)
+        for n in (p.get("page_number"), p.get("page_end"))
+        if isinstance(n, int) and not isinstance(n, bool)
+    ]
+    return {"first_page": min(pages), "last_page": max(pages)} if pages else {}
 
 
 def _index_book(corpus_links, book: str, entry: dict) -> int:
@@ -658,7 +675,9 @@ def _index_book(corpus_links, book: str, entry: dict) -> int:
             book[:80],
         )
         return 0
-    corpus_links.record_book(book, entry["source_url"], entry["chapters"])
+    corpus_links.record_book(
+        book, entry["source_url"], entry["chapters"], entry["info"]
+    )
     return 1
 
 
