@@ -4158,3 +4158,26 @@ one that was wrong - a "no"/"unsure" for an entity, an "unusable" for everyone, 
 URL is looked at again. Clearing must also clear the (bytes, entity) verdict (`photo_vision_v1`) when it
 says "no", or the same bytes are refused again. Keep a record of who cleared what and why
 (provenance). Today a wrong decision can only be removed by deleting the DynamoDB item by hand.
+
+## UI - review place parents the pipeline will not guess (owner 2026-11-24)
+Phase 3's parent step (`places.link_parent_place_ids`) never guesses: it links a place to a parent
+only when the named parent is one record of a coarser rank, and logs every case it can't settle. Add a
+review screen listing those cases so a person can confirm, fix or reject each one, with a record of who
+decided what and why (provenance). Store each decision so a re-extraction or rerun can't undo it
+silently.
+
+Cases, and the OBSERV line each comes from:
+- **Field mismatch** (`places.parent_link_field_mismatch`): the parent was linked, but it was named in
+  a field that doesn't match its type (a region in `country`, say). Usually right, sometimes not.
+  Seen in the Phase 2 snapshot: Salcombe → Devon, Woolacombe → Devon, Rennes → Brittany (likely
+  right); Pacific → Asia (likely wrong: a sea/ocean should have no parent). Screen: confirm or unlink.
+- **Ambiguous parent name** (`places.parent_link_unresolved` `ambiguous=`/`names=`): the name matches
+  more than one record. Screen: pick one or none.
+- **Cycle** (`places.parent_link_unresolved` `cycle=`/`cycle_places=`): linking would make a place its own
+  ancestor. Screen: choose which link to drop.
+- **Named parent has no record** (`not_found=` on the `places.parent_link` summary line; the names are
+  not logged today, so the screen must list them from the records): 46 in the snapshot,
+  mostly regions/countries the MED item will auto-create (North America ×22, Oceania, Louisiana,
+  Ontario, Calvados). Show only those still missing after auto-creation.
+- **Refused write** (`places.parent_link_refused`): the schema guard rejected the record. Show the
+  place and the guard's reason.
