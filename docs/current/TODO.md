@@ -152,6 +152,54 @@ What several HIGH items in later groups depend on; MED/LOW items are here when a
 **Test:** restore, run with OpenSERP off: the non-search steps run; force each alert once; a relocated
 record disappears from S3; two queued books each run exactly once.
 
+#### Schema upgrades: forward-compatible on the fly, the rest in a release (owner 2026-11-25, D1/D2)
+
+Found while answering D1 (should Phase 3 hold when the bibliography merge fails or times out). Tested on the
+`phase2-2026-11-17` bibliography (2,035 records, all at 2.29; current 2.32):
+- malformed JSON is silently SKIPPED by the merge (`bibliography._group_bib_files_by_hash`): the file stays an
+  unmerged shard every run, no alert;
+- valid JSON of the wrong shape (`mentions` a string/dict or with a non-object item, `title` a number/list,
+  `citation` a string) makes the WHOLE full-corpus merge raise (`_merge_bib_records` runs outside any per-group
+  guard): one record stops every book's merge -> no barrier -> Phase 3 waits 300 s and runs on unmerged shards;
+- such a record can reach S3: the write guard validates a record at an OLDER `_schema_version` leniently
+  (`file_lock._handle_schema_validation_error`, needs_upgrade), so the type checks are skipped;
+- the snapshot itself is clean (0 malformed, 0 wrong shapes) and every record passes the 2.32 schema; the only
+  observed D1 event (2026-10-28) was a barrier timeout from missing input (the batch poller was disabled; it is
+  enabled now), not a merge failure. A full local merge of the snapshot takes 8 s: the wait is S3 transfer.
+
+DECIDED (owner 2026-11-25):
+- **Two kinds of schema change.** (1) Forward-compatible: brought forward on the fly, before a merge or update,
+  by one shared library that walks a record from its version to the current one. (2) Not forward-compatible:
+  done only in an upgrade release (especially for production), never on the fly.
+- **D2-Q1:** non-forward-compatible upgrades go through the same release script on dev too (run by hand), so it
+  is tested before production.
+- **D2-Q2:** while a non-forward-compatible upgrade is pending, NOTHING runs on the affected data: the work is
+  kept on a queue and run after the upgrade is done.
+- **D2-Q3:** all entities (the bibliography is the core of the system and the first user).
+
+PLAN (D2):
+1. **D2-1** declare every version change once: entity, from -> to, kind (forward / breaking), and for a forward
+   step an optional transform (most need none). Today's bibliography steps 2.29 -> 2.30 -> 2.31 -> 2.32 are
+   forward with no transform. Extends `src/schemas/schema_contract` (today one exact (from, to) upgrader per
+   pair, no kind, and anything without one is processed "best effort" by `read_for_update`).
+2. **D2-2** `bring_forward(record, entity)`: chain the steps, apply the forward ones in memory, validate against
+   the current schema -> current / brought_forward / needs_release_upgrade / invalid.
+3. **D2-3** the bibliography merge (then every merge/update path on `read_for_update`) uses it; brought-forward
+   records are merged and written at the current version; an invalid record is kept out of the merge, left
+   unchanged on S3 and alerted (one bad record never stops the corpus: D1-R1); structural repairs whose meaning
+   is unambiguous (D1-R2: a single mention object -> a list, a numeric title -> text) are forward transforms;
+   unparseable JSON is restored from its previous S3 version or quarantined, alerted, never skipped silently.
+4. **D2-4** release upgrade script for breaking steps: dry-run report first, S3 versioning as the backup,
+   idempotent; a deploy check refuses code whose data still needs a breaking upgrade.
+5. **D2-5** the held work: a pending breaking upgrade holds the affected books on the existing book queue
+   (`src/utils/pending_queue`, a new cause `schema_upgrade` beside funding / connectivity / failure / config),
+   resumed when the release script finishes; the hold alerts once (both channels) with the command to run.
+6. **D2-6** a test fails when an entity's schema version is bumped without its D2-1 entry (extends the
+   fingerprint test).
+7. Separately (to-do): the write guard should still check field TYPES on older-version records (D1-R3).
+D1 itself (hold or continue on a merge failure/timeout) is decided after D2: with D2-3 a content problem no
+longer fails the merge, so what is left is an outage (S3 error, task killed).
+
 #### Resilience tasks added 2026-11-18 (owner: "deferred yes, dropped never")
 Owner rule: no outage loses a book. After Grok funds, an AZ or AWS networking come back, the work
 continues from where it stopped. Order: 1.2b, 1.1b, 1.2c, 1.2e, 1.2d, 1.2f, 1.1c.
