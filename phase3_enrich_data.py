@@ -434,6 +434,11 @@ def _load_parsed_docs(out, unreadable_books=None) -> list:
         for pf in (out / "content").rglob("*-parsed.json"):
             # a corrupt parsed doc is alerted and holds the book (entity_records.load_record)
             doc = load_record(pf, "parsed_docs")
+            if isinstance(doc, dict):
+                # the parsed file's chapter key and book folder, as Phase 2 names bibliography
+                # mentions by them (phase2_extract: pf.name / pf.parent.name)
+                doc["_parsed_chapter"] = pf.name[: -len("-parsed.json")]
+                doc["_parsed_book"] = pf.parent.name
             if doc is None:
                 unreadable += 1
                 if unreadable_books is not None:
@@ -600,7 +605,12 @@ def _process_intra_corpus_links(out) -> int:
     indexed = sum(
         _index_book(corpus_links, book, entry) for book, entry in books.items()
     )
-    listing = corpus_links.build_ingest_list(_corpus_volumes_present(out))
+    links: list = []
+    listing = corpus_links.build_ingest_list(_corpus_volumes_present(out), links)
+    from src.extraction.bibliography_corpus import mark_held
+
+    # the cited records whose work we hold say so; a stale mark is cleared only after a full read
+    mark_held(out, links, clear_stale=not listing.get("partial"))
     logging.getLogger("root").info(
         "OBSERV phase3.step name=intra_corpus_links books=%d edges=%d anchors=%d cited=%d "
         "volumes_pending=%d status=ok",
@@ -615,8 +625,6 @@ def _process_intra_corpus_links(out) -> int:
 
 def _citations_by_book(docs, book_to_section) -> tuple:
     """Each parsed document's cross-volume edges, grouped by book: (books, totals)."""
-    from src.extraction.intra_corpus import process_doc_links
-
     books: dict = {}  # book -> {"source_url", "chapters", "error"}
     totals = {"edges": 0, "anchors": 0, "cited": 0}
     for doc in docs:
@@ -624,9 +632,7 @@ def _citations_by_book(docs, book_to_section) -> tuple:
             continue
         book = str(doc.get("book", ""))
         source_url = doc.get("_source_url", "") or ""
-        s = process_doc_links(
-            _doc_link_content(doc), source_url, book, book_to_section=book_to_section
-        )
+        s = _doc_citation_edges(doc, source_url, book, book_to_section)
         entry = books.setdefault(
             book, {"source_url": source_url, "chapters": [], "error": False, "info": {}}
         )
@@ -660,6 +666,55 @@ def _page_range(doc) -> dict:
         if isinstance(n, int) and not isinstance(n, bool)
     ]
     return {"first_page": min(pages), "last_page": max(pages)} if pages else {}
+
+
+def _doc_citation_edges(doc, source_url: str, book: str, book_to_section) -> dict:
+    """The document's corpus-graph edges: from its paragraphs, and from each note's own text
+    tagged with the note's number (``reference_number``) and the parsed chapter, so a citation
+    can be matched to the bibliography record Phase 2 made from that note."""
+    from src.extraction.intra_corpus import process_doc_links
+
+    body = "\n".join(
+        p.get("text", "") for p in doc.get("paragraphs") or [] if isinstance(p, dict)
+    )
+    out = process_doc_links(body, source_url, book, book_to_section=book_to_section)
+    # Phase 1 keeps every note of a narrative chapter in ``footnotes`` (with its ``kind``); a
+    # chapter that is ONLY notes is written to its own *-endnotes.json, not read here (TODO)
+    for fn in doc.get("footnotes") or []:
+        if isinstance(fn, dict) and fn.get("text"):
+            s = _note_edges(fn, doc, source_url, book, book_to_section)
+            out["edges"] += s["edges"]
+            for k in ("anchors", "cited"):
+                out[k] += s[k]
+            out["error"] = out["error"] or s["error"]
+    return out
+
+
+def _note_edges(fn, doc, source_url: str, book: str, book_to_section) -> dict:
+    """One note's edges. A note citing several works is split exactly as Phase 2 splits it into
+    bibliography records (``bibliography._expand_multidoc_notes``: ``3``, ``3b`` ...), and each
+    part's links carry that part's number, so a link is matched to the record of the work it is
+    in. Each edge also carries the parsed chapter and book folder Phase 2 names mentions by.
+    """
+    from src.extraction.bibliography import _expand_multidoc_notes
+    from src.extraction.intra_corpus import process_doc_links
+
+    out = {"edges": [], "anchors": 0, "cited": 0, "error": False}
+    for part in _expand_multidoc_notes(
+        [{"number": fn.get("number"), "text": fn["text"]}]
+    ):
+        s = process_doc_links(
+            part["text"], source_url, book, book_to_section=book_to_section, quiet=True
+        )
+        for e in s["edges"]:
+            e["reference_number"] = str(part.get("number", "")) or None
+            e["parsed_chapter"] = doc.get("_parsed_chapter")
+            e["parsed_book"] = doc.get("_parsed_book")
+        out["edges"] += s["edges"]
+        out["anchors"] += s["anchors"]
+        out["cited"] += s["cited"]
+        out["error"] = out["error"] or s["error"]
+    return out
 
 
 def _index_book(corpus_links, book: str, entry: dict) -> int:

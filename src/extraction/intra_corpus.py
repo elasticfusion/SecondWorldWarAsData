@@ -129,8 +129,9 @@ def process_doc_links(
     book: str,
     *,
     book_to_section: Dict[str, str],
+    quiet: bool = False,
 ) -> Dict[str, Any]:
-    """For one parsed doc: classify every link and return the internal corpus-graph edges
+    """For one parsed doc (``quiet``: one note of it - no summary line): classify every link and return the internal corpus-graph edges
     (ULID-attributed). Returns {edges, anchors, cited}: ``cited`` counts the links to another
     volume. Nothing is fetched or uploaded (the citation index records them). Fail-safe.
     """
@@ -150,7 +151,8 @@ def process_doc_links(
     except Exception as e:  # noqa: BLE001 - must never crash the pipeline
         error = True
         observe_warn("intra_corpus", "error", reason=str(e)[:120])
-    logger.info(
+    log = logger.debug if quiet else logger.info
+    log(
         "OBSERV intra_corpus.summary book=%r edges=%d anchors=%d cited=%d",
         str(book)[:80],
         len(edges),

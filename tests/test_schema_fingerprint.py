@@ -46,7 +46,7 @@ EXPECTED = {
     "casualties": ("2.27", "1316e671f1757d28"),
     "maps": ("2.27", "32497f35a7f5dbaf"),
     "map_features": ("2.24", "7cf064901b370f2d"),
-    "bibliography": ("2.31", "b604df7185201db7"),
+    "bibliography": ("2.32", "764e5337604994f1"),
     "images": ("2.29", "7b19cab2cd748be8"),
     "source_section": ("2.26", "f19088e6d91b3aac"),
 }

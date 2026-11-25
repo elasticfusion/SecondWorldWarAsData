@@ -48,6 +48,9 @@ def test_a_book_records_what_it_is_and_what_it_cites():
         "chapter_title": None,
         "to_url": UTAH,
         "to_page": "page12",
+        "reference_number": None,
+        "parsed_chapter": None,
+        "parsed_book": None,
     }
 
 
@@ -140,7 +143,7 @@ def test_phase3_indexes_without_uploading(monkeypatch, tmp_path):
         "_load_parsed_docs",
         lambda out, *a: [
             {"book": "XChannel", "_source_url": XCH_INDEX, "chapter": "8",
-             "content": f"See [Omaha]({OMAHA})."}  # fmt: skip
+             "paragraphs": [{"text": f"See [Omaha]({OMAHA})."}]}  # fmt: skip
         ],
     )
     monkeypatch.setattr(P, "_doc_link_content", lambda d: d["content"])
@@ -169,7 +172,7 @@ def test_phase3_keys_citations_on_the_chapter_number(monkeypatch, tmp_path):
     import phase3_enrich_data as P
 
     doc = {"book": "XChannel", "_source_url": XCH_INDEX, "chapter_title": "D Day",
-           "content": f"See [Omaha]({OMAHA})."}  # fmt: skip
+           "paragraphs": [{"text": f"See [Omaha]({OMAHA})."}]}  # fmt: skip
     monkeypatch.setattr(
         P,
         "_load_parsed_docs",
@@ -485,3 +488,17 @@ def test_the_hyperwar_import_declares_html():
     meta = {"series": "S", "book": "B", "author": "A", "license": "PD",
             "copyright_date": "1951", "source_url": XCH_INDEX}  # fmt: skip
     assert "source_format: html" in mod.create_chapter_meta(meta, 1, "Forward")
+
+
+def test_two_sections_with_the_same_note_number_and_url_are_two_citations():
+    out = cl.record_book(
+        "BreakoutAndPursuit",
+        XCH_INDEX,
+        [
+            {"chapter": 8, "edges": [dict(_edge(OMAHA, "USA-A-Omaha"), reference_number="4",
+                                          parsed_chapter="chapter8a")]},
+            {"chapter": 8, "edges": [dict(_edge(OMAHA, "USA-A-Omaha"), reference_number="4",
+                                          parsed_chapter="chapter8b")]},
+        ],  # fmt: skip
+    )
+    assert out["citations"] == 2

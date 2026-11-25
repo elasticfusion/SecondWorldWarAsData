@@ -191,6 +191,45 @@ BIBLIOGRAPHY_OUTPUT_SCHEMA = {
             nullable=True,
         ),
         "download_path": make_nullable("string"),
+        # 2.32: the cited work is in the corpus (src/extraction/bibliography_corpus): the defining
+        # copy we hold (a PDF first) and the notes whose links matched it
+        "held_in_corpus": {
+            "type": ["object", "null"],
+            "additionalProperties": False,
+            "required": ["BookID", "book", "volume", "linked_at"],
+            "properties": {
+                "BookID": ulid_field(),
+                "book": {"type": "string", "maxLength": 300},
+                "volume": {"type": "string", "maxLength": 300},
+                "format": {"type": ["string", "null"], "maxLength": 300},
+                # plain text from the book's title pages: escape it wherever it is shown
+                "edition": {"type": ["string", "null"], "maxLength": 300},
+                "copyright_date": {"type": ["string", "null"], "maxLength": 300},
+                "linked_at": {"type": "string", "maxLength": 64},
+                "evidence": {
+                    "type": "array",
+                    "maxItems": 20,
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": False,
+                        "properties": {
+                            "book": {"type": ["string", "null"], "maxLength": 300},
+                            "chapter": {"type": ["string", "null"], "maxLength": 300},
+                            "reference_number": {
+                                "type": ["string", "null"],
+                                "maxLength": 40,
+                            },
+                            # the link as found in the note: a web URL only
+                            "url": {
+                                "type": ["string", "null"],
+                                "maxLength": 2048,
+                                "pattern": "^[Hh][Tt][Tt][Pp][Ss]?://",
+                            },
+                        },
+                    },
+                },
+            },
+        },
         "mentions": {
             "type": ["array", "null"],
             "items": {

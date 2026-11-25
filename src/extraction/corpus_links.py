@@ -229,7 +229,7 @@ def _write_citations(
 def _citations_by_volume(
     chapters: Iterable[Dict[str, Any]], own: Optional[str]
 ) -> Dict[str, List[Dict[str, Any]]]:
-    """The book's links to OTHER volumes, by volume, once per (chapter, URL)."""
+    """The book's links to OTHER volumes, by volume, once per (chapter, URL, note)."""
     by_volume: Dict[str, Dict[tuple, Dict[str, Any]]] = {}
     for ch in chapters:
         for e in ch.get("edges") or []:
@@ -242,8 +242,19 @@ def _citations_by_volume(
                 "chapter_title": ch.get("chapter_title"),
                 "to_url": e.get("to_url"),
                 "to_page": e.get("to_page"),
+                # the note the link is in (its number, and the parsed chapter file Phase 2 names
+                # the note's bibliography mention by); None for a link in the narrative
+                "reference_number": e.get("reference_number"),
+                "parsed_chapter": e.get("parsed_chapter"),
+                "parsed_book": e.get("parsed_book"),
             }
-            by_volume.setdefault(vol, {})[(cite["chapter"], cite["to_url"])] = cite
+            key = (  # sections 8a/8b share chapter 8 and may repeat note numbers
+                cite["chapter"],
+                cite["parsed_chapter"],
+                cite["to_url"],
+                cite["reference_number"],
+            )
+            by_volume.setdefault(vol, {})[key] = cite
     return {vol: list(cites.values()) for vol, cites in by_volume.items()}
 
 
@@ -331,9 +342,12 @@ def _read_all(
     return out
 
 
-def build_ingest_list(also_held: Iterable[str] = ()) -> Dict[str, Any]:
-    """Rebuild ``ingest-list.json`` from every book's records. ``also_held``: volume keys known to
-    be in the corpus from elsewhere (this task's source sections). Returns the list."""
+def build_ingest_list(
+    also_held: Iterable[str] = (), links_out: Optional[List[Dict[str, Any]]] = None
+) -> Dict[str, Any]:
+    """Rebuild ``ingest-list.json`` (and the links) from every book's records. ``also_held``:
+    volume keys known to be in the corpus from elsewhere (this task's source sections).
+    ``links_out`` receives every link built. Returns the list."""
     store = _store()
     failed: List[str] = []  # any unreadable record: no link file is deleted this run
     books = {
@@ -344,7 +358,7 @@ def build_ingest_list(also_held: Iterable[str] = ()) -> Dict[str, Any]:
     citations = _read_all(store, "citations", failed)
     volumes = _cited(citations)
     _annotate(volumes, _held(books.values(), also_held), books)
-    write_links(store, citations, volumes, books, partial=bool(failed))
+    write_links(store, citations, volumes, books, partial=bool(failed), out=links_out)
     ordered = sorted(
         volumes.values(), key=lambda v: (v["status"] != "pending", -v["links"])
     )
@@ -353,6 +367,7 @@ def build_ingest_list(also_held: Iterable[str] = ()) -> Dict[str, Any]:
         "built_at": _now(),
         "pending": pending,
         "held": len(ordered) - pending,
+        "partial": bool(failed),  # some records could not be read this run
         "volumes": ordered,
     }
     _write(store, INGEST_LIST, result)
@@ -473,6 +488,9 @@ def link_for(
             "SourceSectionID": citation.get("from_SourceSectionID"),
             "chapter": citation.get("chapter"),
             "url": citation.get("to_url"),
+            "reference_number": citation.get("reference_number"),
+            "parsed_chapter": citation.get("parsed_chapter"),
+            "parsed_book": citation.get("parsed_book"),
         },
         "cited": {
             "book": copy.get("book"),
@@ -509,6 +527,7 @@ def write_links(
     volumes: Dict[str, Dict[str, Any]],
     books: Dict[str, Dict[str, Any]],
     partial: bool = False,
+    out: Optional[List[Dict[str, Any]]] = None,
 ) -> Dict[str, int]:
     """Rebuild ``links/<citing book>.json`` for every citation of a held volume (a regenerable
     layer: rebuilt whole each run from the citation index; the original records are untouched).
@@ -516,6 +535,8 @@ def write_links(
     Concurrent Phase 3 tasks may both rewrite a link file: the last write wins and the next run
     converges (the inputs are per book)."""
     by_citing = _links_by_citing(citations, volumes, books)
+    if out is not None:
+        out.extend(link for links in by_citing.values() for link in links)
     counts = {"links": 0, "chapter": 0}
     for citing, links in by_citing.items():
         if _write(

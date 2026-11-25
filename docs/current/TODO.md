@@ -2080,7 +2080,23 @@ Findings:
   their S3 copies are not (re-sync or re-import before relying on it in AWS). OPEN (security review): once contributor uploads
   exist, accept a slug claim only for operator uploads (a contributor could name a PDF after a volume); whatever
   renders `links/` / `volumes/` (static site, API) must HTML-escape edition and titles and allow only http(s) URLs.
-  OPEN: the bibliography entry marked in-corpus with the BookID; a non-interactive volume import (`scripts/import_hyperwar_html.py`
+  DONE (2026-11-24): the cited bibliography record is marked (`src/extraction/bibliography_corpus.mark_held`,
+  bibliography schema 2.32 `held_in_corpus`: the defining copy's BookID, book, volume, format, edition, copyright
+  date, linked_at, and the notes whose links matched). Citations from a note now carry its number and parsed
+  chapter (`phase3_enrich_data._doc_citation_edges`: links read from each note's own text), matched exactly to the
+  record Phase 2 made from that note (book folder, chapter, reference_number); a note citing several works is split
+  exactly as Phase 2 splits it (`_expand_multidoc_notes`: 3, 3b ...) so each link carries its part's number; a note
+  in several records, or a record whose notes link two volumes, is not guessed; unchanged marks are not rewritten;
+  a mark that no longer holds is cleared (only after a run that read every citation record). Checked: the Phase 2
+  merge (`_merge_bib_fields`) updates the surviving record in place, so its mark stays; a mark only on a merged-away
+  record is dropped and rebuilt by the next Phase 3 run. OPEN: a chapter that is ONLY notes (titled
+  Footnotes/Endnotes) is written by Phase 1 to `*-endnotes.json` / `*-footnotes.json`, which this step does not read:
+  its links are neither indexed nor marked - check whether Phase 2 makes bibliography records from those files and,
+  if so, read them here too.
+  OPEN (Phase 1, found here): in some HyperWar imports the notes section is not recognised (e.g. local `XChannel`
+  chapter 6: `> [[116](<#cn116>)] ...` stays a body paragraph), so those notes have no text and no bibliography
+  record, and their citations cannot be marked - check `src/notes._find_section` against these files.
+  OPEN: a non-interactive volume import (`scripts/import_hyperwar_html.py`
   prompts for metadata) for the owner-approved batches. Original finding: The linked page (often one chapter)
   becomes its own book, slug `intracorpus-<volume>-<sha12>` (`book_slug` = filename stem). The slug is
   immutable, so a later proper ingestion of the whole volume under its real name duplicates it, and
