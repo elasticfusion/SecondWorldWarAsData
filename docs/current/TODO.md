@@ -199,6 +199,44 @@ PLAN (D2):
 7. Separately (to-do): the write guard should still check field TYPES on older-version records (D1-R3).
 D1 itself (hold or continue on a merge failure/timeout) is decided after D2: with D2-3 a content problem no
 longer fails the merge, so what is left is an outage (S3 error, task killed).
+7. **D2-7** every merge path uses `bring_forward` on both records before merging; a record that fails is kept out
+   of that merge with an alert, the rest continues. Found 2026-11-25 (same wrong shapes, real records):
+   - dedup auto-merge (`dedup.merge.merge_generic`, people / units / places / equipment) RAISES when the primary's
+     `event_mentions` or `aliases` is not a list or a record file is a JSON list; `ecs_entrypoint
+     ._auto_merge_entity_type` has no handler, so the dedup step stops partway (later entity types unmerged, the
+     run timestamp not recorded): add a per-group handler too;
+   - the Phase 2 person merge (`people._merge_person`) raises when the existing person's `event_mentions` is
+     not a list (the chapter's extraction gets the error; not traced further);
+   - the Dedup Review UI merge catches it (the reviewer gets a 500);
+   - a wrongly shaped INCOMING `event_mentions` is skipped by `entity_records.merge_mentions`: the merge
+     succeeds and that record's mentions are lost silently (alert instead).
+   Already listed elsewhere: the manual merge scripts write raw JSON (Group 4 "Merge scripts"), the concurrent
+   last-writer-wins writes (gap 28, the dates index), equipment find-or-create not locked across tasks.
+
+#### Merges: exact only; similar goes to human review (owner 2026-11-25, D3)
+
+DECIDED: an automatic merge needs an EXACT match; a similar one goes to the Dedup Review UI to approve or deny
+(extend the UI for it). **What "exact" means (D3-Q1, owner 2026-11-25; keep adding rules as cases come up):**
+- exact: the same text ignoring letter case, whitespace and markdown emphasis (`*`, `_`, backticks);
+- NOT exact (review): transliteration (Dönitz / Doenitz / Donitz), the canonical unit key (a written-out vs
+  abbreviated unit name), any similarity ratio, any abbreviation or synonym ("mtg" / "meeting",
+  "furnished" / "supplied");
+- new rule log: (none yet; add each with its date and an example).
+
+Measured on the `phase2-2026-11-17` bibliography (2,035 records -> 1,472): the same-footnote-text pass folded
+555 groups (exact: keep); the near-title pass (`bibliography._fuzzy_collapse_groups`, ratio >= 0.85 + same
+start + same identifiers) folded 8, at least 3 of them WRONG: "Seventh Army KTB" with "Seventh Army KTB
+Anlagen" (the diary and its annexes), "Memo King and Marshall for President 10 Jul 42" with the same memo "C/S
+file Bolero" (another file location: another NARA reference), "below ch III" twice (a cross-reference, not a
+work).
+PLAN:
+1. **D3-1** bibliography: remove the near-title automatic merge; write those pairs to a review list instead.
+2. **D3-2** Dedup Review UI: approve / deny a bibliography merge (UI work is deferred with the rest; until then
+   the pairs stay separate records, nothing is lost).
+3. **D3-3** list the merges the near-title pass already made (`merged_from` + the `id_aliases` pointers) for
+   review, so a wrong one can be split back.
+4. **D3-4** dedup auto-merge (`ecs_entrypoint._auto_merge_entity_type`): merge only names that are exact by the
+   rule above; a transliteration-only match or a unit-key match stays in the duplicate report for the UI.
 
 #### Resilience tasks added 2026-11-18 (owner: "deferred yes, dropped never")
 Owner rule: no outage loses a book. After Grok funds, an AZ or AWS networking come back, the work
