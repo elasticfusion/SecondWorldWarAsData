@@ -533,7 +533,7 @@ def _process_search_result(
     logger.info(f"   🔍 Verifying: {title[:60]}...")
 
     # Verify with Grok
-    is_relevant, is_government_map, approved_image_url, depicted = (
+    is_relevant, is_government_map, approved_image_url, depicted, request_id = (
         _verify_map_relevance(
             map_url=url,
             map_title=title,
@@ -613,8 +613,7 @@ def _process_search_result(
             ),
             kind=_MAP_VISION_KIND,
             model=map_depicted.model_for(grok_client, _MAP_VISION_KIND),
-            # _verify_map_relevance does not return the answer's RequestID (TODO Group 8, OPEN)
-            request_id=None,
+            request_id=request_id,  # the approving vision request's id (provenance)
             image_url=approved_image_url or url,
             found_in="openserp",
         ),

@@ -2,6 +2,8 @@
 or uploaded (owner 2026-11-24): the citation index (corpus_links) records them."""
 
 import pathlib
+
+import pytest
 import tempfile
 
 import src.extraction.intra_corpus as IC
@@ -111,3 +113,41 @@ def test_corpus_volumes_present(tmp_path):
     )
     vols = IC._corpus_volumes_present(tmp_path)
     assert "USA-E-XChannel" in vols and "USA-E-Utah" in vols
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://evil.com/hyperwar/USA/USA-E-Omaha/index.html",
+        "http://evil.com/x?u=https://www.ibiblio.org/hyperwar/USA/USA-E-Omaha/index.html",
+        "https://ibiblio.org.evil.com/hyperwar/USA/USA-E-Omaha/",
+        "https://evil.com/a#https://www.ibiblio.org/hyperwar/USA/USA-E-Omaha/index.html",
+        "ftp://www.ibiblio.org/hyperwar/USA/USA-E-Omaha/index.html",
+        "https://evil.com\\@www.ibiblio.org/hyperwar/USA/USA-E-Omaha/",
+        "https://evil.com@www.ibiblio.org/hyperwar/USA/USA-E-Omaha/",
+        "https://www.ibiblio.org@evil.com/hyperwar/USA/USA-E-Omaha/",
+        "https://www.ibiblio.org/hyperwar/USA/USA-E-Omaha/\tindex.html",
+    ],
+)
+def test_a_hyperwar_path_on_another_host_is_external(url):
+    """Only ibiblio.org (or a subdomain) is the corpus: an in-corpus link skips link review, so
+    a look-alike must not be taken for one."""
+    base = "https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html"
+    assert IC.classify_link(url, base) == "external"
+
+
+def test_ibiblio_hosts_are_still_recognised():
+    base = "https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html"
+    assert (
+        IC.classify_link(
+            "https://ibiblio.org/hyperwar/USA/USA-E-Omaha/index.html", base
+        )
+        == "in_corpus_doc"
+    )
+    assert (
+        IC.classify_link(
+            "https://WWW.IBIBLIO.ORG/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-7.html",
+            base,
+        )
+        == "same_volume_anchor"
+    )

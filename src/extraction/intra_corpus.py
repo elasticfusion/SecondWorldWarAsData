@@ -37,6 +37,27 @@ _VOLUME_INDEX = re.compile(
 )
 
 
+def _on_ibiblio(url: str) -> bool:
+    """True for an http(s) URL whose host IS ibiblio.org or a subdomain of it. The volume patterns
+    match ``/hyperwar/<vol>/`` anywhere in a URL, so without this a link to another host (or one
+    carrying an ibiblio URL in its query) was taken for a HyperWar volume and skipped link review.
+    """
+    from urllib.parse import urlparse
+
+    if any(c == "\\" or c.isspace() or ord(c) < 32 for c in url):
+        return False  # parsers disagree on these: "evil.com\\@ibiblio.org" is evil.com to a browser
+    try:
+        parts = urlparse(url)
+        host = (parts.hostname or "").lower().rstrip(".")
+    except ValueError:
+        return False
+    if "@" in parts.netloc:
+        return False  # a real HyperWar link carries no userinfo
+    return parts.scheme in ("http", "https") and (
+        host == "ibiblio.org" or host.endswith(".ibiblio.org")
+    )
+
+
 def _volume_of(url: str) -> Optional[str]:
     """The HyperWar volume key for a URL, or None if it is not a recognizable in-corpus volume
     page: a page of the volume (the authoritative hyperwar_biblio recognizer) or its index page.
@@ -45,6 +66,8 @@ def _volume_of(url: str) -> Optional[str]:
         from src.enrichment.hyperwar_biblio import _parse_volume
 
         url = (url or "")[:2048]  # both recognisers are bounded on an untrusted link
+        if not _on_ibiblio(url):
+            return None  # the patterns match a path anywhere: a /hyperwar/ path elsewhere is not ours
         parsed = _parse_volume(url)
         if parsed:
             return parsed[0]

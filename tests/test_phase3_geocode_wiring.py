@@ -59,3 +59,12 @@ def test_phase3_geocode_call_is_in_places_block_and_writes():
                 if kw.arg == "write" and getattr(kw.value, "value", None) is True:
                     found_write = True
     assert found_write, "geocode_places_dir must be called with write=True"
+
+
+def test_places_created_late_are_geocoded_after_the_document_link_steps():
+    """image_place_link (a document-link step) creates places: a geocode pass must follow it
+    (TODO Group 6: places created after step 2 were not geocoded until the next run)."""
+    src = _source()
+    links = src.index("total_enriched += _run_document_link_steps(")
+    late = src.index("total_enriched += _geocode_late_places(")
+    assert links < late

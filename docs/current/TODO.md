@@ -1688,7 +1688,7 @@ Findings (nothing enforces the hierarchy beyond a name match):
   this. The map boundary model is not needed (owner, 2026-11-17); DECIDED (owner
   2026-11-17): dated containment (`containedInPlace` with `valid_from` / `valid_to`), done with the
   `containedInPlace` item above in one schema bump.
-- **MED - places created after step 2 are not geocoded until the next run.** Geocoding runs at step 2
+- FIXED IN CODE, NOT YET VALIDATED (2026-11-25: a second geocode pass (`_geocode_places`, stats `geocode_new_places`) runs after the document-link steps, where `image_place_link` creates places; it sends only places never attempted, so it costs nothing when none were created; `tests/test_step_failure.py`, `tests/test_phase3_geocode_wiring.py`) - **MED - places created after step 2 are not geocoded until the next run.** Geocoding runs at step 2
   (`_enrich_places_and_geocode`), but places are also created later: `image_place_link` (step 6,
   `_resolve_or_create_place`) today, and the map-vision entity writes and the missing region/country
   creation (owner decisions D1/D3) after the refactor. Run geocoding after every place-creating step, or
@@ -1995,7 +1995,10 @@ meta.yaml + content.md pair) so the map re-enters Phase 1 -> 2 -> 3 as a new "bo
   JSON with the existing entity writers; stop recycling maps as prose sources.** PART DONE 2026-11-24: recycling
   stopped and `depicted` + provenance stored on the Map record (entry above). OPEN: link the units, places and
   dates it shows to their entity records (below), behind `map_depicted.is_legible` (the M7 gate, 0.35). OPEN:
-  OpenSERP maps record no RequestID (`_verify_map_relevance` does not return it: return it and record it); a map
+  FIXED IN CODE, NOT YET VALIDATED (2026-11-25): OpenSERP maps record no RequestID (`_verify_map_relevance` does not
+  return it: return it and record it) - it now returns it, and the in-document path, which read it from the answer (always
+  null: the client removes the echoed id after checking it), now records it too, both through
+  `GrokClient.vision_request_id` / `map_depicted.request_id_for`; `tests/test_map_depicted.py`. OPEN: a map
   routed from Phase 2 image vision (`map_vision_checked_at`) is asked a second, separate vision question for
   `depicted` (reuse one answer); the config keys `recycle_in_doc_maps` / `max_recycled_per_doc` keep their old
   names (they now gate the vision read). Today `depicted` is
@@ -2073,7 +2076,7 @@ Findings:
 - **MED - Grok gets almost no context.** `context=book` (`link_assets.py:154`): the relevance question
   sees the link text, the URL and the book slug, not the sentence or footnote around the link. Pass the
   surrounding text (the pre-validate check in the footnote entry).
-- **MED - overlap with `intra_corpus_links`.** Links to other ibiblio volumes are also handled by
+- FIXED IN CODE, NOT YET VALIDATED (2026-11-25: `enqueue_doc_links` skips every link `intra_corpus.classify_link` places in the corpus, counted `in_corpus` on `link_asset.summary` and the step line; on the 919 local parsed docs that is 5,230 of 14,336 links (5,158 same-volume pages, 72 other volumes) no longer sent to the relevance check. Only an ibiblio.org host can be in-corpus (`intra_corpus._on_ibiblio`): a `/hyperwar/` path on another host, or userinfo/backslash tricks, stays external and reviewed; the late geocode pass is skipped when step 3 had errors; `tests/test_m4_link_assets.py`, `tests/test_m8_intra_corpus.py`) - **MED - overlap with `intra_corpus_links`.** Links to other ibiblio volumes are also handled by
   `intra_corpus_links` (`src/extraction/intra_corpus.py:102`, queued as another batch), so the same
   link can land in both queues. Owner decision: in-corpus links go only to `intra_corpus_links`.
 

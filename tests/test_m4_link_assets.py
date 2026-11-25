@@ -164,6 +164,7 @@ def test_enqueue_records_pending_with_provenance(local_fp):
         "undecided": 0,
         "failed": 0,
         "anchors": 1,
+        "in_corpus": 0,
     }
     pend, events = _pending(fp, d)
     assert len(pend) == 2
@@ -357,3 +358,35 @@ def test_a_failed_store_is_counted_as_failed_not_already_queued(local_fp, monkey
     monkeypatch.setattr(find_queue, "enqueue_find", lambda **k: find_queue.FAILED)
     s = enqueue_doc_links("[c](charts/x.jpg)", BASE, "XChannel", grok_client=_G("YES"))
     assert s["failed"] == 1 and s["already_queued"] == 0 and s["enqueued"] == 0
+
+
+def test_in_corpus_links_are_left_to_intra_corpus_links(local_fp):
+    """Links to another HyperWar volume, or to a page of this one, are indexed by
+    intra_corpus_links only (owner decision, TODO Group 9): no Grok request, nothing queued.
+    """
+    fp, d = local_fp
+
+    class Never:
+        def chat_completion(self, p):
+            raise AssertionError("an in-corpus link was sent to Grok")
+
+    base = "https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html"
+    content = (
+        "[Omaha](https://www.ibiblio.org/hyperwar/USA/USA-E-Omaha/index.html) "
+        "[next](USA-E-XChannel-7.html)"
+    )
+    s = enqueue_doc_links(content, base, "XChannel", grok_client=Never())
+    assert (s["links"], s["in_corpus"], s["enqueued"]) == (2, 2, 0)
+    assert _pending(fp, d)[0] == []
+
+
+def test_a_look_alike_hyperwar_link_is_still_reviewed(local_fp):
+    """A /hyperwar/ path on another host is not in the corpus: it is judged and queued as usual."""
+    fp, d = local_fp
+    s = enqueue_doc_links(
+        "[x](https://evil.com/hyperwar/USA/USA-E-Omaha/index.html)",
+        "https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html",
+        "XChannel",
+        grok_client=_G("YES"),
+    )
+    assert (s["in_corpus"], s["enqueued"]) == (0, 1)

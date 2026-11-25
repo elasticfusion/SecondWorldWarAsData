@@ -11,7 +11,7 @@ Now the answer is stored on the Map record itself, with its provenance:
 * ``depicted`` - the vision block as Grok returned it (lists and strings only, capped), or null when
   the image was judged not to be a relevant map;
 * ``depicted_provenance`` - ``verdict`` (``depicted`` | ``not_relevant``), ``kind`` (the Grok request
-  kind), ``model``, ``request_id`` (the RequestID Grok echoed, when it did), ``checked_at``,
+  kind), ``model``, ``request_id`` (the RequestID the request was asked and checked with), ``checked_at``,
   ``image_url`` (what was looked at) and ``found_in`` (the book whose link led to it, or
   ``openserp``).
 
@@ -160,9 +160,17 @@ def store(map_file: Path, depicted: Any, prov: Dict[str, Any]) -> bool:
     return False
 
 
-def answer_request_id(answer: Any) -> Optional[str]:
-    """The RequestID a Grok answer echoed (``request_identity``), if any."""
-    rid = answer.get("RequestID") if isinstance(answer, dict) else None
+def request_id_for(
+    grok_client: Any, prompt: str, image_url: str, kind: str
+) -> Optional[str]:
+    """The RequestID of the vision request that produced an answer (``GrokClient.vision_request_id``:
+    the answer itself no longer carries it once the client has checked it), or None when the
+    client cannot say. (Reading the echoed field from the answer, the old way, always gave None.)
+    """
+    try:
+        rid = grok_client.vision_request_id(prompt, image_url, kind)
+    except Exception:  # noqa: BLE001 - provenance field: unknown is recorded as null
+        return None
     return rid if isinstance(rid, str) and rid else None
 
 

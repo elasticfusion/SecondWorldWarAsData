@@ -257,3 +257,47 @@ def test_a_geocode_step_that_raises_fails_the_step(monkeypatch, tmp_path):
     assert stats["geocode"]["status"] == "error"
     assert "\n" not in stats["geocode"]["error"]  # control chars stripped (log forging)
     assert p3._exit_for_steps(stats) == stop_cause.EXIT_STEP_FAILED
+
+
+def test_a_second_pass_keeps_its_own_stats(monkeypatch, tmp_path):
+    """The pass after image_place_link (places created late) reports under its own key, so it
+    neither hides nor overwrites the step-3 geocode stats."""
+    from types import SimpleNamespace
+
+    report = SimpleNamespace(
+        attempted=2, geocoded=2, not_found=0, low_confidence=0, errors=0
+    )
+    p3, stats = _geocode_with(monkeypatch, tmp_path, report)
+    args = SimpleNamespace(output_dir=tmp_path, cache_dir=tmp_path, max_items=0)
+    assert p3._geocode_places(args, None, stats, "geocode_new_places") == 2
+    assert stats["geocode"]["attempted"] == 2
+    assert stats["geocode_new_places"] == {
+        "enriched": 2,
+        "status": "ok",
+        "attempted": 2,
+        "not_found": 0,
+        "low_confidence": 0,
+        "errors": 0,
+    }
+
+
+def test_the_late_pass_is_skipped_after_step3_errors(monkeypatch, tmp_path):
+    """An errored place has no status, so the late pass would only retry it (an outage, twice)."""
+    from types import SimpleNamespace
+
+    import phase3_enrich_data as p3
+
+    called = []
+    monkeypatch.setattr(p3, "_geocode_places", lambda *a: called.append(a) or 0)
+    monkeypatch.setattr(p3, "_update_lock_status", lambda *a: None)
+    args = SimpleNamespace(output_dir=tmp_path, cache_dir=tmp_path, max_items=0)
+    for first in (
+        {"status": "ok", "errors": 3},
+        {"status": "pending"},
+        {"status": "error"},
+        {},
+    ):
+        assert p3._geocode_late_places(args, None, {"geocode": first}) == 0
+    assert called == []
+    p3._geocode_late_places(args, None, {"geocode": {"status": "ok", "errors": 0}})
+    assert len(called) == 1 and called[0][3] == "geocode_new_places"

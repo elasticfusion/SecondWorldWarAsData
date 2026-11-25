@@ -148,6 +148,7 @@ def enqueue_doc_links(
         "undecided": 0,
         "failed": 0,
         "anchors": 0,
+        "in_corpus": 0,
     }
     pending = Pending()
     try:
@@ -169,10 +170,17 @@ def enqueue_doc_links(
                 blacklist=bl,
             )
 
+        from src.extraction.intra_corpus import classify_link
+
         for la in extract_link_assets(content, base_url):
             summary["links"] += 1
             if la.is_anchor:
                 summary["anchors"] += 1
+                continue
+            if classify_link(la.url, base_url) != "external":
+                # another HyperWar volume, or a page of this one: indexed by intra_corpus_links
+                # only (owner decision, TODO Group 9), never judged by Grok or queued here too
+                summary["in_corpus"] += 1
                 continue
             _handle_link(la, book, base_url, source_section_id, summary, pending, judge)
     except Exception as e:  # noqa: BLE001 - enqueue must never crash the pipeline
@@ -182,7 +190,7 @@ def enqueue_doc_links(
         pending.raise_if_queued()
     logger.info(
         "OBSERV link_asset.summary book=%s links=%d enqueued=%d already_queued=%d dropped=%d "
-        "undecided=%d failed=%d anchors=%d",
+        "undecided=%d failed=%d anchors=%d in_corpus=%d",
         book,
         summary["links"],
         summary["enqueued"],
@@ -191,6 +199,7 @@ def enqueue_doc_links(
         summary["undecided"],
         summary["failed"],
         summary["anchors"],
+        summary["in_corpus"],
     )
     return summary
 

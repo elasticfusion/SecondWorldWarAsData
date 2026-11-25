@@ -2058,11 +2058,7 @@ class GrokClient:
         use_cache = use_cache and not _cache_globally_disabled()
         cache = self._get_cache(cache_type)
         model = self._get_model(cache_type)
-        book = current_book.get()
-        if book and cache_type in request_identity.DOC_BOUND:
-            # the answer is stamped with THIS document's BookID, so it is cached per document: one
-            # shared entry would be read by another document and refused as another's answer
-            key_basis = f"{key_basis}|book:{book}"
+        key_basis = self._vision_key_basis(key_basis, cache_type)
         cache_key = self._make_cache_key(key_basis, temperature, model)
         asked, bid, rid = self._identity(
             prompt, system_prompt, cache_type, None, key_basis
@@ -2096,6 +2092,33 @@ class GrokClient:
         return self._vision_proof(
             result, (bid, rid), cache, cache_key, cache_type, use_cache
         )
+
+    @staticmethod
+    def _vision_key_basis(key_basis: str, cache_type: str) -> str:
+        """The key basis (cache key and RequestID) of a vision request in the current book scope."""
+        book = current_book.get()
+        if book and cache_type in request_identity.DOC_BOUND:
+            # the answer is stamped with THIS document's BookID, so it is cached per document: one
+            # shared entry would be read by another document and refused as another's answer
+            return f"{key_basis}|book:{book}"
+        return key_basis
+
+    def vision_request_id(
+        self,
+        prompt: str,
+        image_url: str,
+        cache_type: str,
+        system_prompt: Optional[str] = None,
+    ) -> Optional[str]:
+        """The RequestID ``extract_json_with_image(prompt, image_url, cache_type=...)`` asks with
+        and checks its answer against (``_vision_proof``), or None for a kind that carries none.
+        The answer comes back WITHOUT the echoed id (``request_identity.verify`` removes it), so a
+        caller recording provenance asks here. Deterministic: the same request, same id, in the
+        same book scope as the call. Only for ``extract_json_with_image`` (URL): the base64 variant
+        keys its request differently, so its id is not this one."""
+        basis = self._vision_key_basis(f"{prompt}:{image_url}", cache_type)
+        _, _, rid = self._identity(prompt, system_prompt, cache_type, None, basis)
+        return rid or None
 
     def _vision_proof(
         self,

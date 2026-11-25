@@ -53,9 +53,9 @@ def test_verify_single_image_returns_approved_url(monkeypatch):
         gc,
         30,
     )
-    # 4-tuple now (map-as-source P1): (is_relevant, is_government, approved_url, depicted).
-    # depicted is None here because the mocked result omits it (backward-compatible).
-    assert out == (True, True, "https://cdn/m.png", None)
+    # (is_relevant, is_government, approved_url, depicted, request_id): depicted is None because
+    # the mocked result omits it; request_id is None because a Mock client gives no str id
+    assert out == (True, True, "https://cdn/m.png", None, None)
 
 
 def test_verify_single_image_passes_depicted_through(monkeypatch):
@@ -86,4 +86,4 @@ def test_verify_single_image_passes_depicted_through(monkeypatch):
         gc,
         30,
     )
-    assert out == (True, False, "https://cdn/m.png", depicted)
+    assert out[:4] == (True, False, "https://cdn/m.png", depicted)

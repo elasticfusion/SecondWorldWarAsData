@@ -62,6 +62,20 @@ def _host_allowed(url: str, extra_hosts: "tuple[str, ...]" = ()) -> bool:
     )
 
 
+def _vision_prompt(map_title: str, context: Dict[str, str]) -> str:
+    """The shared verification prompt for one in-document map (its RequestID is derived from it)."""
+    from src.extraction.search_external_maps import _build_verification_prompt
+
+    return _build_verification_prompt(
+        context.get("place_name", ""),
+        context.get("date"),
+        context.get("event_context", ""),
+        map_title,
+        context.get("alt_text", ""),
+        context.get("caption", ""),
+    )
+
+
 def _vision_depicted(
     grok_client: Any,
     img_url: str,
@@ -72,16 +86,7 @@ def _vision_depicted(
     """Run the map_vision verify+extract on a direct image URL. Returns Grok's answer (a dict) or
     None when there is no usable answer (an error: nothing is recorded, so it is asked again).
     Reuses the shared verification prompt."""
-    from src.extraction.search_external_maps import _build_verification_prompt
-
-    prompt = _build_verification_prompt(
-        context.get("place_name", ""),
-        context.get("date"),
-        context.get("event_context", ""),
-        map_title,
-        context.get("alt_text", ""),
-        context.get("caption", ""),
-    )
+    prompt = _vision_prompt(map_title, context)
     try:
         result = grok_client.extract_json_with_image(
             prompt=prompt,
@@ -257,7 +262,13 @@ def _read_one_link(
         if answer is None:
             summary["skipped"] += 1
             return
-        _store_answer(map_file, answer, cleaned, book, how.grok_client, summary)
+        rid = map_depicted.request_id_for(
+            how.grok_client,
+            _vision_prompt(map_title, how.context),
+            cleaned,
+            VISION_KIND,
+        )
+        _store_answer(map_file, answer, cleaned, book, how.grok_client, summary, rid)
     except BatchModeCollecting:
         raise  # queued for the batch: not an answer, not a failure
     except Exception as e:  # noqa: BLE001 - one bad link must not crash the ingest
@@ -281,6 +292,7 @@ def _store_answer(
     book: str,
     grok_client: Any,
     summary: Dict[str, int],
+    request_id: Optional[str] = None,
 ) -> None:
     from src.extraction import map_depicted
 
@@ -290,7 +302,7 @@ def _store_answer(
         verdict,
         kind=VISION_KIND,
         model=map_depicted.model_for(grok_client, VISION_KIND),
-        request_id=map_depicted.answer_request_id(answer),
+        request_id=request_id,
         image_url=image_url,
         found_in=book,
     )

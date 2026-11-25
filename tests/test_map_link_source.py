@@ -66,12 +66,14 @@ class _GC:
         self.answer = answer or {
             "is_relevant": True,
             "depicted": dict(_DEPICTED),
-            "RequestID": "abcdef0123456789",
         }
 
     def extract_json_with_image(self, **k):
         self.asked += 1
-        return self.answer
+        return self.answer  # like the real client: the echoed id is checked and removed
+
+    def vision_request_id(self, prompt, image_url, kind):
+        return "abcdef0123456789"  # the id the request was asked with (provenance)
 
     def _get_model(self, kind):
         return "grok-vision-test"

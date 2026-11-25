@@ -161,6 +161,35 @@ def _enrich_places_and_geocode(
 
     logger.info("[phase3 step 3/6] Geocoding places (coordinates)")
     _update_lock_status("step 3/6: geocoding places")
+    return enriched + _geocode_places(args, grok_client, source_stats, "geocode")
+
+
+def _geocode_late_places(args, grok_client, source_stats) -> int:
+    """Geocode the places created after step 3 (image_place_link creates them), not on the next
+    run. Only places never attempted are sent, so it costs nothing when none were created. Skipped
+    when step 3 had errors or is waiting on a batch: an errored place has no status, so this pass
+    would only retry it (twice the geocoder and Grok calls in an outage); the next run does.
+    """
+    first = source_stats.get("geocode") or {}
+    if first.get("status") != "ok" or first.get("errors"):
+        logger.info(
+            "OBSERV geocode.late_pass_skipped step3_status=%s step3_errors=%s - places created "
+            "after step 3 are geocoded on the next run",
+            first.get("status"),
+            first.get("errors", 0),
+        )
+        return 0
+    logger.info("[phase3] Geocoding places created after step 3")
+    _update_lock_status("geocoding places created after step 3")
+    return _geocode_places(args, grok_client, source_stats, "geocode_new_places")
+
+
+def _geocode_places(args, grok_client, source_stats, stat: str) -> int:
+    """Geocode the places not yet attempted (Nominatim -> hill -> Grok cascade), stats under
+    ``source_stats[stat]``. Wrapped so it never aborts Phase 3. Returns the count geocoded. A
+    place already geocoded or attempted is skipped (``_already_attempted``), so a later pass
+    costs only the places created since (TODO Group 6: places created after step 2)."""
+    places_dir = args.output_dir / "places"
     try:
         from src.enrichment.hill_geocode import make_hill_geocoder
         from src.enrichment.nominatim_geocode import make_nominatim_geocoder
@@ -201,7 +230,9 @@ def _enrich_places_and_geocode(
         # Q2 coverage observability: canonical machine-parseable rollup + anomalies (geocoder
         # service down = 0-of-N; a high error rate signals a degraded cascade).
         logger.info(
-            "OBSERV geocode.summary attempted=%d geocoded=%d not_found=%d low_conf=%d errors=%d",
+            "OBSERV geocode.summary pass=%s attempted=%d geocoded=%d not_found=%d low_conf=%d "
+            "errors=%d",
+            stat,
             geo_report.attempted,
             geo_report.geocoded,
             geo_report.not_found,
@@ -221,8 +252,8 @@ def _enrich_places_and_geocode(
                 geo_report.errors,
                 geo_report.attempted,
             )
-        source_stats["geocode"] = {
-            "enriched": _stat_enriched(source_stats, "geocode") + geo_report.geocoded,
+        source_stats[stat] = {
+            "enriched": _stat_enriched(source_stats, stat) + geo_report.geocoded,
             # per-place errors are RECORD failures: those places stay un-geocoded and are
             # retried next run, so they do not fail the step (only a raise does, owner
             # 2026-11-18); the count is shown in the completion summary
@@ -232,18 +263,18 @@ def _enrich_places_and_geocode(
             "low_confidence": geo_report.low_confidence,
             "errors": geo_report.errors,
         }
-        return enriched + geo_report.geocoded
+        return geo_report.geocoded
     except BatchModeCollecting as e:
         # places were queued for the batch: the step is pending; what WAS geocoded counts
-        done = _stat_enriched(source_stats, "geocode") + getattr(e, "geocoded", 0)
-        source_stats["geocode"] = {"enriched": done, "status": "pending"}
-        return enriched + getattr(e, "geocoded", 0)
+        done = _stat_enriched(source_stats, stat) + getattr(e, "geocoded", 0)
+        source_stats[stat] = {"enriched": done, "status": "pending"}
+        return getattr(e, "geocoded", 0)
     except Exception as e:  # noqa: BLE001 - geocoding must not abort Phase 3
         logger.error(
             "Geocoding step FAILED (places left un-geocoded): %s", e, exc_info=True
         )
-        source_stats["geocode"] = _raised_step_stats(e)
-        return enriched
+        source_stats[stat] = _raised_step_stats(e)
+        return 0
 
 
 def _run_document_media_steps(args, config, grok_client, run_step) -> int:
@@ -531,6 +562,7 @@ def _review_external_links(out, grok_client) -> int:
         "undecided": 0,
         "failed": 0,
         "anchors": 0,
+        "in_corpus": 0,
     }
     pending = (
         Pending()
@@ -552,13 +584,14 @@ def _review_external_links(out, grok_client) -> int:
             totals[k] += int((s or {}).get(k, 0))
     logging.getLogger("root").info(
         "OBSERV phase3.step name=link_asset_review links=%d enqueued=%d dropped=%d undecided=%d failed=%d anchors=%d "
-        "status=%s",
+        "in_corpus=%d status=%s",
         totals["links"],
         totals["enqueued"],
         totals["dropped"],
         totals["undecided"],
         totals["failed"],
         totals["anchors"],
+        totals["in_corpus"],
         "warn" if totals["failed"] else "ok",
     )
     pending.raise_if_queued()  # batch rounds: the step is pending, the next pass has the answers
@@ -954,6 +987,7 @@ def _run_enrichment_steps(args, config, grok_client, source_stats, max_workers) 
     # Document links, photos and the provenance stamp - not web search, never gated by OpenSERP
     if not args.people_only:
         total_enriched += _run_document_link_steps(args, config, grok_client, _run_step)
+        total_enriched += _geocode_late_places(args, grok_client, source_stats)
 
     # Photos whose file ClamAV deleted leave their records (every run, every record: not gated)
     _run_step("infected_photos", lambda: _drop_infected_photos(args.output_dir))
