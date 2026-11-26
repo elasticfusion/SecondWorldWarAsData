@@ -4007,7 +4007,18 @@ def _reconcile_bibliography_full_corpus() -> None:
 
         bib_dir = WORKDIR / "output" / "bibliography"
         removed: list = []
-        merged_away = reconcile_bibliography_dir(bib_dir, removed=removed)
+        held: list = []
+        merged_away = reconcile_bibliography_dir(bib_dir, removed=removed, held=held)
+        if held:
+            observe_error(
+                "reconcile",
+                "records_held",
+                count=len(held),
+                examples=",".join(sorted(held)[:5])[:300],
+                note="these bibliography records were left out of the merge and left unchanged "
+                "(each is named in a schema.not_usable or bib.record_unreadable line above): fix "
+                "or restore each, then re-run the reconcile. Everything else merged",
+            )
         # Upload the collapsed canonical files; shards were unlinked locally by reconcile, but
         # their S3 copies still exist — remove them so the prefix reflects the canonical set.
         up, _ = s3_sync_up(bib_dir, "output/bibliography")

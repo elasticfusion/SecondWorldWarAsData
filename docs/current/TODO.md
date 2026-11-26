@@ -264,13 +264,51 @@ Anlagen" (the diary and its annexes), "Memo King and Marshall for President 10 J
 file Bolero" (another file location: another NARA reference), "below ch III" twice (a cross-reference, not a
 work).
 PLAN:
-1. **D3-1** bibliography: remove the near-title automatic merge; write those pairs to a review list instead.
+1. **D3-1** FIXED IN CODE, NOT YET VALIDATED (2026-11-25, slice B: `bibliography._near_title_candidates` writes
+   `output/review/bibliography_merge_review.json`; nothing is merged by similarity; identical normalized titles still
+   merge, rule question (a)) bibliography: remove the near-title
+   automatic merge; write those pairs to a review list instead.
 2. **D3-2** Dedup Review UI: approve / deny a bibliography merge (UI work is deferred with the rest; until then
    the pairs stay separate records, nothing is lost).
-3. **D3-3** list the merges the near-title pass already made (`merged_from` + the `id_aliases` pointers) for
-   review, so a wrong one can be split back.
+3. **D3-3** BIBLIOGRAPHY: NOTHING TO REVIEW (checked 2026-11-25): dev S3 holds 2,035 bibliography records and no
+   shards, so the full-corpus bibliography merge has never combined anything on dev. PEOPLE (owner question
+   2026-11-25): the owner's Dedup Review UI merges DID happen, e.g. 2026-11-16 23:55 UTC `bernard montgomery.json`
+   and `montgomery.json` were deleted and folded into `bernard l montgomery.json` (17 mentions); they left NO merge
+   pointer because `dev-wwii-id-aliases` was created 2026-11-23, so the merged-away ids do not resolve (D5
+   redirects, D26-3 manifests, old citations). TO DO: rebuild pointers for pre-2026-11-23 merges from the S3
+   version history (a deleted record's last version holds its id; the survivor is the record written at the same
+   moment); and check why the survivor's `aliases` is empty (are the merged names kept elsewhere?). List the merges the
+   near-title pass already made (`merged_from` + the `id_aliases` pointers) for review, so a wrong one can be split
+   back.
 4. **D3-4** dedup auto-merge (`ecs_entrypoint._auto_merge_entity_type`): merge only names that are exact by the
    rule above; a transliteration-only match or a unit-key match stays in the duplicate report for the UI.
+5. **Rule questions found while building slice B (for the rule log; owner to decide):** (a) the bibliography
+   record key (`_match_keys` -> `_document_key`, used for the record's file name, so two Phase 2 writes of it
+   share one record) drops punctuation and, for a journal / KTB / diary, the entry date ("116th Inf S-3 Jnl, 6
+   Jun 44" and "..., 7 Jun 44" are one record with a mention per date, by the earlier "one record, many
+   citations" rule) - beyond case/whitespace/markdown: keep as an exact rule? (b) `bibliography._find_match`
+   (title similarity, then archive ref, then author alone) has no production caller, only tests: delete it?
+6. Slice B left: a record that is not readable JSON is alerted and left out, not restored automatically from
+   its previous S3 version (the alert says to restore it; the bucket is versioned).
+7. **Slice B was committed WITHOUT its checks (owner 2026-11-25: the agent lost command access; "slice B can
+   be committed", test in Phase 3 QA).** Phase 3 QA must cover, before this is relied on:
+   - run `tests/test_bibliography_reconcile_safety.py`, `tests/test_bibliography_document_identity.py`,
+     `tests/test_bibliography_combine.py`, `tests/unit/test_bibliography_match.py`, `tests/test_version_steps.py`,
+     `tests/test_entity_record_files.py`; fix any failure;
+   - run `scripts/gate.sh` (expect black / radon / basedpyright fixes in `src/extraction/bibliography.py` and the
+     new test file) and get the code and security reviews;
+   - dry run DONE 2026-11-25 on a copy of the `phase2-2026-11-17` bibliography: 559 merged (555 same footnote + 4
+     identical normalized titles), 0 held, 15 s, 8 near-title pairs listed in `output/review/bibliography_merge_review.json`
+     (incl. "Seventh Army KTB" / "... KTB Anlagen" and "VII Corps G-3 Journal" / "V Corps G-3 Journal", two
+     different corps the old pass would have merged); the targeted tests above passed (133);
+   - force each held case once: a truncated JSON file, a record of the wrong shape (string `mentions`, numeric
+     `title`), a citation whose merge raises: each alerted (`bib.record_unreadable`, `schema.not_usable`,
+     `bib.group_merge_failed`, `reconcile.records_held`), left unchanged on S3, the rest merged;
+   - confirm `output/review/bibliography_merge_review.json` reaches S3 with the output sync and is rebuilt each run
+     (it is outside the entity dir, so no record reader sees it);
+   - Phase 2's per-task reconcile (`phase2_extract._run_core_extraction`) still runs and writes its shards;
+   - security review points: the alert fields carry S3-key-derived file names (log injection), and the
+     near-title candidate search is O(n^2) over ~2,000 groups (time it).
 
 #### Resilience tasks added 2026-11-18 (owner: "deferred yes, dropped never")
 Owner rule: no outage loses a book. After Grok funds, an AZ or AWS networking come back, the work

@@ -1050,38 +1050,8 @@ def _group_title(items: List[tuple]) -> str:
     return ""
 
 
-def _fuzzy_collapse_groups(groups: Dict[str, List[tuple]]) -> None:
-    """Fold deterministic groups whose representative titles fuzzy-match (>=0.85) into one
-    canonical group, mutating ``groups`` in place. This preserves the near-title dedup that
-    used to run per-write in ``_find_match`` (0.85 SequenceMatcher), now done once per run.
-
-    Only title-bearing groups participate; each merge target is the lexicographically-smallest
-    group key so the collapse is deterministic regardless of iteration order. Fail-safe.
-    """
-
-    titled = [(k, _group_title(v)) for k, v in list(groups.items())]
-    titled = [(k, t) for k, t in titled if t]
-    titled.sort(key=lambda kt: kt[0])  # stable canonical selection
-
-    absorbed: Dict[str, str] = {}  # key -> canonical key it was merged into
-    for i, (key_i, title_i) in enumerate(titled):
-        if key_i in absorbed:
-            continue
-        _absorb_same_documents(groups, absorbed, key_i, title_i, titled[i + 1 :])
-
-
-def _absorb_same_documents(groups, absorbed, key_i, title_i, candidates) -> None:
-    """Fold every candidate group naming the same document into ``key_i``. A candidate must be
-    the same document as EVERY member already folded in (no chain merges)."""
-    members = [title_i]
-    for key_j, title_j in candidates:
-        if key_j in absorbed or key_j == key_i:
-            continue
-        if all(_same_document(m, title_j) for m in members):
-            groups[key_i].extend(groups.get(key_j, []))
-            groups.pop(key_j, None)
-            absorbed[key_j] = key_i
-            members.append(title_j)
+# (The near-title automatic merge, _fuzzy_collapse_groups, was removed 2026-11-25: owner D3, exact
+# matches only. Its candidates are listed for review by _near_title_candidates instead.)
 
 
 # a verbatim shorter than this is too generic to say two records cite one work
@@ -1167,48 +1137,181 @@ def _verbatim_collapse_groups(groups: Dict[str, List[tuple]]) -> int:
 
 
 def reconcile_bibliography_dir(
-    bib_dir: Path, removed: Optional[List[str]] = None
+    bib_dir: Path,
+    removed: Optional[List[str]] = None,
+    held: Optional[List[str]] = None,
 ) -> int:
     """Rebuild-time reconcile (Option B): union mentions across all bibliography records that
     belong to the same citation, collapsing per-writer shards (``bib_<hash>__<writer>.json``),
     cross-task duplicates, AND legacy random-ULID duplicates into ONE canonical deterministic
     file (``bib_<hash>.json``). Groups primarily by the ``<hash>`` embedded in the filename
     (stable across shards even if one shard's title got enriched differently), falling back to a
-    hash recomputed from the record's match key for legacy/non-conforming names; then a fuzzy
-    near-title pass folds typo-level duplicates, and records citing the same footnote text are
-    combined (the survivor lists the absorbed ids in ``merged_from``). ``removed`` collects the
-    file names merged away, so the caller can delete them where they are stored too. Rebuilds the derived index. Idempotent +
-    fail-safe (never raises). Returns the number of duplicate files merged away. Run at
-    end-of-run / full-corpus reconcile phase — S3-authoritative, no Dynamo."""
+    hash recomputed from the record's match key for legacy/non-conforming names; records citing
+    the same footnote text are combined (the survivor lists the absorbed ids in ``merged_from``).
+
+    Exact matches only (owner 2026-11-25, D3): groups whose titles are merely SIMILAR are never
+    merged here; they are listed in ``merge_review.json`` for a person to approve or deny.
+    Every record is brought to the current schema first (D2): one that cannot be used is left out,
+    left unchanged and listed in ``held``; one citation that fails to merge keeps its files and
+    is said, never stopping the merge of the rest (D1-R1).
+
+    ``removed`` collects the file names merged away, so the caller can delete them where they are
+    stored too. Rebuilds the derived index. Idempotent; never raises. Returns the number of
+    duplicate files merged away. Run at end-of-run / full-corpus reconcile phase -
+    S3-authoritative, no Dynamo."""
     bib_dir = Path(bib_dir)
     if not bib_dir.exists():
         return 0
 
     # Group record files by citation hash (filename hash preferred; recomputed match-key hash as
-    # a legacy fallback). Then a fuzzy near-title pass folds typo-level duplicates.
-    groups = _group_bib_files_by_hash(bib_dir)
-    _fuzzy_collapse_groups(groups)
-    folded = _verbatim_collapse_groups(groups)
+    # a legacy fallback); near-title pairs go to review; same-footnote groups are combined.
+    groups = _group_bib_files_by_hash(bib_dir, held)
+    title_folded = _exact_title_collapse_groups(groups)
+    review = _near_title_candidates(groups)
+    _write_merge_review(bib_dir, review)
+    folded = _verbatim_collapse_groups(groups) + title_folded
 
     merged_away = 0
+    failed = 0
     new_index: Dict[str, Dict[str, str]] = {"titles": {}, "refs": {}, "authors": {}}
     for canon_name, items in groups.items():
-        merged_away += _reconcile_bib_group(
+        got = _reconcile_bib_group_guarded(
             bib_dir, canon_name, items, new_index, removed
         )
+        if got is None:
+            failed += 1
+        else:
+            merged_away += got
     try:
         _save_index(bib_dir, new_index)
     except OSError:
         pass
     logger.info(
         "OBSERV bib.reconcile groups=%d merged_away=%d same_citation_folded=%d "
-        "periodic_date_residue=%d",
+        "near_title_for_review=%d groups_failed=%d held=%d periodic_date_residue=%d",
         len(groups),
         merged_away,
         folded,
+        len(review),
+        failed,
+        len(held) if held is not None else 0,
         _periodic_date_residue(groups),
     )
     return merged_away
+
+
+MERGE_REVIEW_FILE = "bibliography_merge_review.json"
+
+
+def merge_review_path(bib_dir: Path) -> Path:
+    """Where the merge candidates for review are written: ``output/review/``, beside (not in) the
+    bibliography dir, so nothing that lists the entity dir can take it for a record."""
+    return Path(bib_dir).parent / "review" / MERGE_REVIEW_FILE
+
+
+def _exact_title_collapse_groups(groups: Dict[str, List[tuple]]) -> int:
+    """Fold groups whose normalized titles are IDENTICAL into one (the smallest group key),
+    mutating ``groups``; returns the number folded away. Identical by ``_group_title``: case,
+    punctuation and, for a journal / KTB / diary, the entry date are ignored (the existing
+    "one record, many citations" rule; owner to confirm it as an exact rule, TODO D3 rule
+    question (a)). Catches a record written under an older file name for the same citation.
+    """
+    by_title: Dict[str, List[str]] = {}
+    for key in sorted(groups):
+        title = _group_title(groups[key])
+        if title:
+            by_title.setdefault(title, []).append(key)
+    folded = 0
+    for keys in by_title.values():
+        for other in keys[1:]:
+            groups[keys[0]].extend(groups.pop(other))
+            folded += 1
+    return folded
+
+
+def _reconcile_bib_group_guarded(
+    bib_dir: Path,
+    canon_name: str,
+    items: "List[tuple]",
+    new_index: "Dict[str, Dict[str, str]]",
+    removed: Optional[List[str]],
+) -> Optional[int]:
+    """``_reconcile_bib_group``, or None when it raised: that citation keeps its files unmerged
+    and is said; the merge of every other citation goes on (D1-R1)."""
+    from src.utils.observe import observe_error
+
+    try:
+        return _reconcile_bib_group(bib_dir, canon_name, items, new_index, removed)
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - one citation must never stop the corpus merge
+        observe_error(
+            "bib",
+            "group_merge_failed",
+            canon=canon_name[:80],
+            files=len(items),
+            error=type(e).__name__,
+            note="this citation's files were not merged and are left as they are; the rest of "
+            "the bibliography merged. See the traceback logged with this line, fix the cause, then "
+            "re-run the reconcile",
+        )
+        logger.error(
+            "bib group merge traceback canon=%r", canon_name[:80], exc_info=True
+        )
+        return None
+
+
+def _near_title_candidates(groups: Dict[str, List[tuple]]) -> List[Dict[str, Any]]:
+    """Pairs of groups whose titles name the same document by the near-title rule
+    (``_same_document``: same start, same identifiers, similarity >= 0.85) but are not EXACT
+    matches. They are NOT merged (owner 2026-11-25, D3): each pair is a candidate for a person to
+    approve or deny in the Dedup Review UI. Deterministic order; ``groups`` is not changed.
+    """
+    titled = sorted(
+        (k, t) for k, t in ((k, _group_title(v)) for k, v in groups.items()) if t
+    )
+    pairs: List[Dict[str, Any]] = []
+    for i, (key_i, title_i) in enumerate(titled):
+        for key_j, title_j in titled[i + 1 :]:
+            if title_i != title_j and _same_document(title_i, title_j):
+                pairs.append(_review_pair(groups, key_i, title_i, key_j, title_j))
+    return pairs
+
+
+def _review_pair(groups, key_i, title_i, key_j, title_j) -> Dict[str, Any]:
+    """One merge candidate for review: both groups' canonical names, titles and record ids."""
+
+    def ids(key):
+        return sorted(
+            {str(d.get("BibliographyID") or "") for _f, d in groups[key]} - {""}
+        )
+
+    return {
+        "rule": "near_title",
+        "a": {"canon": key_i, "title": title_i, "ids": ids(key_i)},
+        "b": {"canon": key_j, "title": title_j, "ids": ids(key_j)},
+    }
+
+
+def _write_merge_review(bib_dir: Path, pairs: List[Dict[str, Any]]) -> None:
+    """Write the merge candidates for human review (the whole list, rebuilt each run)."""
+    from src.utils.observe import observe_error
+
+    path = merge_review_path(bib_dir)
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            json.dumps({"pairs": pairs}, indent=2, ensure_ascii=False, sort_keys=True),
+            encoding="utf-8",
+        )
+    except OSError as e:
+        observe_error(
+            "bib",
+            "merge_review_unwritten",
+            error=type(e).__name__,
+            note="the near-title merge candidates were not written (nothing was merged): check "
+            "the disk, then re-run the reconcile",
+        )
 
 
 _MONTH_WORD = re.compile(rf"\b{_MONTH}", re.IGNORECASE)
@@ -1230,24 +1333,60 @@ def _periodic_date_residue(groups: Dict[str, List[tuple]]) -> int:
     return count
 
 
-def _group_bib_files_by_hash(bib_dir: Path) -> "Dict[str, List[tuple]]":
+def _group_bib_files_by_hash(
+    bib_dir: Path, held: Optional[List[str]] = None
+) -> "Dict[str, List[tuple]]":
     """Group bibliography record files by their canonical citation filename. Prefer the <hash>
     embedded in the filename (shards + canonical share it); fall back to a hash recomputed from
-    the record's match key for legacy random-ULID names. Skips index/queue + non-records.
+    the record's match key for legacy random-ULID names. Only usable records are grouped
+    (``_usable_bib_record``); the names of those left out are added to ``held``.
     """
     groups: Dict[str, List[tuple]] = {}
     for f in sorted(bib_dir.glob("*.json")):
-        if f.name in ("index.json", "review_queue.json"):
-            continue
-        try:
-            data = json.loads(f.read_text(encoding="utf-8"))
-        except (OSError, ValueError):
-            continue
-        if not isinstance(data, dict) or "BibliographyID" not in data:
+        data = _usable_bib_record(f, held)
+        if data is None:
             continue
         canon = _canonical_bib_name(f, data)
         groups.setdefault(canon, []).append((f, data))
     return groups
+
+
+def _usable_bib_record(f: Path, held: Optional[List[str]]) -> Optional[Dict[str, Any]]:
+    """The record in ``f`` brought to the current schema (src/schemas/schema_contract
+    .bring_forward), or None: a non-record file is skipped quietly; an unreadable file or a record
+    that cannot be used (wrong shape, needs the upgrade release, newer code) is said, left
+    unchanged and listed in ``held`` - kept out of this merge, never silently skipped, and never
+    able to stop the merge of the rest (owner 2026-11-25, D1/D2)."""
+    from src.schemas.schema_contract import bring_forward, say_unusable
+    from src.utils.entity_records import is_record_file
+    from src.utils.observe import observe_error
+
+    if not is_record_file(f):
+        return None
+    try:
+        data = json.loads(f.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as e:
+        observe_error(
+            "bib",
+            "record_unreadable",
+            file=f.name[:120],
+            error=type(e).__name__,
+            note="the file is not readable JSON: it is left out of the merge and left as it is. "
+            "Restore its previous version from S3 (the bucket is versioned) or delete it, then "
+            "re-run the reconcile",
+        )
+        if held is not None:
+            held.append(f.name)
+        return None
+    if not isinstance(data, dict) or "BibliographyID" not in data:
+        return None  # not a bibliography record (a sidecar written by another step)
+    out = bring_forward(data, "bibliography")
+    if not out.usable:
+        say_unusable(logger, "bibliography", f.name, out)
+        if held is not None:
+            held.append(f.name)
+        return None
+    return out.record
 
 
 def _canonical_bib_name(f: Path, data: Dict[str, Any]) -> str:

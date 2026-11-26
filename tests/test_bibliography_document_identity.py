@@ -158,15 +158,34 @@ def test_dated_journal_citations_become_one_record_with_mentions(tmp_path):
     ]
 
 
-def test_fuzzy_fold_does_not_chain_through_a_shared_neighbour():
-    # b and c are each "same" as a only by a chain; every member must match the candidate.
+def test_near_title_pairs_are_listed_for_review_never_merged(tmp_path):
+    """Owner 2026-11-25 (D3): similar titles are NOT merged; each pair goes to review. Volumes
+    with different numbers are not even candidates (different identifiers)."""
     groups = {
-        "k1": [(None, {"title": "Stacey, The Canadian Army"})],
-        "k2": [(None, {"title": "Stacey, The Canadian Army, Vol 2"})],
-        "k3": [(None, {"title": "Stacey, The Canadian Army, Vol 3"})],
+        "k1": [(None, {"BibliographyID": "A", "title": "Stacey, The Canadian Army"})],
+        "k2": [
+            (None, {"BibliographyID": "B", "title": "Stacey, The Canadian Army, Vol 2"})
+        ],
+        "k3": [
+            (None, {"BibliographyID": "C", "title": "Stacey, The Canadian Army, Vol 3"})
+        ],
+        "k4": [
+            (None, {"BibliographyID": "D", "title": "1st White House mtg TRIDENT conf"})
+        ],
+        "k5": [
+            (
+                None,
+                {
+                    "BibliographyID": "E",
+                    "title": "1st White House meeting TRIDENT conf",
+                },
+            )
+        ],
     }
-    B._fuzzy_collapse_groups(groups)
-    assert sorted(groups) == ["k1", "k2", "k3"]
+    pairs = B._near_title_candidates(groups)
+    assert sorted(groups) == ["k1", "k2", "k3", "k4", "k5"]  # nothing merged
+    assert [(p["a"]["canon"], p["b"]["canon"]) for p in pairs] == [("k4", "k5")]
+    assert pairs[0]["a"]["ids"] == ["D"] and pairs[0]["rule"] == "near_title"
 
 
 def test_record_stored_under_the_old_dated_key_folds_with_new_writes(tmp_path):

@@ -425,7 +425,7 @@ def test_reconcile_merges_duplicate_records(tmp_path):
     (bib / canon).write_text(
         json.dumps(
             {
-                "BibliographyID": "01AAA",
+                "BibliographyID": "01JQKV6Z9F00000000000000AA",
                 "title": "Unknown",
                 "alt_title": None,
                 "resource_urls": [],
@@ -444,7 +444,7 @@ def test_reconcile_merges_duplicate_records(tmp_path):
     (bib / "interv_01LEGACY.json").write_text(
         json.dumps(
             {
-                "BibliographyID": "01BBB",
+                "BibliographyID": "01JQKV6Z9F00000000000000BB",
                 "title": "Unknown",
                 "alt_title": "Interview with Collins",
                 "resource_urls": ["https://catalog.archives.gov/id/1"],
@@ -549,8 +549,10 @@ def test_reconcile_collapses_shards_from_two_writers(tmp_path, monkeypatch):
     assert len(rec["mentions"]) == 2  # mentions unioned across writers
 
 
-def test_reconcile_fuzzy_collapses_near_titles(tmp_path):
-    """reconcile folds near-title duplicates (>=0.85) that exact-hash grouping misses."""
+def test_reconcile_lists_near_titles_for_review_never_merges_them(tmp_path):
+    """Owner 2026-11-25 (D3): exact matches only. A near title (a typo here) is NOT merged; the pair
+    is listed for a person to approve or deny (output/review/bibliography_merge_review.json).
+    """
     import glob
     from src.extraction.bibliography import reconcile_bibliography_dir
 
@@ -563,7 +565,7 @@ def test_reconcile_fuzzy_collapses_near_titles(tmp_path):
         json.dumps(
             {
                 **base,
-                "BibliographyID": "01A",
+                "BibliographyID": "01JQKV6Z9F00000000000000A1",
                 "title": "The Siegfried Line Campaign",
                 "mentions": [
                     {
@@ -579,7 +581,7 @@ def test_reconcile_fuzzy_collapses_near_titles(tmp_path):
         json.dumps(
             {
                 **base,
-                "BibliographyID": "01B",
+                "BibliographyID": "01JQKV6Z9F00000000000000B1",
                 "title": "The Siegfried Line Campain",  # typo -> fuzzy match
                 "mentions": [
                     {
@@ -591,9 +593,14 @@ def test_reconcile_fuzzy_collapses_near_titles(tmp_path):
             }
         )
     )
-    merged_away = reconcile_bibliography_dir(bib_dir)
+    from src.extraction.bibliography import merge_review_path
+
+    reconcile_bibliography_dir(bib_dir)
     files = [f for f in glob.glob(str(bib_dir / "*.json")) if "index" not in f]
-    # canonical bib_<hash>.json differs from both p1_/p2_ names -> both unlinked
-    assert merged_away == 2 and len(files) == 1
-    rec = json.loads(open(files[0]).read())
-    assert len(rec["mentions"]) == 2  # unioned across the near-title duplicate
+    assert len(files) == 2  # both records kept
+    pairs = json.loads(merge_review_path(bib_dir).read_text())["pairs"]
+    assert len(pairs) == 1
+    assert {pairs[0]["a"]["title"], pairs[0]["b"]["title"]} == {
+        "the siegfried line campaign",
+        "the siegfried line campain",
+    }
