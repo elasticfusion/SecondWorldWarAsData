@@ -47,6 +47,18 @@ decisions first (D4-D9: they shape the schema and the database), then the biblio
   further confirmation needed.
 - **D11** - a NARA entry with no scanned pages gets a status of its own (`reference_identified`), for human
   follow-up.
+- **D13** - one search order per kind of citation (cheap/free sources first; each searched once; Grok's own web
+  search last and only when nothing was found):
+  archival record: record-group lookup -> NARA -> archive.org -> OpenSERP -> Grok;
+  book: held in our corpus -> archive.org -> Gutenberg (public domain only) -> OpenSERP -> Grok, then book data
+  from Open Library (D13-Q4, free API: ISBN, publisher, date, editions), Amazon only when all else fails
+  (D13-Q3: today Amazon runs for every book and stores only the listing link);
+  article: archive.org -> OpenSERP -> Grok.
+  Fixes on the way: the book path's Gutenberg/OpenSERP searches call an OpenSERP address that does not exist.
+  **D13-Q5 editions:** every edition discovered (a held copy, an online copy, Open Library, Amazon) is logged on
+  the bibliographic record with where it was found; a citation of the record names the edition when known.
+  Extend the schema for it. Most cited works predate ISBNs (1970): a reprint's ISBN belongs to the reprint's
+  edition entry, never to the cited edition.
 - **D14** - yes: every positive find is checked against its page content.
 - **D16 / D27** - one writer at a time per shared record, enforced (record lock); tasks for different books
   may run concurrently. A book already submitted is not run again: a second copy is put on hold for the GUI to
@@ -72,9 +84,8 @@ decisions first (D4-D9: they shape the schema and the database), then the biblio
 - **D6-Q** - delete the five archived merge scripts?
 - **D12** - keep the full reference in `archive_reference_number` (it holds the entry/box/file a microfiche pull
   needs) and add a separate `record_group` number field? Suggested: yes.
-- **D13** - one search order per kind of citation? Archival: record-group lookup -> NARA -> archive.org ->
-  OpenSERP -> Grok. Book: held in corpus -> archive.org -> Gutenberg (public domain only) -> OpenSERP -> Grok.
-  Article: archive.org -> OpenSERP -> Grok.
+- **D13-Q2** - books and articles stop at the first copy found today (archival records keep every copy): keep
+  searching for books and articles too (fits D7, comparing copies; costs more searches per record)?
 - **D15** - where is the record group index you provided? (Not found in the repo; the code's lookup is built from
   NARA's online Record Group Explorer.)
 - **D18** - store the links between chapters of the same HyperWar volume (e.g. "see page 329")?
