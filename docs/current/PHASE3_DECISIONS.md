@@ -104,6 +104,12 @@ decisions first (D6-D9: they shape the schema), then the bibliography/NARA ones
   survivor in every manifest that listed it): today a book's Phase 3 downloads only the files its manifest lists,
   so after a cross-book merge the other book would miss the surviving record.
 
+- **D3 rules (owner 2026-11-25):** R1 a transliteration match merges automatically (and the variant becomes an
+  alias) only with the full name matching and no conflicting fact; a surname-only match or a conflict goes to the
+  UI. R2 an exact match against another record's aliases is exact; aliases grow only through an allowed merge.
+- **D27 + concurrency (owner 2026-11-25):** after D26, build the per-record write lock, then switch on per-book
+  concurrency (built, off) and test it with two books that share people.
+
 Nothing else is open for Phase 3: D1 is parked until D2 is built; D30-D36 wait until the rest of the fixes are done.
 
 ## Open (the original questions, with owner comments)

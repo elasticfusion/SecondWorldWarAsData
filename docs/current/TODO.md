@@ -235,6 +235,15 @@ provenance validation skipped ("no BOOK_NAME"). Plan:
 Tests: two books with a cross-book duplicate: review merges it, "Mark complete", each book runs once, each run sees
 the surviving record.
 
+#### Per-book concurrency: one writer per shared record, then switch it on (owner 2026-11-25, D27)
+
+After D26: (1) D27 - a write to a shared record (a person, unit, place, equipment or bibliography record that
+several books mention) takes that record's lock across tasks, one writer at a time (today concurrent tasks are
+last-writer-wins on S3: gap 28); (2) switch on the multi-doc mode that is built but off (per-book phase locks
+`lock#<env>-wwii-<phase>#<book>`, the Step Functions dispatcher, `concurrency.multi_doc` / the `EnableConcurrency`
+kill switch); (3) test with two books that share people: both run at once, every shared record has both books'
+mentions, no write lost.
+
 #### Phase 0: a book already submitted is held, not run again (owner 2026-11-25, D16)
 
 A book that was already submitted is not processed a second time: the second copy is put on hold for the GUI
@@ -255,7 +264,16 @@ DECIDED: an automatic merge needs an EXACT match; a similar one goes to the Dedu
 - NOT exact (review): transliteration (Dönitz / Doenitz / Donitz), the canonical unit key (a written-out vs
   abbreviated unit name), any similarity ratio, any abbreviation or synonym ("mtg" / "meeting",
   "furnished" / "supplied");
-- new rule log: (none yet; add each with its date and an example).
+- new rule log:
+  - **R1 transliteration (owner 2026-11-25):** a transliteration match IS merged automatically, and the variant is
+    added to the survivor's `aliases`, only when BOTH (a) the FULL name matches after transliteration (given name +
+    surname: "Karl Dönitz" = "Karl Doenitz") and (b) nothing in the two records conflicts (nationality, rank,
+    service, birth/death dates, unit; a missing fact is not a conflict). A surname-only match ("Dönitz" /
+    "Doenitz") or any conflicting fact goes to the Dedup Review UI. Units, places, equipment: the same rule with
+    their own facts (a unit's nationality and type, a place's country, equipment's nationality).
+  - **R2 aliases (owner 2026-11-25):** an exact match against another record's `aliases` counts as exact; a variant
+    is added to `aliases` only by an automatic merge allowed above or by a person's approval in the UI, never on
+    its own (it would otherwise make the next run merge without review).
 
 Measured on the `phase2-2026-11-17` bibliography (2,035 records -> 1,472): the same-footnote-text pass folded
 555 groups (exact: keep); the near-title pass (`bibliography._fuzzy_collapse_groups`, ratio >= 0.85 + same
