@@ -1,7 +1,9 @@
-"""M8: in-corpus ibiblio links -> internal corpus-graph edges (ULID-attributed) + queue the cited
-document as another batch to be processed."""
+"""M8: in-corpus ibiblio links -> internal corpus-graph edges (ULID-attributed). Nothing is fetched
+or uploaded (owner 2026-11-24): the citation index (corpus_links) records them."""
 
 import pathlib
+
+import pytest
 import tempfile
 
 import src.extraction.intra_corpus as IC
@@ -40,105 +42,55 @@ def test_volume_of():
     assert IC._volume_of("https://example.com/x") is None
 
 
-# --- edges + batch queue (enqueue stubbed; verify decisions + dedup) ---
+# --- edges (nothing is fetched or uploaded: the citation index records them) ---
 def _content():
     return (
-        "See [Utah Beach to Cherbourg](https://www.ibiblio.org/hyperwar/USA/USA-E-Utah/USA-E-Utah-3.html) "
+        "See [Utah Beach to Cherbourg](https://www.ibiblio.org/hyperwar/USA/USA-E-Utah/USA-E-Utah-3.html#page12) "
         "and [page 329](#page329) and "
         "[same vol](https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-12.html) and "
         "[ext](https://en.wikipedia.org/wiki/Omaha_Beach)."
     )
 
 
-def test_process_records_edges_and_queues(monkeypatch, tmp_path):
-    calls = []
-    monkeypatch.setattr(
-        IC, "_queue_as_batch", lambda url, vol: (calls.append((url, vol)) or True)
-    )
+def test_process_records_edges(monkeypatch):
     s = IC.process_doc_links(
         _content(),
         SRC,
         "XChannel",
-        out=tmp_path,
         book_to_section={"xchannel": "01HXSEC000000000000000000A"},
-        corpus_volumes=set(),
-        queued=set(),
     )
-    # one cross-volume in-corpus doc (queued), two same-volume anchors (#page329 + other XChannel page)
+    # one cross-volume citation, two same-volume anchors (#page329 + another XChannel page)
     kinds = sorted(e["kind"] for e in s["edges"])
     assert kinds == ["in_corpus_doc", "same_volume_anchor", "same_volume_anchor"]
-    assert s["anchors"] == 2 and s["queued"] == 1
-    # ULID attribution on the edge
+    assert s["anchors"] == 2 and s["cited"] == 1
     doc_edge = next(e for e in s["edges"] if e["kind"] == "in_corpus_doc")
     assert doc_edge["from_SourceSectionID"] == "01HXSEC000000000000000000A"
-    assert doc_edge["to_volume"] == "USA-E-Utah"
-    assert calls == [
-        (
-            "https://www.ibiblio.org/hyperwar/USA/USA-E-Utah/USA-E-Utah-3.html",
-            "USA-E-Utah",
-        )
-    ]
+    assert doc_edge["to_volume"] == "USA-E-Utah" and doc_edge["to_page"] == "page12"
 
 
-def test_dedup_already_in_corpus(monkeypatch, tmp_path):
-    monkeypatch.setattr(IC, "_queue_as_batch", lambda url, vol: True)
-    s = IC.process_doc_links(
-        _content(),
-        SRC,
-        "XChannel",
-        out=tmp_path,
-        book_to_section={},
-        corpus_volumes={"USA-E-Utah"},
-        queued=set(),
-    )
-    assert s["queued"] == 0 and s["skipped"] >= 1  # already in corpus -> not re-queued
-
-
-def test_dedup_already_queued_this_run(monkeypatch, tmp_path):
-    monkeypatch.setattr(IC, "_queue_as_batch", lambda url, vol: True)
-    q = {"USA-E-Utah"}
-    s = IC.process_doc_links(
-        _content(),
-        SRC,
-        "XChannel",
-        out=tmp_path,
-        book_to_section={},
-        corpus_volumes=set(),
-        queued=q,
-    )
-    assert s["queued"] == 0  # already queued
-
-
-def test_enqueue_disabled(monkeypatch, tmp_path):
-    called = []
+def test_nothing_is_fetched_or_uploaded(monkeypatch):
+    monkeypatch.setattr("src.utils.url_hygiene.fetch_text_safe", lambda *a, **k: 1 / 0)
     monkeypatch.setattr(
-        IC, "_queue_as_batch", lambda url, vol: called.append(1) or True
+        "src.enrichment.fetch_review._s3_client_and_bucket", lambda: 1 / 0
     )
-    s = IC.process_doc_links(
-        _content(),
-        SRC,
-        "XChannel",
-        out=tmp_path,
-        book_to_section={},
-        corpus_volumes=set(),
-        queued=set(),
-        enqueue=False,
-    )
-    assert not called and s["queued"] == 0  # edges still recorded, no actual ingest
-    assert any(e["kind"] == "in_corpus_doc" for e in s["edges"])
+    IC.process_doc_links(_content(), SRC, "XChannel", book_to_section={})
+    assert not hasattr(IC, "_queue_as_batch") and not hasattr(IC, "_upload_batch_item")
 
 
-def test_failsafe_bad_input(tmp_path):
-    s = IC.process_doc_links(
-        None,
-        None,
-        "X",
-        out=tmp_path,
-        book_to_section={},
-        corpus_volumes=set(),
-        queued=set(),
-    )
-    assert s["queued"] == 0 and s["edges"] == []
+def test_a_book_imported_from_its_index_page_is_its_own_volume():
+    """Most HyperWar books' source URL is the volume's index.html: their own pages are
+    navigation, not citations of another volume (they used to be re-uploaded as one-page books).
+    """
+    index = "https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/index.html"
+    own = "https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-12.html"
+    assert IC._volume_of(index) == "USA-E-XChannel"
+    assert IC.classify_link(own, index) == "same_volume_anchor"
+    assert IC._volume_of("https://www.ibiblio.org/hyperwar/USA/index.html") is None
+
+
+def test_failsafe_bad_input():
+    s = IC.process_doc_links(None, None, "X", book_to_section={})
+    assert s["cited"] == 0 and s["edges"] == []
 
 
 def test_corpus_volumes_present(tmp_path):
@@ -161,3 +113,41 @@ def test_corpus_volumes_present(tmp_path):
     )
     vols = IC._corpus_volumes_present(tmp_path)
     assert "USA-E-XChannel" in vols and "USA-E-Utah" in vols
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://evil.com/hyperwar/USA/USA-E-Omaha/index.html",
+        "http://evil.com/x?u=https://www.ibiblio.org/hyperwar/USA/USA-E-Omaha/index.html",
+        "https://ibiblio.org.evil.com/hyperwar/USA/USA-E-Omaha/",
+        "https://evil.com/a#https://www.ibiblio.org/hyperwar/USA/USA-E-Omaha/index.html",
+        "ftp://www.ibiblio.org/hyperwar/USA/USA-E-Omaha/index.html",
+        "https://evil.com\\@www.ibiblio.org/hyperwar/USA/USA-E-Omaha/",
+        "https://evil.com@www.ibiblio.org/hyperwar/USA/USA-E-Omaha/",
+        "https://www.ibiblio.org@evil.com/hyperwar/USA/USA-E-Omaha/",
+        "https://www.ibiblio.org/hyperwar/USA/USA-E-Omaha/\tindex.html",
+    ],
+)
+def test_a_hyperwar_path_on_another_host_is_external(url):
+    """Only ibiblio.org (or a subdomain) is the corpus: an in-corpus link skips link review, so
+    a look-alike must not be taken for one."""
+    base = "https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html"
+    assert IC.classify_link(url, base) == "external"
+
+
+def test_ibiblio_hosts_are_still_recognised():
+    base = "https://www.ibiblio.org/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-6.html"
+    assert (
+        IC.classify_link(
+            "https://ibiblio.org/hyperwar/USA/USA-E-Omaha/index.html", base
+        )
+        == "in_corpus_doc"
+    )
+    assert (
+        IC.classify_link(
+            "https://WWW.IBIBLIO.ORG/hyperwar/USA/USA-E-XChannel/USA-E-XChannel-7.html",
+            base,
+        )
+        == "same_volume_anchor"
+    )

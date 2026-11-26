@@ -235,9 +235,13 @@ def _ask_membership(
         f"Historical fact check. Was {name} a member of {group} in {year}? "
         f"Answer with exactly one word: YES, NO, or UNKNOWN."
     )
-    resp = grok_client.chat_completion(prompt).strip().upper()
-    if resp.startswith("YES"):
-        return True
-    if resp.startswith("NO"):
-        return False
-    return None
+    from src.utils.grok_choice import ask_choice, can_reask, evictor
+
+    choice = ask_choice(
+        lambda: grok_client.chat_completion(prompt),
+        ("YES", "NO", "UNKNOWN"),
+        evictor(grok_client, prompt),
+        what="title_membership",
+        reask=can_reask(grok_client),
+    )
+    return {"YES": True, "NO": False}.get(choice or "")

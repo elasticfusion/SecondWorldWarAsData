@@ -70,6 +70,33 @@ Resources:
                   - dynamodb:Query
                   - dynamodb:Scan
                 Resource: !Ref CacheTableArn
+              - Sid: NoCreditGateWrites
+                # task 1.1e: enumerate_pending reads the balance and writes only the hold alert marker
+                Effect: Deny
+                Action: [dynamodb:PutItem, dynamodb:UpdateItem, dynamodb:DeleteItem, dynamodb:BatchWriteItem]
+                Resource: !Ref CacheTableArn
+                Condition:
+                  ForAnyValue:StringLike:
+                    dynamodb:LeadingKeys:
+                      - credit#holds#*
+                      - credit#balance
+              - Sid: NoRoundApprovalWrites
+                # Group 2: operator-only batch-round approval rows (scripts/approve_batch_rounds.py)
+                Effect: Deny
+                Action: [dynamodb:PutItem, dynamodb:UpdateItem, dynamodb:DeleteItem, dynamodb:BatchWriteItem]
+                Resource: !Ref CacheTableArn
+                Condition:
+                  ForAnyValue:StringLike:
+                    dynamodb:LeadingKeys:
+                      - rounds#*
+                      # NARA pull-list statuses and added-scan provenance: a person's rows
+                      - pull#*
+                      - pullscan#*
+              - Effect: Allow
+                # task 1.1e: enumerate_pending asks the credit-check Lambda before dispatching
+                # Phase 2/3 work
+                Action: lambda:InvokeFunction
+                Resource: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${EnvironmentName}-wwii-credit-check
               - Effect: Allow
                 # clamp_pool queries the live Fargate vCPU quota (§5.0)
                 Action:
@@ -94,7 +121,9 @@ Resources:
       Runtime: python3.12
       Handler: lambda_handlers.dispatcher_handlers.enumerate_pending
       Role: !GetAtt DispatcherLambdaRole.Arn
-      Timeout: 60
+      # the scan plus the credit-check invoke (task 1.1e: up to ~45 s when xAI is slow) must not
+      # time out, or Phase 1 dispatch would stall with it
+      Timeout: 120
       MemorySize: 256
       Code:
         S3Bucket: !Ref LambdaCodeBucket
@@ -198,6 +227,29 @@ Resources:
               - Effect: Allow
                 Action: [dynamodb:GetItem, dynamodb:PutItem, dynamodb:UpdateItem, dynamodb:DeleteItem, dynamodb:Scan]
                 Resource: !Ref CacheTableArn
+              - Sid: NoCreditGateWrites
+                # task 1.1e: the trigger trusts these items for launch decisions; the state machine never writes them
+                Effect: Deny
+                Action: [dynamodb:PutItem, dynamodb:UpdateItem, dynamodb:DeleteItem, dynamodb:BatchWriteItem]
+                Resource: !Ref CacheTableArn
+                Condition:
+                  ForAnyValue:StringLike:
+                    dynamodb:LeadingKeys:
+                      - credit#holds#*
+                      - credit#balance
+                      - credit#hold_alerted
+              - Sid: NoRoundApprovalWrites
+                # Group 2: operator-only batch-round approval rows (scripts/approve_batch_rounds.py)
+                Effect: Deny
+                Action: [dynamodb:PutItem, dynamodb:UpdateItem, dynamodb:DeleteItem, dynamodb:BatchWriteItem]
+                Resource: !Ref CacheTableArn
+                Condition:
+                  ForAnyValue:StringLike:
+                    dynamodb:LeadingKeys:
+                      - rounds#*
+                      # NARA pull-list statuses and added-scan provenance: a person's rows
+                      - pull#*
+                      - pullscan#*
 
   # ---------------------------------------------------------------------------
   # The state machine (Standard). One execution = one looping drain pass (§17.5).

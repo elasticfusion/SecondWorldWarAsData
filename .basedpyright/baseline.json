@@ -114,30 +114,12 @@
                 }
             }
         ],
-        "./lambda_handlers/import_handler.py": [
-            {
-                "code": "reportAttributeAccessIssue",
-                "range": {
-                    "startColumn": 23,
-                    "endColumn": 28,
-                    "lineCount": 1
-                }
-            }
-        ],
         "./lambda_handlers/nat_manager.py": [
             {
                 "code": "reportAttributeAccessIssue",
                 "range": {
                     "startColumn": 58,
                     "endColumn": 63,
-                    "lineCount": 1
-                }
-            },
-            {
-                "code": "reportAttributeAccessIssue",
-                "range": {
-                    "startColumn": 59,
-                    "endColumn": 64,
                     "lineCount": 1
                 }
             }
@@ -380,14 +362,6 @@
                     "endColumn": 81,
                     "lineCount": 1
                 }
-            },
-            {
-                "code": "reportGeneralTypeIssues",
-                "range": {
-                    "startColumn": 37,
-                    "endColumn": 43,
-                    "lineCount": 1
-                }
             }
         ],
         "./src/enrichment/equipment_wikipedia.py": [
@@ -486,24 +460,6 @@
                 "range": {
                     "startColumn": 35,
                     "endColumn": 39,
-                    "lineCount": 1
-                }
-            }
-        ],
-        "./src/enrichment/openserp_enrichment.py": [
-            {
-                "code": "reportArgumentType",
-                "range": {
-                    "startColumn": 57,
-                    "endColumn": 67,
-                    "lineCount": 1
-                }
-            },
-            {
-                "code": "reportArgumentType",
-                "range": {
-                    "startColumn": 69,
-                    "endColumn": 76,
                     "lineCount": 1
                 }
             }

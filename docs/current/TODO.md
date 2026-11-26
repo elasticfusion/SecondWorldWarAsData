@@ -12,6 +12,15 @@ into that HIGH's group; (2) Phase 3 processing order next: groups 4-14 follow th
 step consumes the previous one's output; (3) priority last, inside a group. Entries are moved verbatim;
 each keeps its original heading ("####") so its context travels with it.
 
+**UI work is deferred (owner 2026-11-24):** every UI element (review UI, clearing a photo decision,
+`needs_review` tooling, showing kept pages) waits until the end, once all UI requirements are known. Code
+work proceeds with the HIGH items in this order: Group 8 map files, Group 5 group names, Group 11 outage
+marking, Group 9 ibiblio volumes, Group 6 place parents, Group 12 provenance path, Group 0 image rebuild.
+
+**Code audit (2026-11-25):** entries prefixed "FIXED IN CODE, NOT YET VALIDATED" were found fixed in the
+current code by a read-only audit; "STALE" ones describe code that no longer exists. Their original text is kept
+(owner 2026-11-25): each is closed only after its group's test cycle validates it.
+
 **Test cycle for every group:** `python3 scripts/phase_snapshot.py restore --name phase2-2026-11-17`;
 deploy the group's branch (owner approval); run Phase 3 for `USA-E-XChannel` (owner approval for Grok
 spend); run `scripts/validate_phase3.py` and `scripts/validate_provenance.py`; compare with the Group 0
@@ -42,8 +51,8 @@ was verified. *refactor* = only a redesign fixes it. `EP` = `ecs_entrypoint.py`.
 | D9 | No reprocess purge. Grok book results (`books/<book>/...` only, D9-2) expire 10 days after last access; no TTL refresh on snapshot restore (D9-3). |
 | D10 | Release the Phase 3 lock at once on failure. |
 | D11 | NARA not-online UI: two use cases (more human online searches; a College Park research visit). A human-found URL is approved directly (D11-2); visit scans come in through normal intake (D11-3). |
-| V1 | xAI Batch API accepts image input: accepted; a one-request probe was submitted 2026-11-17 (batch_2739cfc9) and the first G2 run confirms. |
-| V2 | NARA files are served from `catalog.archives.gov/medialz/` (checked with the catalog API v2). |
+| V1 | CONFIRMED 2026-11-17: the xAI Batch API answers vision requests. One-request probe (Map IV, pipeline `BatchRequest` JSONL format, `grok-4.3`, 1.3 MB) completed in about 2.5 h with the right answer (`is_map: true`, the map's title, five places on it); the same request live took 3.7 s. |
+| V2 | NARA files are served from `catalog.archives.gov/medialz/` (checked with the catalog API v2, 2026-11-17) and `/medialive/` (seen live 2026-11-22: `digitalObjects[].objectUrl`, HTTP 200, no key, no redirect). |
 | V3 | No live evidence either way; fix the `pending#enrich#` row lifecycle in G1 regardless. |
 
 ### Group 0 - baseline and test harness
@@ -91,40 +100,628 @@ Phase 3 once on the restored Phase 2 data as the baseline every later group is c
     1. **Deploy-on-merge:** a CI job (or documented post-merge step) that rebuilds + pushes the pipeline
        image and re-registers the ECS phase task defs when `main` changes — close the merge≠deploy gap.
        (CI currently runs lint+test on PRs only; it does NOT build/push the Docker image.)
-    2. **Pin task defs by image DIGEST, not the mutable `:latest`** (+ stamp the git SHA as an image tag/label)
-       so "which commit is live" is unambiguous/auditable (this bug was invisible because task defs point at
-       `:latest`).
-    3. **Emit the running git SHA in a startup OBSERV** (`OBSERV pipeline.version sha=<...>` at phase start)
-       so any run's logs self-identify the code version (no more reverse-engineering "did this run have M2?").
+    2. DONE (2026-11-25) **Pin task defs by image DIGEST, not the mutable `:latest`.**
+       `scripts/image_pin.sh` (sourced by `deploy_all.sh` and the CI `deploy.yml`) gives every stack image
+       parameter `<repo>@sha256:...` (pipeline, openserp, video, clamav; chandra/paddle in
+       `--ocr-standalone`). A build is pushed under a `deploy-<UTC>-<sha12>` tag unique to the run and
+       pinned through it, so a concurrent push that moves `:latest` cannot change the pin; an image the run
+       did not build is pinned from `:latest` and not tagged (a `deploy-` tag left on a live image by a
+       failed run would let the count rule expire it). Right after the stack update,
+       `verify_stack_images` hard-stops unless the stack is `*_COMPLETE` and runs every pin, then
+       `mark_live` moves `live-<env>` onto each pin and drops its `deploy-` tags. The lifecycle policy the deploy now owns per repo: keep the newest 2
+       `deploy-` images (in-flight/failed; chandra is ~17 GB), expire untagged 14 days after push. No rule
+       selects `live-<env>`, so a failed deploy or another env cannot expire a live image; a superseded one
+       becomes untagged and expires. The CI role gains `ecr:DescribeImages` + `ecr:BatchDeleteImage`
+       (not `PutLifecyclePolicy`). Guarded by `tests/test_deploy_image_pin.py`. Rolling back to an older
+       task-def revision is not supported (its image may have expired): redeploy the older commit.
+       Left: two deploys of one env must not overlap (no deploy lock; the later `mark_live` wins and the
+       other image keeps no live tag); the CI path relies on `deploy_all.sh` having set each repo's
+       lifecycle policy once, passes an empty `PipelineImageUri` on a `cloudformation-only` run
+       (pre-existing), and does not re-pin openserp/video; the CI role's `ecr:BatchDeleteImage` on
+       `wwii-*` (no tag-level condition exists) lets a compromised main-branch workflow delete images.
+       Narrow: a build byte-identical to the live image, then a failure between its push and
+       `pin_image` (e.g. the clamav build), leaves the run's `deploy-` tag on the live image until the
+       next successful `mark_live`; two more failed builds in between would let rule 1 expire it
+       (hardening: the drop-if-live check right after the push, or an EXIT trap).
+    3. DONE (task 0.2, `OBSERV pipeline.version sha=<commit>+cfg-<hash>`, built in via `--build-arg GIT_SHA`)
+       **Emit the running git SHA in a startup OBSERV**.
   NOTE: my first diagnosis ("image from Oct 13") was WRONG — I misread the task-def registeredAt as the image
   push time; the image is ~1 day old but predates the M1/M2 afternoon merges.
 
 #### Older backlog - LOW list
-- **[LOW · deploy-provenance] `scripts/deploy_all.sh` doesn't pass `--build-arg GIT_SHA`** so the pipeline image's
+- **DONE (task 0.2: `build_scan_push` passes it) [LOW · deploy-provenance] `scripts/deploy_all.sh` doesn't pass `--build-arg GIT_SHA`** so the pipeline image's
   `GIT_SHA` env/label is `unknown` (cosmetic provenance gap; image content is still current main). Pass
   `--build-arg GIT_SHA=$(git rev-parse HEAD)` in `build_scan_push`.
 
 ### Group 1 - shared foundations (no new Grok features)
 
 What several HIGH items in later groups depend on; MED/LOW items are here when a HIGH needs them.
-1. one paginated `pending#` queue module (the next-book / reconcile readers; the task deletes its own
+1. FIXED IN CODE, NOT YET VALIDATED (audit 2026-11-25: `src/utils/pending_queue` reads every scan page via `ddb_scan.scan_prefix`; EP and the trigger use it; the task deletes its own row only on success) - one paginated `pending#` queue module (the next-book / reconcile readers; the task deletes its own
    row only on success, keeps it on failure for the retry; owner D8c-2, V3);
-2. deletes reach S3 (one delete helper wired to `track_deletion`);
-3. the global content-hash dedup claims only after the object is in S3 (or releases on failure);
-4. non-search steps independent of `use_openserp`; `use_openserp: false` honoured on ECS;
-5. one alert path to `phase2-complete` (preflight aborts, crashed task, validation failure, reconcile
+2. DONE (1.5) deletes reach S3 (the final sync deletes every synced record the phase removed);
+3. DONE (1.6) the global content-hash dedup claim is released when the content was not stored;
+4. DONE (1.4) non-search steps independent of `use_openserp`; `use_openserp: false` honoured on ECS;
+5. FIXED IN CODE, NOT YET VALIDATED (audit 2026-11-25: preflight/NAT/OpenSERP aborts `_alert_phase_stopped`, `phase3.validation_failed`, `reconcile.failed`, crash alert in `_dispatch`, `phase3.bib_download_shortfall`) - one alert path to `phase2-complete` (preflight aborts, crashed task, validation failure, reconcile
    failure, unreachable OpenSERP, short bibliography download);
-6. per-request identity (`current_book`, BookID, RequestID) for Phase 3;
-7. public find-or-create entity writers (places, dates, people_groups) shared by Phase 2 and 3;
-8. config: `trusted_sources` (HyperWar html+pdf; NARA `catalog.archives.gov/id/` + `/medialz/`) and
+6. MOVED to Group 2 (owner 2026-11-18): per-request identity for Phase 3 - Phase 3 runs live today, where an answer cannot be swapped; the 2026-11-11 swap was the positional batch-result mapping (fixed: `batch_api.align_by_request_id`), so the identity check is added when Phase 3 goes onto the Batch API;
+7. DONE (1.8, `src/extraction/entity_writers`: `find_or_create_place` / `find_or_create_date` / `find_or_create_group`, each through the Phase 2 writer under the entity's index lock; image_place_link uses it) public find-or-create entity writers (places, dates, people_groups) shared by Phase 2 and 3. Hardened: names/dates from untrusted text are validated, a per-run creation cap alerts, a schema-refused record is never indexed (Phase 2: that place mention is skipped with an alert), and new place/date/group filenames end in the ULID's random tail (the timestamp head let two same-second records share a file). Left: the Phase 2 dates extractor still saves its whole in-memory index at the end of a chapter (last writer wins against a concurrent entry-point creation); `enrich_biographies`' filename fallback cannot find a legacy head-named group missing from its index (warns);
+8. DONE (1.9, `src/utils/link_policy`: `trust_basis` (host + path), `link_scope`, `follow_limits`, logged at Phase 3 start; `link_relevancy` now trusts these sources instead of all of ibiblio.org; still to rewire in their groups: `source_material_paths`, the HyperWar recognizer incl. the PDF form, `trust_basis` on queued items and book meta, the follow limits in the OpenSERP-page and footnote-link paths; the fetch path must upgrade trusted `http://` citations to https and fetch the original URL; consolidate the host helpers `url_registry._host_of` / `link_relevancy._host_matches` / `source_retrieval.is_blacklisted` / `link_policy`; cache `follow_limits`' config once it is called per page) config: `trusted_sources` (HyperWar html+pdf; NARA `catalog.archives.gov/id/` + `/medialz/`) and
    `links.follow` (same_domain / external: max_hops 1, max_per_page 20), read in one place;
-9. every Phase 3 write stamps metadata (`entity=`), so change detection works.
+9. DONE (1.10, 2026-11-18) every Phase 3 write stamps metadata (`entity=`), so change detection works: both shared writers (`write_json_with_lock`, by `entity=` or the record's directory since 2026-11-06, and `locked_json`'s save) stamp `_schema_version` + `_last_updated`; an audit found no Phase 3 code writing an entity record raw (the raw-write ratchet, which only counts sites, is lowered to 70); pinned by `tests/test_phase3_writes_stamp.py`. Left: `bibliography_resolver` writes narrative notes with `entity="narrative_notes"`, which is not a registered entity, so they get the minimum version 2.24 (register it or write unversioned); the places_geo and OOB reconcile reports get the same fallback stamp; `bibliography.backfill_bib_titles` (no production caller) rewrites records raw.
 
 **Test:** restore, run with OpenSERP off: the non-search steps run; force each alert once; a relocated
 record disappears from S3; two queued books each run exactly once.
 
+#### Schema upgrades: forward-compatible on the fly, the rest in a release (owner 2026-11-25, D1/D2)
+
+Found while answering D1 (should Phase 3 hold when the bibliography merge fails or times out). Tested on the
+`phase2-2026-11-17` bibliography (2,035 records, all at 2.29; current 2.32):
+- malformed JSON is silently SKIPPED by the merge (`bibliography._group_bib_files_by_hash`): the file stays an
+  unmerged shard every run, no alert;
+- valid JSON of the wrong shape (`mentions` a string/dict or with a non-object item, `title` a number/list,
+  `citation` a string) makes the WHOLE full-corpus merge raise (`_merge_bib_records` runs outside any per-group
+  guard): one record stops every book's merge -> no barrier -> Phase 3 waits 300 s and runs on unmerged shards;
+- such a record can reach S3: the write guard validates a record at an OLDER `_schema_version` leniently
+  (`file_lock._handle_schema_validation_error`, needs_upgrade), so the type checks are skipped;
+- the snapshot itself is clean (0 malformed, 0 wrong shapes) and every record passes the 2.32 schema; the only
+  observed D1 event (2026-10-28) was a barrier timeout from missing input (the batch poller was disabled; it is
+  enabled now), not a merge failure. A full local merge of the snapshot takes 8 s: the wait is S3 transfer.
+
+DECIDED (owner 2026-11-25):
+- **Two kinds of schema change.** (1) Forward-compatible: brought forward on the fly, before a merge or update,
+  by one shared library that walks a record from its version to the current one. (2) Not forward-compatible:
+  done only in an upgrade release (especially for production), never on the fly.
+- **D2-Q1:** non-forward-compatible upgrades go through the same release script on dev too (run by hand), so it
+  is tested before production.
+- **D2-Q2:** while a non-forward-compatible upgrade is pending, NOTHING runs on the affected data: the work is
+  kept on a queue and run after the upgrade is done.
+- **D2-Q3:** all entities (the bibliography is the core of the system and the first user).
+
+PLAN (D2):
+1. **D2-1** declare every version change once: entity, from -> to, kind (forward / breaking), and for a forward
+   step an optional transform (most need none). Today's bibliography steps 2.29 -> 2.30 -> 2.31 -> 2.32 are
+   forward with no transform. Extends `src/schemas/schema_contract` (today one exact (from, to) upgrader per
+   pair, no kind, and anything without one is processed "best effort" by `read_for_update`).
+2. **D2-2** `bring_forward(record, entity)`: chain the steps, apply the forward ones in memory, validate against
+   the current schema -> current / brought_forward / needs_release_upgrade / invalid.
+3. **D2-3** the bibliography merge (then every merge/update path on `read_for_update`) uses it; brought-forward
+   records are merged and written at the current version; an invalid record is kept out of the merge, left
+   unchanged on S3 and alerted (one bad record never stops the corpus: D1-R1); structural repairs whose meaning
+   is unambiguous (D1-R2: a single mention object -> a list, a numeric title -> text) are forward transforms;
+   unparseable JSON is restored from its previous S3 version or quarantined, alerted, never skipped silently.
+4. **D2-4** release upgrade script for breaking steps: dry-run report first, S3 versioning as the backup,
+   idempotent; a deploy check refuses code whose data still needs a breaking upgrade.
+5. **D2-5** the held work: a pending breaking upgrade holds the affected books on the existing book queue
+   (`src/utils/pending_queue`, a new cause `schema_upgrade` beside funding / connectivity / failure / config),
+   resumed when the release script finishes; the hold alerts once (both channels) with the command to run.
+6. **D2-6** a test fails when an entity's schema version is bumped without its D2-1 entry (extends the
+   fingerprint test).
+7. Separately (to-do): the write guard should still check field TYPES on older-version records (D1-R3).
+   Also: retire `schema_contract.register_upgrade` / `_UPGRADES` / `read_for_update`'s best-effort path once
+   their readers (file_lock._version_status, the people/places/equipment/dates/weather/groups extractors,
+   batch_parallel, enrich_write) move to `bring_forward` (slice A built it, 2026-11-25).
+D1 itself (hold or continue on a merge failure/timeout) is decided after D2: with D2-3 a content problem no
+longer fails the merge, so what is left is an outage (S3 error, task killed).
+7. **D2-7** every merge path uses `bring_forward` on both records before merging; a record that fails is kept out
+   of that merge with an alert, the rest continues. Found 2026-11-25 (same wrong shapes, real records):
+   - dedup auto-merge (`dedup.merge.merge_generic`, people / units / places / equipment) RAISES when the primary's
+     `event_mentions` or `aliases` is not a list or a record file is a JSON list; `ecs_entrypoint
+     ._auto_merge_entity_type` has no handler, so the dedup step stops partway (later entity types unmerged, the
+     run timestamp not recorded): add a per-group handler too;
+   - the Phase 2 person merge (`people._merge_person`) raises when the existing person's `event_mentions` is
+     not a list (the chapter's extraction gets the error; not traced further);
+   - the Dedup Review UI merge catches it (the reviewer gets a 500);
+   - a wrongly shaped INCOMING `event_mentions` is skipped by `entity_records.merge_mentions`: the merge
+     succeeds and that record's mentions are lost silently (alert instead).
+   Already listed elsewhere: the manual merge scripts write raw JSON (Group 4 "Merge scripts"), the concurrent
+   last-writer-wins writes (gap 28, the dates index), equipment find-or-create not locked across tasks.
+
+#### Dedup review releases books one by one, not a whole-corpus run (owner 2026-11-25, D26)
+
+Today, in serial mode: when duplicate detection (whole corpus, after each book's Phase 2) finds groups, the dedup
+gate blocks and the book is NOT queued for Phase 3 (`ecs_entrypoint`, after `_phase3_gate_decision`); "Mark
+complete" in the Dedup Review UI (`dedup_ui_handler._mark_complete`) publishes `dedup_complete`, and the trigger
+(`trigger_handler._route_topics`) starts ONE Phase 3 task with no book: every book's data, every step, the per-book
+provenance validation skipped ("no BOOK_NAME"). Plan:
+1. **D26-1** a book stopped by the dedup gate goes on the Phase 3 queue (`pending_queue`), held with a new reason
+   `dedup_review`.
+2. **D26-2** "Mark complete" releases the `dedup_review` holds; each book runs as its own named Phase 3 run through
+   the normal queue. Remove the unscoped launch from `_route_topics` (and the `dedup_gate_handler` path that relays
+   it), keeping the trusted-topic check for the release message.
+3. **D26-3** a dedup merge repoints the per-book manifests (`src/utils/book_manifest`, DynamoDB `manifest#...`):
+   the merged-away file is replaced by the survivor in every book manifest that lists it. Today a book's scoped
+   Phase 3 download (`_get_book_entity_files`) lists the deleted file (a `download.file_missing` error) and never
+   gets the survivor. Cover the auto-merge, the Review UI merges and the bibliography merge.
+Tests: two books with a cross-book duplicate: review merges it, "Mark complete", each book runs once, each run sees
+the surviving record.
+
+#### Per-book concurrency: one writer per shared record, then switch it on (owner 2026-11-25, D27)
+
+After D26: (1) D27 - a write to a shared record (a person, unit, place, equipment or bibliography record that
+several books mention) takes that record's lock across tasks, one writer at a time (today concurrent tasks are
+last-writer-wins on S3: gap 28); (2) switch on the multi-doc mode that is built but off (per-book phase locks
+`lock#<env>-wwii-<phase>#<book>`, the Step Functions dispatcher, `concurrency.multi_doc` / the `EnableConcurrency`
+kill switch); (3) test with two books that share people: both run at once, every shared record has both books'
+mentions, no write lost.
+
+#### Phase 0: a book already submitted is held, not run again (owner 2026-11-25, D16)
+
+A book that was already submitted is not processed a second time: the second copy is put on hold for the GUI
+(deferred with the UI work) to decide, unless there is a technical reason to re-run it (an improved LLM is the
+example). Today intake (`lambda_handlers/trigger_handler.py`) rejects the same work under a new title
+(`duplicate`) and a renamed re-upload of an ingested document (`source-renamed`), and RE-PROCESSES a re-upload
+under the same slug (the reject message even says "re-upload it as contentrepository/<slug>/... to re-process
+it"). Change: every repeat submission (same slug, same work, same checksum) goes to a hold (a `needs-review/`
+reason, alerted on both channels), and a re-run needs an explicit technical reason recorded with it (who, why,
+which model) for provenance. Within Phase 3, tasks for different books may run concurrently; a write to a
+shared record (a unit or place two books mention) takes that record's lock, one writer at a time (D27).
+
+#### Merges: exact only; similar goes to human review (owner 2026-11-25, D3)
+
+DECIDED: an automatic merge needs an EXACT match; a similar one goes to the Dedup Review UI to approve or deny
+(extend the UI for it). **What "exact" means (D3-Q1, owner 2026-11-25; keep adding rules as cases come up):**
+- exact: the same text ignoring letter case, whitespace and markdown emphasis (`*`, `_`, backticks);
+- NOT exact (review): transliteration (Dönitz / Doenitz / Donitz), the canonical unit key (a written-out vs
+  abbreviated unit name), any similarity ratio, any abbreviation or synonym ("mtg" / "meeting",
+  "furnished" / "supplied");
+- new rule log:
+  - **R1 transliteration (owner 2026-11-25):** a transliteration match IS merged automatically, and the variant is
+    added to the survivor's `aliases`, only when BOTH (a) the FULL name matches after transliteration (given name +
+    surname: "Karl Dönitz" = "Karl Doenitz") and (b) nothing in the two records conflicts (nationality, rank,
+    service, birth/death dates, unit; a missing fact is not a conflict). A surname-only match ("Dönitz" /
+    "Doenitz") or any conflicting fact goes to the Dedup Review UI. Units, places, equipment: the same rule with
+    their own facts (a unit's nationality and type, a place's country, equipment's nationality).
+  - **R2 aliases (owner 2026-11-25):** an exact match against another record's `aliases` counts as exact; a variant
+    is added to `aliases` only by an automatic merge allowed above or by a person's approval in the UI, never on
+    its own (it would otherwise make the next run merge without review).
+
+Measured on the `phase2-2026-11-17` bibliography (2,035 records -> 1,472): the same-footnote-text pass folded
+555 groups (exact: keep); the near-title pass (`bibliography._fuzzy_collapse_groups`, ratio >= 0.85 + same
+start + same identifiers) folded 8, at least 3 of them WRONG: "Seventh Army KTB" with "Seventh Army KTB
+Anlagen" (the diary and its annexes), "Memo King and Marshall for President 10 Jul 42" with the same memo "C/S
+file Bolero" (another file location: another NARA reference), "below ch III" twice (a cross-reference, not a
+work).
+PLAN:
+1. **D3-1** FIXED IN CODE, NOT YET VALIDATED (2026-11-25, slice B: `bibliography._near_title_candidates` writes
+   `output/review/bibliography_merge_review.json`; nothing is merged by similarity; identical normalized titles still
+   merge, rule question (a)) bibliography: remove the near-title
+   automatic merge; write those pairs to a review list instead.
+2. **D3-2** Dedup Review UI: approve / deny a bibliography merge (UI work is deferred with the rest; until then
+   the pairs stay separate records, nothing is lost).
+3. **D3-3** BIBLIOGRAPHY: NOTHING TO REVIEW (checked 2026-11-25): dev S3 holds 2,035 bibliography records and no
+   shards, so the full-corpus bibliography merge has never combined anything on dev. PEOPLE (owner question
+   2026-11-25): the owner's Dedup Review UI merges DID happen, e.g. 2026-11-16 23:55 UTC `bernard montgomery.json`
+   and `montgomery.json` were deleted and folded into `bernard l montgomery.json` (17 mentions); they left NO merge
+   pointer because `dev-wwii-id-aliases` was created 2026-11-23, so the merged-away ids do not resolve (D5
+   redirects, D26-3 manifests, old citations). TO DO: rebuild pointers for pre-2026-11-23 merges from the S3
+   version history (a deleted record's last version holds its id; the survivor is the record written at the same
+   moment); and check why the survivor's `aliases` is empty (are the merged names kept elsewhere?). List the merges the
+   near-title pass already made (`merged_from` + the `id_aliases` pointers) for review, so a wrong one can be split
+   back.
+4. **D3-4** dedup auto-merge (`ecs_entrypoint._auto_merge_entity_type`): merge only names that are exact by the
+   rule above; a transliteration-only match or a unit-key match stays in the duplicate report for the UI.
+5. **Rule questions found while building slice B (for the rule log; owner to decide):** (a) the bibliography
+   record key (`_match_keys` -> `_document_key`, used for the record's file name, so two Phase 2 writes of it
+   share one record) drops punctuation and, for a journal / KTB / diary, the entry date ("116th Inf S-3 Jnl, 6
+   Jun 44" and "..., 7 Jun 44" are one record with a mention per date, by the earlier "one record, many
+   citations" rule) - beyond case/whitespace/markdown: keep as an exact rule? (b) `bibliography._find_match`
+   (title similarity, then archive ref, then author alone) has no production caller, only tests: delete it?
+6. Slice B left: a record that is not readable JSON is alerted and left out, not restored automatically from
+   its previous S3 version (the alert says to restore it; the bucket is versioned).
+7. **Slice B was committed WITHOUT its checks (owner 2026-11-25: the agent lost command access; "slice B can
+   be committed", test in Phase 3 QA).** Phase 3 QA must cover, before this is relied on:
+   - run `tests/test_bibliography_reconcile_safety.py`, `tests/test_bibliography_document_identity.py`,
+     `tests/test_bibliography_combine.py`, `tests/unit/test_bibliography_match.py`, `tests/test_version_steps.py`,
+     `tests/test_entity_record_files.py`; fix any failure;
+   - run `scripts/gate.sh` (expect black / radon / basedpyright fixes in `src/extraction/bibliography.py` and the
+     new test file) and get the code and security reviews;
+   - dry run DONE 2026-11-25 on a copy of the `phase2-2026-11-17` bibliography: 559 merged (555 same footnote + 4
+     identical normalized titles), 0 held, 15 s, 8 near-title pairs listed in `output/review/bibliography_merge_review.json`
+     (incl. "Seventh Army KTB" / "... KTB Anlagen" and "VII Corps G-3 Journal" / "V Corps G-3 Journal", two
+     different corps the old pass would have merged); the targeted tests above passed (133);
+   - force each held case once: a truncated JSON file, a record of the wrong shape (string `mentions`, numeric
+     `title`), a citation whose merge raises: each alerted (`bib.record_unreadable`, `schema.not_usable`,
+     `bib.group_merge_failed`, `reconcile.records_held`), left unchanged on S3, the rest merged;
+   - confirm `output/review/bibliography_merge_review.json` reaches S3 with the output sync and is rebuilt each run
+     (it is outside the entity dir, so no record reader sees it);
+   - Phase 2's per-task reconcile (`phase2_extract._run_core_extraction`) still runs and writes its shards;
+   - security review points: the alert fields carry S3-key-derived file names (log injection), and the
+     near-title candidate search is O(n^2) over ~2,000 groups (time it).
+
+#### Resilience tasks added 2026-11-18 (owner: "deferred yes, dropped never")
+Owner rule: no outage loses a book. After Grok funds, an AZ or AWS networking come back, the work
+continues from where it stopped. Order: 1.2b, 1.1b, 1.2c, 1.2e, 1.2d, 1.2f, 1.1c.
+- **1.2b - defer, never drop.** Past the attempt cap `pending_queue.claim_attempt` deletes the
+  `pending#enrich#<book>` row (task 1.2), so the book is never picked up again. Instead keep the row
+  as `deferred` with its cause: `funding` and `connectivity` use no attempt and resume automatically
+  when their check passes; `failure` stays capped at `queue.phase3_max_attempts` and resumes with
+  `scripts/resume_book.sh <book>` (or all deferred books). Preflight aborts do not count as attempts
+  (owner decision 4(b)). The reconcile launches nothing while a funding or connectivity check fails.
+- **1.2b follow-ups (from review, 2026-11-18):**
+  - DONE (1.2e) - repeated auto-resume is capped: `connectivity` deferrals are counted
+    (`connectivity_stops`); past `queue.max_connectivity_deferrals` (24) the book is held
+    `failure`; `resume_book.py` resets the count. `funding` is not capped (it stops before spend).
+  - DONE (2026-11-19) - a held (`failure`/`config`) book is re-announced once a day
+    (`queue.held_reminder`, through `src/utils/alert_window`, the window the credit-hold alert now
+    shares).
+  - DONE (2026-11-19) - runnable books go never-deferred first, then the oldest `deferred_at`
+    (was alphabetical), so a book that keeps renewing the hold goes last.
+  - DONE (2026-11-19, `ecs_entrypoint._attempt_counts`) - an ordinary failure, then an outside
+    SIGTERM in the same task, gave that attempt back; a failed phase now consumes its claim (and
+    marks the task `claimed=False`, so the trigger gives nothing back either).
+- **1.2c - the NAT does not fail over.** A NAT gateway is zonal by default; `nat_manager` always
+  creates it in `PUBLIC_SUBNET_ID` (PublicSubnet1, `lambda_handlers/nat_manager.py:528`) and both
+  private subnets route through it. If that AZ fails, both AZs lose egress and the re-create fails in
+  the same subnet. Owner decision (a), 2026-11-18: keep ONE zonal NAT ($0.045/h) and fail over to
+  PublicSubnet2; a regional NAT bills per AZ (~$0.09/h for our 2 AZs, VPC pricing page) for a rare
+  event. Built in 1.2c: a subnet is marked bad (60 min) when its NAT cannot be created, fails,
+  stays pending or never becomes available, or when a task finds no internet through a "ready" NAT
+  (two probe hosts; one failover request per task, at most one failover per 10 min); the failover
+  is alerted; the primary is used again for the next NAT created after the window (a running NAT
+  is not moved back). Only AZ-attributable create errors mark a subnet bad; any other error, or no
+  NAT in any AZ, alerts "Networking FAILED". Accepted risk: a task whose own egress is broken can
+  trigger one failover (both probe hosts unreachable), at most once per 10 minutes.
+- **1.2d - the resume point.** Phase 3 skips already-enriched records, but work since the last S3
+  sync (`SYNC_INTERVAL` 120 s) is redone, and `_reset_openserp_searched` runs at every Phase 3 start,
+  clearing "searched" on every person/equipment record with no images and no awards, so each resume
+  repeats those searches. That reset cannot tell three outcomes apart; owner rules (2026-11-18):
+  1. OpenSERP found nothing: log it for later review (entity ID, query), mark searched, move on.
+  2. Grok rejected every candidate: log it with the Grok prompt, the candidates, the verdicts, model
+     and RequestID (the prompt may need revising), mark searched, move on.
+  3. Grok failed: handled by the shared Grok client library and resubmitted; never treated as a NO.
+  Then delete `_reset_openserp_searched`; the existing 90-day re-search gate stays. Also check every
+  other step's skip logic; test that a run killed midway resumes with no repeated Grok or OpenSERP
+  work. Review log: JSONL in S3 (one prefix per book), written through the shared S3 writers.
+- **1.2d built (2026-11-18):** each OpenSERP entity search is traced (queries: results / empty
+  / error; Grok verdicts with prompt and model); `search_outcome` decides: empty / excluded /
+  rejected -> appended to `output/review/openserp_misses/<book>/<date>-<task>.jsonl` (synced to
+  S3) and marked searched; OpenSERP unavailable (a query errored) -> NOT marked;
+  `_reset_openserp_searched` deleted; people are searched and written one at a time. Phase 3
+  resume inventory of the other steps (review 2026-11-18) - fix in each step's group:
+  - DONE (2026-11-20, owner: "record empty responses for archive.org, gutenberg, Amazon")
+    bibliography_resolve re-asked archive.org / Gutendex the same question every run: every
+    candidate search, the archive.org metadata fetch and the OpenSERP Gutenberg search now go
+    through `search_cache.cached_answer`, which records the answer - an EMPTY one too - for
+    `supplemental_material.search_cache_days` (90) across runs and tasks; an answer given while
+    the source was down is never recorded; the older archive.org single-result search keeps
+    empty answers for the same window. OpenSERP (a scraped engine: an empty 200 may be
+    throttling) uses `openserp_cache_days` (14); archive.org metadata (a fresh upload may still
+    gain files) 7 days. AMAZON: no Amazon source
+    exists in the code - the same helper is ready for it (see the open question to the owner);
+    ~~a NARA exception cached as a permanent miss~~ (DONE 2026-11-20); `review_queue.json` written only at the end (`:2435`);
+    DONE (2026-11-20) `max_items` counted skipped records (it now counts records worked on) and
+    `review_queue.json` was written only at the end (now as it grows);
+  - claim-before-write (lost forever on a kill): in_doc_map_links (`map_link_source.py:219`, ties
+    to 1.6), intra_corpus_links (`intra_corpus.py:212`), ~~openserp_external_maps `mark_searched`
+    before processing~~ (DONE 2026-11-20);
+  - DONE (2026-11-20) failures stored as terminal: hill geocode Grok exception and an
+    unparseable geocode reply (both now retriable, `ask_geocode`), a transient page fetch
+    (RETRY_LATER 1 h); a NARA exception is no longer negative-cached and a NARA 429/5xx or
+    network error is an outage (`backend_down`, never queued as "not found online");
+  - DONE (2026-11-20) disk-only state lost with the task: Nominatim answers and the OpenSERP
+    map-search history now also live in the shared search cache (an outage is never stored); a
+    map search is marked only after its results (`openserp_maps`). In-doc maps written to
+    `contentrepository/`: moot, recycling maps is stopped (owner 2026-11-17, Group 8);
+  - DONE (2026-11-20) link_asset_review queued a duplicate PENDING item on every re-run: each
+    link of a source section now has a deterministic fetch_event_id recorded once
+    (`record_fetch_event(once_key=...)`, a conditional put: a reviewed item is never reset);
+  - DONE (2026-11-20) maps `index.json` is saved after each document.
+  - DONE (2026-11-20) the OpenSERP SQS worker is traced like the directory driver: misses go to
+    `review/openserp_misses/<book>/` in S3, and an entity whose searches only errored is no
+    longer marked searched (it was) - it is sent again fresh;
+  - DONE (2026-11-20) an entity whose queries always error is counted per run in the search
+    cache and, at 5 runs, logged `openserp.entity_never_searched` (still retried).
+- **1.2e - OpenSERP verification bypasses the shared Grok library** (found 2026-11-18). `GrokClient`
+  (`src/grok_client.py`) already retries transport errors (`_call_api`: 5 tries, exponential backoff
+  on HTTPError/ConnectionError) and repairs or re-asks a malformed JSON answer (`extract_json`). The
+  OpenSERP verifiers call raw `chat_completion` and parse the text themselves
+  (`src/enrichment/openserp_enrichment.py` `_verify_result`, `_verify_results_batch`,
+  `_parse_batch_verdicts`):
+  - a reply that does not start with "YES" becomes NO and is **cached for 90 days**, so a malformed
+    reply is a permanent-looking rejection, never resubmitted;
+  - in the batch path an unparseable reply gives `[]`, every result becomes NO, and each NO is
+    **cached** (the comment says fail-closed and "not cached", but only the exception path skips it);
+    the raw malformed reply is also cached by the client under `openserp_verify_batch`;
+  - after the client's retries are spent, the error is a NO, and the record is still marked searched
+    (`openserp_enrichment.py:1496`), so only the start-of-run reset retries it.
+  Fix (DRY): verify through `extract_json` (JSON verdict array: repair, re-ask), cache only real
+  verdicts, never cache or mark searched on a failure; a Grok outage follows D8 (retry, then stop
+  with an alert) and defers the book `connectivity` (1.2b). Belongs with Group 2 batching of these
+  calls. Check the other Phase 3 callers of raw `chat_completion` for the same pattern.
+  **Built (2026-11-18):** the shared client now stops the run when its retries are used up on an
+  outage (`grok_models.GrokUnreachable`: network, timeout, 5xx, 429) or xAI refuses for credit
+  (`GrokFundsExhausted`); both are run-stopping like a missing model, `stop_cause.run_main` maps
+  them to exit 81/80 in phase2/phase3, and the wrapper defers the book (1.2b). This fixes the
+  outage case for EVERY Grok caller at once. The OpenSERP verifiers use `extract_json` and raise
+  `VerifyFailed` on no usable verdict (not cached, entity left unsearched). Optional requests
+  (book_metadata) catch the stop and go on; a transient stop expires after 5 min in long-lived
+  processes. Still to do, per step group: the other Phase 3 raw `chat_completion` callers parse
+  text themselves - check each for a malformed answer being taken as an answer. DONE
+  (2026-11-20): one-word verdicts go through `src/utils/grok_choice.ask_choice` (first word must
+  be a choice; otherwise the cached reply is evicted - `GrokClient.evict_completion` - and asked
+  once more, then the caller's safe default) in image_place_link, link_relevancy, fetch_review
+  (exclude scope), title_memberships and the four bibliography verifies (`_ask_yes`); the three
+  Grok geocoders share `places_grok_geocode.ask_geocode` (a Grok error is transient, an
+  unreadable reply is evicted, re-asked, then left retriable - never `geocode_not_found`, and
+  not counted as a geocoder outage). Cache keys are unchanged (no answers re-paid). Was:
+  `extraction/image_place_link.py:82`, `extraction/link_relevancy.py:82`,
+  `enrichment/fetch_review.py:253`, `enrichment/hill_geocode.py:124`,
+  `enrichment/places_grok_geocode.py:529`, `enrichment/situational_geocode.py:338`,
+  `enrichment/bibliography_resolver.py:1114,1900,1942,2014`, `extraction/title_memberships.py:238`.
+  The OpenSERP SQS worker keeps the message and pauses 5 min on a Grok stop. Mid-run only a 402
+  stops for funding (a 403 that merely says "credit" is an ordinary error); funding deferrals are
+  capped too (`queue.max_funding_deferrals`, 72). Left for 1.2f (review findings):
+  - DONE (2026-11-20) the client's wall-clock deadline raises `requests.Timeout` (shared retries,
+    then `GrokUnreachable`); it also really returns at the deadline now (the old `with` pool
+    waited for the hung thread on exit). Accepted cost (LOW): a request abandoned at the deadline
+    may still be billed, and the retry re-posts it (at most 5 posts; the deadline fires only
+    for a connection that trickles past the 600 s read timeout);
+  - DONE (owner 2026-11-20: "batches must use shared outage") every xAI Batch API call (upload,
+    create, poll, retrieve, the poller's status check) goes through `batch_api.xai_request`: a
+    network error / timeout / 429 / 5xx is retried (5 tries; 2 in the poller), then the run stops
+    as `GrokUnreachable` (402: `GrokFundsExhausted`); a batch already submitted is kept for the
+    poller (its in_task job and credit reservation stay), never marked failed; the poller keeps
+    a batch `pending` while xAI is away (no process-wide stop in the Lambda; the rest of that poll
+    cycle waits). Creating a batch is never retried after it may have reached xAI (no second
+    billed batch; `batch.create_uncertain` says to check the console); an outage after the submit
+    hands the batch to the poller (BatchPending); an in-task poll rides out ~4 min of errors.
+    Alert notes now keep their spaces (`observe._safe_note`, 500 chars) so commands and S3 keys
+    can be pasted; Slack markup in alert text is escaped (`slack_formatter`). Phase 2 stops are
+    still told to re-trigger (no Phase 2 deferral);
+  - DONE (owner 2026-11-20) Phase 0 and Lambda callers: the markdown repair is optional (a Grok
+    stop sends the document to human review); the translation is required - phase0_convert /
+    phase0_ocr_crosscheck / phase0_video exit 81/80 (`stop_cause.run_main`) and the alert names
+    the upload to repeat (or the OCR re-drive); the OCR merge Lambda frees its claim and alerts
+    `ocr_merge.grok_unavailable` with the re-drive command.
+- **1.2f - every external service is resumable** (owner 2026-11-18). Grok, NOAA weather,
+  geocoding (Nominatim), archive.org, NARA, OpenSERP, HyperWar and any other fetch can fail at the
+  service or the network level. For each: one shared retry policy (`src/utils/failure_taxonomy`
+  causes: transient -> retry with backoff), then stop with `src/utils/stop_cause.EXIT_CONNECTIVITY`
+  (1.2b defers the book, no attempt used, resumes automatically) instead of stamping records as
+  done or skipping silently; on resume the step continues from the first record not finished. Grok
+  batches: an in-flight batch is adopted on resume; a failed or expired batch is resubmitted whole,
+  a partly failed one only for its failed requests (`Policy.RESUBMIT_BOUNDED` / `RECOVER_SUBSET`,
+  already defined, check they are wired). Inventory every Phase 3 caller of an external service
+  first (OBSERV per service: `<service>.unavailable`), then fix each through the shared libraries;
+  D8, D8b, D8c and D8d are cases of this rule.
+  **AWS services too** (owner 2026-11-18): SNS, SQS, S3, DynamoDB, Lambda, Secrets Manager, and
+  ECS/EC2 failing to launch a task (RunTask capacity or API errors; Spot capacity). Same rule:
+  bounded retry through one shared helper, then leave the work queued (never lost) and alert; on
+  recovery continue from the first unfinished record. Known cases to check: a failed `RunTask`
+  keeps the queue row (task 1.2, verify every launcher); an S3 write that fails must not mark the
+  record done (ties to 1.6); an undeliverable SNS alert must still leave a record (1.1b); an SQS
+  message that fails processing must return to the queue, not be deleted.
+  **Spot** (owner 2026-11-18): a Spot task can be reclaimed at any time (SIGTERM, ~2 min warning,
+  or killed). Today that counts as a Phase 3 attempt, so repeated reclaims push a book to the
+  `failure` cap. In 1.1b the trigger Lambda reads the STOPPED event's `stopCode`; for
+  `SpotInterruption` it gives the attempt back (`pending_queue.give_back`), so only real failures
+  count. Work since the last S3 sync (120 s) is the only loss; 1.2d makes the resume skip the rest.
+- **1.2f slice 1 built (2026-11-18):** OpenSERP down at start (cannot be started) or failing
+  mid-run (5 consecutive failed searches) stops Phase 3 (D8c: `grok_models.ServiceUnreachable`,
+  exit 81, book deferred connectivity); a transient page fetch is no longer a 90-day REJECT;
+  archive.org not answering is not cached as NOT_FOUND; a Nominatim outage is never replaced by
+  an LLM-guessed coordinate and 5 transient places in a row stop geocoding for the run with an
+  alert (D8d). Remaining, from the 2026-11-18 inventory:
+  - DONE (owner 2026-11-18) - a step that raised no longer finishes the book: Phase 3 exits 82
+    (`stop_cause.EXIT_STEP_FAILED`, an ordinary counted failure: the book stays queued and is
+    retried, attempt-capped, saved work kept) or 83 when the cause was data corruption
+    (`EXIT_DATA_CORRUPT`: loud `phase.data_corrupt` alert, book held `failure` until resumed).
+    Definitions: run stop = a required service down (deferred); step failure = the step raised;
+    record failure = one record left unmarked, retried next run, does not block the book.
+    Corruption is ONLY `stop_cause.RecordCorrupt` (in the error or its cause chain), raised by
+    `entity_records.read_record` for the book's own stored records; a parse/schema error on a
+    service answer (HTML error page, Grok reply, write guard) is a step failure (82), so
+    untrusted content can never hold a book. A held book's corpus stays unrepaired until resumed.
+    DONE (1.2f slice 2, 2026-11-18): every Phase 3 record loader (`places_geo._load_place`,
+    `noaa_weather`, openserp `_iter`/people/equipment, `groups_wikipedia`, `equipment_wikipedia`,
+    `equipment_images`, `places_grok_geocode`, `bibliography_resolver`, `_load_parsed_docs`) now
+    reads through `entity_records.load_record`: a corrupt record (not text, not JSON, not an
+    object) raises a loud `record.corrupt` alert naming the file, is skipped so the step goes on
+    with its other records, and Phase 3 exits 83 at the end (book held; `.phase_results.json`
+    `corrupt_records` names the files in the hold alert). A missing file is an OBSERV warning,
+    not corruption. Follow-ups DONE (2026-11-19): a step failure keeps its steps on the queue
+    row (`last_failed_steps`, cleared by the next allowed start), the attempt-cap hold alert and
+    `resume_book.py list` name them, and the failure notice says "attempt n of cap" or, on the
+    final retry, "LAST attempt ... held at next start" with the resume command.
+  - PART 2 (owner rule 2026-11-18), in each step's group: catch errors PER RECORD so one bad
+    record does not stop the step and block every record after it. A record that fails on DATA
+    CORRUPTION (unparseable / schema-invalid): error out loudly (alert, set aside for review).
+    Any other record failure: leave it unmarked and queued for retry. Use
+    `entity_records.read_record` / `stop_cause.is_data_corruption` (DRY). Steps that mark a record done before the work (see
+    the 1.2d inventory) must be fixed in the same change.
+  - DONE (1.2f slice 3, 2026-11-18, `src/utils/service_outage`): one shared way to report an
+    outage. The bibliography search sources (Gutendex, archive.org search/candidates/metadata,
+    OpenSERP book and Gutenberg searches) report 429/5xx/no answer as an outage, so a citation
+    searched during one is `backend_down` (retried next run, never queued as "not found online");
+    a missing NARA key (D8b) is the same for NARA citations and the wrapper alerts
+    `nara.key_unavailable` in Phase 3. DynamoDB: URL-registry claims/finalize and the search
+    cache count failures; 10 in a row stop the run (exit 81, deferred). Image hosts: a 429/5xx
+    or no answer no longer uses an image's vision attempts (`host_unavailable`). S3: the wrapper
+    client retries (adaptive, 10 attempts); a failed background upload no longer stops the pass;
+    5 failing passes alert `s3.sync_failing` once, and the watchdog does not kill a task whose
+    only "stall" is S3; a merged-away record left in S3 is alerted with the `aws s3 rm` command.
+    Review hardening: 403/408 from a search host is an outage; an outage-affected citation is not
+    reused for a duplicate; image hosts: only a timeout or 429/5xx is an outage (refused/TLS/DNS
+    is a dead link), and after 5 such runs the image goes to needs_review (images schema 2.29
+    `host_unavailable_runs`); the S3 watchdog bypass ends after the watchdog window; the
+    merged-delete alert points to a key manifest (`manifests/merged_delete_left/<task>.json`),
+    never a pasteable command. DONE (2026-11-20): the emergency (SIGTERM) sync is retried once
+    when it fails fast (`_emergency_sync`); a citation whose search sources were down in
+    `BACKEND_DOWN_RUN_CAP` (5) runs in a row is also queued for a human with the reason (count in
+    the search cache, 30-day TTL; it keeps being retried). DONE (owner 2026-11-20): `watch()` follows
+    work into a thread pool through `service_outage.OutagePool` / `carry` (only the watch scope is
+    carried, so cache scoping in existing pools is unchanged).
+  - DONE (2026-11-20) `url_hygiene._pinned_get` has the shared retry (429/502/503/504, or a
+    network error that failed in under 10 s; not a stall or a TLS failure; 3 tries, Retry-After or
+    2 s/4 s, capped 30 s); the local loops in `source_retrieval` and `wayback` were removed (DRY);
+    `url_fetch` keeps ONE try (`_pinned_get_once`) because it falls back to Wayback itself;
+  - NOAA: moved to its own task, 1.2g (owner 2026-11-18).
+  - DONE (2026-11-20) a walled / rate-limited page with no archive is cached `RETRY_LATER` for
+    1 h (`openserp_enrichment.RETRY_LATER_HOURS`): not re-fetched or Grok-verified again by other
+    entities meanwhile, never REJECT;
+  - DONE (2026-11-20) `lambda_handlers/phase3_handler.py` deleted (not deployed, no caller);
+  - DONE (2026-11-20, AWS cases): every RunTask launcher checked - the trigger releases its lock
+    and re-raises (Phase 3 rows stay; SQS batches redeliver), the batch poller releases its
+    retrieve claim, ocr_merge alerts with the re-drive; the trigger queue's visibility timeout
+    was 300 s under a 900 s Lambda (now 1800 s) and had no redrive (a failing batch retried
+    silently 14 days; now 5 receives -> the alarmed trigger DLQ); the OpenSERP worker re-sends a
+    message stopped by a Grok/OpenSERP outage as a fresh delayed message (15 min; at most 96 times,
+    24 h, then ordinary counted retries), so an outage no longer pushes the queue into its DLQ. DONE (2026-11-20): the trigger queue reports per-record
+    failures (`ReportBatchItemFailures`; a failed batch is retried record by record, only the
+    failing ones go back);
+  - ACCEPTED (owner 2026-11-18): each start-time OpenSERP stop still brings NAT up and waits up
+    to 12 min for OpenSERP before stopping (bounded by the connectivity cap, 24).
+- **1.2g - troubleshoot NOAA weather** (owner 2026-11-18, its own task). NOAA 429 sleeps 60 s per
+  file and goes on (`noaa_weather.py:~81`); find why NOAA rate-limits or fails, then make it
+  resumable like the other services (service_outage, no record stamped on an outage, the step
+  continues where it stopped).
+- **1.1c - Grok balance thresholds.** DONE (2026-11-18, `src/utils/grok_balance`). The live
+  balance is `/postpaid/invoice/preview` credit minus this month's use, NOT `/prepaid/balance`'s
+  `total` (a ledger that posts each month's spend on the 11th of the next month: 2026-11-18 ledger
+  $192.59, console $62.31). Team ID from the inference key (`GET /v1/api-key`); management key in
+  `<env>-wwii-pipeline/xai-management-key` (ECSTaskRole only; Lambda and deploy roles denied).
+  Phase 2/3 start: under `api.grok.credit_floor_usd` ($50) stop, alert `phase.grok_credits_low`,
+  defer `funding`; unreadable: stop (`config` held / `connectivity` auto-resumes), never guess.
+  During the run: every `balance_check_minutes` (15), at or under `credit_alert_usd` ($10) an
+  hourly `grok.credits_critical` alert, the run goes on. Owner 2026-11-18: a Phase 0 import whose title-page
+  Grok request is on is gated too (deal with it earlier); `api.grok.balance_check: false` switches
+  the check off for other deployments (open source); auto top-up is the operator's call.
+  `phase0_ingest`'s translation pass has no NAT, so it is not gated. Follow-ups: DONE
+  (2026-11-19) the older preflight stops (`grok_credits_depleted`, `grok_key_invalid`, model
+  unavailable, Grok unreachable) free the lock and NAT lease at once (`_exit_before_work`, D10);
+  DONE (1.1e) a funding retry no longer starts a task and NAT just to read the balance: the
+  trigger checks it before the launch and leaves the book queued.
+  The balance formula is verified on one answer (2026-11-18); re-check it around the 11th, when
+  the month's spend posts to the ledger.
+
+- **1.1e - hold Grok launches while credit is low.** DONE (owner 2026-11-18,
+  `src/utils/credit_hold`, `lambda_handlers/credit_check.py`). The trigger Lambda (outside the VPC,
+  no NAT) asks the `<env>-wwii-credit-check` Lambda (the only Lambda allowed the management key;
+  answer cached 5 min as `credit#balance`) before a Phase 2/3 or Phase 0 import launch. Under the
+  floor nothing launches: a Phase 2/3 book stays on its queue (strict write: a failed write
+  launches instead), a Phase 0 import becomes an entry of the `credit#holds` item (one id per
+  launch, so a redelivered event is one hold), replayed by the hourly check once credit is back
+  (claimed, removed only after the launch; a stale claim is retried, so a crash never loses it).
+  Only allow-listed holds replay (Phase 0 task defs, CONVERT_KEY/VIDEO_KEY under
+  `contentrepository/`); ECSTaskRole is denied writes to the gate's items. One
+  `credit.launches_held` alert per 6 h. Unreadable here: launch, the task's preflight decides.
+  Follow-ups DONE (owner 2026-11-18, same task): the dispatcher's `enumerate_pending` leaves Phase
+  2/3 docs READY while credit is low (Phase 1 still dispatched); the batch poller's direct submit
+  invoke starts no task and replies `held` with what to do; unscoped Phase 2/3 runs (manual,
+  dedup-complete) are credit holds too (a held `EXPECTED_COUNT` replays only while
+  `ALLOW_MANUAL_EXPECTED_COUNT` is on); each task def replays only its own env; holds are spread
+  over 16 items (`credit#holds#0..15`, far below 400 KB each); one failing hold no longer stops the
+  others; any gate error launches; `.`/`..`/`unknown` holds are rejected; the OCR controller and
+  dispatcher roles are denied writes to the gate's items; a snapshot restore keeps holds and the
+  balance; the credit-check cache warning names what to check. Left: the deploy role can replace
+  the credit-check code (CI trust boundary); no reserved concurrency (fails on accounts with a
+  low concurrency quota).
+
+#### Task 1.1 follow-ups (found in review, 2026-11-18)
+- **DONE (2026-11-19) MED - an alert from a task that has no network path is lost.** A stop alert
+  the task cannot deliver is left on its stop marker (`unsent_event` / `unsent_note`, through the
+  DynamoDB gateway endpoint) and the trigger relays it as `phase.task_alert_relayed` when ECS
+  reports the stop (1.1b's unreported-stop path covered SIGKILL; this keeps the task's own text). When NAT never becomes ready the
+  task has no route to SNS (nat-manager creates interface endpoints for ecr, logs, secretsmanager,
+  ecs, ec2, lambda and scheduler, not sns), so the `phase.nat_not_ready` alert most likely never
+  arrives; the task logs `OBSERV phase.alert_undeliverable reason=no_nat` as the record. The ECS
+  task-failure rule (`cloudformation/compute.yaml:735`) only sends `check_locks`. Fix (DRY): have the
+  trigger Lambda, on that STOPPED/non-zero event, publish one alert through the same phase2-complete
+  path when the task did not report its own stop (e.g. a `phase.stop_alerted` marker it writes to
+  DynamoDB, which the gateway endpoint reaches without NAT). This also covers a SIGKILL'd task.
+- **1.1b scope additions (owner 2026-11-18):**
+  - Fix the SIGTERM alert text: a Spot-stopped book is relaunched at once by the
+    `dev-wwii-spot-recovery` rule (`trigger_handler._handle_task_stopped_event`), not by the
+    hourly reconcile. Reuse that path (DRY) for the stop marker and for giving back an attempt when
+    a task is killed outright (`stopCode`, SIGKILL).
+  - Spot is never benign: the alert carries the book's reclaim count and the next launch (rung).
+  - **Fargate Spot price ladder.** Goal: finish the work at the lowest price available at that
+    moment; NEVER above the on-demand hourly price of the original task size (critical). On each
+    reclaim of a book, relaunch on Fargate Spot at double the vCPU and memory, while the Spot
+    hourly price of that size stays at or below the original size's on-demand price; when the next
+    rung would exceed it, launch ON-DEMAND at the ORIGINAL size. Per-launch `cpu`/`memory`
+    overrides on RunTask (no new task definitions); the rung is stored on the book's queue row; a
+    success resets it. Phase 3 example (0.5 vCPU / 1 GB, on-demand ~$0.025/h): Spot 0.5/1 ->
+    Spot 1/2 -> on-demand 0.5/1. Prices: the AWS Price List API has Fargate ON-DEMAND rates
+    (`USE1-Fargate-vCPU-Hours:perCPU` $0.04048, `USE1-Fargate-GB-Hours` $0.004445, checked
+    2026-11-18) but NO Fargate Spot rates. Owner choice (b): the Spot rate actually charged, from
+    Cost Explorer (cost / usage of the `SpotUsage-Fargate-*` usage types over 7 days; 2026-11-04..18
+    gave $0.014542/vCPU-h and $0.001597/GB-h), refreshed daily ($0.01 a request).
+- **1.1b follow-ups (from review, 2026-11-18):**
+  - DONE (2026-11-19) - a failed report keeps its facts and is listed in `stopevt#failed` (one
+    item, no scan); the next scheduled check (15 min) re-sends it
+    (`trigger_handler._sweep_failed_stop_reports`; the invocation no longer fails for it);
+    the trigger has a DLQ (`<env>-wwii-trigger-dlq`, alarmed when not empty) and its error alarm
+    fires on 1 error. Left (LOW, from review): a FIRST report whose Lambda is hard-killed
+    mid-report leaves a `started` row with no facts and is not listed (store the facts and list
+    the id at claim); a Spot-reclaimed task's own undelivered alert is not relayed (the reclaim
+    alert goes out instead). Was: MED - a stop alert that SNS never accepts is lost after Lambda's 2 async retries: the trigger
+    Lambda has no DLQ / on-failure destination, the `stopevt#<task>` row stays `failed` and is
+    never swept, and `wwii-trigger-errors` (`cloudformation/events.yaml`) alarms only at 3 errors
+    in 5 minutes - through SNS too. Add an on-failure destination (SQS) and a sweep that
+    re-reports `failed` rows; alarm on 1 error.
+  - DONE (2026-11-19, `iam.yaml` `NoLaunchStateWrites` / `NoSpotLadderClimb`) - ECSTaskRole may
+    not write `price#fargate#` or `stopevt#` rows, and may only delete (reset) `spot#` rows.
+  - LOW - Spot rates are historical (highest daily rate actually charged in 7 days); a Spot price
+    rise since the last Spot day is not seen. Documented; `spot_ladder.max_fraction_of_on_demand`
+    is the margin if wanted.
+- **DONE (2026-11-20, code + CloudFormation; not deployed) 1.1d - EC2 Spot price ladder for the
+  GPU OCR (AWS Batch)** (owner 2026-11-18, its own task). Same rule per instance type: on reclaim,
+  move up the instance types while the live Spot price (`describe_spot_price_history`) stays at or
+  below the original type's on-demand price (Price List API); then the on-demand queue at the
+  original type. Owner steering 2026-11-20: the instance classes are not fixed; any type that can
+  handle the workload will do, and the cap is the hourly price of the ORIGINAL on-demand type.
+  - Design (`src/utils/gpu_ladder.py`, `lambda_handlers/ocr_spot_controller.py`, `ocr.yaml`): AWS
+    Batch is told a queue, never an instance type, so each rung has its own Spot compute
+    environment + queue: `<env>-wwii-chandra-gpu` (rung 0 = the original type), `-gpu-r1..r3`, then
+    `-gpu-ondemand` (original type only). Rung types are the CloudFormation parameters
+    `GpuRung0Type..GpuRung3Type` (defaults g5.xlarge, g6.xlarge, g5.2xlarge, g6.2xlarge), passed to the
+    controller as `OCR_GPU_LADDER`. A rung is used only if `describe_instance_types` says it can run
+    the job (1 GPU with >= 22000 MiB, 4 vCPU, 15000 MiB) and its live Spot price (highest of the
+    latest price per AZ of the private subnets) is at or under the original on-demand price
+    (`OCR_MAX_FRACTION`, default and maximum 1.0). An over-limit rung is skipped, not the end of the
+    ladder (families are not monotone in price). Unreadable prices, or no rung left, mean on-demand.
+  - Reclaim: with the controller deployed the job definition does not retry `Host EC2*` on the same
+    queue (`EvaluateOnExit`), other failures keep 2 attempts. An EventBridge rule on Batch FAILED
+    events moves the job at once; the hourly run sweeps the last 12 h as a backstop. The rung is the
+    queue the job ran on, so no ladder state is stored; `ocrctl#<job>` claims make each move happen
+    once (the claim remembers every job it moved, so the hourly sweep never moves an old job again).
+    Only a move to on-demand alerts (it costs more; the alert says what to check); a Spot-to-Spot
+    move is logged. A RUNNABLE job whose rung's live Spot price rose over the limit moves at once.
+  - The merge rule (`events.yaml` `OcrJobSucceededRule`) matches the queues by prefix, and
+    `nat_manager` / the trigger's in-flight checks cover every rung.
+  - Residual: the cap is checked when a job is moved and while it waits RUNNABLE; a RUNNING job is
+    never killed for a later price rise. Batch's own ceiling for a rung is its type's on-demand price
+    (`SpotBidPercent`), so a larger type (g5.2xlarge) could in theory run above the original's price.
+    Each of the four Spot compute environments has its own `MaxvCpus`, so the Spot ceiling is the sum.
+  - Owner 2026-11-20: the default ladder (g5.xlarge original, g6.xlarge, g5.2xlarge, g6.2xlarge) is
+    good enough for now; replacing the v5 compute environments and queues on deploy is approved.
+    The Group 1 test cycle is NOT yet approved (deploy + Phase 3 run wait for the owner).
+  - OPEN: unverified against a live Batch (needs the deploy): that a failure with no matching
+    `EvaluateOnExit` rule is retried (AWS docs, from memory). The v5 compute environments and queues
+    replace the old ones on deploy.
+- **DONE (2026-11-19: the chain invokes the trigger with `{"source": "enrich-next"}`, which runs
+  `_reconcile_phase3`; shared `ecs_entrypoint._invoke_trigger`) LOW - the end-of-run chain can pick
+  a book that is already running.** Queue rows now stay while
+  their book runs (task 1.2), so `_get_next_pending_enrich` may name a running book; its lock is held,
+  the trigger re-queues it, and the next free book waits for the hourly reconcile (up to an hour).
+  Reuse the reconcile's "try each until one launches" (`trigger_handler._reconcile_phase3`).
+- **LOW - Phase 3 batch mode is not attempt-counted.** `run_submit_only` / `run_retrieve_only` do not
+  call `_claim_enrich_attempt`; with `batch.phase3` on (Group 2) the retry cap would not apply. Add
+  the claim there when Group 2 turns batching on.
+- **DONE (2026-11-19) LOW - the NAT teardown signal scans the 26 MB table three times per check.**
+  `scan_prefix` takes several prefixes (one scan, OR-ed `begins_with`); the teardown uses one.
+- **DONE (2026-11-19) LOW - a standalone Phase 3 re-run can repeat the barrier-timeout alert.**
+  Verified: run ids are written unless the run-marker write fails (alerted). In that case the
+  timeout is `reconcile.barrier_unproven` and both timeout alerts now say to re-run the Phase 2
+  dedup step before Phase 3 (Phase 3 alone waits again). The alerts ask the
+  operator to re-run Phase 3; if the reconcile barrier and run marker lack a `run_id`, freshness falls
+  back to `completed_at >= task start - 30 s`, so the re-run waits the full 300 s and raises
+  `reconcile.barrier_timeout` again with nothing new. Verify run ids are always written; if not, skip
+  the wait for an operator re-run (or downgrade the repeat).
+
 #### Step: EP run_phase preflight (PHASE3_MAP §1 "ECS wrapper") (moved here from Group 4)
-- **MED - three of the four preflight aborts send no alert.** Credits depleted, invalid API key
+- FIXED IN CODE, NOT YET VALIDATED (audit 2026-11-25: credits, key and NAT-never-ready aborts call `_alert_phase_stopped`) - **MED - three of the four preflight aborts send no alert.** Credits depleted, invalid API key
   (`EP:820-829`) and NAT never ready (`EP:715-729`) are a `logger.error` and `sys.exit(1)`. No
   `observe`/`publish_alert`, no CloudWatch metric filter matches them (the filters in
   `cloudformation/events.yaml` are "HOLDING work", "SPEND ALERT", "mentions NOT merged",
@@ -135,7 +732,7 @@ record disappears from S3; two queued books each run exactly once.
   the other three through the same alert path (`phase2-complete`, both channels).
 
 #### Step: EP post-sync steps, on success (PHASE3_MAP §1 "ECS wrapper") (moved here from Group 14)
-- **HIGH - the "next book" lookups miss queued books.** `_get_next_pending_book` and
+- FIXED IN CODE, NOT YET VALIDATED (audit 2026-11-25: the `Limit=100` scans are gone; all four readers use the paginated `pending_queue`) - **HIGH - the "next book" lookups miss queued books.** `_get_next_pending_book` and
   `_get_next_pending_enrich` (`EP:2543`, `EP:2564`; `Limit=100` at `EP:2552`, `EP:2573`) `scan` with `Limit=100` and a `FilterExpression`. In
   DynamoDB `Limit` caps the items READ before the filter, and there is no pagination, so only the first
   100 of ~33,500 items in `dev-wwii-api-cache` are examined. A queued `pending#enrich#<book>` is found
@@ -145,14 +742,14 @@ record disappears from S3; two queued books each run exactly once.
   Lambda has the same flaw: `_get_pending_books_for_enrich` (`lambda_handlers/trigger_handler.py:2546`,
   `Limit=100`) and `_get_pending_books` (`:2479`, `Limit=1000`, also unpaginated), so the hourly
   reconcile can miss the same books and a queued book may never run.
-- **MED - a Phase 3 validation failure sends no alert.** `validate_phase3.run` only prints
+- FIXED IN CODE, NOT YET VALIDATED (audit 2026-11-25: `observe_error("phase3","validation_failed")` and `validation_not_run`) - **MED - a Phase 3 validation failure sends no alert.** `validate_phase3.run` only prints
   `OBSERV phase3.validation result=FAIL` / `=== PHASE3 VALIDATION FAIL ===`
   (`scripts/validate_phase3.py:233-242`), and the caller logs the exit code at INFO (`EP:2367`). No
   `observe` / `publish_alert`, no metric filter. Alert through `phase2-complete` with the failure list
   (both channels).
 
 #### Step: EP failure path (PHASE3_MAP §1 "ECS wrapper") (moved here from Group 14)
-- **MED - a stopped or crashed task sends no failure notice.** Paths 2, 3 and 4 never call
+- FIXED IN CODE, NOT YET VALIDATED (audit 2026-11-25: wrapper exception, SIGTERM and nonzero exit all alert; a hard kill without SIGTERM relies on the trigger's relay, not verified) - **MED - a stopped or crashed task sends no failure notice.** Paths 2, 3 and 4 never call
   `_notify_failure`: a Spot interruption of Phase 3 (path 3, apart from the watchdog, which notifies
   before it signals) or a wrapper exception (path 4) leaves the book unfinished with no alert (the
   task-failure rule only clears locks). Fix (DRY): the task-failure rule, or one `finally` in `run_phase`,
@@ -180,7 +777,7 @@ record disappears from S3; two queued books each run exactly once.
   Verified in code; no failure observed in live logs.
 
 #### Step: places hierarchy and link_parent_places (PHASE3_MAP §4.2) (moved here from Group 6)
-- **LOW - the write does not stamp metadata.** `write_json_with_lock(pf, data)` (`places.py:639`) passes
+- **DONE (1.10: it stamps by directory since 2026-11-06; now `entity="places"` explicitly, and a refused write is not counted as linked) - LOW - the write does not stamp metadata.** `write_json_with_lock(pf, data)` (`places.py:639`) passes
   no `entity`, so `_last_updated` / `_schema_version` are not refreshed (the geocode writer does both);
   incremental change detection misses the change.
 
@@ -236,7 +833,7 @@ of `output/` and `artifacts/` except `-parsed.json`, final flush in `stop()`) an
 - The map-as-source files in `contentrepository/` are outside `output/` and never uploaded; see the
   map-vision step above.
 
-- **HIGH - a file Phase 3 deletes locally is never deleted from S3.** `track_deletion` (`EP:209`) is the
+- **DONE (1.5, 2026-11-18: `ecs_entrypoint._removed_downloads` - every entity record this task downloaded or background-uploaded and the phase removed locally is deleted from S3 at the final sync; one that another task rewrote in S3 after this task synced it (ETag from the listing, else LastModified) is kept and alerted; removals are snapshotted before the final uploads, so a SIGTERM sync never deletes a record whose replacement is not uploaded; more than max(50, 5%) removals delete nothing and alert `sync.mass_delete_refused`; S3 versioning keeps deletes restorable) - HIGH - a file Phase 3 deletes locally is never deleted from S3.** `track_deletion` (`EP:209`) is the
   only way to fill `_deleted_keys`, which `_final_sync` deletes from S3 (`EP:3550`), and it has no callers
   (trace_path: 0). Phase 3 case: `bibliography_resolve` moves each `not_citation` record to
   `output/narrative_notes/` and unlinks the bibliography file (`_relocate_narrative_note`,
@@ -248,17 +845,17 @@ of `output/` and `artifacts/` except `-parsed.json`, final flush in `stop()`) an
   both), so `_final_sync` removes the key.
 
 #### Carried over from PHASE3_MAP.md §6 (found by the 2026-11-17 documentation review) (moved here from Group 11)
-- **HIGH (was gap 1) - An unreachable OpenSERP is silent.** A start timeout or error only logs a
+- **DONE (1.2f slice 1, D8c) - HIGH (was gap 1) - An unreachable OpenSERP is silent.** It now stops the phase with an alert. A start timeout or error only logs a
   warning (`EP:781-783`), and every driver then fails the `/health` probe, logs one warning and returns
   0 (`OE:1428-1436`). The steps report `status=ok enriched=0`, no `openserp.anomaly` fires (nothing was
   eligible), and no SNS alert is sent. A run can finish with no OpenSERP enrichment and nobody is told.
   Needs an actionable alert or a `skipped` status.
-- **HIGH (was gap 3) - Five non-search steps are gated by `use_openserp`.** `image_person_link`,
+- **DONE (1.4, 2026-11-18: `phase3_enrich_data._run_document_link_steps`, outside the OpenSERP gate) - HIGH (was gap 3) - Five non-search steps are gated by `use_openserp`.** `image_person_link`,
   `link_asset_review`, `image_place_link`, `intra_corpus_links` and `event_provenance_stamp` sit inside
   `_run_openserp_enrichment` (`P3:351-385`). Setting the flag false, or a failed import or
   `reset_metrics` (`P3:285-292`, returns 0), also skips them and the SourceSectionID stamp. The comment
   on `_run_document_media_steps` says document media must not depend on the OpenSERP flag.
-- **HIGH (was gap 4) - On ECS `use_openserp: false` has no effect when the service starts.** The
+- **DONE (1.4, 2026-11-18: the service is not started when the flag is off; `_patch_openserp_url` writes only the address) - HIGH (was gap 4) - On ECS `use_openserp: false` has no effect when the service starts.** The
   entrypoint starts the service (Fargate and NAT cost) whatever the flag says, and
   `_patch_openserp_url` then forces the flag true (`EP:786-793`). The flag only holds when the start
   fails.
@@ -267,7 +864,7 @@ of `output/` and `artifacts/` except `-parsed.json`, final flush in `stop()`) an
   Whether entity-level Phase 3 calls need an equivalent is an owner decision.
 
 #### 2.4 URL-sourced enrichment + dedup (from section 2)
-- **[HIGH · data-quality] Centralized JSON result de-duplication.** Add
+- FIXED IN CODE, NOT YET VALIDATED (audit 2026-11-25: `src/utils/result_dedup.dedup_entity` on the central write path; mention lists excluded by design; a dedup crash is swallowed silently at `file_lock.py:307`) - **[HIGH · data-quality] Centralized JSON result de-duplication.** Add
   `src/utils/result_dedup.py::dedup_entity(data, entity)` at the ONE central write path, driven by a
   per-schema DEDUP_FIELDS declaration: URL arrays dedup on `url_hygiene.clean_url`, mentions on
   MentionID, free-form on canonical hash. First-writer-wins, idempotent, behavior-only.
@@ -286,6 +883,29 @@ whitelist fixes shipped in PR #707 since duplicates are recovered, not lost.
 
 ### Group 2 - batching (owner rule: every Grok submission is batched)
 
+- **DONE (2026-11-20) 1.7 (moved here, owner 2026-11-18) - answer identity for Phase 3 batch requests.** Every
+  Phase 3 JSON-object kind carries a RequestID (BookID too for in-document map vision) and an answer that does
+  not echo it is not trusted; one-word kinds rely on the batch's returned id, and Phase 3 refuses positional
+  pairing. See GROK_REQUESTS.md "Request identity" and `tests/test_phase3_request_identity.py`. Cost: NONE. A
+  request-only kind keeps the cache key of the unstamped request, so answers cached before are still hits (the
+  production table holds 3,385 `equipment_source_recheck` and 1,882 `equipment_disambiguation` Phase 2 answers: they
+  are read as "no echo", accepted and re-stamped, never re-asked). Open: the real rate at which Grok echoes the
+  id is known only from the first run (`OBSERV grok.identity_missing`); a kind it never echoes is accepted
+  with one warning per answer, not re-asked.
+- **Design drafted 2026-11-20:** [PHASE3_BATCHING_DESIGN.md](core/PHASE3_BATCHING_DESIGN.md) (rounds loop, vision
+  in batch mode, identity split, attempt counting, validation script, order of work, four owner questions).
+- **Validation pass (owner 2026-11-18, after the Phase 3 list):** cached Phase 2 answers from
+  batches before 2026-11-11 may be stored under another request's key; identity-checked kinds are
+  caught on read (evicted, re-asked), others are not - check them.
+  - DONE (2026-11-20) the tool: `scripts/validate_batch_answers.py` (`src/utils/answer_validation.py`, read-only
+    unless `--evict`). `--check echo` (offline) and `--check batches` (re-pairs each old batch's results from xAI
+    BY ID and compares them with the cache; needs `GROK_API_KEY`, retrieval spends nothing).
+  - RAN `--check echo` on `dev-wwii-api-cache` (2026-11-20): 8,102 identity-kind answers echo their identity, 0 are
+    proven wrong (no BookID of another book), 5,621 carry no echo (made before the stamp: unprovable by content,
+    mostly `equipment_source_recheck` 3,385 and `equipment_disambiguation` 1,882).
+  - OPEN (owner approval: it reads the xAI key): `--check batches --before 2026-11-11`, the only check that can
+    prove the 5,621 right or wrong. The `metrics#` rows it needs expire after 90 days.
+
 Every Grok-validation feature in G3 and later must be batched, so this comes before them. Reuse the
 existing batch code and the under-50 rule (`batch.min_requests`); Phase 2's multi-round hand-off; vision
 requests through the same queue (V1: accepted; the first run confirms).
@@ -293,20 +913,20 @@ requests through the same queue (V1: accepted; the first run confirms).
 live, rounds logged.
 
 #### Step: in_doc_map_links, image_map_vision (PHASE3_MAP §4.4) (moved here from Group 8)
-- **LOW - the map-as-source vision request is never batched.** `_vision_depicted` (`map_link_source.py:61`)
+- FIXED IN CODE, NOT YET VALIDATED (audit 2026-11-25: vision requests queue under `batch_mode`; `_vision_depicted` re-raises `BatchModeCollecting`) - **LOW - the map-as-source vision request is never batched.** `_vision_depicted` (`map_link_source.py:61`)
   makes one live `extract_json_with_image` call per map, up to `max_recycled_per_doc` (50) per document.
   `image_map_vision` and the tier-3 `maybe_vision_classify_map` are also one live request per image.
 
 #### Step: link_asset_review (PHASE3_MAP §1 step table, §4.4) (moved here from Group 9)
-- **LOW - not batched** (`_grok_link_relevant` is one live request per link); covered by the batching
+- FIXED IN CODE, NOT YET VALIDATED (audit 2026-11-25: `link_relevancy` treats `BatchModeCollecting` as not answered yet) - **LOW - not batched** (`_grok_link_relevant` is one live request per link); covered by the batching
   entry.
 
 #### Step: equipment_images (PHASE3_MAP §4.5) (moved here from Group 13)
-- Vision requests are one live call per image and are not batched (covered by the batching entry: vision
+- FIXED IN CODE, NOT YET VALIDATED (audit 2026-11-25: `equipment_images`, `image_captioner`, `image_map_vision` handle `BatchModeCollecting`) - Vision requests are one live call per image and are not batched (covered by the batching entry: vision
   calls bypass `batch_mode`). Up to 20 downloads per record, until 3 are verified.
 
 #### Wikipedia / Grokipedia footnote links (owner question 2026-11-17) (moved here from Track P)
-- **Batching (owner rule): every Grok relevance request on these paths is batched.** The shared
+- FIXED IN CODE, NOT YET VALIDATED (audit 2026-11-25: the relevance paths handle `BatchModeCollecting`; OpenSERP verify queues) - **Batching (owner rule): every Grok relevance request on these paths is batched.** The shared
   helper collects candidates (URL, entity ULID, context) across the step and submits them through the
   xAI Batch API path (`src/utils/batch_api.py` `BatchCollector`, as `GrokClient(batch_mode=True)`
   does); results are applied on retrieve, and only positives are enqueued. Today none of these checks
@@ -319,7 +939,7 @@ live, rounds logged.
 
 #### Cross-cutting: batch every Phase 3 Grok request (owner 2026-11-17)
 
-- **What is and is not covered today with `--batch`** (PHASE3_MAP §5):
+- STALE (audit 2026-11-25: `_run_batch_rerun` no longer exists; `phase3_enrich_data._run_batch_rounds` loops every step; text below kept for the validation) - **What is and is not covered today with `--batch`** (PHASE3_MAP §5):
   - Re-run against the batch answers: people_groups, places, `link_parent_place_ids`, bibliography,
     bibliography_resolve, equipment_images (`P3:_run_batch_rerun`).
   - Not re-run, so their queued answers are never applied: geocode's Grok fallback, the OpenSERP group
@@ -350,15 +970,15 @@ live, rounds logged.
     only new requests.
 
 #### Carried over from PHASE3_MAP.md §6 (found by the 2026-11-17 documentation review) (moved here from Group 11)
-- **HIGH (was gap 5) - Batch mode with OpenSERP is wrong.** In `--batch` the verify calls are queued,
+- FIXED IN CODE, NOT YET VALIDATED (audit 2026-11-25: `openserp_enrichment` re-raises `BatchModeCollecting`, releases the URL claim, caches no REJECT) - **HIGH (was gap 5) - Batch mode with OpenSERP is wrong.** In `--batch` the verify calls are queued,
   read as NO, cached as `REJECT` for 90 days, and the entities are stamped searched. `_run_batch_rerun`
   does not re-run OpenSERP or geocoding (PHASE3_MAP.md §5). Latent while `batch.phase3` is false.
-- **MED (was gap 18) - Per-result Grok verification is the cost driver.** One request per hit,
+- FIXED IN CODE, NOT YET VALIDATED (audit 2026-11-25: `prefetch_relevance` -> `_verify_results_batch`, one request per query; search responses cached) - **MED (was gap 18) - Per-result Grok verification is the cost driver.** One request per hit,
   `_verify_results_batch` has no caller, and the insignia and patch queries run twice per group (once
   as `images`, once for the patch) because search results are not cached.
 
 #### Older backlog - HIGH list
-- **[HIGH · data-loss · BATCH MODE] Batch places (and likely any entity) silently dropped by the positional result-mapping desync.**
+- FIXED IN CODE, NOT YET VALIDATED (audit 2026-11-25: `batch_api.align_by_request_id`; positional pairing refused; `result_unmapped` alerts) - **[HIGH · data-loss · BATCH MODE] Batch places (and likely any entity) silently dropped by the positional result-mapping desync.**
   Overnight batch run (XChannel-8 2026-10-30): places persisted 0 while SYNC mode got 96. EVIDENCE: the cached batch
   places response is VALID JSON with 8 sub-events x 119 place objects (Grok extracted them fine); yet 0 persisted AND
   there is NO `OBSERV xref.seid entity=places` line (dates/groups/people each show exact=8 and persisted) — so
@@ -374,7 +994,7 @@ live, rounds logged.
   entity gets no result, (c) cross-check: every batched entity must emit an xref.seid line or raise. Consider forcing
   places/equipment SYNC even under batch.phase2=true until fixed. Blocks trusting batch-mode output.
 
-#### [MED · robustness, owner 2026-11-10] Hand a long-waiting batch to the poller instead of holding a Spot task (from the end of this file)
+#### FIXED IN CODE, NOT YET VALIDATED (audit 2026-11-25: `job_queue.record_in_task` after submit; the poller adopts orphaned in-task jobs; `tests/test_batch_in_task_adoption.py`) - [MED · robustness, owner 2026-11-10] Hand a long-waiting batch to the poller instead of holding a Spot task (from the end of this file)
 
 The Phase 2 task submits its Grok batch and then polls it IN-TASK (`batch_api.poll_batch`, up to
 24 h) on Fargate Spot. 2026-11-10: the Cross-Channel Attack chapter 8 re-run's 99-request batch
@@ -410,9 +1030,92 @@ finder, verdicts keyed on (URL, entity), checksum re-check of approved URLs.
 **Test:** restore, run: the queue holds finds (not search calls); no duplicates on a second run; a
 rejected item stays rejected; an approved item starts Phase 0.
 
+#### Step: known-malicious links (owner 2026-11-24)
+
+- **DONE (2026-11-24) - links to known-malicious sites are found and eliminated (owner: "use the free version; we'll
+  convert when the commercial components are in place").** `src/utils/link_safety.py`, Google Safe Browsing Lookup
+  API v4 (free, NON-COMMERCIAL only). Checked: OpenSERP results before any Grok request (`_drop_flagged`, one
+  batched request per query; `results_flagged`), every pinned GET (`url_hygiene._pinned_get_once`: `safe_get`,
+  `url_fetch` and each redirect hop, image downloads, every `vet_url_for_fetch` caller; `LinkFlagged`), every find
+  before a human sees it (`find_queue`), every link/image source in a kept page (`find_pages.keep` ->
+  `strip_flagged_links`: links read as a browser does - tab/CR/LF and edge control characters dropped, backslash
+  and `https:host` forms, relative and `//host` resolved; a web link that cannot be read safely (userinfo, a host
+  `clean_url` refuses) is removed, never kept unchecked; at most 5,000 per page; href/src
+  removed, text kept; `page_links_removed` on the find). The URL asked about keeps its query (Safe Browsing lists
+  exact URLs); the alert defangs it (`hxxps://host[.]tld`). After an unanswered request the API is left alone 60 s. A
+  flagged URL is recorded (`link_flagged_v1`, 10 years: threats, when, where seen, "Advisory provided by Google")
+  and alerted once (Slack + email); `scripts/allow_link.py` clears a false positive (an allow record wins over later
+  flags). Clean answers kept 30 days (`link_safety.clean_days`); no answer = not blocked, not cached, counted
+  warning. Key: secret `<env>-wwii-pipeline/safe-browsing-api-key` (ECS loads it into `SAFE_BROWSING_API_KEY`);
+  without it the check is off and says so once per process.
+  **OPEN:** create the key (owner); before the paid tiers launch switch `_lookup` to Google Web Risk (commercial;
+  first 100,000 lookups/month free); `safe_get` asks about the `clean_url` form (identity query only), so a
+  listing that depends on other query parameters is missed there; links inside uploaded
+  documents' own text (Phase 0 Markdown) are not cleaned (fetched pages are, before Phase 0 sees them); pages kept
+  before a link was flagged keep it (re-checked only when fetched again).
+- **TODO (owner 2026-11-24) - tiered link check: open-source lists first, Google only for what they do not flag.**
+  Cuts Google requests (quota, and the per-lookup cost once on Web Risk) and keeps most URLs from leaving our
+  systems. Design (to confirm when built):
+  - **Tier 1 - open-source blocklists, checked locally.** A daily job downloads the lists to the data bucket
+    (`link-lists/<source>/<date>`, with each list's source URL, licence and fetch time as provenance) and builds
+    one lookup set of normalized hosts and exact URLs (`link_safety.normalize`). Candidates:
+    [Phishing.Database](https://github.com/Phishing-Database/Phishing.Database),
+    [PhishIndex](https://github.com/PhishIndex/phishindex-blocklist) (MIT, commercial use allowed),
+    [HaGeZi threat-intelligence lists](https://github.com/hagezi/dns-blocklists) (check the licence),
+    [PhishTank](https://phishtank.com/) (free key), and abuse.ch URLhaus (free key is non-commercial: only until
+    the paid tiers). Confirm each licence allows our use before adding it; drop any that do not.
+  - **Tier 2 - Google.** Only URLs no tier-1 list flags are sent to Safe Browsing (Web Risk once commercial), in
+    the existing batches and with the existing clean cache.
+  - **One decision path.** A hit at either tier is handled the same way (not fetched, not queued, removed from
+    kept pages, `link_flagged_v1` record, one alert, `scripts/allow_link.py` override). The record names the tier
+    and list that flagged it (`provider: openlist:<source>` or `google-safe-browsing-v4`); the alert carries
+    Google's attribution only for a Google hit (Safe Browsing terms).
+  - **Granularity.** Most open lists are domain-level: a domain hit flags every URL on that host. Hosts that also
+    serve legitimate content (shared hosting, URL shorteners, large platforms) need an exclusion list so one bad
+    page does not remove a whole site; record the match type (domain / exact URL) on the flag record.
+  - **Observability.** Per run: list sizes and age, hits per tier, URLs sent to Google. A list older than 3 days
+    (download failing) is an actionable alert; a missing tier 1 falls through to Google (said, never silent).
+  - **Cost.** Lists are a few MB; held in memory per process (or a compact set in S3), no per-lookup cost.
+  - Built inside `link_safety.flagged` (the one chokepoint), so callers do not change. Tests: tier-1 hit never
+    reaches Google, tier-1 miss goes to Google, stale list alert, licence/provenance on the record, domain vs
+    exact-URL matching, exclusion list.
+
 #### Step: OpenSERP group (PHASE3_MAP §3)
 
-- **HIGH *refactor* - DECISION (owner 2026-11-17): a page OpenSERP finds and Grok confirms goes to the
+- **DONE (Group 3 step B, 2026-11-21) - queue routing: `openserp_enrichment.find_page` verifies, fetches and
+  summarizes a page, then queues it through `find_queue.enqueue_find` (provider `openserp-find`, origin = the
+  entity's ULID via `find_queue.entity_origin`, once per (entity, URL), no Grok request or fetch for a URL
+  already queued). The inline writes of `web_results[]` (places, groups), `veterans_associations[]`,
+  `primary_sources[]` and web-page `military_awards[]` are gone; Grok-suggested biography URLs go the same
+  way (provider `llm-find`) instead of `biography_sources[]`. Metrics `finds_queued` / `finds_already_queued` /
+  `finds_failed` are in the summary line, and `finds_failed` raises an anomaly. A record with no ULID is not searched and not marked searched (an error names it; the central write guard mints a missing primary key and production holds none, so this means a writer bypassed the guard: `scripts/check_raw_writes.sh`); a page the queue
+  cannot store leaves the entity unsearched (SQS: deferred), so the next run asks again. Records written by earlier
+  runs keep their old entries (no migration). DONE 2026-11-24: the people web search is no longer gated on
+  `military_awards` (only an award extraction fills it); repeats are bounded by the 90-day `openserp_searched`
+  marker, the queue (`already_queued`: no fetch or Grok request for a queued URL) and the paging cursor. People
+  with awards are now web-searched too (more OpenSERP queries; Grok only for new URLs). Left:
+  `entities_enriched` is not counted in a batch round-2 pass where every page was already queued. DONE 2026-11-24: the checksum re-check (`src/enrichment/find_recheck.py`, below).**
+- **DONE (Group 3 step H, 2026-11-23) - the fetched page is kept for Phase 0.** `src/utils/find_pages.py`: the page a
+  find was judged on (live, or the Internet Archive copy) is stored once under its checksum
+  (`find-pages/pages/<sha256>.html` in the data bucket, write-once; `output/_find_pages/` locally) with a per-URL
+  pointer (`find-pages/urls/<sha256 of the clean URL>.json`), so a later entity that reuses the cached summary gets
+  the same page. OpenSERP finds (`process_positive_url`) and Grok-suggested biography URLs (`llm-find`) carry
+  `page_sha256`, size, fetch time and live/wayback source in the queue item. On approval `_find_content_bytes`
+  submits that page after checking its checksum; a missing or altered page is not submitted
+  (`OBSERV fetch_review.page_unusable`, error; stays approved). A failed write is retried 3 times, then
+  `OBSERV find_pages.write_failed` (error) and `pages_not_kept` in the OpenSERP summary/anomaly; the find is still
+  queued, without a page. A find with no kept page (older items, M4 links) is still submitted as the provenance
+  stub, logged as `OBSERV fetch_review.submitted_stub` (warn when the page write failed, info for older items). A
+  cache hit now carries the page's real fetch time, not "now". The submit no longer reads a local file named by
+  the queue item (`quarantine_path` / `retrieved_path`; no writer set them, and a tampered item could have
+  published any file the Lambda can read). Pages over 25 MB are not kept (`OBSERV find_pages.oversized`).
+  **DONE 2026-11-24 (was OPEN, security review 2026-11-23):** the URL-review UI's single "affirm" path no longer
+  takes `quarantine_path` from the queue item. Traced: the `SourceMetadata` it built was discarded by the UI and
+  never ingested; `affirm_fetch_find(event)` now only records AFFIRMED and returns the source id
+  (`find_source_id`, shared with the submit), or None (UI: 500, `OBSERV fetch_find.affirm_not_stored`) when the
+  decision could not be stored - it used to report success either way. The affirmed batch submits the kept page. Left: rejected finds' pages are not deleted (small; no lifecycle rule, since a pending find may wait
+  indefinitely); the review UI does not yet show whether a page was kept.
+- FIXED IN CODE, NOT YET VALIDATED (audit 2026-11-25: `find_queue.enqueue_find`; inline writes stopped; kept page loaded via `find_pages`) - **HIGH *refactor* - DECISION (owner 2026-11-17): a page OpenSERP finds and Grok confirms goes to the
   human URL-review queue; approval submits it to Phase 0.** Today `process_positive_url`
   (`src/enrichment/openserp_enrichment.py:808`) returns `{url, title, summary, fetched_at, source}` (plus
   the Wayback fields), and the callers write it inline on the entity: places `web_results[]` (`OE:2128`),
@@ -471,29 +1174,187 @@ What exists (verified in code; no OpenSERP keys are in DynamoDB yet, Phase 3 has
 - OpenSERP search responses themselves are not cached; a re-searched entity sends every query again.
 
 Findings:
-- **HIGH - a page approved for one entity is attached to other entities without being checked.** Both
+- **DONE (Group 3 step I, 2026-11-23; closed 2026-11-24) - HIGH - a page approved for one entity is attached to other entities without being checked.**
+  Fixed by the (URL, entity) relevance key below (`test_one_entitys_no_is_not_another_entitys_answer`); a cached
+  summary is reused only after this entity's own relevance verdict. Original finding: Both
   verdicts are keyed on the URL alone, but relevance is per (URL, entity): the registry's own design says
   so (`url_registry.py` header, "the relevance verdict is keyed on (url, entity) so one entity's verdict
   is never reused for another"). A cached summary short-circuits before `_verify_result` (`OE:827-836`), so
   any later entity whose search returns the same URL gets it. People and groups have only a title/name
   check first (`_name_initial_matches`, `_group_name_matches`); places (`OE:2117`) and source sections
   (`OE:1180`) have none.
-- **MED - a page rejected for one entity is skipped for every entity for 90 days.** Same cause: `REJECT`
+- **DONE (Group 3 step I; closed 2026-11-24) - MED - a page rejected for one entity is skipped for every entity for 90 days.**
+  A "no" is now per entity (same key); only an unfetchable page (`REJECT`, page state) is URL-wide. Original: Same cause: `REJECT`
   is URL-global, so a page irrelevant to unit A is never considered for unit B. Fix for both: key the
   relevance verdict on (URL, entity ULID); keep fetch state and the page summary URL-global (reuse the
   page, re-ask only relevance).
-- **MED - the two caches disagree.** The `openserp_verify` key truncates the URL to 60 characters
+- **DONE (Group 3 step I; closed 2026-11-24) - MED - the two caches disagree.** `_verify_key` keys on the full
+  URL (a JSON list, no truncation; `test_urls_sharing_a_long_prefix_do_not_share_an_answer`) and both the
+  relevance verdict and the URL verdict keep for `_URL_FETCH_RETENTION_DAYS` (90;
+  `test_a_verdict_is_kept_for_the_page_retention_window`). Original finding: The `openserp_verify` key truncates the URL to 60 characters
   (`OE:434`, `OE:492`: context[:50] | title[:50] | url[:60]), so different URLs with a common prefix share an
   answer; and it uses `search_cache` TTLs (30 days, `src/utils/search_cache.py:17`) while the URL verdict
   uses 90. Use the full URL hash and one retention constant.
-- **MED - the 90-day re-check of a good URL changes nothing.** When the summary expires the page is
+- **DONE (closed 2026-11-24) - MED - the 90-day re-check of a good URL changes nothing.** Finds are no longer
+  written onto entity records (they wait in the review queue), so there is no record entry to go stale: a URL
+  already queued for an entity costs no fetch and no Grok request
+  (`test_a_page_already_in_the_queue_costs_no_fetch_and_no_grok_request`); a cache hit carries the page's real
+  fetch time (`_from_cached_summary`, step H); and approved pages are re-checked by checksum with
+  `last_checked_at`, `status` and history (`find_recheck`, owner decision 2026-11-24). Original finding: When the summary expires the page is
   fetched and summarized again (a paid Grok request), but every caller skips a URL already on the record
   (`existing_award_urls`, `existing_src_urls`, `seen`), so the new summary is discarded. The record keeps
   the old summary, gets no last-checked date, and a page that has since died stays linked. A cache hit
   also stamps `fetched_at` with the current time (`OE:835`), so the record claims a fetch that did not
   happen. Owner decision: what a re-check should do (liveness check only, cheap; or re-summarize and
   replace), and record `last_checked_at` / `status` on the entry.
-- **FIX (owner 2026-11-17) - key relevance on (URL, entity); keep page state per URL.**
+- **DONE (Group 3 step I, 2026-11-23) - relevance keyed on (URL, entity); page state per URL.**
+  `_verify_key`: an OpenSERP find's Grok relevance verdict is cached under (`<type>#<ULID>`, the entity's context
+  text, full URL) via `find_page` -> `process_positive_url(entity_key=...)` (a changed context, e.g. a new alias, is
+  asked again); other callers (images, awards, academic) use the full context + title + URL. Keys are a JSON list
+  (no field runs into the next); the 60-character URL truncation is gone, also in `_verify_results_batch`, which
+  takes the same `entity_key`. Metric `pages_reused` counts a summarized page judged relevant to another entity. Verdicts keep
+  for `_URL_FETCH_RETENTION_DAYS` (90; `search_cache.cache_result(positive_days=)`), not the 30-day default.
+  `process_positive_url` asks relevance BEFORE reusing a cached summary (a page found for one entity is no longer
+  handed to another unchecked), and a relevance NO is cached for that entity only (no URL-wide `REJECT`; `REJECT`
+  now means only "could not be fetched/summarized"). A new entity for an already-summarized page costs one Grok
+  relevance request and no fetch. The dev cache held no OpenSERP entries of any kind (`search#openserp*`, both
+  `openserp_verify` and `openserp_url_verdict`; scan 2026-11-23: 0 of 32,626), so the key change re-asks nothing
+  and no URL-wide `REJECT` from an old relevance NO exists. A summary is made once per URL with the first entity's
+  context and shared (the reviewer sees the same summary for each entity).
+- **DONE (Group 3 step J, 2026-11-23) - the per-entity relevance questions are batched.** `prefetch_relevance`
+  asks Grok about a query's results in ONE request (`_verify_results_batch`, at most 10 results) before
+  `find_page` looks at them one by one; the verdicts are cached under the same per-entity key, so `find_page`'s
+  question is a cache hit. Wired into all four find callers (people web results, places, event sources, group
+  textual categories), each with its own filter, and `_would_ask` applies `find_page`'s checks (queueable, not
+  already queued, page not unfetchable/retry-later), so only results that would be asked are in the batch. One
+  candidate (counting only results with no verdict cached for the entity, once per URL) is asked alone as before.
+  A batch answer without a clear verdict for every result falls back to one question per result (metric
+  `verify_batch_failed`); a failed single question still leaves the entity unsearched. In Grok batch mode one
+  request per query is queued per round instead of one per result. Each result's text is JSON-quoted in the batch
+  prompt and marked untrusted (a result cannot forge a line for its neighbours). Metric `verify_batched`; a cached
+  re-read is not traced twice in the review log. Open: the batch answer is positional (an index-keyed answer
+  would catch a reordered reply). Trade-off: a query's candidates are
+  all asked even when the per-entity cap is reached after the first few.
+- **DONE (2026-11-23) step 2 of web photos: people, places and groups (owner).** One shared path,
+  `openserp_enrichment.find_entity_photos` (image search -> batched text pre-filter -> photo + page downloaded
+  -> Grok vision -> decisions recorded; queries consumed lazily), used by equipment
+  (`search_equipment_images`), people (`_apply_person_photos`: portrait queries; replaces the web-search +
+  title-check path), places (`_enrich_place_images`: WWII-scoped image queries per name variant) and groups
+  (`_apply_group_photos`: insignia/photo queries; the `images` category no longer goes through the web search).
+  Each fills the record up to `openserp.max_images_per_entity` (a Wikipedia portrait from Phase 2 counts), keys
+  its verdicts on `<type>#<ULID>` (no ULID: no photos), and skips award sites and HyperWar pages (HyperWar is
+  ingested as a source). A Phase 3 step (`infected_photos`, every run, not gated) removes photos ClamAV found
+  infected from all four entity types. Schemas: one shared definition of the web-photo fields
+  (`src/schemas/photo_fields.py`); people 2.28, places 2.31, people_groups 2.30 (additive).
+  Cost bound: each entity may spend at most `openserp.max_photo_checks_per_entity` (default 10) photo checks
+  (download + Grok vision) per run across all its queries, whatever the verdicts; places use their first 3
+  name variants. People are photo-searched whenever the record has room (not only when it has no image).
+- **DONE (2026-11-23) - web photos: nothing stored for a "no"; decisions recorded instead (owner).** A photo's
+  page is held in memory for the caption and stored only when the photo is accepted (before, it was kept
+  before Grok decided and stayed after a "no"; in Grok batch mode it was kept while the answer was pending).
+  Every decision is a small permanent JSON record (`web_photos._record_decision`, api-cache `photo_decision_v1`,
+  10-year TTL): a URL vision said "no"/"unsure" to is never downloaded again for that entity (relevance is per
+  entity: another entity is still asked); a URL that is not a usable image (not an image, too large, blocked,
+  undecodable) is not downloaded again by anyone for 30 days (it may only be a hotlink/challenge page served to
+  us); a fetch timeout or DNS failure rules nothing out. The (bytes, entity)
+  verdict is permanent too (was 90 days). `web_photos.retract` / `scripts/retract_photo.py` takes a kept photo
+  off a record and rules out its URL and its bytes (a copy elsewhere) for that entity; the stored bytes stay
+  (content-addressed, may back another record; no reference index - dev, owner 2026-11-23: no cleanup of what
+  is already stored). The text pre-filter's "no" keeps its 90-day cache (title-only evidence). Metrics
+  `photos_ruled_out`, `photos_retracted`. An infected photo is deleted by the drain (not quarantined) and the
+  next Phase 3 pass drops its record entry and rules its URL out for everyone (`drop_infected`; owner
+  2026-11-23; equipment wired, the other entities with step 2). Only files under the fetched prefixes
+  (`av_scan.FETCHED_PREFIXES`) are deleted; an upload or a binary derived from one keeps the quarantine path.
+  OPEN: clearing a wrong decision is a UI item (see "UI - clear a wrong photo decision"); an infected map image,
+  page image (`output/images` `local_copy`) or portrait is deleted but the record naming it is not cleaned up
+  (the alert says so) and the writer may fetch and stage it again;
+  `--record-only` rules out the URL but not the bytes (the sha is gone with the entry); decision records keep
+  raw URLs (a signed query string would persist).
+- **DONE (2026-11-23) - ClamAV on for every binary object (owner).** It was already on in dev (ClamAV image in
+  ECR, trigger `AV_SCAN_ENABLED=true`), but binaries written by tasks skipped it: source-page images
+  (`output/images/files/`), person portraits and award files (`award_source_pages`), unit patches and other
+  originals (`artifacts/`) - and the two-minute background sync uploaded even map images straight to production.
+  Now `av_scan.staged_key` puts everything under `unscanned/` at all three upload points (final sync,
+  background sync, `S3Storage.write_bytes`) - deny by default: only known text suffixes go straight through,
+  and a direct write only if its bytes are text (the review found portraits saved under a server-chosen
+  `.html`/`.svg`/`.avif` suffix skipping the scan); staged binaries stay out of the Phase 2 manifest; the drain
+  runs in its own self-continuing trigger invocations (Phase 2/3 completion and the 15-min schedule; the
+  review found an inline drain could outlive the 900 s Lambda and strand the phase chain); the deploy builds the
+  ClamAV image if missing and stops rather than deploy with scanning off. OPEN (reviews): a quarantined
+  binary is fetched, staged and scanned again on every encounter (no tombstone); `AvImageUri` is still
+  optional in CloudFormation (only `deploy_all.sh` enforces it); a persistently unscannable key is retried on
+  every drain (no attempt cap). Exempt by design: a book's own figures (cut from an already-scanned PDF) - ask
+  the owner whether they should be scanned too. Existing objects already in production are not re-scanned
+  (dev; owner 2026-11-23: no cleanup).
+- **DONE (2026-11-23) step 1 of web photos: equipment (owner 2026-11-23).** OpenSERP's "photo" searches used the
+  WEB search, so every "photo" was a page URL judged on its title; for equipment the later vision step then
+  rejected each one (a page is not an image). Now `src/enrichment/web_photos.py`: an OpenSERP IMAGE search
+  (`_search_openserp_images`, `/mega/image`: the image URL and the page it is on; cached like the web search) ->
+  a batched text pre-filter (one Grok request per query) -> the photo downloaded SSRF-safe (sha256 + perceptual
+  hash: the same bytes, or a resized copy, already held = a duplicate; bytes already judged for this entity are
+  not judged again, verdict cache (sha256, entity) 90 days) -> the page fetched SSRF-safe and kept WITHOUT its
+  JavaScript (`src/utils/html_safety.py`, applied to every kept page: scripts, iframes/objects/embeds, base,
+  meta refresh, `on*` handlers, `javascript:`/`vbscript:`/`data:` URLs) and the caption read from it -> Grok
+  vision (`prompts/photo_relevance_vision.yaml`, request-bound): relevant yes/no/unsure and `period_photo` ->
+  the photo kept under its checksum in the AV staging area `unscanned/output/photos/files/` (the post-Phase-3
+  ClamAV drain promotes a clean one to `output/photos/files/`). Every kept photo is vision-confirmed; no usable
+  answer raises `VerifyFailed` (entity unsearched, asked again). Entries carry the image URL, page URL, kept
+  page, sha256, phash, caption, verdict + reason, `period_photo`, `copyright_status: assumed_public_domain`
+  (owner) - equipment schema 2.31 (additive). Equipment is wired (`search_equipment_images`, cap
+  `max_images_per_entity`); the equipment vision step treats these as checked. Metrics `photos_*`.
+  The page strip (`html_safety`) rebuilds each kept page from an ALLOWLIST with `nh3` (Rust ammonia on
+  html5ever, a browser-conformant parser; new pinned dependency `nh3==0.3.8`): text/layout tags only, URLs only
+  http/https/mailto, comments dropped, script/style content removed, the `<title>` kept escaped. Two blocklist
+  versions were bypassed in the 2026-11-23 security reviews (html.parser: `<!--><script>`, CDATA, duplicate
+  `href`, SVG `<style>`; html5lib: `<b></i>` x16,000 = 76 s), so the parse runs in a CHILD PROCESS killed after
+  `BUDGET_S` (5 s) on at most 2 MB: no page can stall a worker (`PageTooComplex` -> not kept,
+  `page_too_complex` warning); a cleaned page nesting deeper than 256 is refused too, so Phase 0's own html5lib
+  parse of an approved page cannot be stalled; the child gets an empty environment (no AWS/Grok keys) and UTF-8.
+  Kept pages lose `srcset`/`data-src` and HyperWar's `<a name=...>` page anchors (a HyperWar page approved
+  through the queue would convert as a generic page; HyperWar books are ingested directly). 18 XSS payloads are tested by re-parsing the kept page with html5lib as a
+  browser would; ~40 ms of process start per kept page. Fetched images are decoded only as
+  JPEG/PNG/GIF/TIFF/WEBP/BMP (no EPS -> Ghostscript). A photo that cannot be stored leaves the entity unsearched
+  (`FindNotStored`; the cached verdict means no second Grok request).
+  Notes / OPEN: a photo waits in `unscanned/` until the next drain (after Phase 2 or 3), so a record's
+  `local_path` can name a file not yet in production (a quarantined one never arrives): the site generator must
+  check the object exists (or add a scan state). Local runs (no `S3_BUCKET`) write photos straight to `output/photos/files/` (dev only). Phase 0's
+  own `text_converters._strip_inline_js` is a weaker, separate strip: move it onto `html_safety` (DRY; changes
+  Phase 0 conversion output, so with a conversion regression check). Verdicts are keyed (bytes, entity), not on
+  the caption: a hostile caption seen first can fix a photo's verdict for 90 days. Pages kept before this
+  change were not stripped (none in production). A Grok side-by-side comparison of near-duplicates is not built
+  (the perceptual hash catches resized/re-saved copies; crops are not caught). NEXT: step 2 - people, places,
+  groups.
+- **DONE (2026-11-23) - OpenSERP search responses are cached.** `_search_openserp` keeps each answer (an empty one
+  included) per (query, limit, start) for `supplemental_material.openserp_cache_days` (14) through the shared
+  `search_cache.cached_answer` (source `openserp_search_v1`): a batch round, a retry, an SQS redelivery or another
+  record asking the same thing sends no query and waits out no rate limit (metric `queries_cached`). A failed
+  search (HTTP error, exception) is never kept. The window is far shorter than the 90-day re-search, so a
+  re-searched entity's first page is fresh; each result page is its own entry, so paging still reaches new
+  results. Excluded domains are dropped after the cache (a new exclusion applies at once).
+- **DONE (2026-11-23) - places are capped like people (owner).** `enrich_one_place`: at most
+  `openserp.max_web_results_per_entity` (3) new finds per search and `max_images_per_entity` (3) images on the
+  record (`_entity_caps`, shared with people); once a cap is reached no further name variant or query is sent, and
+  a place that already holds its images is not image-searched. Before, every variant x query x result was
+  verified (4 names: 16 queries, up to ~40 photo checks and ~40 page checks). Equipment was already capped at 3
+  photos (hard-coded in `search_equipment_images`; it has no web search).
+- **DONE (2026-11-23) - `openserp.results_per_query` is read** (it was ignored: every query asked for 5). Default
+  5; `config.yaml.example` and the three profile overlays set 5 (their 10/20/30 never took effect), so behaviour
+  is unchanged. Deeper results for productive entities come from paging (next).
+- **DONE (2026-11-23) - paging: a productive entity's next search goes one result page deeper (owner, option 3).**
+  A cursor per entity (`openserp_page`, `<type>#<ULID>`, api-cache, 365 days) sets the OpenSERP `start` offset of
+  its FIND queries (people web results, place sources, event sources, group textual categories; image queries are
+  never paged). After a search that counts as searched (`commit_paging`, from `_search_entity` and the SQS
+  worker): the cap stopped it -> the same page next time (its leftover relevant pages are queued then); it saw a
+  relevant page (newly queued, or queued by an earlier search) -> one page deeper, up to
+  `openserp.max_result_pages` (3) pages, then the first page again; nothing relevant -> the first page. A failed
+  search or an OpenSERP error leaves the cursor. Our OpenSERP (v0.8.12) passes `start` to Google, Bing and
+  Yandex; an engine that ignores it returns the first page again (already-queued pages cost nothing). Log
+  `OBSERV openserp.page` (entity, start, next, reason) for every decision; metric `pages_deeper`. A stored cursor
+  that is not a short ASCII number on a page boundary in range is ignored and said (`bad_page_cursor`); a failed
+  cursor write is said and does not fail the search. `reset_metrics` now clears every counter (three used
+  counters were never reset and carried between runs in a long-lived worker). The cursor is stored at settle time,
+  before the record write: a failed write re-searches from the new page.
+- FIXED IN CODE, NOT YET VALIDATED (audit 2026-11-25: `_verify_key(context, title, url, entity_key)`; real fetch time carried) - **FIX (owner 2026-11-17) - key relevance on (URL, entity); keep page state per URL.**
   - Store the Grok relevance verdict under (full-URL hash, entity ULID), in one cache, with one
     retention constant (drop the 60-character URL key and the 30-day `search_cache` TTL for it).
   - Keep fetch state, page checksum and summary per URL (registry + `openserp_url_verdict`), so a page
@@ -503,7 +1364,23 @@ Findings:
   - Stop stamping `fetched_at` on a cache hit; carry the real fetch time from the cached entry.
   - Cache OpenSERP search responses per query for the same window, so a re-searched entity does not
     resend every query.
-- **FIX - DECISION (owner 2026-11-17): a good URL is re-checked by checksum, and changed pages are
+- **DONE (2026-11-24) - re-check of approved finds by checksum (owner "do it", 2026-11-24).**
+  `src/enrichment/find_recheck.py`, a Phase 3 step (`find_recheck`, not gated by `use_openserp`; the pipeline task
+  has the AWS-mode registry and cache, the trigger Lambda does not). Affirmed and submitted finds whose page is older
+  than `find_recheck.interval_days` (180) are fetched again through `url_fetch`, at most `find_recheck.max_per_run`
+  (50) per run, oldest first. The TEXT checksum (`find_pages.text_sha256`: active content, markup, whitespace
+  dropped) is compared with the kept page's. Unchanged: recorded, no Grok. Changed: the new page is kept and queued
+  as a NEW find of the same entity (`recheck_of`, `previous_page_sha256`, `previous_summary`; once per page
+  revision, `enqueue_find(revision=)`); the approved find, its page and its Phase 0 source stay (the cited
+  version; slugs never change; the URL's page pointer is not moved, so cached summaries keep their page); the
+  relevance verdict is carried from the approved find (`relevancy_from`; the review line says "not re-judged"), no
+  Grok request. A changed find is not checked again (its new version is, once approved). Dead (gone, archive-only,
+  or registry-dead): recorded with the date first seen dead, kept page intact, checked again after the interval.
+  Transient: retried in 14 days (state kept), claim released; a change that could not be kept/queued: 1-day
+  backoff. The comparison is of text only: a changed link or image with the same text is not a change. Records: `find_recheck_v1` per find id (10
+  years) with the last 10 states. `OBSERV find_recheck.summary` per run. Supersedes the plan below (written before
+  finds went to the queue: it updated entries on entities, which no longer hold finds).
+- **SUPERSEDED (see above) - DECISION (owner 2026-11-17): a good URL is re-checked by checksum, and changed pages are
   updated.** At the re-check date:
   - Fetch the page through `url_fetch.fetch` (registry, politeness, SSRF checks, Wayback fallback) and
     hash the content (reuse `fetch_review._content_sha256`, `src/enrichment/fetch_review.py:464`; one
@@ -527,12 +1404,15 @@ Findings:
   adding it.
 
 #### Step: link_asset_review (PHASE3_MAP §1 step table, §4.4) (moved here from Group 9)
-- **HIGH - every Phase 3 run queues the same links again.** Each enqueue is a new event with a new ULID
+- **DONE (2026-11-20; once-per-link since 1.2f, now through `src/utils/find_queue.enqueue_find`, tests in
+  `tests/test_m4_link_assets.py`, `tests/test_find_queue.py`) HIGH - every Phase 3 run queues the same links again.** Each enqueue is a new event with a new ULID
   (`fetch_provenance.record_fetch_event`, key `fetchevent#<ulid>`); nothing checks for an existing
   pending, approved or rejected event with the same `url_key`. So each run duplicates the queue, and a
   link a human rejected comes back. Fix (DRY, with the shared enqueue helper): look up `url_key` (+
   entity) before enqueueing; a rejected or submitted link is never re-queued.
-- **HIGH - links skip Grok or are queued "when in doubt".** `link_relevancy_whitelist` is `ibiblio.org`
+- **DONE (2026-11-20: `link_relevancy.should_enqueue_link`: Grok judges every link, a trusted source too,
+  and only YES is queued; UNKNOWN / unusable / error / no client = `undecided`, not queued) HIGH - links skip Grok
+  or are queued "when in doubt".** `link_relevancy_whitelist` is `ibiblio.org`
   (`config/domain_blacklist.yaml:87`), so every HyperWar link is queued with no Grok verdict; a missing
   client, an error or an `UNKNOWN` answer also queues (`link_relevancy.py:71-92`, `:111`, `:121`).
   Owner rule (2026-11-17): Grok validates every link before a human sees it (recorded in the footnote
@@ -552,12 +1432,26 @@ Findings:
   `trusted_sources` under intra_corpus_links). Approval submits the find to
   Phase 0 through `fetch_review.submit_affirmed_batch`. One shared enqueue helper (the OpenSERP entry
   above) is called by every finder. Current behaviour, verified in code:
-  - **The queue gets search calls, not finds.** `recorded_fetch` (`src/utils/fetch_provenance.py:185`)
+  - **DONE (2026-11-20: `fetch_provenance.FIND_PROVIDERS`; `nara`, `archive-org`, `archive-solr` and `gutendex`
+    search calls are provenance only; 76 old pending search-call items remain in `dev-wwii-api-cache`: 72
+    `archive-solr`, 4 `nara`, to be rejected with the owner's go-ahead).** The queue gets search calls, not finds. `recorded_fetch` (`src/utils/fetch_provenance.py:185`)
     records each request with `outcome=HIT` for any 2xx status (`:256`), and `_initial_review_status`
     (`:64`) makes that `pending` for `nara`, `archive-org`, `archive-solr`, `gutendex` and `wayback`. The
     `endpoint` is the search API (`catalog.archives.gov/api/v2/records/search`, archive.org
     advancedsearch, gutendex), so a reviewer sees one item per successful query, including queries that
     matched nothing, with no link to the BibliographyID and no Grok relevance verdict.
+  - **DONE (Group 3 step C, 2026-11-21) - the finds go to the review queue.** `src/enrichment/bibliography_finds.py`:
+    every verified copy is queued (providers `nara-find` / `archive-org-find` / `gutenberg-find` / `openserp-find` /
+    `llm-find`, origin = the BibliographyID, query = the citation); the record waits as `search_status: pending`
+    (skipped while a find awaits a human; an unreadable queue reconciles nothing and searches nothing). On a later run
+    an approved find becomes `resource_urls` + a `source_metadata.findings` item with its `fetch_event_id` and
+    `verified_by: grok+human`; a record whose finds were all rejected is searched again and never shown a rejected
+    URL twice; a find the queue cannot store is an outage (retried). Record-group facts (`archive_reference_number`,
+    address) still go on the record at once. A NARA find carries what a download would fetch (`download.naId`,
+    `object_count`, a sample of `digitalObjects` URLs, formats; `None` when the lookup failed, never 0); an approved
+    NARA record with 0 scans is `availability: archive` (paper only). Owner 2026-11-21: NARA finds are reviewed
+    like any find (machine-gathered = untrusted) and a human starts the download. API addresses are never queued.
+    The old behaviour, for the record:
   - **The finds bypass review.** `bibliography_resolve` writes each verified Archive.org / Gutenberg /
     NARA URL straight into the record's `resource_urls` and `source_metadata.findings`
     (`BR:330-336`, `BR:677-682`); nothing is submitted to Phase 0.
@@ -566,7 +1460,7 @@ Findings:
     approved finds (or mark the pending ones).
 
 #### Older backlog - LOW list
-- **[LOW · security-hardening · phase3 review follow-up 2026-11] `fetch_review._find_content_bytes` containment-root
+- STALE (audit 2026-11-25: `fetch_review._find_content_bytes` no longer reads a local file from a queue item; `find_pages.load` checks the checksum) - **[LOW · security-hardening · phase3 review follow-up 2026-11] `fetch_review._find_content_bytes` containment-root
   check** — the read is now 25 MiB-capped (PR #712) and the stored `quarantine_path` is basename-normalized at the write
   side (`source_retrieval.py` uses `Path(urlparse(url).path).name`), so traversal risk is LOW. Defense-in-depth: add a
   `p.resolve()`-under-quarantine-dir assertion in case a future caller stores an unsanitized path into the event.
@@ -707,7 +1601,7 @@ tries, abort if never ready) -> `_clear_title_cache_if_reprocess` -> `_load_secr
 
 #### Step: EP _download_inputs (PHASE3_MAP §1 "What EP _download_inputs does")
 
-- **LOW - remove the dead DynamoDB shortcut (owner request).** `_materialize_from_dynamo()`
+- FIXED IN CODE, NOT YET VALIDATED (audit 2026-11-25: `_materialize_from_dynamo` is gone; `_download_inputs` downloads unconditionally) - **LOW - remove the dead DynamoDB shortcut (owner request).** `_materialize_from_dynamo()`
   (`EP:1290-1295`) is a deprecated stub that always returns False (the DynamoDB entity store was
   removed; S3 is the only entity store). Callers: `_download_inputs` (`EP:1313`) and
   `_download_dedup_data` (`EP:2849`) (trace_path). In `_download_inputs` the `config.yaml` read for
@@ -729,7 +1623,7 @@ tries, abort if never ready) -> `_clear_title_cache_if_reprocess` -> `_load_secr
   reconcile published (`_publish_reconcile_barrier`, "so it is comparable with Phase 3's download
   coverage"), but `_observe_bibliography_download_coverage` (`EP:1629`) compares the S3 listing with
   the local count and never reads it; it is only logged (`EP:1460-1466`).
-- **MED - schema stamping switches the whole pipeline's trigger off for a local-only job.**
+- FIXED IN CODE, NOT YET VALIDATED (2026-11-25: the disable/re-enable is removed, and so is `lambda:Put/DeleteFunctionConcurrency` from the Lambda and ECS task roles, its only use; `tests/test_schema_stamp_entity.py`) - **MED - schema stamping switches the whole pipeline's trigger off for a local-only job.**
   `_stamp_schema_versions` (`EP:3690`, run by every Phase 3 task right after the download) sets the
   trigger Lambda's reserved concurrency to 0 (`EP:3708`) while it rewrites files on the task's local
   disk, and removes the limit in a `finally` (`EP:3756`). Stamping touches no S3 object (the files
@@ -750,7 +1644,7 @@ tries, abort if never ready) -> `_clear_title_cache_if_reprocess` -> `_load_secr
   `bib_<hash>.json`) would remove the reconcile pass, the barrier, the run marker and the wait.
 
 #### Carried over from PHASE3_MAP.md §6 (found by the 2026-11-17 documentation review) (moved here from Group 11)
-- **MED (was gap 6) - `_reset_openserp_searched` defeats the 90-day gate.** People and equipment with
+- FIXED IN CODE, NOT YET VALIDATED (audit 2026-11-25: `_reset_openserp_searched` is gone; `openserp_worker` honours the recheck window) - **MED (was gap 6) - `_reset_openserp_searched` defeats the 90-day gate.** People and equipment with
   no hit are searched again on every Phase 3 task (`EP:3583`). Grok verdicts are cached but the queries
   are not, so each repeat pays the 5 s sleep per query. It also writes with `write_text`, outside
   `write_json_with_lock` and its schema guard.
@@ -768,8 +1662,32 @@ tries, abort if never ready) -> `_clear_title_cache_if_reprocess` -> `_load_secr
   only worked for book-scoped runs until the unscoped branch started downloading `output/content/` (2026-11-07). Consider
   whether the unscoped whole-corpus run should re-run paid Grok steps (image-person, link review) over every book each time.
 
+#### Merge scripts: review accuracy and schema compliance (owner 2026-11-21)
+- **MED - review every merge path and validate it against the current schemas.** In scope: the pipeline merges
+  (`src/dedup/merge.py` people + generic, `lambda_handlers/dedup_ui_handler.py`, the bibliography reconcile
+  `src/extraction/bibliography.py`) and the manual scripts (`scripts/consolidate_people_groups.py`,
+  `scripts/merge_dates.py`, `scripts/merge_equipment.py`, `scripts/resolve_surname_people.py`,
+  `scripts/resolve_title_people.py`; and decide whether the `scripts/archive/` merges - `consolidate_places.py`,
+  `merge_duplicate_people.py`, `merge_duplicate_places.py`, `merge_equipment_dupes.py`, `merge_related_groups.py` -
+  are deleted or kept). For each, check: (1) the merged record validates against its entity schema at the current
+  version (the manual scripts write with raw `json.dump`, bypassing the central write guard: no validation, no
+  `_schema_version` / `_last_updated` stamp, no primary-key repair - route them through `write_json_with_lock`);
+  (2) every field of the absorbed record is kept or deliberately dropped (e.g. `merge_equipment_data` merges
+  `mentions` but the equipment schema's mentions field, aliases, images and identity fields are not checked;
+  `consolidate_people_groups._merge_into` handles `event_mentions` and members only); (3) references to the
+  absorbed id are repointed everywhere they can live (`update_event_refs` covers event sub-events; check entity
+  cross-links, the review queue, maps, images); (4) a merge pointer (`src/utils/id_aliases`) is stored before the
+  file is deleted, and references are repointed only after it (2026-11-21: the pipeline merges and the three
+  manual merge scripts; a file whose pointer fails is kept with its own id, so a re-run can point it; not the
+  archive scripts); (5) the survivor is written before anything is deleted (fixed 2026-11-21 in
+  `consolidate_people_groups` and `merge_equipment`, which deleted first); (6) S3 and pointers: a local-only script
+  leaves the deleted record on S3, and with AWS off its pointers go to the local `output/_id_aliases.jsonl`, not
+  the `{env}-wwii-id-aliases` table - say how both are synced (or require AWS mode for a merge); (7) tests: run each on a
+  copy of production data and validate every output record. `resolve_*_people.py` only rename (PersonID kept) but
+  skip silently when the target file exists.
+
 #### Older backlog - MED list
-- **[MED · observability-precision] download.file_missing cries wolf on expected-absent TRACKING files.** On every clean-slate/
+- FIXED IN CODE, NOT YET VALIDATED (audit 2026-11-25: `_download_s3_file(optional=...)` emits `download.optional_absent status=ok`; not checked that every tracking key passes it) - **[MED · observability-precision] download.file_missing cries wolf on expected-absent TRACKING files.** On every clean-slate/
   first run, Phase-2 download lists then 404s on index.json / .processed_events.json / manifests/run_scope/<book>.json — all
   TRACKING/index files that legitimately don't exist yet — and each fires OBSERV download.file_missing status=ERROR ->
   Slack. Non-fatal (run proceeds, only the parsed+event files matter) but noisy + indistinguishable from the REAL signal
@@ -862,7 +1780,12 @@ and its bad chapter 8 events answer could not be inspected afterwards. Caching i
   these are unsourced.
 
 #### Older backlog - HIGH list
-- **[HIGH · extraction/enrichment] Group records have NO `group_name`/`name` field — ALL group enrichment + OpenSERP skipped.**
+- **DONE (verified 2026-11-24) - [HIGH · extraction/enrichment] Group records have NO `group_name`/`name` field — ALL group enrichment + OpenSERP skipped.**
+  Fixed by b047782b (#655: `additionalProperties: False` silently dropped group fields; `_coerce_group_schema_keys`
+  strips only unmodeled keys, loudly). Evidence: the local Phase 2 snapshot of 2026-11-17 (`tmp/phase3-review/imgcheck/
+  people_groups/`, not in git) has `group_name` on 1,113 of 1,113 group records. Regression test
+  `tests/test_find_or_create_concurrency.py::test_a_saved_group_keeps_its_name`; a group still found without a name
+  is said (`OBSERV groups.enrich_skip_no_name`, and the OpenSERP no-name anomaly from fa8c92f0). Original finding:
   Found in the synchronous XChannel-8 E2E (2026-10-28): Phase 2 wrote people_groups records whose ONLY keys are
   `nationality`, `event_mentions`, `GroupID`, `_schema_version`, `_last_updated` — the unit name (e.g. "1st Division")
   survives ONLY in the filename + `event_mentions[].Sub_event_Name`, never as a top-level field. Group enrichment gates on
@@ -894,11 +1817,23 @@ How it works (`main` 2ddeffcc):
   countries named, 10 have a place record.
 
 Findings (nothing enforces the hierarchy beyond a name match):
-- **HIGH - a parent is chosen by name alone.** No geography-type check (a town can become the parent of
+- **DONE (2026-11-24) - HIGH - a parent is chosen by name alone.** `places.link_parent_place_ids` /
+  `_find_parent_id`: a parent must be a container (region/state < country < continent) coarser than the child;
+  of the hierarchy field's own type first, else any coarser container the field names (a mislabelled field -
+  `country: Devon` for the region Devon - still links, counted `field_mismatch`); every place with a name or
+  alias is a candidate (no last-one-wins); several candidates = `ambiguous` (not guessed; warned with the names);
+  a link closing a cycle is refused; outcomes counted (`OBSERV places.parent_link linked field_mismatch ambiguous
+  cycle not_found refused`). Dry run on the 2026-11-17 Phase 2 places (994): 123 linked (old: 127), 4 field
+  mismatches, 46 not found; the 5 links that changed were wrong before (3 continents under Europe, Yalta under
+  the Crimea peninsula, the Meuse under the city of Liege). Tests `tests/test_place_parents.py`. Original finding: No geography-type check (a town can become the parent of
   a region if it shares the region's name: Luxembourg city vs country, Georgia), no disambiguation, and
   the index keeps the last record for a duplicated name or alias (`places.py:589-592`). No cycle check
   beyond self. Fix: the parent must be a coarser `geography_type` (village/town/city < region < country
   < continent), ambiguous names go to review, and a cycle is refused.
+- **ON HOLD (owner 2026-11-25): the Group 6 place items below are fixed together with Track P "Places: the
+  hierarchy from the Phase 2 Wikipedia/Grokipedia lookup is guessed", in one change.** Creating parents
+  from today's hierarchy strings would write wrong records (22 of the 23 missing "countries" are not
+  countries; at least 10 of 35 missing-continent links are wrong).
 - **MED - a missing level is skipped silently.** With no region record the town is linked straight to
   its country, and with no country record to its continent; most parents do not exist as records (10
   of 31 countries). DECIDED (owner 2026-11-17): create the missing region/country through
@@ -920,7 +1855,7 @@ Findings (nothing enforces the hierarchy beyond a name match):
   this. The map boundary model is not needed (owner, 2026-11-17); DECIDED (owner
   2026-11-17): dated containment (`containedInPlace` with `valid_from` / `valid_to`), done with the
   `containedInPlace` item above in one schema bump.
-- **MED - places created after step 2 are not geocoded until the next run.** Geocoding runs at step 2
+- FIXED IN CODE, NOT YET VALIDATED (2026-11-25: a second geocode pass (`_geocode_places`, stats `geocode_new_places`) runs after the document-link steps, where `image_place_link` creates places; it sends only places never attempted, so it costs nothing when none were created; `tests/test_step_failure.py`, `tests/test_phase3_geocode_wiring.py`) - **MED - places created after step 2 are not geocoded until the next run.** Geocoding runs at step 2
   (`_enrich_places_and_geocode`), but places are also created later: `image_place_link` (step 6,
   `_resolve_or_create_place`) today, and the map-vision entity writes and the missing region/country
   creation (owner decisions D1/D3) after the refactor. Run geocoding after every place-creating step, or
@@ -945,6 +1880,23 @@ Owner: no NARA key -> leave archive-path records for the next run (D8b); NARA no
 bibliography JSON; Archive.org / Gutenberg finds through G3.
 **Test:** restore, run; non-citations gone from S3; finds in the queue; NARA online copies trusted.
 
+#### Citations lost before Phase 3 (found 2026-11-24; owner: to-do)
+Both lose bibliography records silently - a provenance gap for professional historians. Deterministic (no Grok);
+they take effect when a book is re-parsed and Phase 2 re-run (a pipeline run: owner approval). First step for
+both: count the books and chapters affected (local, read-only).
+- **TODO - HIGH - Phase 1 does not recognise some HyperWar notes sections.** In local `XChannel` chapter 6
+  (`chapter6k-content.md`) the notes are written `> [[116](<#cn116>)] NEPTUNE, ... cf. [Charles H. Taylor]
+  _[Omaha Beachhead](...#page31)_ ...`; `src/notes._find_section` returns no notes, so they stay body paragraphs
+  and the parsed footnotes carry only a self-link (`...USA-E-XChannel-5.html#fn116`) with no text. Phase 2 then
+  makes no bibliography record (it builds them from note text), and the citation-link and `held_in_corpus` steps
+  cannot see them. Fix in Phase 1, with a test on this format.
+- **TODO - HIGH - notes-only chapters never become bibliography records.** Phase 1 writes a chapter titled
+  Footnotes/Endnotes only to `*-footnotes.json` / `*-endnotes.json` (`phase1_parse._process_document` ->
+  `_save_footnotes_chapter`), no `*-parsed.json`. Phase 2's deterministic bibliography pass reads only
+  `*-parsed.json` (`phase2_extract.py`, `rglob("*-parsed.json")`) although `extract_bibliography_deterministic`'s
+  docstring says it reads `*-endnotes.json` too. Fix: Phase 2 also reads the notes-only files (or Phase 1 writes
+  them in the parsed shape), then Phase 3's citation step reads them as well.
+
 #### Step: EP _download_inputs (PHASE3_MAP §1 "What EP _download_inputs does") (moved here from Group 4)
 - **MED - records the merge folds into another stay in S3 as duplicates.** The reconcile's near-title
   pass merges whole canonical records (`bib_<a>.json` into `bib_<b>.json`) and deletes the merged-away
@@ -964,7 +1916,7 @@ bibliography JSON; Archive.org / Gutenberg finds through G3.
 
 `BR` = `src/enrichment/bibliography_resolver.py`.
 
-- **MED - a NARA catalog match is recorded as "online" even when nothing is digitized.**
+- FIXED IN CODE, NOT YET VALIDATED (audit 2026-11-25: `_paper_only` sets `availability=archive` for 0-scan NARA finds; `search_status` still `resolved`, not `reference_identified`) - **MED - a NARA catalog match is recorded as "online" even when nothing is digitized.**
   `_verify_nara_hits` (`BR:1772`) returns the catalog record page `catalog.archives.gov/id/<naId>`
   for the first Grok-verified hit (`BR:1826`) whether or not NARA holds scans; the scan count
   (`_nara_digital_object_count`) is only logged (`OBSERV nara.match online=0|1`). `_apply_resolved_url`
@@ -1016,7 +1968,28 @@ bibliography JSON; Archive.org / Gutenberg finds through G3.
   through the same multi-source search as the archive path.
 - **LOW - owner - article path: add OpenSERP.** `_resolve_article_search` (`BR:1872`) searches
   Archive.org only; many papers are on `.mil` and `.gov` / education sites that OpenSERP would find.
-- **LOW - a bookseller listing can be stored as an "online copy", and no book data is taken from it.**
+- **DONE (2026-11-20, owner: "Amazon is to be added to the pipeline like archive.org and
+  gutenberg; no expectation of a download") Amazon as a bibliography source.** It was in this
+  list only as the LOW item below (a listing stored as an online copy) and the two FEATURE items
+  (affiliate / BookFinder links); the search itself was never built. Now: books (and untyped
+  published works, not archival records) get an Amazon listing search through OpenSERP
+  (`site:amazon.com`, template `search_queries/bibliography.yaml` `amazon`; Amazon's pages are
+  never fetched), gated on `supplemental_material.search_amazon` (default on) + `use_openserp`;
+  candidates must be https product pages on exactly amazon.com / www.amazon.com (no userinfo,
+  port, backslash or encoded characters), stored as the canonical `https://www.amazon.com/dp/<ASIN>`
+  (a third party's `tag=` is never kept); the title/author put in the query lose quotes and
+  operators; the same token-gate + Grok verify as the other sources (no Grok client: no listing);
+  the finding is `source_metadata.bookseller` (+ a `kind: bookseller` finding), never in
+  `resource_urls`, no change to `search_status`; also for books that already have a copy; the
+  search is asked once per window, an empty answer included (`openserp_cache_days`, 14), and a
+  found listing is never searched for again, and a search that found none is stamped
+  (`source_metadata.bookseller_searched_at`, not stamped during an outage) and not repeated within
+  `openserp_cache_days`, so resolved books are not rewritten every run. Schema: bibliography 2.30 models
+  `source_metadata.bookseller` (url pattern `^https://www\.amazon\.com/dp/[A-Z0-9]{10}$`),
+  `findings[].kind` and `bookseller_searched_at` (additive; versions are soft-coded in
+  `ENTITY_SCHEMA_VERSIONS`, the pin, history snapshot and docs are the other steps). Owner
+  2026-11-20: the affiliate link, BookFinder link and Open Library ISBN/edition are future
+  features, not planned work. Was: LOW - a bookseller listing can be stored as an "online copy", and no book data is taken from it.
   Nothing in the resolver reads Amazon (or any bookseller) pages for ISBN, publisher or edition, and an
   Amazon listing that passes the title-level Grok check is stored like a digitized copy. Owner
   (2026-11-17): Amazon is wanted (affiliate links, below), so `amazon.com` was REMOVED from
@@ -1065,9 +2038,47 @@ bibliography JSON; Archive.org / Gutenberg finds through G3.
   unit, NARA identifier (NAID) when known, physical holding (Archives II), and a search history.
   Not yet decided: users (operator only, or contributors), and whether it is part of the URL-review /
   dedup UIs or a separate app.
+  **DONE - data layer and operator script (Group 3 step F, 2026-11-21; owner: data layer and scripts first, UI later;
+  statuses in DynamoDB; "locate first" items included).** `src/enrichment/nara_pull_list.py` +
+  `scripts/nara_pull_list.py build|status|add-scan`. The list is built on demand from the bibliography records and the
+  queued NARA finds: `exact` items (an approved NARA catalog record with 0 scans, one per naId, every citation it
+  serves) and `locate_first` items (record group known, no catalog match), sorted by record group, series path,
+  title, most-cited; exported as CSV (formula-safe) and a printable Markdown list. Statuses (needed, requested,
+  pulled, scanned, ingested, unobtainable; notes, who, when, history) are `pull#<item>` rows in the cache table.
+  `add-scan` checks the record (a merged-away id resolves to its survivor) and the file (pdf/tif/jpg/png, <= 2 GB,
+  sha256), sets the immutable slug `NARA-RG<N>-<naId>[-p<N>]` before upload, writes the provenance row
+  `pullscan#<slug>` first (who, scanned on, sha256, NARA ids, licence only when the person states a U.S. Government
+  record), uploads to `contentrepository/nara-scans/<slug>.<ext>` (normal intake), and marks the item scanned. The
+  next Phase 3 binds the bibliography record to the scan (`held_unprocessed`, `download_path`, a `verified_by: human`
+  finding). Pipeline roles are denied writes to `pull#` / `pullscan#` (`cloudformation/iam.yaml`). NARA finds now
+  carry the record's series path (same API reply). Left: the UI; the entry number (not seen in the catalog reply;
+  recorded in the item's notes when pulled). Fixed 2026-11-22 (an earlier note here wrongly said the catalog has no box
+  numbers): each NARA find keeps, from the same API reply, the record group number and series (`ancestors`), every
+  container with its media type and copy status (`physicalOccurrences[].mediaOccurrences[].containerId`, e.g. "Reel
+  1-009" or a box), and the reading room (`referenceUnits`); the list shows them and sorts by container; flipping a bound record from `held_unprocessed` to
+  `resolved` once its scan's content exists (`output/content/<slug>/`); filling the scan's chapter meta (licence,
+  provenance) from its `pullscan#` row when Phase 0 imports it; a multi-file scan is added part by part.
+  **DONE (2026-11-22) - NARA scans: captured, checked, and looked at by Grok vision.** Live reply (naId 6076787, 96
+  scans): `digitalObjects[]` gives `objectUrl` (direct, `catalog.archives.gov/medialive/...`, HTTP 200, no key),
+  `objectFilename`, `objectType`, `objectFileSize`. Now: every scan URL must be a clean https URL on
+  `catalog.archives.gov` under `/medialive/` or `/medialz/` (others dropped, `OBSERV nara.scan_urls_refused`;
+  `medialive` added to `trusted_sources`); each NARA find keeps a sample of 20 scans with name, type and size, the
+  total size, the types and the list's fingerprint (`manifest_sha256`), which goes on the record's finding on approval;
+  the download (`acquisition_fetchers._nara_fetcher`) stops with `OBSERV acquisition.nara_scans_changed` when NARA's
+  list no longer matches the approved one. Grok vision (`src/enrichment/nara_vision.py`, prompt `nara_scan_vision`,
+  request-bound, batch-aware) looks at the first and a middle image page at queue time: `not_match` (every checked page)
+  is not queued; `match` / `unsure` / `unchecked` (no image pages, e.g. PDF) are queued with the verdict, the reason
+  and the pages for the reviewer. One catalog call per record per process (batch rounds spend no quota again). Live
+  check: `tests/integration/test_nara_live.py` (`-m requires_api`, not in CI). Left: the human-started download itself;
+  the full scan list is re-read from NARA at download time (fingerprint-checked), not stored; PDF scans are not looked
+  at by vision (`unchecked`); a changed scan list (`nara_scans_changed`) and an approval from before fingerprints
+  (`OBSERV acquisition.nara_scans_unpinned`, warns and downloads) have no re-approval step yet; the fingerprint covers
+  URL + size, not file content; any UI must escape the vision `reason` (Grok text, scrubbed of control characters but
+  not HTML-escaped). Scan URLs with a query, fragment, escape, `;`, `..`, backslash, other port or credentials are
+  refused (counted). `clean_url` now rejects a port that is not a number instead of raising.
 
 #### Carried over from PHASE3_MAP.md §6 (found by the 2026-11-17 documentation review) (moved here from Group 11)
-- **MED (was gap 20) - Bibliography verifier is fail-open in one place.** `_verify_match` accepts on a
+- FIXED IN CODE, NOT YET VALIDATED (2026-11-25: no client or a Grok error now rejects, with `OBSERV bib.verify_unavailable` / `bib.verify_title_error`; `tests/test_bibliography_verify_fail_closed.py`) - **MED (was gap 20) - Bibliography verifier is fail-open in one place.** `_verify_match` accepts on a
   Grok error or without a client; every other verifier fails closed.
 
 #### Older backlog - MED list
@@ -1092,6 +2103,29 @@ bibliography JSON; Archive.org / Gutenberg finds through G3.
   (3) Grok SEMANTIC ONLY. Replace `_identify_record_group`/`_identify_nara_record`; parse
   `archive_reference_number` to the bare RG.
 
+- **[MED · owner 2026-11-25] An abbreviated unit in a note does not say which unit it is: resolve it from the
+  chapter's units before searching NARA.** Green Book notes cite records by a short unit name, e.g.
+  "CCR AAR 23 Dec": CCR (Combat Command Reserve) exists in every armored division, so the note alone cannot
+  say whose after-action report it is, and a NARA search (unit records, RG 407) needs the division. The
+  division is often not in the few paragraphs around the note marker; finding it may take knowing which
+  units the chapter discusses (its order of battle). Same for CCA/CCB, "1st Bn", "Task Force X", "TF
+  Hogan", regiment numbers without a division, and German "Kampfgruppe <name>". Approach (deterministic
+  first, cost first):
+  1. Build a per-chapter unit context from what Phase 2 already extracted: the people_groups records whose
+     `event_mentions` point at the chapter's events, with their parent units (`parent_organization`); a
+     combat command or battalion takes its division from there. No new Grok request when one candidate fits.
+  2. When several divisions fit (two armored divisions in one chapter), use the closest mention before the
+     note marker and the note's date against each unit's dates in the chapter; still ambiguous = record
+     the candidates and do not guess (same rule as place parents), for human review (UI, deferred).
+  3. Only then, if needed, ask Grok once per chapter with the chapter's unit list (not per note), and record
+     the answer's source as model-derived.
+  4. Store the resolved unit on the bibliography record with how it was resolved (`unit_resolved_by`:
+     chapter_context / proximity / grok / unresolved) and the people_groups ID (provenance), and use it in
+     the NARA query (`_identify_nara_record`, the structured RG 407 search above).
+  5. Count it: OBSERV resolved / ambiguous / unresolved per book.
+  Depends on: the Phase 1/2 citation-loss gaps (Group 7 "Citations lost before Phase 3"), which drop some
+  of these notes before Phase 3 sees them.
+
 - **[HIGH] Phase-3 bibliography resolution: re-attempt + concurrency.** (1) The resolver SKIPS records
   with a terminal `search_status` so an improved resolver never re-runs on `not_found` — treat
   `not_found` as NON-terminal (re-attempt until genuinely resolved; consider a resolver-version
@@ -1099,7 +2133,7 @@ bibliography JSON; Archive.org / Gutenberg finds through G3.
   enrich`, so overlapping tasks clobber `output/bibliography/*.json` (observed resolved=9 clobbered by
   stale resolved=2). Guard manual launches; run ONE Phase 3 at a time.
 
-- **[HIGH] alt_title expansion not running + duplicated + not schema-enforced.** (1) The expansion
+- FIXED IN CODE, NOT YET VALIDATED (audit 2026-11-25: `_enrich_alt_title` runs from `enrich_bibliography`; `set_alt_title` writes both copies; the write guard blocks a mismatch) - **[HIGH] alt_title expansion not running + duplicated + not schema-enforced.** (1) The expansion
   rule (#421/#425) drives the Phase-2 supplemental BATCH (skipped/cached) and isn't clearly wired to
   UPDATE deterministic records → add alt_title expansion as a direct per-record Grok call in Phase-3
   `_enrich_bib_file` (idempotent). (2) `_build_bib_entry` keeps alt_title at top-level AND inside
@@ -1129,19 +2163,35 @@ Code at `main` 17fe5296. Map vision (`prompts/map_vision.yaml`) returns a `depic
 (`openserp_maps.py:607`). It flattens `depicted` to prose and writes `contentrepository/map-<id>/` (a
 meta.yaml + content.md pair) so the map re-enters Phase 1 -> 2 -> 3 as a new "book".
 
-- **HIGH - the map-as-source files never reach S3, so all extracted map data is lost.** The write goes to
+- **DONE (2026-11-24) - HIGH - the map-as-source files never reach S3, so all extracted map data is lost.**
+  Maps are no longer recycled: what Grok vision says a map shows is stored on its Map record
+  (`src/extraction/map_depicted`: `depicted` + `depicted_provenance` - verdict, kind, model, RequestID, checked_at,
+  image_url, found_in; maps schema 2.27), which the Phase 3 sync uploads with the other entity records. In-doc maps:
+  `map_link_source.read_in_doc_maps`, run after `persist_map_entities` (so the record exists); OpenSERP maps: on the
+  record `openserp_maps._process_search_result` writes. A map already read (either verdict) is never sent to vision
+  again; no answer records nothing (asked again next run). `map_source_adapter` (the recycle) and the in-doc map
+  dedup claims are removed. Original finding: The write goes to
   `/app/contentrepository` -> `WORKDIR/content` on the container. Neither the periodic sync (`EP:401`,
   `output/` and `artifacts/` only) nor the Phase 3 final sync (`EP:3470`, entity dirs + artifacts) uploads
   that directory, so the files vanish when the task exits and no Phase 1 run is ever triggered. The Grok
   vision call is still paid. Verified in code; not observed live (Phase 3 has not run since the
   recycle was enabled).
-- **HIGH - the dedup claim is taken before the write, so a lost map is never retried.** `_content_is_new`
+- **DONE (1.6, 2026-11-18: `fetch_review.claimed_content` / `release_content_hash`, used by fetch-review submits, intra-corpus queueing and in-doc maps; a claim is released only by its own writer) - HIGH - the dedup claim is taken before the write, so a lost map is never retried.** Note: an in-doc map's recycle still writes only to the container's contentrepository/ (the HIGH above), so its claim is kept for content that is then lost at task exit - fixed by the owner's 2026-11-17 decision to stop recycling maps (Group 8). Follow-ups: claims written before 1.6 carry no `source_id` and can never be released (a one-off cleanup of `contenthash#` items whose content is not in S3); intra-corpus digests have no `sha256:` prefix, so its dedup does not meet fetch-review's; a hard kill between claim and write still leaves the claim, so later runs see the content as a duplicate (an owner-keyed re-claim would fix it); a claim is released only by the attempt that won it. `_content_is_new`
   (`map_link_source.py:219`, `:238`) puts `contenthash#<sha of URL>` in DynamoDB before
   `_recycle_as_source` runs. With the files lost (above), or a failed write, every later run skips the map
   as a duplicate. Fix with the upload: claim after the source is durably in S3, or release the claim on
   failure.
 - **HIGH *refactor* - DECISION (owner 2026-11-17): write map vision results straight into the entity
-  JSON with the existing entity writers; stop recycling maps as prose sources.** Today `depicted` is
+  JSON with the existing entity writers; stop recycling maps as prose sources.** PART DONE 2026-11-24: recycling
+  stopped and `depicted` + provenance stored on the Map record (entry above). OPEN: link the units, places and
+  dates it shows to their entity records (below), behind `map_depicted.is_legible` (the M7 gate, 0.35). OPEN:
+  FIXED IN CODE, NOT YET VALIDATED (2026-11-25): OpenSERP maps record no RequestID (`_verify_map_relevance` does not
+  return it: return it and record it) - it now returns it, and the in-document path, which read it from the answer (always
+  null: the client removes the echoed id after checking it), now records it too, both through
+  `GrokClient.vision_request_id` / `map_depicted.request_id_for`; `tests/test_map_depicted.py`. OPEN: a map
+  routed from Phase 2 image vision (`map_vision_checked_at`) is asked a second, separate vision question for
+  `depicted` (reuse one answer); the config keys `recycle_in_doc_maps` / `max_recycled_per_doc` keep their old
+  names (they now gate the vision read). Today `depicted` is
   turned into sentences ("Units depicted on the map: ...") and Phase 2 re-extracts them with Grok: a
   second paid request per map, and the unit-at-place-at-time link is lost. Nothing is stored on the Map
   record, and nothing links the derived entities back to the `MapID` (no Phase 1/2 code reads the
@@ -1180,7 +2230,7 @@ meta.yaml + content.md pair) so the map re-enters Phase 1 -> 2 -> 3 as a new "bo
   extraction and reverse registration (`src/extraction/map_registration.py`) are prototype-level and
   not wired into `phase3_enrich_data.py`.
 
-#### Validate maps are NOT continually resubmitted to Grok in Phase 3 (MED)
+#### FIXED IN CODE, NOT YET VALIDATED (audit 2026-11-25: tier-3 vision runs once; `map_depicted.was_read` skips a read map; no zero-calls re-run test yet) - Validate maps are NOT continually resubmitted to Grok in Phase 3 (MED)
 
 With the tiered maps classifier adding a Grok-vision backstop ("is this an image of a map?") for
 questionable images, we MUST ensure Phase 3 (enrichment/geocode/re-runs) does NOT re-submit the same
@@ -1216,7 +2266,7 @@ Findings:
 - **MED - Grok gets almost no context.** `context=book` (`link_assets.py:154`): the relevance question
   sees the link text, the URL and the book slug, not the sentence or footnote around the link. Pass the
   surrounding text (the pre-validate check in the footnote entry).
-- **MED - overlap with `intra_corpus_links`.** Links to other ibiblio volumes are also handled by
+- FIXED IN CODE, NOT YET VALIDATED (2026-11-25: `enqueue_doc_links` skips every link `intra_corpus.classify_link` places in the corpus, counted `in_corpus` on `link_asset.summary` and the step line; on the 919 local parsed docs that is 5,230 of 14,336 links (5,158 same-volume pages, 72 other volumes) no longer sent to the relevance check. Only an ibiblio.org host can be in-corpus (`intra_corpus._on_ibiblio`): a `/hyperwar/` path on another host, or userinfo/backslash tricks, stays external and reviewed; the late geocode pass is skipped when step 3 had errors; `tests/test_m4_link_assets.py`, `tests/test_m8_intra_corpus.py`) - **MED - overlap with `intra_corpus_links`.** Links to other ibiblio volumes are also handled by
   `intra_corpus_links` (`src/extraction/intra_corpus.py:102`, queued as another batch), so the same
   link can land in both queues. Owner decision: in-corpus links go only to `intra_corpus_links`.
 
@@ -1236,18 +2286,71 @@ which starts Phase 0 like an uploaded book. Gated by `links.intra_corpus` (defau
 ("was gap 3").
 
 Findings:
-- **HIGH - it ingests one page, not the volume, under a hash slug.** The linked page (often one chapter)
+- **DONE (2026-11-24, owner "yes and go") - HIGH - it ingests one page, not the volume, under a hash slug.**
+  History: the owner's M8 entry (2026-10-27, 6bd08a9d, LOW "polish") asked only to mark citations of other
+  volumes as internal links; the implementation (bb4ac30b, PR #594) added the one-page upload citing an owner
+  directive to queue cited documents that is recorded nowhere else (no TODO, design doc, steering or saved agent
+  log). Owner 2026-11-24: every volume will be ingested in the end, under its own name, in approved batches.
+  Done: the upload is removed (no fetch, no `contentrepository/` write, no Phase 1->3 spend); a book whose source
+  URL is its volume's `index.html` is now recognised as that volume (`intra_corpus._volume_of`; before, its own
+  pages counted as citations of another volume and would have been re-uploaded: 2,469 XChannel, 800 Lorraine and
+  646 Ardennes links in the local corpus); the citation index `src/extraction/corpus_links.py` (data bucket
+  `corpus-links/`, per book: `volumes/<book>.json` = the volume a book is, `citations/<volume>/<book>.json` = each
+  citation's SourceSectionID, chapter, URL and page; `ingest-list.json` = every cited volume, pending (most cited
+  first, with its index URL) or held (`held_as`: the books that are it, matched by volume key, never slug). Dry
+  run on the local corpus: 9 cited volumes pending (USA-E-Supreme 16 links, USA-A-Omaha 10, USA-A-Utah 6, ...).
+  Citations are keyed on Phase 1's `chapter_number` (titles repeat); a book with an unreadable document keeps its
+  last index (`corpus_links.book_skipped`); `volume_index_url` is only ever an https ibiblio URL (a future importer
+  fetches it). OPEN: `ingest-list.json` is last-writer-wins between parallel Phase 3 tasks (rebuilt each run, so
+  eventually consistent).
+  DONE (2026-11-24, owner rule: "the PDF is the defining doc; ibiblio supports it; reference the edition and
+  chapter; HTML only: determine the chapter and call it a day"): `corpus_links.write_links` connects each citation of
+  a HELD volume to its defining copy (`defining_copy`: a PDF first, then another upload, then HTML; then edition
+  recorded; then first slug) -> `links/<citing book>.json`: the cited BookID, format, edition, copyright date and
+  chapter (found from the page the citing book printed, against the copy's chapter page ranges), `page_as_cited`
+  (a pointer, not a claim about the copy), `match` (`chapter` | `volume`: never guessed), the supporting copies.
+  A regenerable layer, rebuilt each run; the original records are not touched. The edition reaches it through the
+  book: Phase 1 now carries the chapter meta's `edition`, `copyright_date` and `source_key` into each parsed
+  document (`parser.Metadata`, `phase1_parse._doc_to_dict`); documents parsed before have none until reparsed (the
+  link then says edition null / format by source URL). A PDF book whose slug is its volume key (`USA-E-XChannel`)
+  counts as holding it. Data fix: `CrossChannelAttack`'s chapter metas said copyright 1950 (an import typo; the book
+  prints "First Printed 1951"); corrected to 1951. `XChannel` and `CrossChannelAttack` are the same transcription
+  (21 byte-identical chapters): supporting copies of the PDF book. A page two chapters share is not guessed
+  (`match: volume`, `candidate_chapters`); a book counts as holding a volume by its source URL, or - only with no
+  source URL - by a `<country>-<letter>-<volume>` slug (`volume_basis: slug`); a copy whose format is unknown (parsed
+  before Phase 1 carried `source_key`/`source_format`) never defines a volume. The format is never inferred from a
+  source URL (a PDF of a HyperWar volume has an ibiblio URL too): the uploaded object's extension (`source_key`),
+  else the meta's declared `source_format` - `scripts/import_hyperwar_html.py` now writes `source_format: html`, and
+  the 8 local HyperWar imports (196 chapter metas: ArdennesIbiblioTest, BreakoutAndPursuit, CrossChannelAttack,
+  RoerDams, TheArdennesBattleOfTheBulge, TheLorraineCampaign, TheSiegfriedLineCampaign, XChannel) were marked;
+  their S3 copies are not (re-sync or re-import before relying on it in AWS). OPEN (security review): once contributor uploads
+  exist, accept a slug claim only for operator uploads (a contributor could name a PDF after a volume); whatever
+  renders `links/` / `volumes/` (static site, API) must HTML-escape edition and titles and allow only http(s) URLs.
+  DONE (2026-11-24): the cited bibliography record is marked (`src/extraction/bibliography_corpus.mark_held`,
+  bibliography schema 2.32 `held_in_corpus`: the defining copy's BookID, book, volume, format, edition, copyright
+  date, linked_at, and the notes whose links matched). Citations from a note now carry its number and parsed
+  chapter (`phase3_enrich_data._doc_citation_edges`: links read from each note's own text), matched exactly to the
+  record Phase 2 made from that note (book folder, chapter, reference_number); a note citing several works is split
+  exactly as Phase 2 splits it (`_expand_multidoc_notes`: 3, 3b ...) so each link carries its part's number; a note
+  in several records, or a record whose notes link two volumes, is not guessed; unchanged marks are not rewritten;
+  a mark that no longer holds is cleared (only after a run that read every citation record). Checked: the Phase 2
+  merge (`_merge_bib_fields`) updates the surviving record in place, so its mark stays; a mark only on a merged-away
+  record is dropped and rebuilt by the next Phase 3 run. Two upstream gaps limit it (Group 7, "Citations lost
+  before Phase 3"): unrecognised HyperWar notes sections, and notes-only chapters.
+  OPEN: a non-interactive volume import (`scripts/import_hyperwar_html.py`
+  prompts for metadata) for the owner-approved batches. Original finding: The linked page (often one chapter)
   becomes its own book, slug `intracorpus-<volume>-<sha12>` (`book_slug` = filename stem). The slug is
   immutable, so a later proper ingestion of the whole volume under its real name duplicates it, and
   each other cited page of the same volume becomes another one-page book. `_should_queue` dedups by
   volume within a run only (`:168`). Queue the volume (its table of contents) once, under its volume
   slug.
-- **MED - the corpus-graph edges are thrown away.** `process_doc_links` returns them and the caller only
+- **PART DONE (2026-11-24) - MED - the corpus-graph edges are thrown away.** Cross-volume edges are kept in the
+  citation index (`corpus_links`); same-volume page anchors are still only counted. Original: `process_doc_links` returns them and the caller only
   counts them (`phase3_enrich_data.py:579`); nothing writes them. Persist them on the source section
   (or a link record), with the citing paragraph.
-- **MED - the dedup claim is taken before the upload.** `_register_content_hash_if_new` runs before
+- **DONE (2026-11-24: the upload is removed) - MED - the dedup claim is taken before the upload.** `_register_content_hash_if_new` runs before
   `put_object` (`:212`, `:222`); a failed upload is never retried (same flaw as the map-as-source entry).
-- **LOW - the fetch bypasses `url_fetch`** (registry, politeness, Wayback). DRY: use `url_fetch.fetch`.
+- **DONE (2026-11-24: nothing is fetched any more) - LOW - the fetch bypasses `url_fetch`** (registry, politeness, Wayback).
 - Same wrong-section attribution as `link_asset_review` (one SourceSectionID per book).
 
 #### Consolidate link_asset_review and intra_corpus_links into one document-links step (owner question 2026-11-17)
@@ -1370,34 +2473,41 @@ Not yet re-reviewed step by step; each keeps its old number ("was gap N"), which
 still uses in its text. `EP` = `ecs_entrypoint.py`, `OE` = `src/enrichment/openserp_enrichment.py`,
 `P3` = `phase3_enrich_data.py`.
 
-- **HIGH (was gap 2) - An outage or open breaker marks entities as searched for 90 days.** Every driver
+- **DONE (1.2d/1.2f; verified 2026-11-24) - HIGH (was gap 2) - An outage or open breaker marks entities as searched for 90 days.**
+  Every driver goes through `_search_entity` -> `_settle`: an entity whose queries errored with none answering is
+  `unavailable` (`search_outcome`) and is NOT marked (`entities_unavailable`); an open breaker stops the phase
+  (`_stop_openserp_down` -> `ServiceUnreachable`, owner D8c) before anything is stamped; the SQS worker
+  (`openserp_worker.py`) resets the breaker after its pause and defers, without marking, an unavailable entity.
+  Tests: `test_openserp_review_log.py::test_openserp_unavailable_is_not_a_search` (driver path),
+  `test_openserp_driver_prelude.py` and `test_openserp_search_cache.py` (breaker -> `ServiceUnreachable`); the
+  worker's reset and no-mark branch have no test yet. Original finding: Every driver
   stamps the entity after trying, even when every query returned `[]` (`OE:1418`, called
   unconditionally). Only people and equipment without results are rescued, by the reset in the entry that was gap 6.
   Groups, places and source sections lose their window. The SQS worker is worse: it never resets its
   breaker (`openserp_worker.py`), so after five failures it marks every later entity searched without
   searching, until it exits.
-- **MED (was gap 8) - Image results are page URLs.** `images[]` items are search-result pages, not
+- FIXED IN CODE, NOT YET VALIDATED (audit 2026-11-25: search maps `image.url` and `source.page_url`; existing equipment records may still hold page URLs, see the equipment_images MED) - **MED (was gap 8) - Image results are page URLs.** `images[]` items are search-result pages, not
   images, and nothing resolves them (no `og:image`, no Wikimedia File resolution). Later downloads fail
   with `OBSERV vision.image_blocked reason=not_an_image` (`images.py:77`). Yield for groups and places
   is near zero.
-- **MED (was gap 9) - The breaker counts empty results as failures.** Five consecutive legitimate
+- FIXED IN CODE, NOT YET VALIDATED (audit 2026-11-25: a 200 answer resets the streak; a failing streak is checked against OpenSERP health) - **MED (was gap 9) - The breaker counts empty results as failures.** Five consecutive legitimate
   no-hit queries open it and skip the rest of that driver's searches (`OE:385-413`).
 - **MED (was gap 10) - The SQS path is unwired and defective.** No producer runs; `source_section`
   enqueues nothing; the worker searches generic equipment, lacks a reachability probe and loses its
   metrics; the autoscaler starts workers for any message although the pool size is 0 (PHASE3_MAP.md
   §3.12).
-- **MED (was gap 11) - `openserp_manager` cannot tell OpenSERP's task from pipeline work.** It matches
+- FIXED IN CODE, NOT YET VALIDATED (2026-11-25: OpenSERP's tasks are found with `list_tasks(serviceName=...)`, all pages; `tests/unit/test_openserp_manager_tasks.py`) - **MED (was gap 11) - `openserp_manager` cannot tell OpenSERP's task from pipeline work.** It matches
   "openserp" in task ARNs (`openserp_manager.py:31,81`), which never contain it, so the idle monitor
   never tears down while OpenSERP runs. After a failed Phase 3 (no scale-down at `EP:1053-1069`, lock
   held up to 2 h) only the hourly reaper remains, and it also requires no held lock.
-- **MED (was gap 13) - External maps cannot work on ECS.** `search_with_openserp` runs
+- FIXED IN CODE, NOT YET VALIDATED (2026-11-25: a failed search (tool missing, error, timeout, bad output) returns None and logs `OBSERV openserp_maps.search_failed`; the place is not marked searched. The tool is still not in the image: the feature stays off; `tests/test_openserp_maps_failure_not_answer.py`) - **MED (was gap 13) - External maps cannot work on ECS.** `search_with_openserp` runs
   `./tools/search_maps`, which is not copied into the image (`Dockerfile` has no `tools/` line), and
   only logs the `/mega/search` URL. The failure returns `[]`, and the place is still marked searched in
   the search history (`openserp_maps.py:718`). Off by default (`external_maps.enabled: false`).
-- **MED (was gap 14) - `--max-items` does not bound OpenSERP searches** for equipment, groups, places
+- FIXED IN CODE, NOT YET VALIDATED (2026-11-25: the equipment, groups, places and source-section drivers cap the entities searched (`_at_max_items`); `tests/test_openserp_max_items_bounds_searches.py`) - **MED (was gap 14) - `--max-items` does not bound OpenSERP searches** for equipment, groups, places
   and source sections. The cap tests the enriched count, so records that yield nothing keep being
   searched. Only people limit the candidates collected.
-- **MED (was gap 15) - Places OpenSERP is under-instrumented and uncapped.** No `_record_eligible`, no
+- FIXED IN CODE, NOT YET VALIDATED (2026-11-25: places now pass the name gate and count `entities_eligible`; image hits were already counted in `items_added`, and `results_per_query` is used; one search per name variant stays by design) - **MED (was gap 15) - Places OpenSERP is under-instrumented and uncapped.** No `_record_eligible`, no
   name gate, no result cap, once per name variant, and image hits are not counted in `items_added`.
   `openserp.results_per_query` is unused (limit fixed at 5).
 - **MED (was gap 19) - OpenSERP image items lack provenance beyond the URL.** No query, engine or
@@ -1428,7 +2538,7 @@ still uses in its text. `EP` = `ecs_entrypoint.py`, `OE` = `src/enrichment/opens
   today? measure before dropping image search. (Supersedes the A00 "Grok-proposes + liveness + human
   audit" framing — same intent, now fully specced in the doc.)
 
-#### [LOW·yield] OpenSERP group-image search returns HTML page URLs, not direct images (clean rerun 96c86bef) (evidence for "was gap 8"; from the end of this file)
+#### FIXED IN CODE, NOT YET VALIDATED (audit 2026-11-25: same as gap 8: real image URLs from search, verified by `web_photos`) - [LOW·yield] OpenSERP group-image search returns HTML page URLs, not direct images (clean rerun 96c86bef) (evidence for "was gap 8"; from the end of this file)
 
 During Phase-3 OpenSERP group enrichment, 28 image candidate URLs were vision.image_blocked
 (reason=ssrf_or_invalid) and 0 images added — because OpenSERP returned SEARCH-RESULT PAGE URLs
@@ -1453,7 +2563,7 @@ referential-integrity check resolves. Deterministic, no Grok. Live data (`output
 synced to `tmp/phase3-review/imgcheck/content/`): 31 source sections, one per event (21 chapter events +
 10 notes events), and no event or sub-event carries `SourceSectionID` yet.
 
-- **MED - notes events are never stamped.** The walk skips `*-notes-event.json` (`event_provenance.py`,
+- FIXED IN CODE, NOT YET VALIDATED (2026-11-25: the skip is removed; dry run on the Phase 2 snapshot stamped all 31 events, the 10 notes events included, through the schema guard; `tests/test_provenance_hardening.py`) - **MED - notes events are never stamped.** The walk skips `*-notes-event.json` (`event_provenance.py`,
   `stamp_event_source_sections`), but those events have source sections too (10 of 31) and carry
   sub-events (e.g. `chapter2full-notes-event.json`, 42 sub-events) from which entities are extracted
   (`supplemental.py:1243`). Their entities' chain stops at the event. Stamp them as well, unless there
@@ -1468,7 +2578,10 @@ synced to `tmp/phase3-review/imgcheck/content/`): 31 source sections, one per ev
   position in the run; a general gap for late writes under `output/content/`.
 
 #### Older backlog - HIGH list
-- **[HIGH · provenance] event_provenance stamp read the WRONG source_section path (fix STAGED, pending PR).**
+- **DONE (merged; verified 2026-11-24) - [HIGH · provenance] event_provenance stamp read the WRONG source_section path.**
+  `event_provenance._build_event_section_index` reads every section through `source_sections.iter_section_files`
+  (the nested `content/<book>/source_section/` layout and the old top-level one); tests
+  `test_provenance_hardening.py` (nested path) and `test_source_section_enrich_in_place.py`. Original finding:
   Found same E2E: `OBSERV event_provenance.stamp resolved=0 reason=no_source_sections` even though 2 source_section records
   existed — they live at `content/<book>/source_section/*.json`, but `_build_event_section_index` read top-level
   `output/source_section/`. Fixed locally to glob BOTH (nested + top-level) + a regression test; verified against the real
@@ -1548,7 +2661,7 @@ if neither queue has work and `_openserp_demand_present` is false -> `_notify_co
   called without a book (`EP:2362`), so it pulls all of `output/content/` and re-downloads every
   `_MENTION_REPAIR_ENTITIES` dir with overwrite. Cost and time grow with the corpus, not the book. Pass
   the book and download only the records the repair changed.
-- **LOW - the lock is released before the S3 repair.** `_remove_lock` runs first (`EP:2495`), so
+- FIXED IN CODE, NOT YET VALIDATED (audit 2026-11-25: `_remove_lock` now runs in a `finally` after the repair and provenance gate) - **LOW - the lock is released before the S3 repair.** `_remove_lock` runs first (`EP:2495`), so
   another task can start and download S3 while `_post_sync_referential_enforce` is rewriting records.
   Remove the lock after the repair and gate.
 
@@ -1577,7 +2690,7 @@ Findings:
 - **LOW - the SIGTERM sync may not fit in 30 s.** `_final_sync` walks every entity dir; on a large
   corpus it can exceed the `StopTimeout`, and the lock and NAT lease are released only after it. Release
   the lock and lease first, or raise `StopTimeout` for Phase 3.
-- **LOW - DECIDED (owner 2026-11-17): release the Phase 3 lock at once on failure.** The task-failure rule
+- FIXED IN CODE, NOT YET VALIDATED (audit 2026-11-25: the lock is removed in a `finally` for every phase) - **LOW - DECIDED (owner 2026-11-17): release the Phase 3 lock at once on failure.** The task-failure rule
   deletes it at once anyway, so keeping it changes nothing. Remove the `if "phase3" not in phase_script`
   exception (`EP:1065`, there since the first commit f13984bc with no stated reason) and document it;
   retries go through the reconcile with the retry cap and alert (D8c-2).
@@ -1607,10 +2720,11 @@ Findings:
   §1).
 - **LOW (was gap 23)** - Dead or unwired code: `enrich_with_advanced_features`,
   `search_academic_sources`, `_verify_results_batch`, `_prefilter_verify_cache`,
-  `_parse_batch_verdicts`, `search_person_images` and `search_military_awards` (used only by
+  `_parse_batch_verdicts`, ~~`search_person_images`~~ (deleted 2026-11-24) and `search_military_awards` (used only by
   `scripts/utils/debug_searches.py`), `equipment._extract_media_with_openserp` chain,
   `situational_geocode`, `url_content_verdict.evaluate`, `phase3_retry.py` (copied by `Dockerfile:49`,
-  no caller), `lambda_handlers/phase3_handler.py`, `--no-references`, `enrich_all_people`.
+  no caller), ~~`lambda_handlers/phase3_handler.py`~~ (deleted 2026-11-20), `--no-references`,
+  `enrich_all_people`.
 - **LOW (was gap 24)** - `compute.yaml` labels `OpenSerpService` "Internal ALB for OpenSERP" and
   `openserp_manager`'s docstring mentions an ALB, but no load balancer exists. `_get_openserp_alb_dns`
   returns an IP.
@@ -1649,6 +2763,33 @@ that path IF it ran — but it doesn't (dead code). Also it never carried book/a
 Unknown-provenance gap, pre-existing). Decide: wire it (thread book metadata + write the sibling) or
 retire it. Not a live regression (dead path).
 
+### Group 15 - after the Phase 3 refactor: failover tests (owner 2026-11-18)
+
+Run once the refactor (Groups 1-14) is complete, in dev, with owner approval for the deploy and the
+Grok spend. Each test checks the outcome the owner asked for: downtime is acceptable, a lost book or
+repeated paid work is not. For each: the alert arrives on Slack and email, the book is deferred (never
+dropped), and after recovery the run continues from where it stopped (compare Grok request counts and
+per-step counts against an uninterrupted run).
+- **Task killed mid-Phase 3** (stop the ECS task; also a SIGKILL-equivalent): relaunched, resumes.
+- **AZ loss:** block AZ1 (e.g. NACL deny on PublicSubnet1/PrivateSubnet1): the NAT comes back in the
+  other AZ (1.2c), a new task runs in PrivateSubnet2, the book resumes.
+- **NAT / networking loss mid-run:** delete the NAT or blackhole the default route: `connectivity`
+  deferral, automatic resume when NAT is back.
+- **Grok funds:** under $50 at start (stops before spend); $10 alert mid-run; xAI credit refusal
+  mid-run (simulate with an invalid-credit response or a test key): `funding` deferral, resume after
+  top-up.
+- **OpenSERP / Nominatim / NARA unavailable:** behave as D8b-D8d, and resume.
+- **Every external service** in the 1.2f inventory (Grok, NOAA weather, geocoding, archive.org,
+  HyperWar, ...): service down and network down, at start and mid-step; a Grok batch failed,
+  expired or partly failed (resubmitted whole or only the failed requests).
+- **AWS services:** SNS publish fails, SQS delivery fails, S3 put/get fails, DynamoDB throttles,
+  RunTask fails (no capacity), Secrets Manager unreachable: nothing is lost, the work stays queued,
+  an alert or a record exists, and the run resumes.
+- **Spot reclaim:** stop a Spot task mid-step (SIGTERM) and kill one outright: the attempt is given
+  back, the book resumes from its last synced state.
+Owner rule: simulate ALL of these failure cases (2026-11-18). Each case also gets a unit or moto
+test while it is built; this group is the live end-to-end check.
+
 ### Track P - Phase 2 changes (needs a new Phase 2 run and a new snapshot)
 
 These change Phase 2's output, so they cannot be tested against `phase2-2026-11-17`. After the Phase 3
@@ -1657,6 +2798,31 @@ it. Owner: unit/person images checked by the Commons pre-check, vision on flagge
 Phase 2's open work stays in "1. PHASE 2 - OPEN" below.
 
 #### Step: bibliography_resolve (PHASE3_MAP §4.3) (moved here from Group 7)
+- **DONE (Group 3 step D, 2026-11-21) - records citing the same footnote are combined (owner 2026-11-21: "combined,
+  while maintaining provenance for both"; if one is approved the other is).** Phase 2 writes one footnote as several
+  records (the deterministic pass titles it "Unknown", the Grok pass gives it a real title), so the title-based
+  reconcile never grouped them: 348 such groups in production. `bibliography.reconcile_bibliography_dir` now folds
+  groups sharing `citation_key` (the verbatim text, moved here from the resolver: one definition), never a back-reference
+  (`Ibid.`, `*Ibid.*`, `op. cit.`), a cross-reference (`See below, ch. III.`), a bare date or a text under 12 characters.
+  The lowest BibliographyID survives; it lists the absorbed ids in `merged_from` (schema 2.31); every citing source
+  keeps its mention. Finds queued under an absorbed id belong to the survivor (`bibliography_finds.finds_for`).
+  Offline run on the production set (2026-11-21): 2,035 -> 1,472 records (563 combined, all within one book).
+  Also fixed: the full-corpus reconcile deleted only per-writer shard files on S3, so a record folded into
+  another (the fuzzy pass did this before) came back on the next download; it now deletes exactly the files reconcile
+  removed (`ecs_entrypoint._delete_merged_bibliography_records`, an error names any it could not delete).
+  Nothing outside the bibliography refers to a BibliographyID in production (scanned 2026-11-21: people
+  `biography_sources[].BibliographyID`, supplemental notes and loader mentions are all unset).
+- **DONE (Group 3 step E, 2026-11-21) - merge pointers; the DynamoDB entity path retired (owner 2026-11-21: "we are
+  not full JSON in DynamoDB, creating a new table to handle pointers is OK").** New table `{env}-wwii-id-aliases`
+  (`cloudformation/storage.yaml`, pointers only: `alias_key = <entity>#<old id>` -> `survivor_id`, source, time) and
+  `src/utils/id_aliases` (`record`, `resolve` following chains, cycles said). A pointer is stored BEFORE a merged-away
+  record is deleted, else the record is kept and the merge retried: the bibliography full-corpus reconcile
+  (`bibliography.record_merge_pointers`, then the S3 delete), the dedup merge (`dedup.merge._pointer_stored`, people
+  and generic) and the dedup UI's generic merge. Retired (nothing wrote or read them): the ten empty per-entity JSON
+  tables (removed from the template; deleted while empty), the `{env}-wwii-import` task, `import_to_dynamodb.py`,
+  `lambda_handlers/import_handler.py`, and the no-op hooks `_materialize_from_dynamo`, `_dynamo_merge_sync`,
+  `_sync_entity_to_dynamo`. Needs a deploy (the new table) before the next full-corpus reconcile or dedup: until
+  then a merge keeps its merged-away records (no loss; retried).
 - ***refactor* - FIX IN PHASE 2 (owner) - a quarter of Phase 2's "bibliography" is not citations,
   found only in Phase 3.**
   Of the 2,035 records, 534 fail `_looks_like_citation` (narrative footnotes, e.g. "An American heavy
@@ -1807,6 +2973,58 @@ ACTION (deterministic first, cost first):
 3. Pass the book context (rank, unit, date, the citing sentence) into the biography prompt, and
    require the answer to echo which article it used, so a wrong-person answer is detectable.
 4. Count it: OBSERV `enrich.disambiguation_page` / `enrich.surname_only_skipped`.
+
+#### Places: the hierarchy from the Phase 2 Wikipedia/Grokipedia lookup is guessed (HIGH, owner 2026-11-25)
+
+Found 2026-11-25 while scoping the Group 6 MED item "create the missing region/country" on the
+`phase2-2026-11-17` places (995). The parent names Phase 3 links by come from Phase 2's place lookup
+(`places._build_new_place_record` -> `enrich_places.enrich_place_from_wikipedia` -> `_parse_wiki_page`),
+which guesses:
+- **Continent = the first keyword in the intro + categories** (`_CONTINENT_KEYWORDS`; "United States"
+  anywhere means North America). At least 10 of the 35 places whose continent has no record are wrong:
+  Utah Beach, Omaha Beachhead, Pointe du Hoc, both Orne River records, Poole, the Persian Corridor and
+  the Mediterranean Theater -> North America; Okinawa -> Oceania; the Pacific -> Asia.
+- **Country = whatever follows "Towns in " / "Populated places in " / "Geography of "**
+  (`_extract_country_from_cats`). Of the 23 `country` values with no place record only Kiribati is a
+  country; the rest are states, provinces, departments, counties, districts and two cities (Louisiana,
+  Ontario, Bavaria, Manche, Calvados (department), South Hams, Bruges, Buffalo, ...). Devon and
+  Brittany (Salcombe, Woolacombe, Rennes) and the Pacific's `country: Asia` come the same way.
+- **Seas and oceans get a continent** (Atlantic, Mediterranean, North Sea, English Channel -> Europe);
+  a body of water has no containing place.
+- **Wrong pages are accepted:** a disambiguation page (`Orne_(disambiguation)`), a look-alike article
+  (Les Moulins -> a Quebec municipality, northern zone -> `North_Zone`), and loose Grokipedia matches
+  (`_matching_place_page` substring test: Atlantic -> "Atlantic U-boat campaign of World War I", Pacific
+  -> "Lost Battalion (Pacific, World War II)", Mediterranean -> a U-boat campaign page).
+- No source is recorded per hierarchy field (also Group 6 MED "the hierarchy has no source").
+
+ACTION (free lookups, no Grok):
+1. Take the hierarchy from Wikidata: the Wikipedia fetch already returns the QID (`pageprops.wikibase_item`,
+   folded into `sameAs`). One free request per place gives instance of (P31: ocean, sea, town, region...),
+   located in the administrative entity (P131, a chain with QIDs), country (P17) and continent (P30). Store
+   them with the QID, property and fetch date (provenance). An ocean/sea gets no parent. Keep the keyword and
+   category guesses out of the hierarchy (at most a hint marked as such).
+2. Treat a disambiguation page (`pageprops.disambiguation`) as not found, and require a Grokipedia page
+   title to match the place name, not contain it (same class as "People: surname-only names are enriched
+   from a Wikipedia disambiguation page" above).
+3. Backfill the existing places with a script that re-runs only this free lookup (the
+   `wikipedia_checked_at` gate means a Phase 2 re-run would not re-fetch them); no Phase 2 or Grok run.
+4. Count it: OBSERV lines for the hierarchy source used, disambiguation pages refused and Grokipedia
+   pages refused.
+
+**PHASE 3 OVERLAP - fix together, in one change (owner 2026-11-25).** These Group 6 items consume this
+hierarchy and must be done with it, not before:
+- "a missing level is skipped silently" (MED, create the missing region/country): create parents from the
+  Wikidata facts (name, type, QID), not from today's `country` / `continent` strings, which would mint
+  Bruges as a country and link Utah Beach under North America;
+- "a parent is chosen by name alone" (DONE 2026-11-24): switch the match to the Wikidata QID, which also
+  removes the ambiguous-name case; the coarser-type rule stays;
+- "a parent is never corrected", "two representations of the same edge" (`containedInPlace`), "the
+  hierarchy has no source", "one country for the whole war" (dated containment: Wikidata P17 is the modern
+  country, the WWII-era country stays a Phase 3 enhancement) and "region is asked only once";
+- Phase 3's Grok hierarchy step (`enrich_all_places`) asks from model memory with no citation: run it only
+  for places Wikidata cannot place, and mark its answers as unsourced;
+- the UI review screen for place parents ("UI - review place parents the pipeline will not guess"), whose
+  field-mismatch cases (Salcombe -> Devon, Pacific -> Asia) come from this lookup.
 
 #### Phase 2 re-runs: image / map / source-section records de-duplicate against LOCAL disk (MED)
 
@@ -2099,6 +3317,32 @@ Larger refactor with semantic-diff risk; own PR, not bundled with the PR6 correc
 ---
 
 ## Other open items (moved out of the Phase 3 review section; not in a Phase 3 test group)
+
+### Owner questions moved out of the Phase 3 decision list (2026-11-25; not Phase 3)
+- **Merge scripts (was D6-Q):** delete the five archived merge scripts (`scripts/archive/`)? Decided already (D6):
+  merge scripts must work against S3 (merge pointers, backups); a local mode only where it is easy. See Group 4
+  "Merge scripts: review accuracy and schema compliance".
+- **`map_features` (was D23):** retire it? It is a GeoJSON model of what is drawn inside a map (unit positions,
+  lines) plus a reverse registration of entities onto a map by place and date (`src/extraction/map_registration`);
+  no step runs it. The 2026-11-17 decision D1 says maps keep appearance links only, with no placement model.
+  Suggested: retire.
+- **`supplemental_info_pipeline` (was D24):** retire it? It turns supplemental (non-cited) material into
+  pseudo-events and runs the entity extractors on them; only `scripts/archive/process_supplemental_info.py` calls
+  it, and Phase 2's `supplemental` extraction does that job now. Suggested: retire.
+
+### Site database (PostgreSQL, not built yet): removed records and old ids (owner 2026-11-21; moved out of Phase 3 2026-11-25, was D4/D5)
+- **MED - the loader never deletes, so a removed record keeps its row.** `src/loader/load.py` only inserts or
+  replaces (`INSERT OR REPLACE` / `ON CONFLICT DO UPDATE`). Pointed at a database that already holds data, any record
+  removed from S3 (a merged bibliography record, a deduped person or place, a purged chapter) stays. Fix when the
+  loader is built. Options (was Phase 3 decision D4, owner 2026-11-25: "not a Phase 3 issue, PostgreSQL hasn't been
+  built"): (a) each load rebuilds into a fresh schema and swaps; (b) each load stamps the rows it writes with its
+  load id and deletes the rows it did not touch, a load that did not finish deleting nothing (incremental, fits
+  "never reprocess unchanged content"; suggested).
+- **MED - old ids must still resolve on the site and in the API.** Load the merge pointers
+  (`{env}-wwii-id-aliases`, `src/utils/id_aliases`) into an alias table, so a link, saved search or citation holding
+  a merged-away id reaches the surviving record (redirect, not 404). DECIDED (owner 2026-11-25, was D5): leave a
+  redirect placeholder to the survivor.
+
 
 ### Code defects found by the 2026-11-17 documentation review (each verified in code)
 Phase 3 defects (OpenSERP service, 90-day marker, breaker, batch mode, external maps, NOAA, ...)
@@ -3200,3 +4444,39 @@ passing a safe final path segment (e.g. discovery's [a-z]+ section_id capture) r
 containment at the sink. Traversal is not currently reachable anywhere, but a future caller deriving
 a path segment from untrusted input would escape silently. Harden: assert the resolved target is
 under its intended root inside the guard (pipeline-wide, not one site).
+
+## LOW: UI - order bibliographical records by mention count, high to low (owner 2026-11-21)
+Eventually add a UI option to sort bibliography records by their number of mentions (the entries in
+a record's `mentions` / `event_mentions`), highest first. Applies to the bibliography listing in the
+site/review UIs. Count from the stored mentions, not a new field that could drift.
+
+## UI - clear a wrong photo decision (owner 2026-11-23)
+Add to the review UI: list the web-photo decisions (`web_photos` decision records, api-cache
+`photo_decision_v1`: verdict, entity, image URL, page URL, Grok's reason, date) and let a person clear
+one that was wrong - a "no"/"unsure" for an entity, an "unusable" for everyone, a retraction - so the
+URL is looked at again. Clearing must also clear the (bytes, entity) verdict (`photo_vision_v1`) when it
+says "no", or the same bytes are refused again. Keep a record of who cleared what and why
+(provenance). Today a wrong decision can only be removed by deleting the DynamoDB item by hand.
+
+## UI - review place parents the pipeline will not guess (owner 2026-11-24)
+Phase 3's parent step (`places.link_parent_place_ids`) never guesses: it links a place to a parent
+only when the named parent is one record of a coarser rank, and logs every case it can't settle. Add a
+review screen listing those cases so a person can confirm, fix or reject each one, with a record of who
+decided what and why (provenance). Store each decision so a re-extraction or rerun can't undo it
+silently.
+
+Cases, and the OBSERV line each comes from:
+- **Field mismatch** (`places.parent_link_field_mismatch`): the parent was linked, but it was named in
+  a field that doesn't match its type (a region in `country`, say). Usually right, sometimes not.
+  Seen in the Phase 2 snapshot: Salcombe → Devon, Woolacombe → Devon, Rennes → Brittany (likely
+  right); Pacific → Asia (likely wrong: a sea/ocean should have no parent). Screen: confirm or unlink.
+- **Ambiguous parent name** (`places.parent_link_unresolved` `ambiguous=`/`names=`): the name matches
+  more than one record. Screen: pick one or none.
+- **Cycle** (`places.parent_link_unresolved` `cycle=`/`cycle_places=`): linking would make a place its own
+  ancestor. Screen: choose which link to drop.
+- **Named parent has no record** (`not_found=` on the `places.parent_link` summary line; the names are
+  not logged today, so the screen must list them from the records): 46 in the snapshot,
+  mostly regions/countries the MED item will auto-create (North America ×22, Oceania, Louisiana,
+  Ontario, Calvados). Show only those still missing after auto-creation.
+- **Refused write** (`places.parent_link_refused`): the schema guard rejected the record. Show the
+  place and the guard's reason.

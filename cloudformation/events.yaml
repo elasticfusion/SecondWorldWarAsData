@@ -184,8 +184,16 @@ Resources:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: !Sub ${EnvironmentName}-wwii-trigger-queue
-      VisibilityTimeout: 300
+      # task 1.2f: above the trigger Lambda's 900 s timeout, so a batch still being handled is not
+      # delivered to a second invocation (it was 300 s); 2x, not AWS's 6x, so a failed batch is
+      # retried after 30 min, not 90
+      VisibilityTimeout: 1800
       MessageRetentionPeriod: 1209600
+      # a batch that keeps failing (the handler raised 5 times) is kept in the trigger DLQ, which
+      # is alarmed (TriggerDLQAlarm), instead of being retried silently until it expires (14 d)
+      RedrivePolicy:
+        deadLetterTargetArn: !Sub arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-trigger-dlq
+        maxReceiveCount: 5
 
   TriggerQueuePolicy:
     Type: AWS::SQS::QueuePolicy
@@ -237,6 +245,9 @@ Resources:
       BatchSize: 100
       MaximumBatchingWindowInSeconds: 60
       Enabled: true
+      # task 1.2f: only the records that fail go back (trigger_handler._handle_sqs_batch)
+      FunctionResponseTypes:
+        - ReportBatchItemFailures
 
   # --- Dedup Complete Topic (single event, stays direct SNS → Lambda) ---
   DedupCompleteTopic:
@@ -297,6 +308,13 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmName: !Sub ${EnvironmentName}-wwii-trigger-errors
+      # one error (task 1.1b follow-up). An undelivered stop alert does NOT fail the invocation
+      # (it is stored and re-sent by the next scheduled check), so an error here is a real fault.
+      AlarmDescription: !Sub >-
+        The ${EnvironmentName}-wwii-trigger Lambda failed. Search its log group for
+        status=error and the traceback, and fix the cause; launches it missed are retried by
+        the next scheduled reconcile, and an async event that failed every retry is in
+        ${EnvironmentName}-wwii-trigger-dlq.
       MetricName: Errors
       Namespace: AWS/Lambda
       Dimensions:
@@ -305,8 +323,33 @@ Resources:
       Statistic: Sum
       Period: 300
       EvaluationPeriods: 1
-      Threshold: 3
+      Threshold: 1
       ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref AlarmSNSTopic
+
+  TriggerDLQAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub ${EnvironmentName}-wwii-trigger-dlq-not-empty
+      AlarmDescription: !Sub >-
+        An event for the ${EnvironmentName}-wwii-trigger Lambda failed all its retries and is in
+        the SQS queue ${EnvironmentName}-wwii-trigger-dlq (kept 14 days). Read it (aws sqs
+        receive-message), fix the cause from the Lambda logs, then re-drive it: a message from
+        the trigger queue (an SNS envelope) goes back with aws sqs start-message-move-task; an
+        async Lambda event is re-invoked as is (aws lambda invoke). Then delete the message.
+      Namespace: AWS/SQS
+      MetricName: ApproximateNumberOfMessagesVisible
+      Dimensions:
+        - Name: QueueName
+          Value: !Sub ${EnvironmentName}-wwii-trigger-dlq
+      Statistic: Maximum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
       AlarmActions:
         - !Ref AlarmSNSTopic
 
@@ -668,8 +711,9 @@ Resources:
             # on-demand fallback (spot-starved) must ALSO trigger the merge/parse
             # handoff. (Bug: matching only the spot queue meant on-demand
             # successes produced OCR output but never merged -> parse never ran.)
-            - !Sub arn:aws:batch:${AWS::Region}:${AWS::AccountId}:job-queue/${EnvironmentName}-wwii-chandra-gpu
-            - !Sub arn:aws:batch:${AWS::Region}:${AWS::AccountId}:job-queue/${EnvironmentName}-wwii-chandra-gpu-ondemand
+            # 1.1d: the price ladder adds -r1..-r3 Spot queues, so match by PREFIX
+            # (covers rung 0, -rN and -ondemand).
+            - prefix: !Sub arn:aws:batch:${AWS::Region}:${AWS::AccountId}:job-queue/${EnvironmentName}-wwii-chandra-gpu
       State: ENABLED
       Targets:
         - Id: OcrMergeLambda

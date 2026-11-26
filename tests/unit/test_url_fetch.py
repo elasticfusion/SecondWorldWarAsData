@@ -34,9 +34,9 @@ def _go(monkeypatch, resolves_safe=True):
 
 
 def _pin(monkeypatch, resp):
-    """Pin the fetch seam: _one_hop now calls url_hygiene._pinned_get (IP-pinned). Return `resp`."""
+    """Pin the fetch seam: _one_hop calls url_hygiene._pinned_get_once (IP-pinned, one try). Return `resp`."""
     pg = MagicMock(return_value=resp)
-    monkeypatch.setattr("src.utils.url_hygiene._pinned_get", pg)
+    monkeypatch.setattr("src.utils.url_hygiene._pinned_get_once", pg)
     return pg
 
 
@@ -126,7 +126,7 @@ def test_transient_never_counts_toward_dead(monkeypatch):
     """A transport error (transient) + no archive = IGNORE, never record_dns_failure."""
     _go(monkeypatch)
     monkeypatch.setattr(
-        "src.utils.url_hygiene._pinned_get",
+        "src.utils.url_hygiene._pinned_get_once",
         MagicMock(side_effect=Exception("DNS timeout")),
     )
     called = {"dead": 0}

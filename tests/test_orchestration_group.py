@@ -157,7 +157,7 @@ def test_partial_failure_alerts_above_threshold(monkeypatch):
         def json():
             return {"state": {"num_requests": 100, "num_success": 80, "num_error": 20}}
 
-    monkeypatch.setattr(bp.requests, "get", lambda *a, **k: _R())
+    monkeypatch.setattr("src.utils.batch_api.requests.request", lambda *a, **k: _R())
     status = bp._check_batch_status("key", "batch123", submitted_at=0)
     assert status == "complete"  # proceeds on the successful fraction
     assert alerted["n"] == 1  # but ALERTED (20% > 10% threshold)
@@ -185,7 +185,7 @@ def test_partial_failure_no_alert_below_threshold(monkeypatch):
         def json():
             return {"state": {"num_requests": 100, "num_success": 98, "num_error": 2}}
 
-    monkeypatch.setattr(bp.requests, "get", lambda *a, **k: _R())
+    monkeypatch.setattr("src.utils.batch_api.requests.request", lambda *a, **k: _R())
     assert bp._check_batch_status("key", "batch123", submitted_at=0) == "complete"
     assert alerted["n"] == 0  # 2% < 10% -> no alert
 

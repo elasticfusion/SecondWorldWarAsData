@@ -426,6 +426,9 @@ def create_chapter_meta(meta: dict, chapter_num: int, chapter_title: str) -> str
         "license": meta["license"],
         "copyright_date": meta["copyright_date"],
         "source_url": meta["source_url"],
+        # what the text was made from: an ibiblio HyperWar transcription (corpus_links ranks a PDF
+        # of the same book above it - owner rule: the PDF is the defining document)
+        "source_format": "html",
     }
     # Filter out empty values
     data = {k: v for k, v in data.items() if v}

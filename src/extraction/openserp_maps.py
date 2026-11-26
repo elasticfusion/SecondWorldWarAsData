@@ -25,6 +25,8 @@ USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTM
 logger = logging.getLogger(__name__)
 
 from src.utils.observe import observe_warn  # noqa: E402
+from src.grok_client import BatchModeCollecting
+from src.utils.batch_pending import Pending
 
 
 def _is_trusted_domain(domain: str) -> bool:
@@ -225,6 +227,8 @@ def _check_license_terms(
 
         return _analyze_license_with_grok(domain, url, license_text, grok_client)
 
+    except BatchModeCollecting:
+        raise  # queued for the batch: not an answer, not a failure
     except Exception as e:
         logger.warning(f"   ⚠️  License check failed: {e}")
         return False, url
@@ -277,10 +281,12 @@ def search_with_openserp(
     date: Optional[str],
     limit: int = 50,
     openserp_url: str = "http://localhost:7001",
-) -> List[Dict[str, Any]]:
+) -> Optional[List[Dict[str, Any]]]:
     """Search for maps using OpenSERP (real search engines).
 
-    Returns: List of search results with url, title, description, engine
+    Returns: List of search results with url, title, description, engine; ``[]`` when the search
+    answered with nothing; ``None`` when it FAILED (tool missing or erroring, timeout, bad output),
+    which is not an answer: the caller must not mark the place searched (TODO gap 13).
     """
     try:
         # Build search query
@@ -318,17 +324,31 @@ def search_with_openserp(
         )
 
         if result.returncode != 0:
-            logger.warning(f"OpenSERP search failed: {result.stderr}")
-            return []
-
-        return json.loads(result.stdout)
+            return _search_failed(place_name, f"exit {result.returncode}")
+        found = json.loads(result.stdout)
+        if not isinstance(found, list):
+            return _search_failed(place_name, "output is not a list")
+        return found
 
     except subprocess.TimeoutExpired:
-        logger.warning(f"OpenSERP search timed out for {place_name} (>120s)")
-        return []
+        return _search_failed(place_name, "timeout >120s")
+    except FileNotFoundError:
+        return _search_failed(place_name, "./tools/search_maps is not in this image")
     except Exception as e:  # pylint: disable=broad-exception-caught
-        logger.warning(f"OpenSERP search error: {e}")
-        return []
+        return _search_failed(place_name, type(e).__name__)
+
+
+def _search_failed(place_name: str, reason: str) -> Optional[List[Dict[str, Any]]]:
+    """Log a failed external map search (not an answer: the place stays unsearched)."""
+    logger.warning(
+        "OBSERV openserp_maps.search_failed place=%r reason=%s status=warn - the place is left "
+        "unsearched and is tried again next run; if the tool is missing, build it "
+        "(go build -o tools/search_maps tools/search_maps.go) and COPY it in the Dockerfile, or set "
+        "external_maps.enabled: false",
+        place_name[:80],
+        reason,
+    )
+    return None
 
 
 def _get_event_context(place_data: dict) -> tuple[str, Optional[str]]:
@@ -478,6 +498,11 @@ def _create_map_record(
     }
 
 
+_MAP_VISION_KIND = (
+    "external_maps_verification"  # search_external_maps._verify_map_relevance
+)
+
+
 def _process_search_result(
     result: dict,
     place_name: str,
@@ -508,7 +533,7 @@ def _process_search_result(
     logger.info(f"   🔍 Verifying: {title[:60]}...")
 
     # Verify with Grok
-    is_relevant, is_government_map, approved_image_url, depicted = (
+    is_relevant, is_government_map, approved_image_url, depicted, request_id = (
         _verify_map_relevance(
             map_url=url,
             map_title=title,
@@ -574,8 +599,25 @@ def _process_search_result(
     )
 
     output_file = output_dir / f"{map_record['MapID']}.json"
+    from src.extraction import map_depicted
     from src.utils.file_lock import write_json_with_lock
 
+    # what the map shows (the vision answer that approved it), kept on the record with provenance
+    # (owner 2026-11-17: no longer recycled as a prose source)
+    map_depicted.apply(
+        map_record,
+        depicted,
+        map_depicted.provenance(
+            map_depicted.verdict_for(
+                {"is_relevant": is_relevant, "depicted": depicted}
+            ),
+            kind=_MAP_VISION_KIND,
+            model=map_depicted.model_for(grok_client, _MAP_VISION_KIND),
+            request_id=request_id,  # the approving vision request's id (provenance)
+            image_url=approved_image_url or url,
+            found_in="openserp",
+        ),
+    )
     # external_maps records ARE maps records (MapID + MAPS_OUTPUT_SCHEMA). The guard resolves the
     # entity from the PATH and now ALIASES output/external_maps/ -> the 'maps' schema (see
     # _resolve_entity_type), so this write is schema-validated + counted by validation_stats under
@@ -590,53 +632,7 @@ def _process_search_result(
 
     logger.info(f"   ✅ Imported: {title[:60]}")
     downloaded_urls.add(url)
-    # Recycle the approved map as a SOURCE DOCUMENT (map-as-source): render the vision `depicted`
-    # block into a parsed-source under contentrepository/ so the map re-enters the normal pipeline
-    # (Phase 1->2->3) and an EVENT (+ people_groups/places/dates) is derived from it. Fail-safe +
-    # gated on depicted being present (no depicted -> catalog record only, no event derivation).
-    _recycle_map_as_source(
-        map_id=map_record["MapID"],
-        map_title=title,
-        approved_image_url=approved_image_url or "",
-        depicted=depicted,
-        source_url=url,
-    )
     return True, 0
-
-
-def _recycle_map_as_source(
-    *,
-    map_id: str,
-    map_title: str,
-    approved_image_url: str,
-    depicted: Any,
-    source_url: str,
-) -> bool:
-    """Write an approved map's vision ``depicted`` as a RAW SOURCE (meta.yaml + content.md) under
-    ``contentrepository/map-<id>/`` so it re-enters the normal pipeline via the content-uploaded
-    front door (Phase 1 parse -> Phase 2 event extraction -> Phase 3 enrich), exactly like a book
-    chapter (map-as-source P1, spec §3.1 Option B). Fail-safe: never raises; returns True iff a
-    source was written. Gated on `depicted` being present (no depicted -> catalog record only).
-    """
-    try:
-        if not isinstance(depicted, dict) or not depicted:
-            logger.info(
-                "OBSERV map_source.skipped map=%s reason=no_depicted "
-                "(catalog record only, no event derivation)",
-                map_id,
-            )
-            return False
-        from src.extraction.map_source_adapter import recycle_map_as_source
-
-        return recycle_map_as_source(
-            map_id=map_id,
-            map_title=map_title,
-            source_url=source_url,
-            depicted=depicted,
-        )
-    except Exception as e:  # noqa: BLE001 - recycle must never crash the map import
-        observe_warn("map_source", "error", map=map_id, reason=str(e)[:120])
-        return False
 
 
 def _is_map_derived_only(event_mentions: Any) -> bool:
@@ -715,10 +711,16 @@ def _process_place_file(
     results = search_with_openserp(
         place_name, date, limit=search_limit, openserp_url=openserp_url
     )
-    history.mark_searched(place_name)
 
+    if results is None:
+        return (
+            0,
+            0,
+            0,
+        )  # the search failed (said by _search_failed): not an answer, not marked
     if not results:
         logger.info("   ⚠ No results from OpenSERP")
+        history.mark_searched(place_name)  # an answer: nothing found
         return 0, 0, 0
 
     logger.info(f"   ✓ Found {len(results)} potential map(s) from OpenSERP")
@@ -747,6 +749,8 @@ def _process_place_file(
             imported += 1
         skipped_downloaded += skipped
 
+    # marked only now (task 1.2f): a run killed while processing the results searches again
+    history.mark_searched(place_name)
     return imported, 0, skipped_downloaded
 
 
@@ -810,6 +814,7 @@ def import_openserp_maps(
     imported = 0
     skipped_searched = 0
     skipped_downloaded = 0
+    pending = Pending()
 
     for idx, place_file in enumerate(place_files, 1):
         try:
@@ -831,6 +836,11 @@ def import_openserp_maps(
             imported += result_imported
             skipped_searched += result_skipped_s
             skipped_downloaded += result_skipped_d
+        except BatchModeCollecting as e:
+            pending.note(
+                e
+            )  # queued for the batch: the next place's requests are queued too
+            continue
         except Exception as e:
             logger.warning(f"Error processing {place_file.name}: {e}")
             continue
@@ -841,4 +851,5 @@ def import_openserp_maps(
     if skipped_downloaded > 0:
         logger.info(f"⏭️  Skipped {skipped_downloaded} previously downloaded URL(s)")
 
+    pending.raise_if_queued()  # batch rounds: the step is pending, the next pass has the answers
     return imported

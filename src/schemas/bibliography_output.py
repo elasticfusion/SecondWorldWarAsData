@@ -9,6 +9,10 @@ from src.schemas import (
     ulid_field,
 )
 
+# The ONLY form a bookseller listing may take (published on the site; the resolver builds it from
+# the ASIN alone). (?![\s\S]) rather than $: Python's $ also matches before a trailing newline.
+_BOOKSELLER_URL = r"^https://www\.amazon\.com/dp/[A-Z0-9]{10}(?![\s\S])"
+
 BIBLIOGRAPHY_OUTPUT_SCHEMA = {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "version": entity_version("bibliography"),
@@ -20,6 +24,13 @@ BIBLIOGRAPHY_OUTPUT_SCHEMA = {
         **METADATA_PROPERTIES,
         **QUALITY_FLAGS_PROPERTY,
         "BibliographyID": ulid_field(),
+        # 2.31: the BibliographyIDs of records combined into this one (they cited the same
+        # footnote text); a reference to one of them resolves to this record
+        "merged_from": {
+            "type": ["array", "null"],
+            "items": ulid_field(),
+            "uniqueItems": True,
+        },
         "title": {"type": "string"},
         "alt_title": make_nullable("string"),
         "citation": {
@@ -49,12 +60,58 @@ BIBLIOGRAPHY_OUTPUT_SCHEMA = {
         "availability": enum_field(
             ["online", "offline", "archive", "local", "unknown"], nullable=True
         ),
-        # Free-form provenance bag written by the resolver: prov keys from the biblio-note resolver
-        # + a structured findings list ({url, source}). additionalProperties:true because the prov
-        # keys vary by source type; this is internal provenance metadata, not user-facing content.
+        # Provenance bag written by the resolver: prov keys from the biblio-note resolver + a
+        # structured findings list. additionalProperties:true because the prov keys vary by source
+        # type; this is internal provenance metadata. The keys that are PUBLISHED or relied on are
+        # modeled: a bookseller listing (a pointer to buy, never an online copy; the URL is the
+        # canonical https://www.amazon.com/dp/<ASIN> only, so a malformed or foreign URL cannot
+        # reach the site) and when the listing search last ran.
         "source_metadata": {
             "type": ["object", "null"],
             "additionalProperties": True,
+            "properties": {
+                "findings": {
+                    "type": ["array", "null"],
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": True,
+                        "properties": {
+                            "url": make_nullable("string"),
+                            "source": make_nullable("string"),
+                            "kind": enum_field(["bookseller"], nullable=True),
+                        },
+                        # a bookseller finding is held to the same URL rule as bookseller[]
+                        "if": {
+                            "properties": {"kind": {"const": "bookseller"}},
+                            "required": ["kind"],
+                        },
+                        "then": {
+                            "properties": {
+                                "url": {"type": "string", "pattern": _BOOKSELLER_URL},
+                                "source": {"enum": ["amazon"]},
+                            },
+                            "required": ["url", "source"],
+                        },
+                    },
+                },
+                "bookseller": {
+                    "type": ["array", "null"],
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": False,
+                        "required": ["url", "source", "kind"],
+                        "properties": {
+                            "url": {
+                                "type": "string",
+                                "pattern": _BOOKSELLER_URL,
+                            },
+                            "source": {"type": "string", "enum": ["amazon"]},
+                            "kind": {"type": "string", "enum": ["bookseller"]},
+                        },
+                    },
+                },
+                "bookseller_searched_at": make_nullable("integer"),
+            },
         },
         "resource_urls": {
             "type": ["array", "null"],
@@ -134,6 +191,45 @@ BIBLIOGRAPHY_OUTPUT_SCHEMA = {
             nullable=True,
         ),
         "download_path": make_nullable("string"),
+        # 2.32: the cited work is in the corpus (src/extraction/bibliography_corpus): the defining
+        # copy we hold (a PDF first) and the notes whose links matched it
+        "held_in_corpus": {
+            "type": ["object", "null"],
+            "additionalProperties": False,
+            "required": ["BookID", "book", "volume", "linked_at"],
+            "properties": {
+                "BookID": ulid_field(),
+                "book": {"type": "string", "maxLength": 300},
+                "volume": {"type": "string", "maxLength": 300},
+                "format": {"type": ["string", "null"], "maxLength": 300},
+                # plain text from the book's title pages: escape it wherever it is shown
+                "edition": {"type": ["string", "null"], "maxLength": 300},
+                "copyright_date": {"type": ["string", "null"], "maxLength": 300},
+                "linked_at": {"type": "string", "maxLength": 64},
+                "evidence": {
+                    "type": "array",
+                    "maxItems": 20,
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": False,
+                        "properties": {
+                            "book": {"type": ["string", "null"], "maxLength": 300},
+                            "chapter": {"type": ["string", "null"], "maxLength": 300},
+                            "reference_number": {
+                                "type": ["string", "null"],
+                                "maxLength": 40,
+                            },
+                            # the link as found in the note: a web URL only
+                            "url": {
+                                "type": ["string", "null"],
+                                "maxLength": 2048,
+                                "pattern": "^[Hh][Tt][Tt][Pp][Ss]?://",
+                            },
+                        },
+                    },
+                },
+            },
+        },
         "mentions": {
             "type": ["array", "null"],
             "items": {

@@ -39,6 +39,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, Optional, Sequence, Tuple, Union
 
+from src.utils import grok_models
+
 logger = logging.getLogger(__name__)
 
 FIELDS = ("title", "author", "series", "publisher", "copyright_year", "edition")
@@ -638,6 +640,14 @@ def for_import(
     except (
         Exception
     ) as e:  # noqa: BLE001 - fail-safe: the import goes on without metadata
+        logger.warning(
+            "OBSERV book_metadata.unavailable status=warn err=%s", type(e).__name__
+        )
+        return {}
+    except (grok_models.GrokUnreachable, grok_models.GrokFundsExhausted) as e:
+        # the request is optional (task 1.2e): a Grok outage or no credits does not stop the
+        # import; the metadata-gap marker records what is missing
+        grok_models.clear_transient_stop()
         logger.warning(
             "OBSERV book_metadata.unavailable status=warn err=%s", type(e).__name__
         )

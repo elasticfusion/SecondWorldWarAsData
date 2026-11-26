@@ -378,14 +378,31 @@ See `config/domain_blacklist.yaml` for filtering unwanted domains.
 
 ```yaml
 openserp:
-  results_per_query: 10
+  results_per_query: 5
   max_images_per_entity: 3
+  max_photo_checks_per_entity: 10  # photo downloads + Grok vision checks per entity per run (1-100)
   max_web_results_per_entity: 3
   rate_limit_seconds: 5            # spacing between serial OpenSERP queries
   request_timeout_seconds: 60      # per-query HTTP timeout
 ```
 
 Read in `src/enrichment/openserp_enrichment.py` (`load_config().get("openserp")`, lines 362, 1391, 1486). `openserp.worker_visibility_seconds` (default 900) is read by `openserp_worker.py:309`. The profiles change these values (see Deploy Profiles).
+
+---
+
+## Link safety and find re-check
+
+```yaml
+link_safety:
+  enabled: true        # Google Safe Browsing v4 (free, non-commercial); on once the key secret exists
+  clean_days: 30       # how long a URL found clean is not asked about again
+find_recheck:
+  interval_days: 180   # days between checks of one approved find's page
+  max_per_run: 50      # most finds re-checked per Phase 3 run
+```
+
+Read by `src/utils/link_safety.py` and `src/enrichment/find_recheck.py`. The Safe Browsing key is the secret
+`<env>-wwii-pipeline/safe-browsing-api-key` (loaded by `ecs_entrypoint._load_secrets`).
 
 ---
 
@@ -409,7 +426,7 @@ aws:
     startup_timeout: 120
 ```
 
-`config.yaml.example` ships only `enabled`, `region` and `notification_email` under `aws:`. The other keys are read with code defaults only if present (CloudFormation sets the matching env vars on ECS tasks; see below). `ecs_entrypoint.py:501-516` patches `aws.enabled: true`, `aws.s3_bucket` and `storage.entity_backend: filesystem` at runtime. The `health_check_url` and `database.backend/mongodb_uri` keys previously listed here are not read by any code; the health check is a fixed `GET {url}/health` (`src/utils/openserp_client.py:95`). `database.dynamodb_table_prefix` appears only in `lambda_handlers/import_handler.py`.
+`config.yaml.example` ships only `enabled`, `region` and `notification_email` under `aws:`. The other keys are read with code defaults only if present (CloudFormation sets the matching env vars on ECS tasks; see below). `ecs_entrypoint.py:501-516` patches `aws.enabled: true`, `aws.s3_bucket` and `storage.entity_backend: filesystem` at runtime. The `health_check_url` and `database.backend/mongodb_uri` keys previously listed here are not read by any code; the health check is a fixed `GET {url}/health` (`src/utils/openserp_client.py:95`). `database.dynamodb_table_prefix` is not read by any code (its only reader, the DynamoDB import, was removed 2026-11-21).
 
 **Options:**
 - `enabled` — When true, storage uses S3, cache uses DynamoDB, OpenSERP uses ECS Fargate

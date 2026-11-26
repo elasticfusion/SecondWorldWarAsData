@@ -222,30 +222,29 @@ def _ddb_networking_signal() -> bool:
 
     now = int(_t.time())
     try:
+        from src.utils.ddb_scan import scan_prefix  # Lambda zip carries src/; fail safe
+
         tbl = boto3.resource("dynamodb", region_name=REGION).Table(
             os.getenv("CACHE_TABLE", f"{ENV_NAME}-wwii-api-cache")
         )
-        for prefix, _live in (
-            ("nat#lease#", True),
-            ("batch_job#", False),
-            ("lock#", False),
+        for (
+            item
+        ) in scan_prefix(  # all pages (task 1.2), ONE scan for the three prefixes
+            tbl,
+            ("nat#lease#", "batch_job#", "lock#"),
+            projection="cache_key, #t, #s",
+            names={"#t": "ttl", "#s": "status"},
         ):
-            resp = tbl.scan(
-                FilterExpression="begins_with(cache_key, :p)",
-                ExpressionAttributeValues={":p": prefix},
-                ProjectionExpression="cache_key, #t, #s",
-                ExpressionAttributeNames={"#t": "ttl", "#s": "status"},
-            )
-            for item in resp.get("Items", []):
-                if prefix == "nat#lease#":
-                    ttl = item.get("ttl")
-                    if ttl is None or int(ttl) > now:
-                        return True
-                elif prefix == "batch_job#":
-                    if item.get("status") in ("pending", "ready"):
-                        return True
-                else:  # lock#
+            key = str(item.get("cache_key", ""))
+            if key.startswith("nat#lease#"):
+                ttl = item.get("ttl")
+                if ttl is None or int(ttl) > now:
                     return True
+            elif key.startswith("batch_job#"):
+                if item.get("status") in ("pending", "ready"):
+                    return True
+            else:  # lock#
+                return True
         return False
     except Exception as e:  # noqa: BLE001 - fail safe: proceed to the EC2 check
         logger.warning("DDB networking signal failed (%s) — proceeding to EC2 check", e)

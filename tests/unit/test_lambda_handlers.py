@@ -38,11 +38,6 @@ class TestDedupGateHandler:
 class TestSmallHandlers:
     """Verify all handlers are importable and callable."""
 
-    def test_import_handler(self):
-        from lambda_handlers.import_handler import handler
-
-        assert callable(handler)
-
     def test_openserp_manager(self):
         from lambda_handlers.openserp_manager import handler
 
@@ -55,11 +50,6 @@ class TestSmallHandlers:
 
     def test_phase2_handler(self):
         from lambda_handlers.phase2_handler import handler
-
-        assert callable(handler)
-
-    def test_phase3_handler(self):
-        from lambda_handlers.phase3_handler import handler
 
         assert callable(handler)
 

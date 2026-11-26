@@ -39,6 +39,7 @@ openserp/
 .openserp.pid
 config.yaml
 config.yaml.bak-*
+config.yaml.restored
 logs/*.log
 cache/
 output/

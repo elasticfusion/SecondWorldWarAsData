@@ -29,7 +29,7 @@ def _compliant_person(pid="01HX7YZABCDEFGHJKMNPQRSTVW", link_key="wikipedia_url"
     return {
         "PersonID": pid,
         "name": "Courtney Hodges",
-        "_schema_version": "2.27",  # schema-current-fixture entity=people
+        "_schema_version": "2.28",  # schema-current-fixture entity=people
         "enrichment_status": "enriched",
         "biographical_profile": {
             link_key: "https://en.wikipedia.org/wiki/Courtney_Hodges"
@@ -127,7 +127,7 @@ def test_p3a5_equipment_link_in_external_data_passes(tmp_path):
         tmp_path / "equipment" / "e1.json",
         {
             "EquipmentID": "01HX7YZABCDEFGHJKMNPQRSTVW",
-            "_schema_version": "2.30",  # schema-current-fixture entity=equipment
+            "_schema_version": "2.31",  # schema-current-fixture entity=equipment
             "enrichment_status": "enriched",
             "external_data": {"wikipedia_url": "https://en.wikipedia.org/wiki/Tiger_I"},
             "event_mentions": [{"EventID": "1HZMC6KKXZEVVB3Q0BEBKDTDNH"}],
@@ -137,7 +137,7 @@ def test_p3a5_equipment_link_in_external_data_passes(tmp_path):
         tmp_path / "equipment" / "e2.json",
         {
             "EquipmentID": "01HX7YZABCDEFGHJKMNPQRSTVX",
-            "_schema_version": "2.30",  # schema-current-fixture entity=equipment
+            "_schema_version": "2.31",  # schema-current-fixture entity=equipment
             "enrichment_status": "enriched",
             "external_data": {"additional_sources": [{"url": "https://x/y"}]},
             "event_mentions": [{"EventID": "1HZMC6KKXZEVVB3Q0BEBKDTDNH"}],
@@ -193,7 +193,7 @@ def test_p3a5_group_structured_facts_source_is_attribution(tmp_path):
         tmp_path / "people_groups" / "g1.json",
         {
             "GroupID": "01HX7YZABCDEFGHJKMNPQRSTVW",
-            "_schema_version": "2.29",
+            "_schema_version": "2.30",  # schema-current-fixture entity=people_groups
             "enrichment_status": "enriched",
             "enrichment_data": {
                 "_source": {

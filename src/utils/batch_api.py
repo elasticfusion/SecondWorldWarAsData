@@ -15,6 +15,129 @@ logger = logging.getLogger(__name__)
 
 API_BASE = "https://api.x.ai/v1"
 
+# the same budget as the live client's retries (grok_client._call_api_retrying)
+XAI_TRIES = 5
+POLL_TRIES = (
+    8  # an in-task poll rides out ~4 min of errors (4+8+16+32+60+60+60 s), as before
+)
+XAI_RETRY_STATUSES = (429, 500, 502, 503, 504)
+XAI_MAX_WAIT_S = 60.0
+
+
+def _xai_wait(resp: Optional[requests.Response], attempt: int) -> float:
+    """Retry-After (seconds form) when xAI gives one, else 4, 8, 16, 32 s; capped at 60 s."""
+    raw = resp.headers.get("Retry-After") if resp is not None else None
+    try:
+        wait = float(raw) if raw is not None else 4.0 * 2**attempt
+    except (TypeError, ValueError):
+        wait = 4.0 * 2**attempt
+    if wait != wait:  # NaN
+        wait = 4.0 * 2**attempt
+    return max(0.0, min(wait, XAI_MAX_WAIT_S))
+
+
+class XaiUnavailable(Exception):
+    """xAI did not answer after the retries, for a caller that must not stop its process (the
+    batch poller Lambda: ``stop=False``). ``funding`` True for HTTP 402."""
+
+    def __init__(self, detail: str, funding: bool = False):
+        super().__init__(detail)
+        self.funding = funding
+
+
+def _give_up(what: str, detail: str, funding: bool, stop: bool) -> None:
+    from src.utils import grok_models
+
+    if not stop:
+        raise XaiUnavailable(f"batch_api.{what}: {detail}", funding)
+    cls = grok_models.GrokFundsExhausted if funding else grok_models.GrokUnreachable
+    grok_models.stop_run(cls, f"batch_api.{what}", detail)
+
+
+def _retriable_error(e: Exception, idempotent: bool) -> bool:
+    """A transport error worth another try. A request that may have reached xAI (a read
+    timeout, a reset after sending) is retried only when repeating it is harmless."""
+    if isinstance(e, requests.ConnectTimeout):
+        return True  # never sent
+    return idempotent
+
+
+def _answered(
+    resp: requests.Response,
+    retry_statuses: tuple,
+    idempotent: bool,
+    last: bool,
+    what: str,
+    stop: bool,
+) -> bool:
+    """True when ``resp`` is the answer to return; False to try again. Gives up (stops or
+    raises) on no credit, a lasting outage, or a non-idempotent request xAI may have run.
+    """
+    code = resp.status_code
+    if code == 402:
+        _give_up(what, "HTTP 402", True, stop)
+    if code not in retry_statuses:
+        if not idempotent and code >= 500:
+            _give_up(what, f"HTTP {code}", False, stop)
+        resp.raise_for_status()
+        return True
+    if last:
+        _give_up(what, f"HTTP {code}", False, stop)
+    return False
+
+
+def xai_request(
+    method: str,
+    path: str,
+    api_key: str,
+    *,
+    what: str,
+    timeout: float,
+    tries: int = XAI_TRIES,
+    idempotent: bool = True,
+    stop: bool = True,
+    **kwargs: Any,
+) -> requests.Response:
+    """Every xAI Batch API call (submit, poll, retrieve; the batch poller too) goes through ONE
+    outage policy, the live client's (task 1.2f, owner 2026-11-20): a transport error, 429 or
+    5xx is tried ``tries`` times, then the run STOPS as ``GrokUnreachable``; HTTP 402 stops it as
+    ``GrokFundsExhausted``. Never an ordinary error a caller could count as a failed batch. Other
+    answers are returned (4xx raises ``HTTPError``).
+
+    ``idempotent`` False (creating a batch): a request that may have reached xAI is not sent
+    again (a second, billed batch); only a 429/503 (not processed) or a connect timeout (never
+    sent) is retried. ``stop`` False: raise ``XaiUnavailable`` instead of stopping the process
+    (a warm Lambda must not keep a process-wide Grok stop)."""
+    headers = {"Authorization": f"Bearer {api_key}", **kwargs.pop("headers", {})}
+    retry_statuses = XAI_RETRY_STATUSES if idempotent else (429, 503)
+    resp: Optional[requests.Response] = None
+    for attempt in range(tries):
+        last = attempt == tries - 1
+        try:
+            resp = requests.request(
+                method, f"{API_BASE}{path}", headers=headers, timeout=timeout, **kwargs
+            )
+        except requests.HTTPError:
+            raise
+        except requests.RequestException as e:
+            resp = None
+            if last or not _retriable_error(e, idempotent):
+                _give_up(what, type(e).__name__, False, stop)
+        else:
+            if _answered(resp, retry_statuses, idempotent, last, what, stop):
+                return resp
+        wait = _xai_wait(resp, attempt)
+        logger.warning(
+            "OBSERV batch_api.retry what=%s attempt=%d status=%s wait_s=%.0f",
+            what,
+            attempt + 1,
+            getattr(resp, "status_code", "error"),
+            wait,
+        )
+        time.sleep(wait)
+    raise AssertionError("unreachable")  # the last try returns or stops the run
+
+
 # Single source of truth for the Grok completion token ceiling, shared by the batch body here and
 # the realtime path in grok_client (was duplicated as a literal in both).
 GROK_MAX_TOKENS = 131072
@@ -171,8 +294,21 @@ def desync_possible(submitted: List[Any], ordered: List["BatchResult"]) -> bool:
     return not by_id and any(getattr(br, "is_substantive", False) for br in ordered)
 
 
+def strict_alignment(phase: str = "") -> bool:
+    """Phase 3 pairs an answer with a request ONLY by the id the batch returned with it (owner
+    2026-11-20: provenance guaranteed). ``phase`` is a phase script / PIPELINE_PHASE name; empty
+    reads PIPELINE_PHASE."""
+    import os as _os
+
+    return "phase3" in (phase or _os.environ.get("PIPELINE_PHASE", ""))
+
+
 def align_by_request_id(
-    submitted: List[Any], ordered: List["BatchResult"], *, batch_id: str = ""
+    submitted: List[Any],
+    ordered: List["BatchResult"],
+    *,
+    batch_id: str = "",
+    strict: bool = False,
 ) -> List["BatchResult"]:
     """``ordered`` rearranged into ``submitted``'s order by request id (the xAI results API
     returns OUR ``custom_id`` as each result's ``batch_request_id`` - verified 2026-11-11 on three
@@ -182,7 +318,9 @@ def align_by_request_id(
     * every result id is one of ours: aligned; a request with no result gets an error placeholder
       (it is then retried like any failed request, instead of failing the whole batch);
     * no result id is one of ours (server-assigned ids, as the API returned on 2026-10-14): the
-      order is left as is - the old positional behaviour - and said so;
+      order is left as is - the old positional behaviour - and said so. ``strict`` (Phase 3) refuses
+      that: a one-word answer cannot prove which request it answers, so every request gets an
+      error placeholder and is asked again, with an alert;
     * some are ours and some not, or an id repeats: nothing can be trusted - every request gets an
       error placeholder (all retried), loudly.
     """
@@ -190,12 +328,7 @@ def align_by_request_id(
     ids = [getattr(br, "request_id", "") for br in ordered]
     matched = [i for i in ids if i in set(ours)]
     if ordered and not matched:
-        logger.warning(
-            "OBSERV batch.align status=positional batch=%s: no result carries our request id; "
-            "mapping by position",
-            batch_id,
-        )
-        return ordered
+        return _no_ids_of_ours(ours, ordered, batch_id, strict)
     if len(matched) != len(ids) or len(set(matched)) != len(matched):
         logger.error(
             "OBSERV batch.align status=error batch=%s results=%d ours=%d distinct=%d: result ids "
@@ -207,6 +340,35 @@ def align_by_request_id(
         )
         return [BatchResult(request_id=i, error=RESULT_UNALIGNABLE) for i in ours]
     return _aligned(ours, ids, ordered, batch_id)
+
+
+def _no_ids_of_ours(
+    ours: list, ordered: List["BatchResult"], batch_id: str, strict: bool
+) -> List["BatchResult"]:
+    """No result carries one of our request ids. Phase 2 (``strict`` False): by position, as the
+    API once returned server ids. Phase 3 (``strict``): refused - an answer is used only when the
+    batch proved which request it answers - every request is asked again, with an alert.
+    """
+    if not strict:
+        logger.warning(
+            "OBSERV batch.align status=positional batch=%s: no result carries our request id; "
+            "mapping by position",
+            batch_id,
+        )
+        return ordered
+    from src.utils.observe import observe_error
+
+    observe_error(
+        "batch",
+        "align_positional_refused",
+        batch=batch_id,
+        results=len(ordered),
+        note="no result carried one of our request ids: by-position pairing is refused for "
+        "Phase 3 (an answer must be proven to belong to its request), so every request is "
+        "asked again next round. If this repeats, xAI changed the results format: check "
+        "retrieve_results_ordered",
+    )
+    return [BatchResult(request_id=i, error=RESULT_UNALIGNABLE) for i in ours]
 
 
 def _aligned(
@@ -266,6 +428,10 @@ class BatchMetrics:  # pylint: disable=too-many-instance-attributes
     # Ordered [our_cache_key, cache_type] pairs in SUBMISSION ORDER. The xAI results
     # API was thought not to echo custom_id (it does; aligned by id first), so retrieve maps results to these by position.
     submitted_request_ids: List[Any] = field(default_factory=list)
+    # provenance of the answers: the models that answered (served, as xAI reported) and when the
+    # batch was submitted; ``answer_provenance`` finds the batch of any cached answer from these files
+    served_models: Dict[str, int] = field(default_factory=dict)
+    submitted_at: int = 0
 
     def add_detail(self, detail: "RequestDetail") -> None:
         """Append a per-request detail record."""
@@ -394,6 +560,17 @@ class BatchCollector:
                     str(req.request_id)[:40],
                 )
 
+    def discard(self, request_ids: Iterable[str]) -> int:
+        """Remove the queued requests with these ids (set aside by the rounds loop). Returns how
+        many were removed."""
+        gone = set(request_ids)
+        with self._lock:
+            before = len(self.requests)
+            self.requests = [r for r in self.requests if r.request_id not in gone]
+            for rid in gone:
+                self._seen.pop(rid, None)
+            return before - len(self.requests)
+
     def __len__(self) -> int:
         return len(self.requests)
 
@@ -434,9 +611,31 @@ class BatchCollector:
         return n
 
 
+def _not_created(e: BaseException) -> bool:
+    """A create xAI cannot have run: still rate-limited / unavailable, or never sent."""
+    text = str(e)
+    return any(m in text for m in ("HTTP 429", "HTTP 503", "ConnectTimeout"))
+
+
+def _alert_create_uncertain(batch_name: str, file_id: Any) -> None:
+    """The create may have reached xAI: say so, so nobody pays for the batch twice."""
+    from src.utils.observe import observe_error
+
+    observe_error(
+        "batch",
+        "create_uncertain",
+        note=(
+            f"Creating batch {batch_name} failed or timed out and may still have been "
+            "created at xAI. Before re-running, check https://console.x.ai (Batches) for "
+            "that name; if it exists, let it finish and retrieve it instead"
+        ),
+        batch_name=batch_name[:128],
+        file_id=str(file_id)[:64],
+    )
+
+
 def submit_batch(api_key: str, jsonl_path: Path, batch_name: str = "pipeline") -> str:
     """Upload JSONL and create batch. Returns batch_id."""
-    headers = {"Authorization": f"Bearer {api_key}"}
 
     # Log submission details
     file_size = jsonl_path.stat().st_size
@@ -457,36 +656,40 @@ def submit_batch(api_key: str, jsonl_path: Path, batch_name: str = "pipeline") -
         },
     )
 
-    # Upload file
-    with open(jsonl_path, "rb") as f:
-        resp = requests.post(
-            f"{API_BASE}/files", headers=headers, files={"file": f}, timeout=120
-        )
-    resp.raise_for_status()
+    # Upload file (read once: a retry sends the same bytes again)
+    body = jsonl_path.read_bytes()
+    resp = xai_request(
+        "POST",
+        "/files",
+        api_key,
+        what="upload",
+        timeout=120,
+        files={"file": (jsonl_path.name, body)},
+    )
     file_id = resp.json()["id"]
     logger.info("Uploaded %s as file %s", jsonl_path.name, file_id)
 
-    # Create batch with retry on 429
-    for attempt in range(5):
-        resp = requests.post(
-            f"{API_BASE}/batches",
-            headers={**headers, "Content-Type": "application/json"},
-            json={"name": batch_name, "input_file_id": file_id},
+    from src.utils import grok_models
+
+    try:
+        resp = xai_request(
+            "POST",
+            "/batches",
+            api_key,
+            what="create",
             timeout=30,
+            idempotent=False,  # never create a second, billed batch
+            json={"name": batch_name, "input_file_id": file_id},
         )
-        if resp.status_code == 429:
-            wait = int(resp.headers.get("Retry-After", 60 * (attempt + 1)))
-            logger.warning(
-                "Batch API rate limited, waiting %ds (attempt %d/5)", wait, attempt + 1
-            )
-            time.sleep(wait)
-            continue
-        resp.raise_for_status()
         batch_id = resp.json()["batch_id"]
-        logger.info("Created batch %s (%s)", batch_id, batch_name)
-        return batch_id
-    resp.raise_for_status()  # raise the last 429
-    return ""  # unreachable
+    except (requests.HTTPError, grok_models.GrokFundsExhausted):
+        raise  # refused by xAI: nothing was created
+    except BaseException as e:
+        if not _not_created(e):
+            _alert_create_uncertain(batch_name, file_id)
+        raise
+    logger.info("Created batch %s (%s)", batch_id, batch_name)
+    return batch_id
 
 
 def _check_batch_submission_ok(
@@ -520,29 +723,14 @@ def poll_batch(
 ) -> Dict[str, Any]:
     """Poll until batch completes. Returns final batch state (``_timed_out`` when ``max_hours``
     ran out first)."""
-    headers = {"Authorization": f"Bearer {api_key}"}
     start = time.monotonic()
-    consecutive_errors = 0
     last_done = (
         -1
     )  # timing statistics are written only when the completed count changes
     while True:
-        try:
-            resp = requests.get(
-                f"{API_BASE}/batches/{batch_id}", headers=headers, timeout=30
-            )
-            resp.raise_for_status()
-            consecutive_errors = 0
-        except requests.exceptions.RequestException as e:
-            consecutive_errors += 1
-            if consecutive_errors >= 5:
-                raise
-            logger.warning(
-                "Poll error (%d/5), retrying in 60s: %s", consecutive_errors, e
-            )
-            time.sleep(60)
-            continue
-        batch = resp.json()
+        # an outage is retried, then stops the run (xai_request); the batch itself lives on at
+        # xAI and the poller adopts it (grok_client._submit_poll_retrieve keeps its job)
+        batch = get_batch(api_key, batch_id, timeout=30)
         state = batch.get("state", {})
         pending = state.get("num_pending", 0)
         success = state.get("num_success", 0)
@@ -605,55 +793,32 @@ def poll_batch(
         time.sleep(interval)
 
 
+def get_batch(
+    api_key: str,
+    batch_id: str,
+    timeout: float = 30,
+    tries: int = POLL_TRIES,
+    stop: bool = True,
+) -> Dict[str, Any]:
+    """The batch's current state (shared outage policy: ``xai_request``)."""
+    return xai_request(
+        "GET",
+        f"/batches/{batch_id}",
+        api_key,
+        what="poll",
+        timeout=timeout,
+        tries=tries,
+        stop=stop,
+    ).json()
+
+
 def retrieve_results(api_key: str, batch_id: str) -> Dict[str, BatchResult]:
-    """Retrieve all batch results. Returns {request_id: BatchResult}."""
-    headers = {"Authorization": f"Bearer {api_key}"}
-    results: Dict[str, BatchResult] = {}
-    pagination_token: Optional[str] = None
-
-    while True:
-        params: Dict[str, Any] = {"page_size": 100}
-        if pagination_token:
-            params["pagination_token"] = pagination_token
-
-        resp = requests.get(
-            f"{API_BASE}/batches/{batch_id}/results",
-            headers=headers,
-            params=params,
-            timeout=60,
-        )
-        resp.raise_for_status()
-        data = resp.json()
-
-        for item in data.get("results", []):
-            rid = item.get("batch_request_id", "")
-            batch_result = item.get("batch_result", {})
-            error_msg = batch_result.get("error", "")
-
-            completion = batch_result.get("response", {}).get("chat_get_completion", {})
-            choices = completion.get("choices", [])
-            if choices:
-                content = choices[0].get("message", {}).get("content", "")
-                finish_reason = choices[0].get("finish_reason", "unknown")
-                results[rid] = BatchResult(
-                    request_id=rid,
-                    content=content,
-                    finish_reason=finish_reason,
-                    error=error_msg,
-                    model=str(completion.get("model") or ""),
-                )
-            else:
-                results[rid] = BatchResult(
-                    request_id=rid,
-                    error=error_msg or "no choices returned",
-                )
-                logger.warning("No content for request %s", rid)
-
-        pagination_token = data.get("pagination_token")
-        if not pagination_token:
-            break
-
-    logger.info("Retrieved %d results from batch %s", len(results), batch_id)
+    """Retrieve all batch results. Returns {request_id: BatchResult} (DRY: built from
+    ``retrieve_results_ordered``)."""
+    results = {r.request_id: r for r in retrieve_results_ordered(api_key, batch_id)}
+    for rid, r in results.items():
+        if not r.content:
+            logger.warning("No content for request %s", rid)
     return results
 
 
@@ -662,21 +827,20 @@ def retrieve_results_ordered(api_key: str, batch_id: str) -> List["BatchResult"]
     must ``align_by_request_id`` first - each item's ``batch_request_id`` is our custom_id,
     verified 2026-11-11; the 2026-10-14 note that the API returned only server ids and kept
     submission order no longer holds). Order is preserved across pagination."""
-    headers = {"Authorization": f"Bearer {api_key}"}
     ordered: List["BatchResult"] = []
     pagination_token: Optional[str] = None
     while True:
         params: Dict[str, Any] = {"page_size": 100}
         if pagination_token:
             params["pagination_token"] = pagination_token
-        resp = requests.get(
-            f"{API_BASE}/batches/{batch_id}/results",
-            headers=headers,
-            params=params,
+        data = xai_request(
+            "GET",
+            f"/batches/{batch_id}/results",
+            api_key,
+            what="retrieve",
             timeout=60,
-        )
-        resp.raise_for_status()
-        data = resp.json()
+            params=params,
+        ).json()
         for item in data.get("results", []):
             rid = item.get("batch_request_id", "")
             batch_result = item.get("batch_result", {})

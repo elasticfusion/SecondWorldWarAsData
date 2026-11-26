@@ -23,6 +23,8 @@ beautifulsoup4==4.14.3
 soupsieve==4.1
 # HTML5 parsing (browser rules: bare <p> closed, missing </tr> supplied) for HyperWar pages
 html5lib==1.1
+# kept web pages are rebuilt from an allowlist (src/utils/html_safety: Rust ammonia/html5ever)
+nh3==0.3.8
 html2text==2025.4.15
 pymupdf==1.27.2.2
 pymupdf4llm==1.27.2.2

@@ -1,0 +1,26 @@
+system_prompt: |
+  You check whether a scanned page from a NARA record is part of a specific cited WWII document.
+  You judge only what is visible on the page. Be strict about unit identity and date.
+
+prompt_template: |
+  A historian cited a WWII document. A NARA catalog record was matched to that citation by its
+  description. Below is one scanned page of that record ({page_label}). Decide whether the page
+  shows that it belongs to the cited document (or to the file that holds it).
+
+  Citation: "{citation}"
+  NARA record title: "{nara_title}"
+  NARA series: "{series}"
+
+  Return JSON matching this structure:
+  {schema}
+
+schema: |
+  {"verdict": "match", "reason": "Header reads 'XIV Corps After Action Report, July 1944'"}
+
+rules:
+  - "verdict is one of: match, not_match, unsure."
+  - "match: the page shows the cited unit (or author) AND a date or document type consistent with the citation."
+  - "not_match: the page clearly belongs to a different unit, author, period or kind of document."
+  - "unsure: the page shows nothing that settles it (a blank page, a cover sheet without a unit, an illegible scan, a continuation page with no heading)."
+  - "A file cover or index sheet naming the cited unit and period is a match."
+  - "Quote the words on the page that decided it in reason; never invent text that is not visible."

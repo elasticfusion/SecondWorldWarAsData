@@ -82,3 +82,20 @@ def test_results_section_clean_run_no_failure_block(tmp_path, monkeypatch):
     section = ee._build_results_section()
     assert "ENRICHMENT FAILURES" not in section
     assert "✓ people: 5" in section
+
+
+def test_results_section_marks_a_pending_step_incomplete_not_ticked(
+    tmp_path, monkeypatch
+):
+    monkeypatch.setattr(ee, "WORKDIR", tmp_path)
+    _write_results(
+        tmp_path,
+        {
+            "enriched": 3,
+            "source_stats": {"places": {"enriched": 3, "status": "pending"}},
+            "errored_sources": [],
+        },
+    )
+    section = ee._build_results_section()
+    assert "⚠ places: INCOMPLETE" in section and "stays queued" in section
+    assert "✓ places" not in section

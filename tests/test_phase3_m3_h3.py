@@ -77,8 +77,14 @@ def test_group_transient_error_not_stamped_notfound(tmp_path, monkeypatch):
 def test_openserp_reset_circuit():
     import src.enrichment.openserp_enrichment as oe
 
-    # Force the breaker open, then reset.
-    for _ in range(oe._CIRCUIT_BREAKER_THRESHOLD):
+    # Force the breaker open (which now stops the phase, D8c - task 1.2f), then reset.
+    import pytest
+
+    from src.utils import grok_models
+
+    for _ in range(oe._CIRCUIT_BREAKER_THRESHOLD - 1):
+        oe._breaker_record_failure()
+    with pytest.raises(grok_models.ServiceUnreachable):
         oe._breaker_record_failure()
     assert oe._breaker_is_open() is True
     oe.reset_circuit()
@@ -92,9 +98,14 @@ def test_openserp_breaker_thread_safe():
 
     oe.reset_circuit()
 
+    from src.utils import grok_models
+
     def hammer():
         for _ in range(100):
-            oe._breaker_record_failure()
+            try:
+                oe._breaker_record_failure()
+            except grok_models.ServiceUnreachable:
+                pass  # an open breaker stops the phase (task 1.2f)
             oe._breaker_is_open()
 
     threads = [threading.Thread(target=hammer) for _ in range(8)]

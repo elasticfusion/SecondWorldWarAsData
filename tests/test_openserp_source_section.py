@@ -44,12 +44,19 @@ def test_searches_only_sections_with_operation(tmp_path):
     assert mock_search.call_args.args[0] == "Battle of the Bulge"
     a = json.loads((ss / "a.json").read_text())
     b = json.loads((ss / "b.json").read_text())
-    assert len(a["primary_sources"]) == 1 and a["openserp_searched"] is True
+    assert (
+        "primary_sources" not in a and a["openserp_searched"] is True
+    )  # held in the queue
+    assert (
+        mock_search.call_args.kwargs["origin"].entity_id == "01HX7YZABCDEFGHJKMNPQRSTVW"
+    )
     assert b.get("primary_sources") is None  # null-over-fake: no operation -> untouched
     jsonschema.validate(a, SOURCE_SECTION_OUTPUT_SCHEMA)
 
 
-def test_dedupes_primary_sources(tmp_path):
+def test_a_source_section_page_is_queued_once_and_never_written_to_the_record(
+    tmp_path, queued_finds
+):
     ss = tmp_path / "source_section"
     ss.mkdir()
     _write(
@@ -58,21 +65,36 @@ def test_dedupes_primary_sources(tmp_path):
         {
             "SourceSectionID": "01HX7YZABCDEFGHJKMNPQRSTVW",
             "operation": {"name": "Battle of Metz"},
-            "primary_sources": [{"url": "http://dup", "source": "openserp"}],
+            "primary_sources": [{"url": "http://old", "source": "openserp"}],
         },
     )
+    page = {
+        "url": "http://example.org/new",
+        "title": "y",
+        "summary": "s",
+        "source": "openserp",
+    }
     with (
         patch.object(oe, "_openserp_reachable", return_value=True),
         patch.object(
             oe,
-            "search_event_content",
+            "_search_openserp",
             return_value=[
-                {"url": "http://dup", "title": "x", "source": "openserp"},
-                {"url": "http://new", "title": "y", "source": "openserp"},
+                {"url": "http://example.org/new", "title": "y", "description": "d"}
             ],
         ),
+        patch.object(oe, "process_positive_url", return_value=page),
     ):
-        oe.enrich_source_sections_with_openserp(ss.parent, "http://x")
+        data = json.loads((ss / "a.json").read_text())
+        assert oe.enrich_one_source_section(data, "http://x", object()) is True
+        assert oe.enrich_one_source_section(data, "http://x", object()) is False
     a = json.loads((ss / "a.json").read_text())
-    urls = [s["url"] for s in a["primary_sources"]]
-    assert urls.count("http://dup") == 1 and "http://new" in urls
+    assert a["primary_sources"] == [{"url": "http://old", "source": "openserp"}]
+    (event,) = queued_finds()
+    assert (
+        event["endpoint"] == "http://example.org/new"
+        and event["review_status"] == "pending"
+    )
+    p = event["request_params"]
+    assert p["origin_entity_type"] == "source_section" and p["summary"] == "s"
+    assert p["origin_entity_id"] == "01HX7YZABCDEFGHJKMNPQRSTVW"

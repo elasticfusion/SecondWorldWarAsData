@@ -155,18 +155,31 @@ def notify_deletion(path: Path) -> None:
 from src.extraction.people import _merge_person
 
 
-def _dynamo_merge_sync(
-    entity_type: str, primary_id: str, primary_data: Dict, secondary_id: str
-) -> None:
-    """Mirror a dedup merge into DynamoEntityStore (#9): delete the merged-away
-    secondary and put the merged primary, so the store doesn't drift from the
-    files (a stale secondary lingering + a stale primary). Best-effort — a Dynamo
-    failure must not block the (already-completed) file merge; the Phase-3 start
-    reconciliation / next incremental dedup will re-sync. No-op when no store
-    (local/file mode)."""
-    # DynamoDB entity store removed — merges are applied to the S3-authoritative JSON files;
-    # there is no Dynamo copy to sync. No-op (kept so the call site is undisturbed).
-    return
+def store_merge_pointer(entity: str, old_id: str, survivor_id: str) -> bool:
+    """Store the pointer from the merged-away id to the survivor BEFORE the secondary is deleted
+    (``src/utils/id_aliases``): anything holding the old id still reaches the record. True when the
+    secondary may be deleted: the pointer is stored, or there is nothing to point from (the same
+    record twice, or an old id that is not a ULID: no reference can hold it). A valid old id with
+    no valid survivor is refused (False): it would be deleted with nowhere to point. False: keep
+    the secondary (retried next run)."""
+    from src.schemas import ULID_REGEX
+    from src.utils import id_aliases
+
+    def ok(i: str) -> bool:
+        return isinstance(i, str) and bool(ULID_REGEX.fullmatch(i))
+
+    if not ok(old_id) or old_id == survivor_id:
+        return True
+    if not ok(survivor_id):
+        logger.error(
+            "OBSERV dedup.merge_pointer_refused entity=%s old=%s status=error - the survivor has "
+            "no valid id, so the merged-away record is kept (it would have nowhere to point). "
+            "Give the survivor a ULID (the central write guard does) and re-run",
+            entity,
+            old_id,
+        )
+        return False
+    return id_aliases.record(entity, old_id, survivor_id, "dedup")
 
 
 def load_person(people_dir: Path, filename: str) -> Dict:
@@ -227,8 +240,11 @@ def _rebase_event_file(f: Path, old_id: str, new_id: str, ref_key: str) -> int:
                 refs[idx] = new_id
                 changed += 1
     if changed:
-        with open(f, "w", encoding="utf-8") as fh:
-            json.dump(d, fh, indent=2, ensure_ascii=False)
+        from src.utils.file_lock import _atomic_write_json
+
+        # crash-atomic: a kill mid-write must not leave a truncated record, which Phase 3 would
+        # take for corruption and hold the book (task 1.2f)
+        _atomic_write_json(f, d)
     return changed
 
 
@@ -394,14 +410,16 @@ def _merge_one_person_secondary(
             primary_person["filename"],
         )
         return candidate, False
+    if not store_merge_pointer("people", secondary_id, primary_id):
+        return (
+            candidate,
+            False,
+        )  # merge data is in the primary; the secondary waits for its pointer
     secondary_file.unlink()
     _notify_deletion(secondary_file)
 
     if secondary_id and primary_id:
         update_event_refs(output_root, secondary_id, primary_id, "people")
-    # #9: remove the merged-away secondary from DynamoDB too.
-    if secondary_id:
-        _dynamo_merge_sync("people", "", {}, secondary_id)
     return candidate, True
 
 
@@ -430,10 +448,6 @@ def do_merge(people_dir: Path, people: List[Dict], primary_idx: int) -> Optional
     # NOTE: the merged primary is already persisted crash-atomically INSIDE the loop (before each
     # secondary is deleted), so no end-of-loop write is needed. If merged_count==0 the primary was
     # never modified. This ordering is what makes the merge safe against a mid-loop crash.
-
-    # #9: mirror the merged primary into DynamoDB (put, not delete).
-    if primary_id and merged_count:
-        _dynamo_merge_sync("people", primary_id, primary_data, "")
 
     logger.info(
         "✓ Merged %d duplicate(s) into %s", merged_count, primary_person["name"]
@@ -491,11 +505,6 @@ def merge_generic(
 
     # The merged primary is persisted crash-atomically INSIDE the loop (before each secondary is
     # deleted), so no end-of-loop write is needed. If merged_any is False the primary was unchanged.
-
-    # #9: mirror the merged primary into DynamoDB (put, not delete).
-    primary_id = primary_data.get(id_field, "")
-    if primary_id and merged_any:
-        _dynamo_merge_sync(entity_dir.name, primary_id, primary_data, "")
 
     primary_name = primary.get("name", primary.get("filename", ""))
     logger.info("✓ Merged %d into %s", len(people) - 1, primary_name)
@@ -572,14 +581,13 @@ def _merge_one_secondary(
             p["filename"],
             primary_file.name,
         )
-        if old_id:
-            _dynamo_merge_sync(entity_dir.name, "", {}, old_id)
         return True
+    if not store_merge_pointer(entity_dir.name, old_id, new_id):
+        return (
+            True  # merged into the primary; the file stays until its pointer is stored
+        )
     f.unlink()
     _notify_deletion(f)
-    # #9: remove the merged-away secondary from DynamoDB too.
-    if old_id:
-        _dynamo_merge_sync(entity_dir.name, "", {}, old_id)
     return True
 
 

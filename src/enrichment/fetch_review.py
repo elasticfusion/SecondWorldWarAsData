@@ -1,14 +1,15 @@
 """Human-review + promotion bridge for TEXTUAL fetch-provenance finds.
 
 Principle (owner): a positive textual find (e.g. a Wayback snapshot) is enqueued for human
-review; **on affirm** it flows through the SAME path as a deliberately-uploaded book — it becomes
-a ``SourceMetadata`` record handed to the ingestion front-end (Phase 0/1), rather than being
-written directly as facts by an enrichment side-channel.
+review; **on affirm** it flows through the SAME path as a deliberately-uploaded book: the affirmed
+batch (``submit_affirmed_batch``) uploads the page kept when the find was judged to the
+``contentrepository/`` front door (Phase 0), rather than being written directly as facts by an
+enrichment side-channel.
 
 This closes the gap identified in docs/archive/2026-11-16/FETCH_PROVENANCE_DESIGN.md: ``source_retrieval``
 already quarantines internet content for review, but nothing promoted an AFFIRMED item into
-ingestion. ``affirm_fetch_find`` is that bridge (minimal function/CLI first; a UI can call it
-later). Reuses: fetch_provenance (the review_status), source_retrieval quarantine, SourceMetadata.
+ingestion. ``affirm_fetch_find`` records the decision and ``submit_affirmed_batch`` is the bridge.
+Reuses: fetch_provenance (the review_status) and find_pages (the kept page).
 
 All operations are fail-safe and never process content automatically — promotion only stages a
 source for the normal pipeline; extraction remains the pipeline's job.
@@ -16,9 +17,10 @@ source for the normal pipeline; extraction remains the pipeline's job.
 
 from __future__ import annotations
 
+import contextlib
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterator, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -59,6 +61,13 @@ def _load_events() -> List[Dict[str, Any]]:
     local JSONL reference surface. Returns [] on any error (fail-safe)."""
     events, _errors = _load_events_counted()
     return events
+
+
+def load_events() -> tuple[List[Dict[str, Any]], int]:
+    """Every stored find event (any review status) and the number of load failures. A caller that
+    needs the whole picture must check the failure count: a scan that failed looks like no events.
+    """
+    return _load_events_counted()
 
 
 def _load_events_counted() -> tuple[List[Dict[str, Any]], int]:
@@ -250,29 +259,36 @@ def decide_exclude_scope(fetch_event: Dict[str, Any], grok_client: Any = None) -
     url = fetch_event.get("endpoint", "")
     summary = fetch_event.get("result_summary", "")
     try:
-        response = grok_client.chat_completion(
-            prompt=(
-                "A human reviewer is excluding a search result as not useful for a WWII history "
-                "corpus. Should the ENTIRE website (domain) be excluded from all future searches, "
-                "or ONLY this single URL?\n"
-                "Answer SITE only if the whole domain is categorically low-value or off-topic for "
-                "WWII primary/secondary sources (e.g. spam, shopping, unrelated wiki mirrors). "
-                "Answer URL if only this particular page is unsuitable but the domain may hold "
-                "other useful material.\n"
-                f"URL: {url[:300]}\n"
-                f"Result summary: {summary[:300]}\n"
-                'Return ONLY "SITE" or "URL".'
+        from src.utils.grok_choice import ask_choice, can_reask, evictor
+
+        prompt = (
+            "A human reviewer is excluding a search result as not useful for a WWII history "
+            "corpus. Should the ENTIRE website (domain) be excluded from all future searches, "
+            "or ONLY this single URL?\n"
+            "Answer SITE only if the whole domain is categorically low-value or off-topic for "
+            "WWII primary/secondary sources (e.g. spam, shopping, unrelated wiki mirrors). "
+            "Answer URL if only this particular page is unsuitable but the domain may hold "
+            "other useful material.\n"
+            f"URL: {url[:300]}\n"
+            f"Result summary: {summary[:300]}\n"
+            'Return ONLY "SITE" or "URL".'
+        )
+        system = "You decide the scope of a search-source exclusion."
+        choice = ask_choice(
+            lambda: grok_client.chat_completion(
+                prompt=prompt,
+                system_prompt=system,
+                temperature=0.0,
+                use_cache=True,
+                cache_type="exclude_scope",
             ),
-            system_prompt="You decide the scope of a search-source exclusion.",
-            temperature=0.0,
-            use_cache=True,
-            cache_type="exclude_scope",
+            ("SITE", "URL"),
+            evictor(grok_client, prompt, system, "exclude_scope", 0.0),
+            what="exclude_scope",
+            reask=can_reask(grok_client),
         )
-        scope = (
-            SCOPE_SITE
-            if str(response).strip().upper().startswith("SITE")
-            else SCOPE_URL
-        )
+        # unusable twice -> the narrow, reversible URL scope (fail closed)
+        scope = SCOPE_SITE if choice == "SITE" else SCOPE_URL
         logger.info(
             "OBSERV fetch_find.exclude_scope decided=%s source=grok url=%s",
             scope,
@@ -325,56 +341,42 @@ def exclude_fetch_find(
     return {"scope": scope, "ok": bool(ok and rejected), "host": host}
 
 
-def affirm_fetch_find(
-    fetch_event: Dict[str, Any], quarantine_path: Path, *, media_type: str = "html"
-) -> Optional["SourceMetadata"]:  # type: ignore[name-defined] # noqa: F821
-    """Promote an AFFIRMED textual find into a SourceMetadata for ingestion — the SAME front door
-    as an uploaded book. Returns the SourceMetadata (staged, not yet extracted) or None on failure.
+def find_source_id(fetch_event_id: str) -> str:
+    """The Phase 0 source id (and slug) an affirmed find is submitted under: ``fetchfind-<id>``."""
+    return f"fetchfind-{fetch_event_id}"
 
-    ``fetch_event`` is the stored provenance record; ``quarantine_path`` is the reviewed, affirmed
-    content already downloaded by source_retrieval's quarantine. Fail-safe.
+
+def affirm_fetch_find(fetch_event: Dict[str, Any]) -> Optional[str]:
+    """Record a reviewer's AFFIRM on a textual find. Returns the source id it will be submitted
+    under (``find_source_id``), or None when the decision could not be stored (the find stays
+    pending, so the reviewer is told and may retry).
+
+    No content is read here: ``submit_affirmed_batch`` later submits the page kept when the find
+    was judged (``find_pages``, checked against its checksum), so nothing on the queue item -
+    no path, no URL - chooses what is ingested. Fail-safe.
     """
-    try:
-        from src.ingestion.source_metadata import SourceMetadata
+    from src.utils import fetch_provenance as _fp
+    from src.utils.find_queue import clean_for_log
 
-        endpoint = fetch_event.get("endpoint", "")
-        summary = fetch_event.get("result_summary") or ""
-        # Capture the archive snapshot URL as the acquisition provenance when present.
-        acq_url = endpoint
-        if "->" in summary:
-            acq_url = summary.split("->", 1)[1].strip() or endpoint
-
-        src = SourceMetadata(
-            source_id=f"fetchfind-{fetch_event.get('fetch_event_id', '')}",
-            original_path=Path(quarantine_path),
-            media_type=media_type,  # type: ignore[arg-type]
-            acquisition_method="web_archive_affirmed",
-            acquisition_url=acq_url,
-            capture_date=fetch_event.get("queried_at"),
-            notes=(
-                "Promoted from an affirmed textual fetch-provenance find "
-                f"(provider={fetch_event.get('provider')}, "
-                f"fetch_event_id={fetch_event.get('fetch_event_id')}). "
-                "Enters ingestion like an uploaded book."
-            ),
-        )
+    fid = fetch_event.get("fetch_event_id") or ""
+    if fid and set_review_status(fid, _fp.AFFIRMED):
         logger.info(
-            "OBSERV fetch_find.affirmed provider=%s fetch_event_id=%s -> source_id=%s staged for ingestion",
-            fetch_event.get("provider"),
-            fetch_event.get("fetch_event_id"),
-            src.source_id,
+            "OBSERV fetch_find.affirmed provider=%s fetch_event_id=%s -> source_id=%s "
+            "(submitted to Phase 0 by the next affirmed batch)",
+            clean_for_log(fetch_event.get("provider"), 40),
+            clean_for_log(fid, 40),
+            find_source_id(fid),
         )
-        from src.utils import fetch_provenance as _fp
-
-        set_review_status(fetch_event.get("fetch_event_id", ""), _fp.AFFIRMED)
-        return src
-    except Exception as e:  # noqa: BLE001 - promotion must never crash a review action
-        logger.warning(
-            "fetch_find affirm failed for %s: %s",
-            fetch_event.get("fetch_event_id"),
-            e,
-        )
-        return None
+        return find_source_id(fid)
+    observe_warn(
+        "fetch_find",
+        "affirm_not_stored",
+        fetch_event_id=clean_for_log(fid, 40),
+        note="the reviewer's affirm could not be stored, so the find is still pending and will "
+        "not be submitted. Retry it in the URL-review UI; if it fails again check the cache "
+        "table (DynamoDB) access of the URL-review Lambda and its logs",
+    )
+    return None
 
 
 def _safe_token(value: str, fallback: str) -> str:
@@ -395,38 +397,31 @@ def _find_title(fetch_event: Dict[str, Any]) -> str:
 
 
 def _find_content_bytes(fetch_event: Dict[str, Any]) -> bytes:
-    """The bytes to submit for a find: the quarantined file if present locally, else a provenance
-    HTML stub (the source URL + metadata) so Phase 1 can ingest it like any uploaded source.
-    """
+    """The bytes to submit for a find: the page it was judged on (kept by ``find_pages``, checked
+    against its checksum), else a provenance HTML stub (the source URL + metadata) so Phase 1 can
+    ingest it like any uploaded source. Raises
+    ``find_pages.PageUnusable`` when the find names a kept page that is missing or altered: it is
+    not submitted (the stub would stand in for a page a person approved)."""
     import html as _html
 
-    _MAX_CONTENT_BYTES = (
-        25 * 1024 * 1024
-    )  # cap a quarantined-file read (don't OOM the Lambda)
-    qp = fetch_event.get("quarantine_path") or fetch_event.get("retrieved_path") or ""
-    try:
-        if qp:
-            p = Path(qp)
-            if p.is_file():
-                size = p.stat().st_size
-                if size > _MAX_CONTENT_BYTES:
-                    logger.warning(
-                        "OBSERV fetch_review.content_oversized path=%s size=%d cap=%d "
-                        "status=warn (falling back to provenance stub)",
-                        p.name,
-                        size,
-                        _MAX_CONTENT_BYTES,
-                    )
-                else:
-                    with p.open("rb") as fh:
-                        return fh.read(_MAX_CONTENT_BYTES)
-    except (
-        Exception
-    ) as e:  # noqa: BLE001 - unreadable quarantine file -> fall back to the stub
-        logger.warning(
-            "OBSERV fetch_review.content_read_failed err=%s status=warn",
-            type(e).__name__,
-        )
+    from src.utils import find_pages
+    from src.utils.url_hygiene import scrub
+
+    page = find_pages.load(fetch_event.get("request_params") or {})
+    if page is not None:
+        return page
+
+    # No local file is read here: no writer puts a quarantine path on a fetch event, and a path
+    # taken from a queue item would let a tampered item publish any file the Lambda can read.
+    params = fetch_event.get("request_params") or {}
+    log = logger.warning if params.get("page_kept") is False else logger.info
+    log(
+        "OBSERV fetch_review.submitted_stub fetch_event_id=%s provider=%s - the find has no kept "
+        "page, so Phase 0 gets only its URL and summary. To ingest the page itself, upload it to "
+        "contentrepository/ by hand",
+        scrub(str(fetch_event.get("fetch_event_id", "")))[:40],
+        scrub(str(fetch_event.get("provider", "")))[:40],
+    )
     url = _html.escape(fetch_event.get("endpoint", ""))
     provider = _html.escape(str(fetch_event.get("provider", "")))
     summary = _html.escape(str(fetch_event.get("result_summary", "")))
@@ -463,25 +458,36 @@ _CONTENT_HASH_PREFIX = "contenthash#"
 
 def _content_sha256(data: bytes) -> str:
     """sha256 of the content bytes (matches trigger_handler._title_checksum's digest format)."""
-    import hashlib
+    from src.utils.find_pages import content_sha256
 
-    return "sha256:" + hashlib.sha256(data).hexdigest()
+    return content_sha256(data)
+
+
+CLAIM_WON, CLAIM_DUPLICATE, CLAIM_ERROR = "won", "duplicate", "error"
 
 
 def _register_content_hash_if_new(digest: str, source_id: str) -> bool:
-    """GLOBAL exact-content dedup: atomically claim ``contenthash#<sha>`` across ALL sources,
-    regardless of domain/title. Returns True if this is NEW content (claim won -> proceed), False
-    if the identical bytes were already submitted (skip the duplicate ingestion).
+    """True unless the content is a known duplicate (see ``_claim_content_hash``)."""
+    return _claim_content_hash(digest, source_id) != CLAIM_DUPLICATE
 
-    Fail-SAFE but fail-OPEN: if there is no table (local/test) or any error, return True (proceed) —
-    dedup must never block a legitimate submission. Uses a conditional put so two concurrent batches
-    cannot both win the same hash.
+
+def _claim_content_hash(digest: str, source_id: str) -> str:
+    """GLOBAL exact-content dedup: atomically claim ``contenthash#<sha>`` across ALL sources,
+    regardless of domain/title. Returns:
+
+    * CLAIM_WON - new content, this attempt holds the claim (it releases it if the content is
+      not stored: ``claimed_content`` / ``release_content_hash``);
+    * CLAIM_DUPLICATE - the identical bytes were already claimed: skip the ingestion;
+    * CLAIM_ERROR - no table (local/test) or a DynamoDB error: fail-OPEN, proceed, but nothing
+      was claimed, so nothing may be released.
+
+    A conditional put, so two concurrent batches cannot both win the same hash.
     """
     from src.utils import fetch_provenance as fp
 
     table = _resolve_table(fp)
     if table is None:
-        return True
+        return CLAIM_ERROR  # no registry: proceed, nothing claimed (nothing to release)
     try:
         import json
         import time
@@ -492,10 +498,12 @@ def _register_content_hash_if_new(digest: str, source_id: str) -> bool:
                 "response": json.dumps(
                     {"source_id": source_id, "registered_at": int(time.time())}
                 ),
+                # who holds the claim: only that writer may release it (release_content_hash)
+                "source_id": source_id,
             },
             ConditionExpression="attribute_not_exists(cache_key)",
         )
-        return True  # claim won -> new content
+        return CLAIM_WON
     except Exception as e:  # noqa: BLE001
         # Duplicate iff the conditional put failed because the item already exists. Prefer the
         # precise botocore Error.Code; fall back to a class-name/message substring so the helper
@@ -506,10 +514,67 @@ def _register_content_hash_if_new(digest: str, source_id: str) -> bool:
             code = (resp.get("Error", {}) or {}).get("Code", "")
         haystack = f"{code} {type(e).__name__} {e}"
         if "ConditionalCheckFailed" in haystack:
-            return False  # identical content already registered -> duplicate
-        # Transient/other error: fail-open (proceed) so dedup never blocks a real submit.
+            return CLAIM_DUPLICATE  # identical content already registered
+        # Transient/other error: fail-open (proceed) so dedup never blocks a real submit - but
+        # nothing was claimed, so a failed write must not release (it could be a valid claim
+        # an earlier run holds)
         logger.debug("content-hash claim errored (fail-open): %s", e)
-        return True
+        return CLAIM_ERROR
+
+
+def release_content_hash(digest: str, source_id: str) -> None:
+    """Give a content-hash claim back because the content was NOT stored (task 1.6): otherwise
+    every later run skips the content as a duplicate of something that never landed. Only the
+    claim's own writer releases it (conditional on ``source_id``). Never raises; a failure is
+    alerted, since the content would be skipped for good."""
+    from src.utils import fetch_provenance as fp
+
+    table = _resolve_table(fp)
+    if table is None:
+        return
+    try:
+        table.delete_item(
+            Key={"cache_key": f"{_CONTENT_HASH_PREFIX}{digest}"},
+            ConditionExpression="source_id = :s",
+            ExpressionAttributeValues={":s": source_id},
+        )
+        logger.info(
+            "OBSERV content_hash.released source=%s %s status=ok - not stored, so the next "
+            "run may submit it again",
+            source_id,
+            digest[:20],
+        )
+    except Exception as e:  # noqa: BLE001
+        if "ConditionalCheckFailed" in f"{type(e).__name__} {e}":
+            return  # someone else's claim (or already gone): nothing of ours to release
+        from src.utils.observe import observe_error
+
+        observe_error(
+            "content_hash",
+            "release_failed",
+            note=(
+                "Content that was NOT stored still holds its dedup claim, so later runs skip it "
+                "as a duplicate. Delete the api-cache item named here, then re-run the step"
+            ),
+            cache_key=f"{_CONTENT_HASH_PREFIX}{digest}"[:120],
+            source=source_id,
+            error=type(e).__name__,
+        )
+
+
+@contextlib.contextmanager
+def claimed_content(digest: str, source_id: str) -> Iterator[bool]:
+    """Claim ``digest`` for the block (True = new content, go ahead and store it; False = a
+    duplicate). If the block raises, the claim is released so the content is not lost to a
+    failed write (task 1.6); a block that fails without raising calls release_content_hash.
+    """
+    state = _claim_content_hash(digest, source_id)
+    try:
+        yield state != CLAIM_DUPLICATE
+    except BaseException:
+        if state == CLAIM_WON:  # only a claim this attempt took is given back
+            release_content_hash(digest, source_id)
+        raise
 
 
 def _submit_one_find(
@@ -520,27 +585,36 @@ def _submit_one_find(
     marked SUBMITTED (terminal). New content is uploaded to the contentrepository/ front door and
     marked SUBMITTED. Fail-safe: one bad find never sinks the batch."""
     from src.utils import fetch_provenance as fp
+    from src.utils import find_pages
+    from src.utils.url_hygiene import scrub
 
     fid = find.get("fetch_event_id", "")
-    source_id = f"fetchfind-{fid}"
+    source_id = find_source_id(fid)
     try:
         body = _find_content_bytes(find)
         digest = _content_sha256(body)
-        # (a) GLOBAL exact-content dedup across all sources/domains/titles.
-        if not _register_content_hash_if_new(digest, source_id):
-            logger.info(
-                "OBSERV fetch_find.batch_submit.deduped fetch_event_id=%s %s "
-                "— identical content already submitted; skipping re-ingestion",
-                fid,
-                digest[:20],
+        # (a) GLOBAL exact-content dedup across all sources/domains/titles; a failed upload
+        # gives the claim back (task 1.6), so the find is not skipped as a duplicate later
+        with claimed_content(digest, source_id) as new:
+            if not new:
+                logger.info(
+                    "OBSERV fetch_find.batch_submit.deduped fetch_event_id=%s %s "
+                    "— identical content already submitted; skipping re-ingestion",
+                    fid,
+                    digest[:20],
+                )
+                set_review_status(
+                    fid, fp.SUBMITTED
+                )  # terminal: a known duplicate, done
+                result["deduped"] += 1
+                return
+            key = f"contentrepository/_system/{_find_title(find)}/{_safe_token(source_id, 'fetchfind')}.html"
+            client.put_object(
+                Bucket=bucket,
+                Key=key,
+                Body=body,
+                ContentType="text/html; charset=utf-8",
             )
-            set_review_status(fid, fp.SUBMITTED)  # terminal: a known duplicate, done
-            result["deduped"] += 1
-            return
-        key = f"contentrepository/_system/{_find_title(find)}/{_safe_token(source_id, 'fetchfind')}.html"
-        client.put_object(
-            Bucket=bucket, Key=key, Body=body, ContentType="text/html; charset=utf-8"
-        )
         # Only count a submission once the SUBMITTED transition is CONFIRMED; otherwise the content
         # is uploaded but the find stays AFFIRMED (deterministic key -> safe re-click overwrite;
         # launch is idle-gated + title-deduped downstream, so a redundant attempt is harmless).
@@ -554,6 +628,16 @@ def _submit_one_find(
                 fid,
             )
             result["skipped"] += 1
+    except find_pages.PageUnusable as e:
+        logger.error(
+            "OBSERV fetch_review.page_unusable fetch_event_id=%s reason=%s status=error - the page "
+            "this find was approved on is missing or altered in find-pages/, so it is not submitted "
+            "(it stays approved and is tried again next batch). Check the data bucket's find-pages/ "
+            "objects; if the page is lost, reject the find",
+            scrub(str(fid))[:40],
+            e,
+        )
+        result["skipped"] += 1
     except Exception as e:  # noqa: BLE001 - one bad find must not sink the batch
         logger.warning("submit_affirmed_batch: failed to submit %s: %s", fid, e)
         result["skipped"] += 1

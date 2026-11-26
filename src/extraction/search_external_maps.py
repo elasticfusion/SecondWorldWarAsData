@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Optional, Dict, Any, List
 import re
 
-from src.grok_client import GrokClient
+from src.grok_client import BatchModeCollecting, GrokClient
 
 logger = logging.getLogger(__name__)
 
@@ -386,10 +386,12 @@ def _verify_single_image(
     map_title: str,
     grok_client: GrokClient,
     image_timeout: int,
-) -> Optional[tuple[bool, bool, str, Optional[dict]]]:
-    """Verify a single image with Grok vision. Returns (is_relevant, is_government, approved_url) for
-    an approved image, or None. approved_url is the SSRF-cleaned url so the caller downloads exactly
-    the image vision approved (not a re-extracted map_images[0])."""
+) -> Optional[tuple[bool, bool, str, Optional[dict], Optional[str]]]:
+    """Verify a single image with Grok vision. Returns (is_relevant, is_government, approved_url,
+    depicted, request_id) for an approved image, or None. approved_url is the SSRF-cleaned url so the
+    caller downloads exactly the image vision approved (not a re-extracted map_images[0]);
+    request_id is the RequestID the vision request was asked and checked with (provenance).
+    """
     img_url = img["url"]
     alt_text = img.get("alt", "")
     caption = img.get("caption", "")
@@ -429,7 +431,12 @@ def _verify_single_image(
                 logger.info(f"   ✓ Government map confirmed: {reason}")
             else:
                 logger.info(f"   ✓ Grok confirmed: {reason}")
-            return True, is_government, img_url, depicted
+            from src.extraction.map_depicted import request_id_for
+
+            rid = request_id_for(
+                grok_client, prompt, img_url, "external_maps_verification"
+            )
+            return True, is_government, img_url, depicted, rid
         else:
             logger.info(f"   ⚠ Grok rejected: {reason}")
 
@@ -446,7 +453,7 @@ def _verify_map_relevance(
     grok_client: GrokClient,
     page_timeout: int = 10,
     image_timeout: int = 30,
-) -> tuple[bool, bool, Optional[str], Optional[dict]]:
+) -> tuple[bool, bool, Optional[str], Optional[dict], Optional[str]]:
     """Download page, extract map images, and verify with Grok using vision.
 
     Args:
@@ -460,15 +467,16 @@ def _verify_map_relevance(
         page_timeout: Timeout for page download
         image_timeout: Timeout for image download
 
-    Returns: (is_relevant, is_government_map, approved_image_url, depicted) — relevance, whether a
-    government document, the SSRF-cleaned approved image URL, and the vision `depicted` extraction
-    (or None). depicted is populated only for an approved map with a `depicted` block.
+    Returns: (is_relevant, is_government_map, approved_image_url, depicted, request_id) — relevance,
+    whether a government document, the SSRF-cleaned approved image URL, the vision `depicted`
+    extraction (or None; populated only for an approved map with a `depicted` block) and the
+    approving request's RequestID (or None).
     """
     try:
         # Download page
         html_content = _download_page(map_url, page_timeout)
         if not html_content:
-            return False, False, None, None
+            return False, False, None, None, None
 
         # Check for map keywords
         page_has_map_keyword = _check_page_for_maps(map_title, map_description)
@@ -480,7 +488,7 @@ def _verify_map_relevance(
 
         if not map_images:
             logger.info(f"   ⚠ No map images found in HTML")
-            return False, False, None, None
+            return False, False, None, None, None
 
         logger.info(f"   Found {len(map_images)} potential map image(s)")
 
@@ -499,8 +507,10 @@ def _verify_map_relevance(
                 return result
 
         logger.info(f"   ⚠ No relevant maps found in {len(map_images)} image(s)")
-        return False, False, None, None
+        return False, False, None, None, None
 
+    except BatchModeCollecting:
+        raise  # queued for the batch, not a rejection
     except Exception as e:
         logger.warning(f"   ⚠ Verification failed: {e}")
-        return False, False, None, None
+        return False, False, None, None, None

@@ -89,9 +89,11 @@ def _one_hop(session, url: str, timeout: int):
         return None
     try:
         # Pin the connection to a vetted IP (DNS-rebind defense); per-hop (no auto-redirect).
-        from src.utils.url_hygiene import _pinned_get
+        # ONE try (_pinned_get_once): a 429/503/transient hop falls back to Wayback at once
+        # (_follow_live) instead of re-hitting the host behind the per-domain fetch gate
+        from src.utils.url_hygiene import _pinned_get_once
 
-        resp = _pinned_get(
+        resp = _pinned_get_once(
             url,
             host,
             vetted,
@@ -172,6 +174,13 @@ def fetch(url: str, timeout: int = _DEFAULT_TIMEOUT) -> FetchResult:
     clean = clean_url(url)
     if not clean:
         return FetchResult(url=url or "", source=SKIP, detail="non-clean url")
+    from src.utils import link_safety
+
+    # before the registry and any Wayback fallback; the URL as given (its query included)
+    if link_safety.is_flagged(url, seen_in="url_fetch"):  # alerted when first flagged
+        return FetchResult(
+            url=clean, source=SKIP, detail="flagged as possibly malicious"
+        )
 
     action, rec = url_registry.decide(clean)
     if action == url_registry.SKIP_KNOWN:

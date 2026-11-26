@@ -27,10 +27,23 @@ changes that don't change output shape, or for index/report files.
   by `tests/test_entity_schema_consistency.py` (old records still validate against the new
   schema).
 - **BREAKING** (new **required** field, removed/renamed field, tightened type): bump that
-  entity AND either register `schema_contract.register_upgrade(old, new)` OR run a **targeted
-  reprocess of that one entity**. Never a global reprocess; other entities are not touched.
+  entity AND declare it a breaking step in `src/schemas/version_steps.py` (done only by the upgrade release:
+  owner 2026-11-25, D2) OR run a **targeted reprocess of that one entity**. (`schema_contract.register_upgrade`
+  is the older, never-used mechanism, replaced by `version_steps.TRANSFORMS`; it goes once its readers move to
+  `bring_forward`.) Never a global reprocess; other entities are not touched.
   The consistency test will FAIL on old records until upgraded/reprocessed — that failure is
   the signal that a breaking change needs one of those two actions.
+
+### Declared steps and `bring_forward` (owner 2026-11-25, D2)
+
+Every version change is declared once in `src/schemas/version_steps.py` (from -> to, kind):
+- **forward-compatible** (additive): an older record is brought forward on the fly, in memory, before a merge or
+  update - `schema_contract.bring_forward(record, entity)` applies each step's transform (most need none) and
+  checks the result against the CURRENT schema: `current` / `brought_forward` (usable, returned as a stamped
+  copy), `invalid` (kept out, alerted by the caller), `needs_release_upgrade`, `future`;
+- **breaking**: never on the fly - only the upgrade release script; until it has run, work on the affected
+  records is held (D2-Q2).
+`tests/test_version_steps.py` fails when an entity's version is bumped without its step.
 
 ### The guard chain (all per-entity)
 
@@ -80,8 +93,10 @@ records validate). No unenforced entity types remain.
 
 1. [ ] Edit the enforced `*_output.py` schema.
 2. [ ] Bump THAT entity's version in `ENTITY_SCHEMA_VERSIONS` (src/schemas/__init__.py).
-3. [ ] SCHEMA_TARGET auto-derives from the map; for a BREAKING change register a
-   `schema_contract.register_upgrade(old, new)` or targeted-reprocess that entity.
+3. [ ] SCHEMA_TARGET auto-derives from the map; for a BREAKING change declare it breaking in
+   `src/schemas/version_steps.py` (the upgrade release does it) or targeted-reprocess that entity.
+   [ ] Declare the step in `src/schemas/version_steps.py` (forward, with a transform if the record must be
+   reshaped; or breaking, which needs the upgrade release).
 4. [ ] Update `docs/current/SCHEMA_REFERENCE.md` (version header + the entity's field table).
 5. [ ] Validate real `output/<entity>/*.json` records against the updated schema (0 drift).
 6. [ ] Run the guard test (`tests/test_schema_target_guard.py`) — must pass.
@@ -104,6 +119,13 @@ companion to the per-entity fingerprint pins in `tests/test_schema_fingerprint.p
 | 2026-10-27 | images | 2.26 → 2.27 | schema.org ImageObject adoption (SCHEMA_ORG_REVIEW.md §5): nullable contentUrl/thumbnailUrl, creditText/copyrightNotice/copyrightHolder/acquireLicensePage (licensing), contentLocation (typed {PlaceID,name} depicted place), dateCreated/datePublished (when taken/published, distinct from ingestion dates), caption, width/height/encodingFormat/exifData | ADDITIVE — all nullable; existing image records remain valid (test_entity_schema_consistency); no reprocess |
 | 2026-10-28 | events | 2.24 → 2.25 | `Event` + each `Sub-event` gain nullable `SourceSectionID` (ULID) — stamped in Phase 3 from the committed source_section records so entity → event → SECTION is a hard, enforceable ID chain (was filename-convention only). Provenance hardening (XChannel-8 E2E). | ADDITIVE — nullable; existing event records without the field remain valid (test_entity_schema_consistency); no reprocess |
 | 2026-11-07 | images | 2.27 → 2.28 | Map-vs-image decision (`src/extraction/media_classify`): nullable `map_check` (not_map/map/pending_vision), `map_check_basis`, `is_map`, `map_vision_checked_at`, `superseded_by_map_id` (ULID → the Map created when Phase 3 vision finds a map), `map_vision_attempts` (undecided-vision retry counter; capped → needs_review), `vision_classification` (the captioner verdict, previously discarded) | ADDITIVE — all nullable; existing image records remain valid; no reprocess |
+| 2026-11-18 | images | 2.28 → 2.29 | Nullable `host_unavailable_runs`: Phase 3 runs in which the image host did not answer (429/5xx/timeout); an outage no longer uses a `map_vision_attempts` slot, and at 5 such runs the image goes to needs_review (task 1.2f, `src/extraction/image_map_vision`) | ADDITIVE — nullable; existing image records remain valid; no reprocess |
+| 2026-11-20 | bibliography | 2.29 → 2.30 | `source_metadata` (still open: provenance keys vary) now models `findings[]` ({url, source, kind: bookseller\|null}), `bookseller[]` (a bookseller listing - a pointer to buy, never an online copy; url pattern `^https://www\.amazon\.com/dp/[A-Z0-9]{10}$`, source `amazon`, kind `bookseller`) and `bookseller_searched_at` (integer epoch, when the listing search last ran) - Amazon as a bibliography source (task 1.2f, `bibliography_resolver._find_bookseller`) | ADDITIVE - all optional; existing records remain valid (test_entity_schema_consistency); no reprocess |
+| 2026-11-21 | bibliography | 2.30 → 2.31 | Nullable `merged_from[]` (unique ULIDs): the BibliographyIDs of records the Phase 2 reconcile combined into this one because they cite the same footnote text (owner 2026-11-21: combine them, keeping provenance for both: each citing source keeps its mention). A reference to an absorbed id resolves to the survivor (`bibliography_finds.finds_for`). `source_metadata.findings[]` items written by the review queue also carry `fetch_event_id`, `verified_by`, `naId`, `digital_objects` (open object, no schema change) | ADDITIVE - nullable; existing records remain valid; no reprocess (the next full-corpus reconcile combines the 348 duplicate groups found 2026-11-21) |
+| 2026-11-23 | equipment | 2.30 → 2.31 | `images[]` items gain nullable `page_sha256` (the kept page the photo is on, `find_pages`), `sha256` (the photo's own checksum; kept under it in the AV staging area), `period_photo` (`yes`/`no`/`unsure`, Grok vision: a 1939-1945 photograph) and `copyright_status` (owner 2026-11-23: web photos are `assumed_public_domain`). Written by `src/enrichment/web_photos` (OpenSERP image search, every photo vision-confirmed) | ADDITIVE - nullable; existing records remain valid; no reprocess |
+| 2026-11-23 | people 2.27 → 2.28, places 2.30 → 2.31, people_groups 2.29 → 2.30 | `images[]` items name the web-photo fields (`src/schemas/photo_fields.WEB_PHOTO_PROPERTIES`, shared with equipment: url, local_path, caption, vision_*, phash, source_page_url, page_sha256, sha256, period_photo, copyright_status, ...), written by `src/enrichment/web_photos` now that people, places and groups get vision-confirmed photos (step 2). Places and groups keep accepting a legacy string entry | ADDITIVE - nullable; the items already accepted extra keys; existing records remain valid; no reprocess |
+| 2026-11-24 | bibliography | 2.31 → 2.32 | `held_in_corpus` (BookID, book, volume, format, edition, copyright_date of the defining copy we hold; linked_at; evidence = the notes whose links matched), written by `src/extraction/bibliography_corpus` when a note links a volume the corpus holds | ADDITIVE - nullable; existing records remain valid; no reprocess |
+| 2026-11-24 | maps | 2.26 → 2.27 | `depicted` (the Grok map-vision block: units, places, movements, front_line_or_sector, date_or_window, operation, description, legibility_confidence; null = not a relevant map) and `depicted_provenance` (verdict, kind, model, request_id, checked_at, image_url, found_in), written by `src/extraction/map_depicted` (in-document maps and OpenSERP maps) instead of recycling the map as a prose source | ADDITIVE - nullable; existing records remain valid; no reprocess |
 | 2026-11-07 | equipment | 2.28 → 2.29 | Identity scope + Phase 3 image vision (`src/extraction/equipment_identity`, `src/enrichment/equipment_images`): nullable `identity_scope` (specific/generic/unresolved), `identity_resolution` (named-vessel disambiguation: resolved_title, method, candidates with service periods, date_used), `identity_source` gains `vessel_disambiguation`, `wikipedia_wwii_relevant`, `description_source_url`, `image_candidates_checked_at`; `images[]` items gain `vision_check` (pending/verified/rejected), `vision_reason`, `vision_checked_at`, `vision_attempts`, `fetch_failures`, `phash`, `needs_review`, `candidate_source`, `source_page_url`, `candidate_added_at`; `identity_resolution.transient` | ADDITIVE — all nullable; existing records remain valid. Phase 3 `equipment_images` re-queues their unverified images for vision and strips enrichment from generic records |
 | 2026-11-07 | weather | 2.24 → 2.25 | Sea/air conditions + statement kind (XChannel-8: the chapter's weather is wind, sea state and tide): `extracted_data` gains `observation_type` (observed/forecast/planning_requirement), `wind_text`, `wind_speed_low`/`wind_speed_high`/`wind_speed_unit` (stated numbers only), `wind_direction`, `sea_state_text`, `visibility_text`, `cloud_text`, `tide_text`, `light_text`; each `event_mentions[]` item keeps its own `weather_description`, `original_text`, `observation_type` and the same condition fields (later mentions' text was lost before). A forecast / planning requirement is its own record (index key suffixed `_forecast` / `_planning_requirement`) | ADDITIVE — all nullable; existing records remain valid and keep their keys |
 

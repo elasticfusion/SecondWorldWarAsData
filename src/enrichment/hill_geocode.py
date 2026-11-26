@@ -33,7 +33,7 @@ from pathlib import Path
 from typing import Any, List, Optional
 
 from src.enrichment.elevation_verify import check_designation
-from src.enrichment.places_grok_geocode import GeocodeResult, _parse_geocode_reply
+from src.enrichment.places_grok_geocode import GeocodeResult, ask_geocode
 
 logger = logging.getLogger(__name__)
 
@@ -120,19 +120,9 @@ def _grok_locate(
 ) -> GeocodeResult:
     """Ask Grok to place a height using its elevation and proximity context."""
     prompt = _prompt_for(name, elevation, _proximity_anchors(place))
-    try:
-        raw = grok_client.chat_completion(
-            prompt=prompt,
-            system_prompt=_SYSTEM_PROMPT,
-            temperature=0.1,
-            cache_type="places",
-        )
-    except Exception as exc:  # noqa: BLE001 - surface as a miss, keep batch alive
-        logger.warning("Hill geocode (grok) failed for %s: %s", name, exc)
-        return GeocodeResult(found=False, note=f"grok error: {exc}", source="grok")
-    result = _parse_geocode_reply(raw)
-    result.source = "grok_hill"
-    return result
+    # shared ask/read: a Grok error is transient and an unreadable reply is re-asked once, then
+    # left retriable - neither is stored as not-found (task 1.2f)
+    return ask_geocode(grok_client, prompt, _SYSTEM_PROMPT, "grok_hill")
 
 
 def _verify(

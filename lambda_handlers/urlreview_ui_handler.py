@@ -1,8 +1,8 @@
 """Lambda handler for the URL (fetch-find) Review UI.
 
 Human review of TEXTUAL fetch-provenance finds surfaced at the end of Phase 3 — EVEN AFTER Grok's
-relevance confirmation. A reviewer AFFIRMS a URL (→ promoted into Phase-0/1 ingestion as a
-``SourceMetadata``, like an uploaded book) or REJECTS it (→ marked "won't do" = review_status
+relevance confirmation. A reviewer AFFIRMS a URL (→ its kept page is submitted to Phase 0
+by the affirmed batch, like an uploaded book) or REJECTS it (→ marked "won't do" = review_status
 REJECTED, never ingested). Mirrors dedup_ui_handler / mdreview_ui_handler: an API-Gateway proxy
 Lambda behind the shared DedupApi + Basic-auth authorizer.
 
@@ -156,19 +156,16 @@ def _apply_decision(find: dict, fid: str, decision: str) -> dict:
     if decision == "exclude":
         return _do_exclude(find, fid)
 
-    # affirm → promote into ingestion (SourceMetadata). The affirmed content lives in the
-    # source_retrieval quarantine keyed by the find; if absent, acquisition re-fetches the endpoint.
-    from pathlib import Path
-
-    qpath = Path(find.get("quarantine_path") or find.get("endpoint", ""))
-    src = affirm_fetch_find(find, qpath)
+    # affirm -> recorded; the affirmed batch submits the page kept when the find was judged
+    # (nothing on the queue item chooses what is ingested)
+    source_id = affirm_fetch_find(find)
     return _json(
-        200 if src is not None else 500,
+        200 if source_id is not None else 500,
         {
             "fetch_event_id": fid,
             "decision": "affirmed",
-            "ok": src is not None,
-            "staged_source_id": getattr(src, "source_id", None),
+            "ok": source_id is not None,
+            "staged_source_id": source_id,
         },
     )
 

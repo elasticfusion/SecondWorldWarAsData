@@ -51,15 +51,70 @@ build_scan_push() {
   ecr_login "${image%%/*}"
   ensure_ecr_repo "$repo"
   if [ "$dockerfile" = "." ]; then
-    docker build --no-cache --progress=plain -t "$tag" .
+    docker build --no-cache --progress=plain --build-arg GIT_SHA="$GIT_SHA" -t "$tag" .
   else
-    docker build --no-cache --progress=plain -f "$dockerfile" -t "$tag" .
+    docker build --no-cache --progress=plain --build-arg GIT_SHA="$GIT_SHA" -f "$dockerfile" -t "$tag" .
   fi
   trivy_scan "$tag" "$blocking" || exit 1
   docker tag "$tag:latest" "$image"
+  docker tag "$tag:latest" "${image%:*}:$DEPLOY_TAG"
   docker push "$image"
-  echo "  Pushed: $image"
+  docker push "${image%:*}:$DEPLOY_TAG"  # the tag pin_image pins (unique to this run)
+  note_built "$repo"
+  echo "  Pushed: $image ($DEPLOY_TAG)"
 }
+
+# --- Deployed code must be committed (task 0.2, 2026-11-18) ---
+# >>> deploy-version (tests/test_deploy_git_sha.py runs this block as-is)
+# The pipeline image records the version it was built from (Dockerfile ARG GIT_SHA -> the
+# `OBSERV pipeline.version sha=` line each phase logs first), so a run's logs name the code that
+# ran. Version = <commit>+cfg-<first 8 hex of sha256(config.yaml)>: config.yaml is gitignored (local
+# only, not pinned by the commit) but ships in the image and the Lambdas, so its content is named
+# separately. An uncommitted or untracked file in any other path that ships (image, Lambdas, stacks)
+# is a hard stop. tests/, docs/, logs/, tmp/ do not ship and do not block. Other gitignored files
+# are invisible to git status; the only one under a deployed path today,
+# config/equipment_aliases_learned.yaml, is excluded from the image by .dockerignore. The other images
+# (chandra, paddle, video, clamav) declare no ARG GIT_SHA: docker warns the arg is unused and they
+# carry no version.
+DEPLOY_PATHS=(src scripts prompts search_queries config data ecs_modules lambda_handlers
+              cloudformation ':(glob)*.py' ':(glob)requirements*.txt' ':(glob)Dockerfile*')
+DEPLOY_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+stamp_version() {  # (re)compute GIT_SHA from HEAD_SHA + the current config.yaml
+  local cfg
+  cfg=$(sha256sum "$DEPLOY_ROOT/config.yaml" 2>/dev/null | cut -c1-8)
+  [ -n "$cfg" ] || { echo "  ✗ $DEPLOY_ROOT/config.yaml is missing or unreadable. Hard stop."; exit 1; }
+  GIT_SHA="${HEAD_SHA}+cfg-${cfg}"
+  echo "  Version: $GIT_SHA"
+}
+require_committed_tree() {
+  local dirty n
+  git -C "$DEPLOY_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1 || {
+    echo "  ✗ $DEPLOY_ROOT is not a git checkout - cannot tell which commit is deployed. Hard stop."; exit 1;
+  }
+  dirty=$(GIT_OPTIONAL_LOCKS=0 git -C "$DEPLOY_ROOT" status --porcelain --untracked-files=all -- "${DEPLOY_PATHS[@]}") || {
+    echo "  ✗ git status failed - cannot verify the tree is committed. Hard stop."; exit 1;
+  }
+  if [ -n "$dirty" ]; then
+    n=$(printf '%s\n' "$dirty" | wc -l)
+    echo "  ✗ uncommitted changes in deployed paths - commit or stash them, then deploy again:"
+    printf '%s\n' "$dirty" | head -20 | sed 's/^/      /'
+    [ "$n" -gt 20 ] && echo "      ... and $((n - 20)) more"
+    echo "    Hard stop (the image would not match the commit it reports)."; exit 1
+  fi
+  HEAD_SHA=$(git -C "$DEPLOY_ROOT" rev-parse --verify HEAD 2>/dev/null) || {
+    echo "  ✗ no commit to deploy (git rev-parse HEAD failed). Hard stop."; exit 1;
+  }
+  echo "  Deploying commit $HEAD_SHA"
+  stamp_version
+}
+# <<< deploy-version
+require_committed_tree
+cd "$DEPLOY_ROOT"  # every build below uses the tree that was just checked
+
+# Images go to the stacks by digest (scripts/image_pin.sh). DEPLOY_TAG is unique to this run.
+DEPLOY_TAG="deploy-$(date -u +%Y%m%dT%H%M%SZ)-${HEAD_SHA:0:12}"
+source scripts/image_pin.sh
+pin() { ensure_lifecycle "$1" && pin_image "$1"; }  # $1 = repo; prints the pinned uri
 
 # --- OCR Standalone Mode ---
 if [ "$1" = "--ocr-standalone" ]; then
@@ -97,6 +152,8 @@ if [ "$1" = "--ocr-standalone" ]; then
         build_scan_push Dockerfile.paddle wwii-paddle wwii-paddle "$PADDLE_IMAGE" 0
     fi
 
+    CHANDRA_IMAGE=$(pin wwii-chandra) || exit 1
+    PADDLE_IMAGE=$(pin wwii-paddle) || exit 1
     echo ""
     echo "=== 2. Validating CloudFormation ==="
     set +e
@@ -168,6 +225,9 @@ if [ "$1" = "--ocr-standalone" ]; then
             aws cloudformation wait stack-update-complete --stack-name $STACK_NAME --region $REGION 2>/dev/null || true
         echo "  Stack status: $(aws cloudformation describe-stacks --stack-name $STACK_NAME --region $REGION --query 'Stacks[0].StackStatus' --output text)"
     fi
+    _pins=("ChandraImageUri=$CHANDRA_IMAGE" "PaddleImageUri=$PADDLE_IMAGE")
+    verify_stack_images "$STACK_NAME" "${_pins[@]}" || exit 1
+    mark_live "$ENV" "${_pins[@]#*=}" || exit 1
 
     echo ""
     echo "=== OCR Deploy Complete ==="
@@ -193,6 +253,54 @@ AV_IMAGE="$ECR_REPO/wwii-clamav:latest"
 TEMPLATE_BUCKET="wwii-pipeline-deploy"
 ENV="dev"
 EMAIL="dchristian@cirrusnine.com"
+# >>> dedup-auth (task 0.5; tests/test_deploy_dedup_auth.py runs this block as-is)
+# The dedup review UI's login lives ONLY in Secrets Manager (${ENV}-wwii-pipeline/dedup-auth). There
+# is no fallback value: a missing or empty secret stops the deploy before anything is built, and the
+# value never appears on a command line (it reaches the Lambda through a 0600 temp file).
+DEDUP_AUTH_SECRET="${ENV}-wwii-pipeline/dedup-auth"
+read_dedup_auth() {  # prints the secret value; hard stop if it is missing or empty
+  local v err
+  err=$(umask 077 && mktemp)
+  v=$(aws secretsmanager get-secret-value --secret-id "$DEDUP_AUTH_SECRET" \
+        --query SecretString --output text --region "$REGION" 2>"$err") || v=""
+  if [ -z "$v" ] || [ "$v" = "None" ]; then
+    # the AWS error (never the value) says whether it is missing, denied or a credentials problem
+    [ -s "$err" ] && sed 's/^/    aws: /' "$err" | head -3 >&2
+    rm -f "$err"
+    echo "  ✗ Secrets Manager secret $DEDUP_AUTH_SECRET is missing or empty - create it" >&2
+    echo "    (aws secretsmanager create-secret --name $DEDUP_AUTH_SECRET --secret-string 'user:password')" >&2
+    echo "    then deploy again. Hard stop." >&2
+    exit 1
+  fi
+  rm -f "$err"
+  printf '%s' "$v"
+}
+require_dedup_auth() {
+  read_dedup_auth >/dev/null
+  echo "  ✓ dedup UI login found in Secrets Manager ($DEDUP_AUTH_SECRET)"
+}
+push_dedup_auth() {  # CloudFormation resolves the secret only when the function changes; push it
+  # NOTE: --environment REPLACES the function's whole environment. ${ENV}-wwii-dedup-auth has only
+  # AUTH_TOKEN (cloudformation/compute.yaml); a new variable there must be added here too.
+  local tmp v
+  v=$(read_dedup_auth) || exit 1
+  tmp=$(umask 077 && mktemp)
+  DEDUP_AUTH_TMP="$tmp"  # the temp holds the login: removed on Ctrl-C / kill / exit too
+  trap 'rm -f "${DEDUP_AUTH_TMP:-}"' EXIT
+  trap 'rm -f "${DEDUP_AUTH_TMP:-}"; exit 130' INT TERM HUP
+  printf '%s' "$v" | python3 -c 'import json,sys; print(json.dumps({"Variables": {"AUTH_TOKEN": sys.stdin.read()}}))' > "$tmp" \
+    || { rm -f "$tmp"; echo "  ✗ could not prepare the dedup UI login. Hard stop."; exit 1; }
+  aws lambda update-function-configuration --function-name "${ENV}-wwii-dedup-auth" \
+      --environment "file://$tmp" --region "$REGION" --no-cli-pager > /dev/null \
+    || { rm -f "$tmp"; echo "  ✗ updating ${ENV}-wwii-dedup-auth failed. Hard stop."; exit 1; }
+  rm -f "$tmp"
+  DEDUP_AUTH_TMP=""
+  trap - EXIT INT TERM HUP
+  echo "  Auth updated"
+}
+# <<< dedup-auth
+require_dedup_auth
+
 # Start-of-deploy epoch (minus a 120s skew margin) for the post-push image-freshness assertion —
 # the pipeline image MUST be pushed AFTER this, else a silent no-push left a stale image deployed.
 DEPLOY_START_EPOCH=$(( $(date +%s) - 120 ))
@@ -254,6 +362,7 @@ _apply_profile() {
     "$py" "$root/scripts/apply_config_profile.py" "$1" || {
         echo "  ✗ config profile '$1' failed — deploy aborted (config.yaml unchanged)."; exit 1;
     }
+    stamp_version  # the profile rewrote config.yaml: the version names the new content
 }
 case "${profile_choice:-5}" in
     1) _apply_profile balanced ;;
@@ -430,13 +539,16 @@ if command -v trivy &>/dev/null; then
 else
   # No Trivy: build+push but gate on pip-audit instead (requirements-level).
   ecr_login "$ECR_REPO"
-  docker build --no-cache --progress=plain -t wwii-pipeline . \
+  docker build --no-cache --progress=plain --build-arg GIT_SHA="$GIT_SHA" -t wwii-pipeline . \
     || { echo "  ✗ docker build FAILED — hard stop"; exit 1; }
   echo "  Trivy not installed — falling back to pip-audit"
   pip-audit -r requirements.txt --severity high 2>&1 | tail -10 || { echo "  ✗ pip-audit found vulnerabilities — aborting deploy"; exit 1; }
   echo "  pip-audit: OK"
   docker tag wwii-pipeline:latest $PIPELINE_IMAGE
+  docker tag wwii-pipeline:latest "${PIPELINE_IMAGE%:*}:$DEPLOY_TAG"
   docker push $PIPELINE_IMAGE || { echo "  ✗ docker push FAILED — hard stop"; exit 1; }
+  docker push "${PIPELINE_IMAGE%:*}:$DEPLOY_TAG" || { echo "  ✗ docker push FAILED — hard stop"; exit 1; }
+  note_built wwii-pipeline
 fi
 # HARD freshness assertion: the pipeline image MUST have been pushed during THIS run. A silent
 # no-push (e.g. a swallowed build/push failure) previously left a STALE image deployed undetected
@@ -461,14 +573,26 @@ if [ "${AV_BUILD:-0}" = "1" ]; then build_scan_push Dockerfile.clamav wwii-clama
 # Resolve pass-through: only pass an optional image flag if that repo+tag exists.
 VIDEO_ARG=""; AV_ARG=""
 if aws ecr describe-images --repository-name wwii-video --region $REGION --image-ids imageTag=latest >/dev/null 2>&1; then
+  VIDEO_IMAGE=$(pin wwii-video) || exit 1
   VIDEO_ARG="--video-image $VIDEO_IMAGE"; echo "  video image present → passing $VIDEO_IMAGE"
 fi
+# ClamAV is ON for every binary (owner 2026-11-23): a missing image is built now, and a deploy
+# never goes out without it (it would silently turn the AV gate and the unscanned/ drain off).
+if ! aws ecr describe-images --repository-name wwii-clamav --region $REGION --image-ids imageTag=latest >/dev/null 2>&1; then
+  echo "  clamav image absent → building it (AV scanning is mandatory)"
+  build_scan_push Dockerfile.clamav wwii-clamav wwii-clamav "$AV_IMAGE" 1
+fi
 if aws ecr describe-images --repository-name wwii-clamav --region $REGION --image-ids imageTag=latest >/dev/null 2>&1; then
+  AV_IMAGE=$(pin wwii-clamav) || exit 1
   AV_ARG="--av-image $AV_IMAGE"; echo "  clamav image present → passing $AV_IMAGE (AV scanning ENABLED)"
 else
-  echo "  clamav image absent → AV scanning stays disabled (AvImageUri='')"
+  echo "  ✗ clamav image still absent after the build: NOT deploying with AV scanning off. Fix the"
+  echo "    Dockerfile.clamav build (or ECR access) and re-run. Hard stop."; exit 1
 fi
 
+# The stacks get each image by digest (pin_image above): the `:latest` URIs were only for the push.
+PIPELINE_IMAGE=$(pin wwii-pipeline) || exit 1
+OPENSERP_IMAGE=$(pin wwii-openserp) || exit 1
 echo ""
 echo "=== 5. Deploying CloudFormation ==="
 # Check stack is in a deployable state
@@ -483,6 +607,21 @@ aws s3 sync cloudformation/ s3://$TEMPLATE_BUCKET/cloudformation/ --region $REGI
     || { echo "  ✗ cloudformation/ S3 sync failed — hard stop"; exit 1; }
 python3 scripts/deploy_aws.py deploy --env $ENV --region $REGION --template-bucket $TEMPLATE_BUCKET --pipeline-image $PIPELINE_IMAGE --openserp-image $OPENSERP_IMAGE $VIDEO_ARG $AV_ARG $BATCH_ARG --notification-email $EMAIL \
     || { echo "  ✗ CloudFormation deploy (deploy_aws.py) FAILED — hard stop (expected infra did not deploy)"; exit 1; }
+# The stack must now run every pinned image (a rolled-back stack would keep the old ones); only
+# then do they become live-$ENV (scripts/image_pin.sh: the tag no lifecycle rule selects).
+_pins=("PipelineImageUri=$PIPELINE_IMAGE" "OpenSerpImageUri=$OPENSERP_IMAGE" "AvImageUri=$AV_IMAGE")
+[ -n "$VIDEO_ARG" ] && _pins+=("VideoImageUri=$VIDEO_IMAGE")
+verify_stack_images "wwii-pipeline-$ENV" "${_pins[@]}" || exit 1
+mark_live "$ENV" "${_pins[@]#*=}" || exit 1
+
+echo ""
+echo "=== 5b. Archiving the deployed config.yaml ==="
+# config.yaml is gitignored but ships: keep the exact file under its version in the private config
+# bucket (created by the StorageStack above), so this deploy's config can be fetched back later
+# (bash scripts/config_archive.sh get <version|latest>). Task 0.3.
+source scripts/config_archive.sh
+config_archive_put "$ENV" "$REGION" "$GIT_SHA" config.yaml \
+    || { echo "  ✗ config.yaml archive failed — hard stop (this deploy's config would not be recoverable)"; exit 1; }
 
 echo ""
 echo "=== 6. Updating Lambda code ==="
@@ -491,9 +630,7 @@ bash scripts/update_lambdas.sh \
 
 echo ""
 echo "=== 7. Fixing auth ==="
-AUTH_TOKEN=$(aws secretsmanager get-secret-value --secret-id ${ENV}-wwii-pipeline/dedup-auth --query SecretString --output text --region $REGION 2>/dev/null || echo "admin:ReviewPass2026")
-aws lambda update-function-configuration --function-name dev-wwii-dedup-auth --environment "Variables={AUTH_TOKEN=$AUTH_TOKEN}" --region $REGION --no-cli-pager > /dev/null
-echo "  Auth updated"
+push_dedup_auth
 
 echo ""
 echo "=== 8. Verification ==="

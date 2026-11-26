@@ -1,5 +1,5 @@
-"""DRY P2.5 guard: chart_source_adapter.render_chart_markdown and
-map_source_adapter.render_map_markdown now share _entity_common.render_source_markdown. Pin the
+"""DRY P2.5 guard: chart_source_adapter.render_chart_markdown uses the shared
+_entity_common.render_source_markdown (maps no longer render a source: map_depicted). Pin the
 shared layout + that each adapter's output is byte-identical to the old hand-rolled render.
 """
 
@@ -42,13 +42,3 @@ def test_chart_render_matches_old_shape(monkeypatch):
     # empty depicted -> ""
     monkeypatch.setattr(cs, "_render_chart_text", lambda d: "")
     assert cs.render_chart_markdown("T", {}, source_url="u") == ""
-
-
-def test_map_render_matches_old_shape(monkeypatch):
-    import src.extraction.map_source_adapter as ms
-
-    monkeypatch.setattr(ms, "_render_depicted_text", lambda d: "Omaha Beach sector.")
-    out = ms.render_map_markdown("", {"x": 1}, source_url="")
-    assert (
-        out == "## WWII map\n\nOmaha Beach sector.\n"
-    )  # default title, no source line

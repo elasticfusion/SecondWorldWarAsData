@@ -335,16 +335,51 @@ def merge_ocr_output(book: str, force: bool = False) -> str:
     plan = _chunk_plan(s3, book, force)
     if plan.status != "ready":
         return ""  # waiting for the submission's other chunks, or nothing to do
+    from src.utils.grok_models import GrokFundsExhausted, GrokUnreachable
+
     try:
         return _merge_ready(s3, book, plan)
+    except (GrokUnreachable, GrokFundsExhausted) as e:
+        # the translation is required (owner 2026-11-20): stop, free the claim, alert how to
+        # re-drive once xAI is back; not re-raised (Lambda's own retries would hit the outage)
+        try:
+            _release_claim(s3, book, plan)
+        finally:
+            _alert_grok_stop(book, e)
+        return ""
     except Exception:
         # Let the event's retry (or a re-drive) merge again: an unfinished merge must not
         # leave the claim that makes every later attempt skip.
-        if plan.manifest is not None:
-            from src.ingestion import ocr_chunk_manifest as cm
-
-            cm.release_merge(s3, BUCKET, book, plan.manifest.submission)
+        _release_claim(s3, book, plan)
         raise
+
+
+def _release_claim(s3, book: str, plan: "_ChunkPlan") -> None:
+    if plan.manifest is not None:
+        from src.ingestion import ocr_chunk_manifest as cm
+
+        cm.release_merge(s3, BUCKET, book, plan.manifest.submission)
+
+
+def _alert_grok_stop(book: str, e: BaseException) -> None:
+    from src.utils.grok_models import GrokFundsExhausted
+
+    funding = isinstance(e, GrokFundsExhausted)
+    observe_error(
+        "ocr_merge",
+        "grok_unavailable",
+        note=(
+            (
+                "xAI has no credit (top up at https://console.x.ai)"
+                if funding
+                else "Grok is unreachable (check status.x.ai)"
+            )
+            + ", so the OCR merge stopped before translating; nothing was published. Then "
+            "re-drive: " + _redrive(book)
+        ),
+        book=book,
+        cause="funding" if funding else "connectivity",
+    )
 
 
 def _merge_ready(s3, book: str, plan: "_ChunkPlan") -> str:

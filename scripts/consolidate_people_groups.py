@@ -11,6 +11,9 @@ from typing import Dict, List
 
 import yaml
 
+# run directly (python3 scripts/<name>.py): the repo root must be importable for src.*
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -109,7 +112,12 @@ def _merge_into(merged_data, data):
 
 
 def _merge_canonical_groups(canonical_groups):
-    """Merge file groups with >1 file. Returns merge count."""
+    """Merge file groups with >1 file. Returns merge count. The merged survivor is written FIRST;
+    each absorbed file is then deleted only once a pointer from its GroupID to the survivor is
+    stored (``src/utils/id_aliases``), so its id still resolves; otherwise it is kept (said).
+    """
+    from src.dedup.merge import store_merge_pointer
+
     merged_count = 0
     for canonical_name, files in canonical_groups.items():
         if len(files) <= 1:
@@ -119,15 +127,26 @@ def _merge_canonical_groups(canonical_groups):
         with open(files[0], "r", encoding="utf-8") as f:
             merged_data = json.load(f)
         merged_data["group_name"] = canonical_name
-
+        absorbed = []
         for group_file in files[1:]:
             with open(group_file, "r", encoding="utf-8") as f:
-                _merge_into(merged_data, json.load(f))
-            group_file.unlink()
-            logger.info("  Deleted: %s", group_file.name)
+                data = json.load(f)
+            _merge_into(merged_data, data)
+            absorbed.append((group_file, str(data.get("GroupID") or "")))
 
         with open(files[0], "w", encoding="utf-8") as f:
             json.dump(merged_data, f, indent=2, ensure_ascii=False)
+        survivor = str(merged_data.get("GroupID") or "")
+        for group_file, old_id in absorbed:
+            if not store_merge_pointer("people_groups", old_id, survivor):
+                logger.error(
+                    "  Kept %s: its pointer to %s was not stored (see id_aliases); re-run",
+                    group_file.name,
+                    survivor,
+                )
+                continue
+            group_file.unlink()
+            logger.info("  Deleted: %s", group_file.name)
         merged_count += 1
 
     return merged_count

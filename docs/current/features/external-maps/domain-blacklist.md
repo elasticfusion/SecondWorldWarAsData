@@ -14,7 +14,7 @@ The `config/domain_blacklist.yaml` file controls which domains and URL paths are
 > - Whitelist precedence in the Go code (`filterMapURLs`): a whitelisted URL SKIPS the blacklist and source-material checks. Where this doc
 >   says "blacklist always wins", the code does the opposite.
 > - Other readers of the same file: `grok_search_maps.load_whitelisted_sites` (`whitelist:`), `source_retrieval.load_blacklist` (`blacklist:`),
->   `link_relevancy` (`link_relevancy_whitelist:`, separate list), and `runtime_tables` (the file must parse and `blacklist:` must be non-empty).
+>   and `runtime_tables` (the file must parse and `blacklist:` must be non-empty).
 > - Phase 3 OpenSERP enrichment (people, equipment, groups, places) does not use this file; it drops results with the URL registry's site denylist
 >   (`openserp_enrichment._drop_excluded_domains`).
 

@@ -216,12 +216,11 @@ def enrich_places_dir(places_dir: Path, write: bool = False) -> PlaceGeoReport:
 
 
 def _load_place(path: Path) -> Optional[Dict[str, Any]]:
-    """Load a place JSON file, or None if unreadable/not an object."""
-    try:
-        place = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return None
-    return place if isinstance(place, dict) else None
+    """Load a place record, or None (a corrupt one is alerted and holds the book:
+    entity_records.load_record)."""
+    from src.utils.entity_records import load_record
+
+    return load_record(path, "places_geo")
 
 
 def _process_place(

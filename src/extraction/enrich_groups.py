@@ -211,6 +211,8 @@ def _maybe_source_recheck(data, grok_client) -> None:
         n = recheck_group_from_source(data, grok_client)
         if n:
             logger.info("  ✓ Source-recheck recovered %d critical field(s)", n)
+    except BatchModeCollecting:
+        raise  # queued for the batch: not an answer, not a failure
     except Exception as e:  # noqa: BLE001 - never block enrichment
         logger.warning("source-recheck skipped: %s", e)
 
@@ -263,7 +265,7 @@ def enrich_group(group_file: Path, grok_client: GrokClient) -> bool:
             cache_type="group_enrichment",
         )
     except BatchModeCollecting:
-        return False
+        raise  # queued for the batch: not an answer; the pass is repeated on the answer
     except Exception as e:
         # M3: a transient error is NOT a clean negative — do NOT stamp not_found
         # (that suppresses retries for the whole re-search window). Leave the

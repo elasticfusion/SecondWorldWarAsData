@@ -8,6 +8,7 @@ import logging
 import os
 import threading
 import time as _time
+from collections import Counter
 from pathlib import Path
 from typing import (
     Any,
@@ -355,6 +356,33 @@ class _RateLimiter:
             logger.info("Rate limiter: backing off %.0fs after 429", seconds)
 
 
+def _identity_fields(bid: str, rid: str) -> Dict[str, str]:
+    """The identity fields an answer carries: BookID (when the request has a book) + RequestID."""
+    return {"BookID": bid, "RequestID": rid} if bid else {"RequestID": rid}
+
+
+# A vision message's image counts as this many characters (~1500 tokens) in the credit estimate; its
+# base64 data URL (megabytes) is not text and is never counted or logged as such.
+_IMAGE_CHARS = 6000
+
+
+def _message_text(message: Dict[str, Any]) -> str:
+    """The text of a chat message: a string, or the text parts of a vision message."""
+    content = message.get("content", "")
+    if isinstance(content, list):
+        return " ".join(
+            str(p.get("text", "")) for p in content if p.get("type") == "text"
+        )
+    return str(content)
+
+
+def _message_images(message: Dict[str, Any]) -> int:
+    content = message.get("content", "")
+    if not isinstance(content, list):
+        return 0
+    return sum(1 for p in content if p.get("type") == "image_url")
+
+
 class BatchModeCollecting(Exception):
     """Raised in batch mode when a request is queued instead of sent."""
 
@@ -654,6 +682,12 @@ class GrokClient:
         """The key ``extract_json``/``chat_completion`` store this request's answer under: prompt
         (with its identity block, for a book-bound kind), system prompt, temperature and the cache
         type's model. The one way to name an entry to evict or replace."""
+        if cache_type in request_identity.REQUEST_BOUND:
+            # a request-only kind keeps the key of the UNSTAMPED request (see extract_json), so
+            # answers cached before it carried an identity are still hits
+            return self._make_cache_key(
+                prompt, temperature, self._get_model(cache_type), system_prompt or ""
+            )
         prompt = self._identity(prompt, system_prompt, cache_type, book)[0]
         return self._make_cache_key(
             prompt, temperature, self._get_model(cache_type), system_prompt or ""
@@ -668,11 +702,20 @@ class GrokClient:
         basis: Optional[str] = None,
     ) -> Tuple[str, str, str]:
         """(the prompt as asked, BookID, RequestID) - the prompt is stamped for a book-bound kind
-        (``request_identity``); otherwise returned unchanged with empty ids."""
+        (``request_identity``; a request-only kind carries just its RequestID, BookID ""); otherwise
+        returned unchanged with empty ids."""
         book = book or current_book.get()
-        if not book or not request_identity.is_bound(cache_type, book):
-            return prompt, "", ""
-        return request_identity.stamp(prompt, system_prompt, cache_type, book, basis)
+        if book and request_identity.is_bound(cache_type, book):
+            return request_identity.stamp(
+                prompt, system_prompt, cache_type, book, basis
+            )
+        if request_identity.is_request_bound(
+            cache_type
+        ):  # no single book: RequestID only
+            return request_identity.stamp(
+                prompt, system_prompt, cache_type, None, basis
+            )
+        return prompt, "", ""
 
     def store_json_answer(
         self,
@@ -691,16 +734,37 @@ class GrokClient:
         if _cache_globally_disabled():
             return
         with book_scope(book):
+            if cache_key is None and cache_type in request_identity.REQUEST_BOUND:
+                # the key (and so the RequestID) extract_json gives a request-only kind
+                cache_key = self.cache_key_for(
+                    prompt, system_prompt, cache_type, temperature
+                )
             _, bid, rid = self._identity(
                 prompt, system_prompt, cache_type, None, cache_key
             )
             body: Any = dict(answer) if isinstance(answer, dict) else answer
-            if bid and isinstance(body, dict):
-                body.update({"BookID": bid, "RequestID": rid})
+            if rid and isinstance(body, dict):
+                body.update(_identity_fields(bid, rid))
             key = cache_key or self.cache_key_for(
                 prompt, system_prompt, cache_type, temperature
             )
             self._get_cache(cache_type)[key] = json.dumps(body, ensure_ascii=False)
+
+    def evict_completion(
+        self,
+        prompt: str,
+        system_prompt: Optional[str] = None,
+        cache_type: str = "default",
+        temperature: float = 0.1,
+    ) -> bool:
+        """Drop the cached ``chat_completion`` answer to exactly this request (same key as
+        ``chat_completion`` computes: the prompt as given, no identity block), so the next ask
+        is live. For a caller whose cached reply could not be parsed (task 1.2f: an unusable
+        answer is never kept as THE answer). Returns True if one was removed."""
+        key = self._make_cache_key(
+            prompt, temperature, self._get_model(cache_type), system_prompt or ""
+        )
+        return self._get_cache(cache_type).pop(key, None) is not None
 
     def clear_cache_entry(
         self,
@@ -735,7 +799,10 @@ class GrokClient:
         out_allowance = int(os.getenv("GROK_EST_OUTPUT_TOKENS", "2000"))
         total = 0.0
         for req in self._batch_collector.requests:
-            chars = sum(len(str(m.get("content", ""))) for m in (req.messages or []))
+            chars = sum(
+                len(_message_text(m)) + _IMAGE_CHARS * _message_images(m)
+                for m in (req.messages or [])
+            )
             in_tokens = max(chars // 4, 1)
             model = self._get_model(getattr(req, "cache_type", "default"))
             total += credit_gate.estimate_cost_usd(
@@ -804,9 +871,17 @@ class GrokClient:
         )
         submitted = [(r.request_id, r.cache_type) for r in collector.requests]
         # each answer to its own request (the API returns them out of order: batch_api)
-        from src.utils.batch_api import align_by_request_id, alignment_degraded
+        from src.utils.batch_api import (
+            align_by_request_id,
+            alignment_degraded,
+            strict_alignment,
+        )
 
-        ordered = align_by_request_id(submitted, ordered, batch_id=batch_id)
+        strict = strict_alignment()
+        ordered = align_by_request_id(
+            submitted, ordered, batch_id=batch_id, strict=strict
+        )
+        served = Counter(br.model for br in ordered if getattr(br, "model", ""))
 
         # Build metrics
         metrics = BatchMetrics(
@@ -816,6 +891,8 @@ class GrokClient:
             poll_seconds=batch_state.get("_poll_seconds", 0.0),
         )
         metrics.submitted_request_ids = [[rid, ct] for rid, ct in submitted]
+        metrics.served_models = dict(served)
+        metrics.submitted_at = int(_time.time())
         state = batch_state.get("state", {})
         metrics.api_successes = state.get("num_success", 0)
         metrics.api_errors = state.get("num_error", 0)
@@ -829,10 +906,9 @@ class GrokClient:
 
         # Retry failed requests via real-time API. A count mismatch forces retry past the
         # 20%-systemic guard (it's an envelope problem, not per-request model failure).
-        if failed_ids:
-            self._retry_failed_batch(
-                failed_ids, requests_by_id, metrics, count, force=count_mismatch
-            )
+        self._retry_unless_unproven(
+            strict, ordered, failed_ids, requests_by_id, metrics, count, count_mismatch
+        )
 
         metrics.log_summary()
         _save_metrics(metrics)
@@ -848,6 +924,25 @@ class GrokClient:
         self.batch_mode = False
 
         return batch_id
+
+    def _retry_unless_unproven(
+        self, strict, ordered, failed_ids, requests_by_id, metrics, count, force
+    ) -> None:
+        """Retry the failed requests live - except in Phase 3 when answers could not be proven to
+        belong to their requests: those are neither used nor answered live (every Grok submission
+        is batched), the next round asks again."""
+        from src.utils.batch_api import RESULT_UNALIGNABLE
+
+        if strict and any(br.error == RESULT_UNALIGNABLE for br in ordered):
+            logger.error(
+                "OBSERV batch.unproven batch=%s requests=%d status=error - not retried live",
+                getattr(metrics, "batch_id", ""),
+                len(failed_ids),
+            )
+        elif failed_ids:
+            self._retry_failed_batch(
+                failed_ids, requests_by_id, metrics, count, force=force
+            )
 
     def _submitted_ids(self) -> list:
         return [
@@ -969,6 +1064,20 @@ class GrokClient:
             verify_served_models(ordered, "batch_retrieve")
         except BatchPending:
             raise
+        except (grok_models.GrokUnreachable, grok_models.GrokFundsExhausted):
+            if submitted_id:
+                # xAI outage AFTER the submit (task 1.2f): the batch lives on at xAI and is
+                # billed. Hand it to the poller like an unanswered batch (BatchPending: the
+                # reservation stays, the poller retrieves it and resumes the book) - a re-run
+                # would pay for the same requests again
+                logger.error(
+                    "OBSERV batch.outage_after_submit batch=%s status=error - handed to the "
+                    "batch poller; nothing is resubmitted",
+                    submitted_id,
+                )
+                self._hand_off(submitted_id, batch_name, count, jsonl_path)
+            credit_gate.release(est_cost, config=self._config)
+            raise
         except (Exception, grok_models.GrokModelUnavailable) as _batch_exc:
             credit_gate.release(est_cost, config=self._config)
             logger.warning(
@@ -1018,7 +1127,7 @@ class GrokClient:
             return ""
         for msg in reversed(req.messages):
             if msg.get("role") == "user":
-                return str(msg.get("content", ""))[:200]
+                return _message_text(msg)[:200]
         return ""
 
     def _sanitize_content(self, content: str) -> str:
@@ -1445,6 +1554,14 @@ class GrokClient:
         if response.status_code >= 500:
             response.raise_for_status()
 
+        # 402 only: mid-run, a 403 whose text happens to say "credit" must not stop the whole
+        # run (the preflight still treats a 403-credit as no funds, before any spend)
+        if response.status_code == 402:
+            grok_models.stop_run(
+                grok_models.GrokFundsExhausted,
+                "grok_client",
+                f"HTTP {response.status_code}: no API credits",
+            )
         if response.status_code != 200:
             if grok_models.is_model_missing(response.status_code, response.text):
                 grok_models.model_unavailable(
@@ -1455,7 +1572,10 @@ class GrokClient:
             raise GrokAPIError(f"API error {response.status_code}: {response.text}")
 
     def _post_with_deadline(self, session, headers, payload):
-        """POST with hard wall-clock deadline to prevent indefinite hangs."""
+        """POST with a hard wall-clock deadline to prevent indefinite hangs. A missed deadline is
+        a ``requests.Timeout`` (task 1.2f): the shared retries apply, then the run stops as a
+        Grok outage (``GrokUnreachable``, deferred connectivity) - a hung connection is never
+        handed to a caller as an ordinary error it might count as "no answer"."""
         import concurrent.futures
 
         def _do_post():
@@ -1463,23 +1583,56 @@ class GrokClient:
                 self.base_url, headers=headers, json=payload, timeout=(10, self.timeout)
             )
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
-            future = pool.submit(_do_post)
-            try:
-                return future.result(timeout=self.timeout)
-            except concurrent.futures.TimeoutError as err:
-                future.cancel()
-                raise GrokAPIError(
-                    f"API call exceeded {self.timeout}s wall-clock deadline"
-                ) from err
+        # not a `with` block: its exit WAITS for the hung thread, which made the deadline moot
+        pool = concurrent.futures.ThreadPoolExecutor(max_workers=1)
+        future = pool.submit(_do_post)
+        try:
+            return future.result(timeout=self.timeout)
+        except concurrent.futures.TimeoutError as err:
+            future.cancel()
+            logger.warning(
+                "OBSERV grok.deadline_exceeded seconds=%s status=warn - retried; repeated "
+                "misses stop the run as a Grok outage (check status.x.ai and the network)",
+                self.timeout,
+            )
+            raise requests.Timeout(
+                f"API call exceeded {self.timeout}s wall-clock deadline"
+            ) from err
+        finally:
+            pool.shutdown(wait=False)
+
+    def _call_api(
+        self, messages: list, temperature: float = 0.1, model: str = ""
+    ) -> Dict[str, Any]:
+        """Make an API call; the shared retries (5 tries, exponential backoff) are in
+        ``_call_api_retrying``. When they are used up on a network error, a timeout, an xAI 5xx
+        or 429, the run STOPS (``grok_models.GrokUnreachable``, D8): an outage is never handed
+        to a caller as an error it might count as "no answer" (owner rule 3, 2026-11-18).
+        """
+        try:
+            return self._call_api_retrying(messages, temperature, model)
+        except (requests.ConnectionError, requests.Timeout) as e:
+            grok_models.stop_run(
+                grok_models.GrokUnreachable, "grok_client", type(e).__name__
+            )
+        except requests.HTTPError as e:
+            status = e.response.status_code if e.response is not None else 0
+            if status >= 500 or status == 429:
+                grok_models.stop_run(
+                    grok_models.GrokUnreachable, "grok_client", f"HTTP {status}"
+                )
+            raise
+        raise AssertionError("unreachable")  # stop_run always raises
 
     @retry(
         stop=stop_after_attempt(5),
         wait=wait_exponential(multiplier=2, min=4, max=60),
-        retry=retry_if_exception_type((requests.HTTPError, requests.ConnectionError)),
+        retry=retry_if_exception_type(
+            (requests.HTTPError, requests.ConnectionError, requests.Timeout)
+        ),
         reraise=True,
     )
-    def _call_api(
+    def _call_api_retrying(
         self, messages: list, temperature: float = 0.1, model: str = ""
     ) -> Dict[str, Any]:
         """Make API call with retry logic."""
@@ -1717,12 +1870,30 @@ class GrokClient:
         model_used: str,
     ) -> None:
         """Queue a request for batch submission. Always raises BatchModeCollecting."""
+        self._queue_messages(
+            self._build_messages(prompt, system_prompt),
+            (prompt, system_prompt),
+            temperature,
+            cache_type,
+            cache_key,
+            model_used,
+        )
+
+    def _queue_messages(
+        self,
+        messages: list,
+        asked: Tuple[str, Optional[str]],
+        temperature: float,
+        cache_type: str,
+        cache_key: str,
+        model_used: str,
+    ) -> NoReturn:
+        """Queue ready-made chat ``messages`` (text or vision) under ``cache_key``; ``asked`` is
+        (prompt, system prompt) for the cache-key log. Always raises BatchModeCollecting.
+        """
         from src.utils.batch_api import BatchRequest
 
-        messages = []
-        if system_prompt:
-            messages.append({"role": "system", "content": system_prompt})
-        messages.append({"role": "user", "content": prompt})
+        prompt, system_prompt = asked
         self._observe_cache_key(
             "submit",
             cache_type,
@@ -1799,6 +1970,9 @@ class GrokClient:
         """
         Get JSON response from Grok API with base64 image input (vision).
 
+        In batch mode a cache miss is queued (``BatchModeCollecting``): the answer comes back as
+        text through the batch and is parsed when it is read from the cache.
+
         Args:
             prompt: User prompt
             image_base64: Base64-encoded image data
@@ -1810,49 +1984,18 @@ class GrokClient:
         Returns:
             Parsed JSON response
         """
-        use_cache = use_cache and not _cache_globally_disabled()
-        # Get cache for this type
-        cache = self._get_cache(cache_type)
-
-        # Check cache (use hash of image data in cache key)
         import hashlib
 
         image_hash = hashlib.sha256(image_base64.encode()).hexdigest()[:16]
-        cache_key = self._make_cache_key(
-            f"{prompt}:img_{image_hash}", temperature, self._get_model(cache_type)
+        return self._vision_json(
+            prompt,
+            f"{prompt}:img_{image_hash}",
+            lambda: f"data:{self._detect_image_type(image_base64)};base64,{image_base64}",
+            system_prompt,
+            temperature,
+            use_cache,
+            cache_type,
         )
-
-        if use_cache and cache_key in cache:
-            logger.info("Cache hit for image analysis")
-            return cache[cache_key]  # type: ignore[return-value]
-
-        # Build image data URL
-        content_type = self._detect_image_type(image_base64)
-        image_data_url = f"data:{content_type};base64,{image_base64}"
-
-        # Build and send messages
-        messages = self._build_vision_messages(prompt, image_data_url, system_prompt)
-        response = self._call_api(messages, temperature)
-
-        # Extract and parse content
-        content = response["choices"][0]["message"]["content"]
-        content = self._strip_markdown_wrapper(content)
-        content = self._sanitize_json_response(content)
-
-        try:
-            result = json.loads(content)
-        except json.JSONDecodeError as e:
-            clear_cmd = self._make_cache_clear_command(cache_type, prompt, temperature)
-            logger.error(f"💡 Clear cache: {clear_cmd}")
-            raise GrokAPIError(
-                f"Failed to parse JSON response: {e}\nContent: {content[:500]}"
-            ) from e
-
-        # Cache result
-        if use_cache:
-            cache[cache_key] = result
-
-        return result
 
     def extract_json_with_image(
         self,
@@ -1867,6 +2010,9 @@ class GrokClient:
         """
         Get JSON response from Grok API with image input (vision).
 
+        In batch mode a cache miss is queued (``BatchModeCollecting``), see
+        ``extract_json_with_image_base64``.
+
         Args:
             prompt: User prompt
             image_url: URL of image to analyze (will be downloaded and sent as base64)
@@ -1878,57 +2024,154 @@ class GrokClient:
         Returns:
             Parsed JSON response
         """
+        return self._vision_json(
+            prompt,
+            f"{prompt}:{image_url}",
+            lambda: self._fetch_image_as_data_url(image_url),
+            system_prompt,
+            temperature,
+            use_cache,
+            cache_type,
+        )
+
+    def _vision_json(
+        self,
+        prompt: str,
+        key_basis: str,
+        image_data_url: Callable[[], str],
+        system_prompt: Optional[str],
+        temperature: float,
+        use_cache: bool,
+        cache_type: str,
+    ) -> Dict[str, Any]:
+        """The one vision path: cache, else queue (batch mode) or ask live, then parse and cache.
+
+        A live answer is cached as the parsed object; a BATCH answer is cached by the batch as text
+        under the same key (``request_id`` = key), so a cached string is parsed here, on read. An
+        unparseable batch answer is evicted (the next pass asks again) and raises like a live one.
+
+        A kind in ``request_identity.REQUEST_BOUND`` / ``DOC_BOUND`` is asked with its RequestID
+        (and BookID, with a book in scope) and the answer must echo it - live or cached - or it is
+        never used (``_vision_proof``). The RequestID comes from ``key_basis`` (prompt + image),
+        the same stable value the cache key uses.
+        """
         use_cache = use_cache and not _cache_globally_disabled()
-        # Get cache for this type
         cache = self._get_cache(cache_type)
-
-        # Check cache (include image URL in cache key)
-        cache_key = self._make_cache_key(
-            f"{prompt}:{image_url}", temperature, self._get_model(cache_type)
+        model = self._get_model(cache_type)
+        key_basis = self._vision_key_basis(key_basis, cache_type)
+        cache_key = self._make_cache_key(key_basis, temperature, model)
+        asked, bid, rid = self._identity(
+            prompt, system_prompt, cache_type, None, key_basis
         )
-
         if use_cache and cache_key in cache:
-            logger.info(f"Cache hit for image analysis")
-            return cache[cache_key]  # type: ignore[return-value]
+            logger.info("Cache hit for image analysis")
+            cached = self._vision_read(cache, cache_key, cache_type, asked, temperature)
+            return self._vision_proof(
+                cached, (bid, rid), cache, cache_key, cache_type, use_cache
+            )
 
-        # Download image and convert to base64.
-        image_data_url = self._fetch_image_as_data_url(image_url)
-
-        # Build messages with image
-        messages = []
-        if system_prompt:
-            messages.append({"role": "system", "content": system_prompt})
-
-        # User message with image (base64 data URL)
-        messages.append(
-            {
-                "role": "user",
-                "content": [  # type: ignore[dict-item]
-                    {"type": "text", "text": prompt},
-                    {"type": "image_url", "image_url": {"url": image_data_url}},
-                ],
-            }
+        messages = self._build_vision_messages(asked, image_data_url(), system_prompt)
+        if self.batch_mode:
+            self._queue_messages(
+                messages,
+                (prompt, system_prompt),
+                temperature,
+                cache_type,
+                cache_key,
+                model,
+            )
+        response = self._call_api(messages, temperature, model)
+        content = self._sanitize_json_response(
+            self._strip_markdown_wrapper(response["choices"][0]["message"]["content"])
+        )
+        result = self._parse_image_json(content, cache_type, asked, temperature)
+        if use_cache and not isinstance(
+            result, str
+        ):  # a cached str is read as batch text
+            cache[cache_key] = result
+        return self._vision_proof(
+            result, (bid, rid), cache, cache_key, cache_type, use_cache
         )
 
-        # Call API
-        response = self._call_api(messages, temperature, self._get_model(cache_type))
+    @staticmethod
+    def _vision_key_basis(key_basis: str, cache_type: str) -> str:
+        """The key basis (cache key and RequestID) of a vision request in the current book scope."""
+        book = current_book.get()
+        if book and cache_type in request_identity.DOC_BOUND:
+            # the answer is stamped with THIS document's BookID, so it is cached per document: one
+            # shared entry would be read by another document and refused as another's answer
+            return f"{key_basis}|book:{book}"
+        return key_basis
 
-        # Extract content
-        content = response["choices"][0]["message"]["content"]
+    def vision_request_id(
+        self,
+        prompt: str,
+        image_url: str,
+        cache_type: str,
+        system_prompt: Optional[str] = None,
+    ) -> Optional[str]:
+        """The RequestID ``extract_json_with_image(prompt, image_url, cache_type=...)`` asks with
+        and checks its answer against (``_vision_proof``), or None for a kind that carries none.
+        The answer comes back WITHOUT the echoed id (``request_identity.verify`` removes it), so a
+        caller recording provenance asks here. Deterministic: the same request, same id, in the
+        same book scope as the call. Only for ``extract_json_with_image`` (URL): the base64 variant
+        keys its request differently, so its id is not this one."""
+        basis = self._vision_key_basis(f"{prompt}:{image_url}", cache_type)
+        _, _, rid = self._identity(prompt, system_prompt, cache_type, None, basis)
+        return rid or None
 
-        # Parse JSON
-        content = self._strip_markdown_wrapper(content)
+    def _vision_proof(
+        self,
+        result: Any,
+        ids: Tuple[str, str],
+        cache: Any,
+        cache_key: str,
+        cache_type: str,
+        use_cache: bool = True,
+    ) -> Any:
+        """The answer without its identity fields, once it is proven to be THIS request's.
 
-        # Sanitize
-        content = self._sanitize_json_response(content)
+        * ``mismatch`` (it belongs to another request): evicted, never used (GrokIdentityError);
+        * ``missing`` (not echoed): accepted, said so once, and kept STAMPED in the cache so a
+          re-read is ``ok`` instead of alerting every time;
+        * ``unverifiable`` (not an object): accepted.
+        A kind with no identity (ids empty) is returned as read."""
+        bid, rid = ids
+        if not rid or not isinstance(result, dict):
+            return result
+        shown, status = request_identity.verify(dict(result), bid, rid)
+        if status == "ok":
+            return shown
+        self._observe_identity(status, cache_type, rid, retried=True)
+        if status == "mismatch":
+            cache.pop(cache_key, None)  # never read again: the next pass asks afresh
+            raise GrokIdentityError(
+                f"Answer identity mismatch for a {cache_type} vision request "
+                f"(RequestID {rid}): the answer belongs to another request"
+            )
+        if use_cache and not _cache_globally_disabled():  # status == "missing"
+            cache[cache_key] = {**shown, **_identity_fields(bid, rid)}
+        return shown
 
-        result = self._parse_image_json(content, cache_type, prompt, temperature)
-
-        # Cache result
-        if use_cache:
-            cache[cache_key] = result
-
-        return result
+    def _vision_read(
+        self,
+        cache: Any,
+        cache_key: str,
+        cache_type: str,
+        prompt: str,
+        temperature: float,
+    ) -> Any:
+        """A cached vision answer: the parsed object (a live answer), or text (a batch answer),
+        parsed now."""
+        value = cache[cache_key]
+        if not isinstance(value, str):
+            return value
+        content = self._sanitize_json_response(self._strip_markdown_wrapper(value))
+        try:
+            return self._parse_image_json(content, cache_type, prompt, temperature)
+        except GrokAPIError:
+            cache.pop(cache_key, None)  # never read again; the next pass asks again
+            raise
 
     def _fetch_image_as_data_url(self, image_url: str) -> str:
         """SSRF-safe download of an image, returned as a base64 data URL."""
@@ -2345,6 +2588,18 @@ class GrokClient:
         Other arguments: see ``_extract_json``.
         """
         with book_scope(book):
+            if cache_key is None and cache_type in request_identity.REQUEST_BOUND:
+                # A request-only kind (Phase 3, task 1.7) is cached under the key of the request
+                # AS IT WAS before it carried an identity: its prompt now ends in the identity
+                # block, which would change the key and make every answer cached so far (the
+                # equipment disambiguations and source re-checks of Phase 2 among them) a paid
+                # miss. The RequestID is derived from this key, so it stays stable.
+                cache_key = self._make_cache_key(
+                    prompt,
+                    temperature,
+                    self._get_model(cache_type),
+                    system_prompt or "",
+                )
             asked, bid, rid = self._identity(
                 prompt, system_prompt, cache_type, None, cache_key
             )
@@ -2352,10 +2607,12 @@ class GrokClient:
                 asked, system_prompt, temperature, use_cache, cache_type, cache_key
             )
             result = self._extract_json(*ask.args, cache_key=cache_key)
-            if not bid:
+            if not rid:
                 return result
             result, status = request_identity.verify(result, bid, rid)
-            if status in ("mismatch", "missing") and self._reask_on(status, ask, rid):
+            if status in ("mismatch", "missing") and self._reask_on(
+                status, ask, rid, bool(bid)
+            ):
                 result = self._extract_json(*ask.args, cache_key=cache_key)
                 result, status = request_identity.verify(result, bid, rid)
             return self._settle_identity(result, status, ask, (bid, rid))
@@ -2365,13 +2622,19 @@ class GrokClient:
             ask.prompt, ask.system_prompt, ask.cache_type, ask.temperature
         )
 
-    def _reask_on(self, status: str, ask: "_Ask", rid: str) -> bool:
+    def _reask_on(
+        self, status: str, ask: "_Ask", rid: str, ids_have_book: bool = True
+    ) -> bool:
         """Evict an unproven answer to ask again - once (True) - or not (False).
 
         In BATCH mode an evicted answer is re-queued (the re-ask raises BatchModeCollecting) and a
         paid answer is lost, so: a ``missing`` echo is not re-asked there (accepted, below), and a
         ``mismatch`` is re-asked once per key across cycles - a second one raises."""
         key = self._ask_key(ask)
+        if status == "missing" and not ids_have_book:
+            # a request-only kind (Phase 3): an answer that did not echo is accepted at once -
+            # asking again would double the spend of a kind the model may never echo
+            return False
         if self.batch_mode:
             if status == "missing":
                 return False
@@ -2406,7 +2669,7 @@ class GrokClient:
                 "the answer belongs to another request"
             )
         if ask.use_cache and not _cache_globally_disabled():  # status == "missing"
-            body = {**result, "BookID": ids[0], "RequestID": ids[1]}
+            body = {**result, **_identity_fields(ids[0], ids[1])}
             self._get_cache(ask.cache_type)[self._ask_key(ask)] = json.dumps(
                 body, ensure_ascii=False
             )

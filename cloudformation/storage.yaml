@@ -206,6 +206,68 @@ Resources:
                   's3:ExistingObjectTag/quarantine': 'true'
             - !Ref AWS::NoValue
 
+  # Deployed-config archive (task 0.3, 2026-11-18). config.yaml is gitignored (local only) but ships
+  # in the image and the Lambdas; every deploy copies the exact file here under its version
+  # (<commit>+cfg-<hash>, scripts/deploy_all.sh), so any deployed config can be fetched back
+  # (scripts/config_archive.sh). Private: no public access, encrypted, versioned, TLS only. No
+  # pipeline role is granted access (their S3 grants are scoped to the data bucket); only the
+  # operator's own credentials read and write it.
+  ConfigBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Sub ${EnvironmentName}-wwii-config-${AWS::AccountId}
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+            BucketKeyEnabled: true
+      VersioningConfiguration:
+        Status: Enabled
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+      # No lifecycle rule: superseded versions are kept (owner rule 2026-11-08, never expire old
+      # versions bucket-wide; tests/test_storage_lifecycle.py). The files are a few KB each. A key
+      # removed from config.yaml stays readable in older versions: rotate a leaked key, do not just
+      # delete it from the file.
+  ConfigBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref ConfigBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: DenyInsecureTransport
+            Effect: Deny
+            Principal: '*'
+            Action: 's3:*'
+            Resource:
+              - !GetAtt ConfigBucket.Arn
+              - !Sub '${ConfigBucket.Arn}/*'
+            Condition:
+              Bool:
+                'aws:SecureTransport': 'false'
+          # Defence in depth: no pipeline role (all named <env>-wwii-*: ECS, Lambda, Batch, the
+          # GitHub deploy role) may touch the deployed config, even if a future grant is broad.
+          # The operator (SSO) and CloudFormation are not wwii-* roles.
+          - Sid: DenyPipelineRoles
+            Effect: Deny
+            Principal: '*'
+            Action: 's3:*'
+            Resource:
+              - !GetAtt ConfigBucket.Arn
+              - !Sub '${ConfigBucket.Arn}/*'
+            Condition:
+              ArnLike:
+                'aws:PrincipalArn': !Sub 'arn:aws:iam::${AWS::AccountId}:role/${EnvironmentName}-wwii-*'
+
   # API response cache
   CacheTable:
     Type: AWS::DynamoDB::Table
@@ -226,146 +288,25 @@ Resources:
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: true
 
-  # Entity tables
-  PeopleTable:
+  # Merge pointers (owner 2026-11-21): one item per merged-away record id -> the id that absorbed
+  # it (src/utils/id_aliases). Pointers only, never record JSON (S3 holds the records). The ten
+  # per-entity JSON tables (people, groups, places, ...) were removed: nothing wrote or read them
+  # since the DynamoDB entity store was retired; they were deleted while empty.
+  IdAliasTable:
     Type: AWS::DynamoDB::Table
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
-      TableName: !Sub ${EnvironmentName}-wwii-people
+      TableName: !Sub ${EnvironmentName}-wwii-id-aliases
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
-        - AttributeName: PersonID
+        - AttributeName: alias_key
           AttributeType: S
       KeySchema:
-        - AttributeName: PersonID
+        - AttributeName: alias_key
           KeyType: HASH
-
-  GroupsTable:
-    Type: AWS::DynamoDB::Table
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
-    Properties:
-      TableName: !Sub ${EnvironmentName}-wwii-groups
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - AttributeName: GroupID
-          AttributeType: S
-      KeySchema:
-        - AttributeName: GroupID
-          KeyType: HASH
-
-  PlacesTable:
-    Type: AWS::DynamoDB::Table
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
-    Properties:
-      TableName: !Sub ${EnvironmentName}-wwii-places
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - AttributeName: PlaceID
-          AttributeType: S
-      KeySchema:
-        - AttributeName: PlaceID
-          KeyType: HASH
-
-  DatesTable:
-    Type: AWS::DynamoDB::Table
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
-    Properties:
-      TableName: !Sub ${EnvironmentName}-wwii-dates
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - AttributeName: DateID
-          AttributeType: S
-      KeySchema:
-        - AttributeName: DateID
-          KeyType: HASH
-
-  EquipmentTable:
-    Type: AWS::DynamoDB::Table
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
-    Properties:
-      TableName: !Sub ${EnvironmentName}-wwii-equipment
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - AttributeName: EquipmentID
-          AttributeType: S
-      KeySchema:
-        - AttributeName: EquipmentID
-          KeyType: HASH
-
-  WeatherTable:
-    Type: AWS::DynamoDB::Table
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
-    Properties:
-      TableName: !Sub ${EnvironmentName}-wwii-weather
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - AttributeName: WeatherID
-          AttributeType: S
-      KeySchema:
-        - AttributeName: WeatherID
-          KeyType: HASH
-
-  LogisticsTable:
-    Type: AWS::DynamoDB::Table
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
-    Properties:
-      TableName: !Sub ${EnvironmentName}-wwii-logistics
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - AttributeName: LogisticsID
-          AttributeType: S
-      KeySchema:
-        - AttributeName: LogisticsID
-          KeyType: HASH
-
-  CasualtiesTable:
-    Type: AWS::DynamoDB::Table
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
-    Properties:
-      TableName: !Sub ${EnvironmentName}-wwii-casualties
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - AttributeName: CasualtyID
-          AttributeType: S
-      KeySchema:
-        - AttributeName: CasualtyID
-          KeyType: HASH
-
-  MapsTable:
-    Type: AWS::DynamoDB::Table
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
-    Properties:
-      TableName: !Sub ${EnvironmentName}-wwii-maps
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - AttributeName: MapID
-          AttributeType: S
-      KeySchema:
-        - AttributeName: MapID
-          KeyType: HASH
-
-  BibliographyTable:
-    Type: AWS::DynamoDB::Table
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
-    Properties:
-      TableName: !Sub ${EnvironmentName}-wwii-bibliography
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - AttributeName: BibliographyID
-          AttributeType: S
-      KeySchema:
-        - AttributeName: BibliographyID
-          KeyType: HASH
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
 
   # --- Cost Monitoring ---
   PipelineBudget:
@@ -388,6 +329,8 @@ Resources:
               Address: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-alarms
 
 Outputs:
+  ConfigBucketName:
+    Value: !Ref ConfigBucket
   DataBucketName:
     Value: !Ref DataBucket
   DataBucketArn:
@@ -396,3 +339,5 @@ Outputs:
     Value: !Ref CacheTable
   CacheTableArn:
     Value: !GetAtt CacheTable.Arn
+  IdAliasTableName:
+    Value: !Ref IdAliasTable

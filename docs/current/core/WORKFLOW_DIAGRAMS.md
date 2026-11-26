@@ -236,7 +236,7 @@ flowchart LR
     style P3Retry fill:#FFE4B5
 ```
 
-In AWS, entity records live in S3 (`output/<entity>/*.json`) and run state in the DynamoDB `{env}-wwii-api-cache` table. The former MongoDB import step was removed (`import_to_mongodb.py` no longer exists; `import_to_dynamodb.py` remains).
+In AWS, entity records live in S3 (`output/<entity>/*.json`) and run state in the DynamoDB `{env}-wwii-api-cache` table. The former MongoDB and DynamoDB import steps were removed (`import_to_mongodb.py`, `import_to_dynamodb.py`); merge pointers live in `{env}-wwii-id-aliases`.
 
 ---
 
@@ -425,7 +425,7 @@ flowchart TD
 
 ## MongoDB Import Flow (removed)
 
-The MongoDB import script (`import_to_mongodb.py`) no longer exists, so its diagram was removed. Entity records are stored as JSON in S3 (`output/<entity>/*.json`); `import_to_dynamodb.py` is the remaining importer. Its PNG is archived at `docs/archive/2026-11-16/core/images/mongodb_import_flow.png`.
+The MongoDB import script (`import_to_mongodb.py`) no longer exists, so its diagram was removed. Entity records are stored as JSON in S3 (`output/<entity>/*.json`); There is no importer: S3 is the record store. Its PNG is archived at `docs/archive/2026-11-16/core/images/mongodb_import_flow.png`.
 
 ---
 

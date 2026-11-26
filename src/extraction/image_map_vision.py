@@ -33,6 +33,8 @@ from src.extraction.media_classify import (
     vision_is_map,
 )
 from src.utils.observe import observe_warn
+from src.grok_client import BatchModeCollecting
+from src.utils.batch_pending import Pending
 
 logger = logging.getLogger(__name__)
 
@@ -52,10 +54,19 @@ def _image_bytes(rec: Dict[str, Any], output_root: Path) -> Optional[bytes]:
     url = rec.get("url")
     if not url:
         return None
-    from src.extraction.images import fetch_image_bytes
+    from src.extraction.images import (
+        TRANSIENT_FETCH_REASONS,
+        fetch_image_bytes_with_reason,
+    )
 
-    body, _ext = fetch_image_bytes(url)
+    body, _ext, reason = fetch_image_bytes_with_reason(url)
+    if body is None and reason in TRANSIENT_FETCH_REASONS:
+        raise ImageHostUnavailable(reason)
     return body
+
+
+class ImageHostUnavailable(Exception):
+    """The image host did not answer (network, 429, 5xx): not a vision attempt (task 1.2f)."""
 
 
 def _context(rec: Dict[str, Any]) -> Dict[str, str]:
@@ -147,6 +158,8 @@ def _decide(rec: Dict[str, Any], output_root: Path, grok_client):
 # After this many undecided vision attempts the image is handed to a human (needs_review) instead
 # of being re-sent to Grok on every run (cost cap). It stays pending and keeps alerting.
 MAX_VISION_ATTEMPTS = 3
+# Phase 3 runs in which the image host did not answer before the image goes to a human
+MAX_HOST_UNAVAILABLE_RUNS = 5
 
 
 def _vision_step(rec: Dict[str, Any], output_root: Path, grok_client) -> str:
@@ -156,7 +169,21 @@ def _vision_step(rec: Dict[str, Any], output_root: Path, grok_client) -> str:
     if attempts >= MAX_VISION_ATTEMPTS:
         rec["needs_review"] = True
         return "needs_human"
-    is_map, classification, description = _decide(rec, output_root, grok_client)
+    try:
+        is_map, classification, description = _decide(rec, output_root, grok_client)
+    except ImageHostUnavailable as e:
+        # an outage must not use up the image's vision attempts: retried next run - but a host
+        # that never answers (or answers 503 on purpose) must not keep the image pending for
+        # ever: after MAX_HOST_UNAVAILABLE_RUNS runs it goes to a human
+        from src.utils import service_outage
+
+        service_outage.failed("image_host", "map_vision_fetch", str(e))
+        runs = int(rec.get("host_unavailable_runs") or 0) + 1
+        rec["host_unavailable_runs"] = runs
+        if runs >= MAX_HOST_UNAVAILABLE_RUNS:
+            rec["needs_review"] = True
+            return "needs_human"
+        return "host_unavailable"
     if is_map is None:
         rec["map_vision_attempts"] = attempts + 1
         return "undecided"
@@ -222,19 +249,19 @@ def _resolve_file(
     """Resolve one image file. Returns the outcome, 'unreadable', or None (not pending)."""
     from src.utils.file_lock import write_json_with_lock
 
-    try:
-        rec = json.loads(f.read_text(encoding="utf-8"))
-    except (OSError, ValueError) as e:
-        logger.warning(
-            "OBSERV images.map_vision_unreadable image=%s err=%s status=warn",
-            f.name,
-            type(e).__name__,
-        )
+    from src.utils.entity_records import is_record_file, load_record
+
+    if not is_record_file(f):
+        return None
+    rec = load_record(f, "image_map_vision")  # corrupt: alerted, the book is held
+    if rec is None:
         return "unreadable"
     if not _needs_resolution(rec):
         return None
     try:
         outcome = _resolve_one(rec, output_root, grok_client, download)
+    except BatchModeCollecting:
+        raise  # queued for the batch: not an answer, not a failure
     except Exception as e:  # noqa: BLE001 - one image must not abort the step
         logger.warning(
             "OBSERV images.map_vision_error image=%s err=%s status=warn",
@@ -274,6 +301,12 @@ _ALERTS = {
         f"vision could not decide after {MAX_VISION_ATTEMPTS} attempts; these images are marked "
         "needs_review — open each and set map_check to map or not_map by hand",
     ),
+    "host_unavailable": (
+        "map_vision_host_unavailable",
+        "image hosts did not answer for these images (see image_host.unavailable lines for the "
+        "hosts), so no vision attempt was used. Check the hosts, then re-run Phase 3 for the "
+        f"book; after {MAX_HOST_UNAVAILABLE_RUNS} such runs an image goes to needs_review",
+    ),
     "persist_failed": (
         "map_persist_failed",
         "images classified as maps could not be saved as Map entities (URL rejected or write "
@@ -286,7 +319,7 @@ def _report(counts: Dict[str, int]) -> None:
     bad = any(counts[k] for k in _ALERTS)
     logger.info(
         "OBSERV images.map_vision pending=%d map=%d not_map=%d undecided=%d needs_human=%d "
-        "persist_failed=%d unreadable=%d status=%s",
+        "persist_failed=%d unreadable=%d host_unavailable=%d status=%s",
         counts["pending"],
         counts["map"],
         counts["not_map"],
@@ -294,6 +327,7 @@ def _report(counts: Dict[str, int]) -> None:
         counts["needs_human"],
         counts["persist_failed"],
         counts["unreadable"],
+        counts["host_unavailable"],
         "warn" if bad else "ok",
     )
     for key, (event, note) in _ALERTS.items():
@@ -304,7 +338,9 @@ def _report(counts: Dict[str, int]) -> None:
 def resolve_pending(
     output_root: Path, grok_client, download: bool = True
 ) -> Dict[str, int]:
-    """Run deferred map vision over every ``pending_vision`` image record. Never raises."""
+    """Run deferred map vision over every ``pending_vision`` image record. Never raises, except
+    BatchModeCollecting after the whole pass when requests were queued for a batch round.
+    """
     counts: Dict[str, int] = {
         k: 0
         for k in (
@@ -315,18 +351,23 @@ def resolve_pending(
             "needs_human",
             "persist_failed",
             "unreadable",
+            "host_unavailable",
         )
     }
     images_dir = output_root / "images"
     files = sorted(images_dir.glob("*.json")) if images_dir.is_dir() else []
+    pending = Pending()
     for f in files:
         if f.name == "index.json":
             continue
-        outcome = _resolve_file(f, output_root, grok_client, download)
+        # a queued vision request: not undecided (no alert, no attempt counted); every image
+        # queues its own and the step raises once below
+        outcome = pending.call(_resolve_file, f, output_root, grok_client, download)
         if outcome is None:
             continue
         if outcome != "unreadable":
             counts["pending"] += 1
         counts[outcome] += 1
     _report(counts)
+    pending.raise_if_queued()  # batch rounds: the step is pending, the next pass has the answers
     return counts

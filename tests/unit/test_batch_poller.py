@@ -61,7 +61,7 @@ def test_poll_no_pending_jobs(dynamodb_table):
     assert result == {"checked": 0}
 
 
-@patch("lambda_handlers.batch_poller.requests.get")
+@patch("src.utils.batch_api.requests.request")
 @patch("lambda_handlers.batch_poller._trigger_retrieve")
 def test_poll_batch_complete(mock_trigger, mock_get, dynamodb_table):
     from lambda_handlers.batch_poller import handler
@@ -88,7 +88,7 @@ def test_poll_batch_complete(mock_trigger, mock_get, dynamodb_table):
     assert item["status"] == "ready"
 
 
-@patch("lambda_handlers.batch_poller.requests.get")
+@patch("src.utils.batch_api.requests.request")
 def test_poll_batch_still_pending(mock_get, dynamodb_table):
     from lambda_handlers.batch_poller import handler
 
@@ -106,7 +106,7 @@ def test_poll_batch_still_pending(mock_get, dynamodb_table):
     assert result["complete"] == 0
 
 
-@patch("lambda_handlers.batch_poller.requests.get")
+@patch("src.utils.batch_api.requests.request")
 @patch("lambda_handlers.batch_poller._notify")
 def test_poll_batch_failed(mock_notify, mock_get, dynamodb_table):
     from lambda_handlers.batch_poller import handler
@@ -131,7 +131,7 @@ def test_poll_batch_failed(mock_notify, mock_get, dynamodb_table):
     assert item["status"] == "failed"
 
 
-@patch("lambda_handlers.batch_poller.requests.get")
+@patch("src.utils.batch_api.requests.request")
 def test_poll_api_error_stays_pending(mock_get, dynamodb_table):
     from lambda_handlers.batch_poller import handler
 
@@ -150,10 +150,13 @@ def test_poll_api_error_stays_pending(mock_get, dynamodb_table):
 
 @patch("lambda_handlers.batch_poller.boto3.client")
 def test_submit_action_creates_networking_and_launches_task(
-    mock_boto_client, dynamodb_table
+    mock_boto_client, dynamodb_table, monkeypatch
 ):
+    from lambda_handlers import batch_poller
     from lambda_handlers.batch_poller import handler
 
+    # the credit gate (task 1.1e, tests/test_credit_hold.py) is not under test here
+    monkeypatch.setattr(batch_poller, "_credit_hold_reply", lambda phase, book: {})
     mock_lambda = MagicMock()
     mock_ecs = MagicMock()
     mock_ecs.run_task.return_value = {
@@ -189,7 +192,7 @@ def test_submit_action_creates_networking_and_launches_task(
     assert "task_arn" in result
 
 
-@patch("lambda_handlers.batch_poller.requests.get")
+@patch("src.utils.batch_api.requests.request")
 @patch("lambda_handlers.batch_poller._trigger_retrieve")
 def test_poll_multiple_jobs(mock_trigger, mock_get, dynamodb_table):
     from lambda_handlers.batch_poller import handler

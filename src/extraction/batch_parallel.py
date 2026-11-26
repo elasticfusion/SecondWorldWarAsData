@@ -91,6 +91,19 @@ def _safe_entity_filename(filename: str, entity_id: str) -> str:
     return f"{safe}.json"
 
 
+def entity_id_suffix(
+    entity_id: str, directory: Optional[Path] = None, stem: str = ""
+) -> str:
+    """The id part of a new entity's filename: the ULID's last 8 characters (its random part).
+    The first 8 are the timestamp, so two entities created in the same second with names that
+    sanitise alike got one filename and the second record overwrote the first (task 1.8). With
+    ``directory`` and ``stem``, the full id is used if that name is somehow taken."""
+    tail = str(entity_id)[-8:]
+    if directory is not None and (directory / f"{stem}_{tail}.json").exists():
+        return str(entity_id)
+    return tail
+
+
 def _contained_entity_path(entity_dir: Path, safe_name: str):
     """Return ``entity_dir/safe_name`` only if its REAL (symlink-resolved) path stays inside the
     real ``entity_dir`` — else None (#450 defense-in-depth). ``_safe_entity_filename`` already blocks
@@ -302,7 +315,7 @@ def _make_date_record(obj: dict) -> dict:
 
 
 def _make_date_filename(key: str, entity_id: str) -> str:
-    """Create spec-compliant date filename: YYYYMMDD[_HHMM]_ULID8.json"""
+    """Create spec-compliant date filename: YYYYMMDD[_HHMM]_<last 8 of the ULID>.json"""
     date_part = key.split("T")[0] if "T" in key else key
     time_part = key.split("T")[1] if "T" in key else None
 
@@ -319,7 +332,8 @@ def _make_date_filename(key: str, entity_id: str) -> str:
     )
     if time_part:
         safe += f"_{time_part.replace(':', '')}"
-    return f"{safe}_{entity_id[:8]}.json"
+    # the ULID's random tail, not its timestamp head (task 1.8: same-second records collided)
+    return f"{safe}_{entity_id_suffix(entity_id)}.json"
 
 
 def _get_or_create_entity(  # pylint: disable=too-many-arguments,too-many-positional-arguments

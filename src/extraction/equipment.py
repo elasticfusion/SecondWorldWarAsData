@@ -635,6 +635,9 @@ def _verify_media_with_vision(
 
 
 _VISION_MAX_MB = 5
+# the only formats ever decoded from fetched bytes: an untrusted file that claims to be an image
+# must not reach a decoder like EPS (which runs Ghostscript)
+_DECODE_FORMATS = ["JPEG", "PNG", "GIF", "TIFF", "WEBP", "BMP"]
 _VISION_MAX_PIXELS = (
     50_000_000  # decompression-bomb cap (held on Image.MAX_IMAGE_PIXELS too)
 )
@@ -653,9 +656,11 @@ def _prepare_image_for_vision(image_data: bytes) -> tuple[Optional[bytes], str]:
     _prev_max = Image.MAX_IMAGE_PIXELS
     Image.MAX_IMAGE_PIXELS = 50_000_000
     try:
-        img = Image.open(BytesIO(image_data))
+        img = Image.open(BytesIO(image_data), formats=_DECODE_FORMATS)
         img.verify()
-        img = Image.open(BytesIO(image_data))  # Reload after verify
+        img = Image.open(
+            BytesIO(image_data), formats=_DECODE_FORMATS
+        )  # Reload after verify
         if img.width * img.height > _VISION_MAX_PIXELS:
             # Pillow only RAISES above 2x MAX_IMAGE_PIXELS (it warns between 1x and 2x): enforce
             # the cap explicitly before convert()/resize() rasterize it.
@@ -693,7 +698,7 @@ def _shrink_image(image_data: bytes) -> bytes:
     if size_mb <= _VISION_MAX_MB:
         return image_data
     logger.debug("Resizing image (%.1fMB -> target <%dMB)", size_mb, _VISION_MAX_MB)
-    img = Image.open(BytesIO(image_data))
+    img = Image.open(BytesIO(image_data), formats=_DECODE_FORMATS)
     scale = 0.7
     while size_mb > _VISION_MAX_MB and scale > 0.1:
         new_size = (int(img.width * scale), int(img.height * scale))
@@ -995,7 +1000,7 @@ def _compute_image_hash(image_path) -> Optional[str]:
         _prev_max = Image.MAX_IMAGE_PIXELS
         Image.MAX_IMAGE_PIXELS = 50_000_000
         try:
-            with Image.open(image_path) as img:
+            with Image.open(image_path, formats=_DECODE_FORMATS) as img:
                 # Use average hash (fast and effective for duplicates)
                 return str(imagehash.average_hash(img))
         finally:

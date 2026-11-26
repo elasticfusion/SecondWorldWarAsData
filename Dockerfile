@@ -47,8 +47,7 @@ COPY ecs_modules/ ecs_modules/
 COPY phase0_ingest.py phase0_convert.py phase0_ocr_crosscheck.py \
      phase1_parse.py phase2_extract.py phase2_retry.py \
      phase3_enrich_data.py phase3_retry.py \
-     phase3_enqueue_openserp.py openserp_worker.py \
-     import_to_dynamodb.py ./
+     phase3_enqueue_openserp.py openserp_worker.py ./
 
 # Set ownership (config.yaml needs to be writable for runtime patching)
 RUN chown -R pipeline:pipeline /app

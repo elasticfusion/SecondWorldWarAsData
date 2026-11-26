@@ -35,6 +35,7 @@ aws cloudformation deploy \
     GitHubOrg=YOUR_GITHUB_ORG \
     PipelineImageUri=340339225515.dkr.ecr.us-east-1.amazonaws.com/wwii-pipeline:latest \
     OpenSerpImageUri=340339225515.dkr.ecr.us-east-1.amazonaws.com/wwii-openserp:latest \
+    AvImageUri=340339225515.dkr.ecr.us-east-1.amazonaws.com/wwii-clamav:latest \
   --capabilities CAPABILITY_NAMED_IAM
 ```
 

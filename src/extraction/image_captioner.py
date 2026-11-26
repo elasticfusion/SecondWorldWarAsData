@@ -23,6 +23,7 @@ import base64
 import logging
 from dataclasses import dataclass
 from typing import Optional
+from src.grok_client import BatchModeCollecting
 
 logger = logging.getLogger(__name__)
 
@@ -147,6 +148,8 @@ class ImageCaptioner:  # pylint: disable=too-few-public-methods
                 needs_review=needs_review,
                 method="grok-vision",
             )
+        except BatchModeCollecting:
+            raise  # queued for the batch, not a failure: no "error" caption may be recorded
         except Exception as e:  # noqa: BLE001 - vision failure -> unknown, not crash
             logger.warning("Image caption failed: %s", e)
             return ImageCaption(

@@ -7,6 +7,7 @@ from src.schemas import (
     make_nullable,
     ulid_field,
 )
+from src.schemas.photo_fields import WEB_PHOTO_PROPERTIES
 
 # Structured specifications (Grokipedia/Wikipedia). Common fields named; tolerant of extra
 # keys (no additionalProperties:false) so sources can add specs without a schema change.
@@ -32,34 +33,15 @@ _IMAGES_SCHEMA = {
     "items": {
         "type": "object",
         "properties": {
-            "url": make_nullable("string"),
-            "local_path": make_nullable("string"),
-            "source": make_nullable("string"),
+            **WEB_PHOTO_PROPERTIES,
             "license": make_nullable("string"),
-            "caption": make_nullable("string"),
             # representative (default — generic/stock, illustrates the TYPE) vs
             # documentary (source explicitly asserts it depicts this event).
             "image_scope": enum_field(["representative", "documentary"], nullable=True),
-            # whether Grok vision confirmed the image depicts this equipment TYPE.
-            "vision_verified": {"type": ["boolean", "null"]},
-            # Phase 3 vision state (src/enrichment/equipment_images): pending until vision
-            # decides; undecided attempts are counted and capped -> needs_review.
-            "vision_check": enum_field(
-                ["pending", "verified", "rejected"], nullable=True
-            ),
-            "vision_reason": make_nullable("string"),
-            "vision_checked_at": make_nullable("string"),
             "vision_attempts": {"type": ["integer", "null"], "minimum": 0},
             # image download failures (own budget; a 429 is not a vision verdict)
             "fetch_failures": {"type": ["integer", "null"], "minimum": 0},
-            # perceptual hash of a verified image (duplicate rejection across runs)
-            "phash": make_nullable("string"),
             "needs_review": {"type": ["boolean", "null"]},
-            # where the candidate came from: wikipedia (qualified article) | openserp | legacy
-            "candidate_source": make_nullable("string"),
-            # provenance: the article page the candidate was taken from, and when
-            "source_page_url": make_nullable("string"),
-            "candidate_added_at": make_nullable("string"),
         },
     },
 }

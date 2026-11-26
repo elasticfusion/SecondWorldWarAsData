@@ -178,10 +178,14 @@ python3 scripts/deploy_aws.py deploy \
   --region us-east-1 \
   --template-bucket wwii-pipeline-deploy \
   --pipeline-image <account-id>.dkr.ecr.us-east-1.amazonaws.com/wwii-pipeline:latest \
-  --openserp-image <account-id>.dkr.ecr.us-east-1.amazonaws.com/wwii-openserp:latest
+  --openserp-image <account-id>.dkr.ecr.us-east-1.amazonaws.com/wwii-openserp:latest \
+  --av-image <account-id>.dkr.ecr.us-east-1.amazonaws.com/wwii-clamav:latest
 ```
 
-Optional flags: `--video-image`, `--av-image` (ClamAV scanning is enabled only when an AV image is given), `--multi-doc true|false` (dispatcher kill-switch, default false), `--batch-phase2 true|false` (omitted keeps the live value), `--profile`, `--dry-run`.
+`--av-image` is REQUIRED: ClamAV scans every binary object, and the template rejects an empty
+`AvImageUri` (owner 2026-11-23). `deploy_all.sh` builds the image if it is missing.
+
+Optional flags: `--video-image`, `--multi-doc true|false` (dispatcher kill-switch, default false), `--batch-phase2 true|false` (omitted keeps the live value), `--profile`, `--dry-run`.
 
 The deploy script reads `notification_email` from `config.yaml` automatically. You can also pass `--notification-email you@example.com` to override. You'll receive a confirmation email from SNS that you must click to activate notifications.
 
@@ -512,20 +516,12 @@ aws ecs describe-tasks --cluster dev-wwii-pipeline \
 
 ---
 
-## Import to DynamoDB
+## DynamoDB
 
-```bash
-# Run as ECS task
-aws ecs run-task \
-  --cluster dev-wwii-pipeline \
-  --task-definition dev-wwii-import \
-  --launch-type FARGATE \
-  --network-configuration "awsvpcConfiguration={subnets=[<subnet-id>],securityGroups=[<sg-id>],assignPublicIp=DISABLED}" \
-  --region us-east-1
-
-# Or from local machine
-python3 import_to_dynamodb.py --region us-east-1 --prefix dev-wwii-
-```
+Entity records live only in S3 (`output/<entity>/*.json`). DynamoDB holds run state and the review
+queue (`<env>-wwii-api-cache`) and merge pointers (`<env>-wwii-id-aliases`: a merged-away record id ->
+the id that absorbed it, `src/utils/id_aliases`). The per-entity JSON tables and the
+`<env>-wwii-import` task were removed on 2026-11-21 (nothing wrote or read them).
 
 ---
 

@@ -51,6 +51,10 @@ Parameters:
     Type: String
   PublicSubnet1Id:
     Type: String
+  # the NAT's failover AZ (task 1.2c); empty keeps the NAT in PublicSubnet1 only
+  PublicSubnet2Id:
+    Type: String
+    Default: ''
   LambdaSGId:
     Type: String
   OpenSerpSGId:
@@ -85,14 +89,17 @@ Parameters:
       only created when supplied.
   AvImageUri:
     Type: String
-    Default: ""
+    MinLength: 1
+    AllowedPattern: ".+/.+"
+    ConstraintDescription: >-
+      REQUIRED - the ClamAV image URI (ClamAV is on for every binary object, owner 2026-11-23)
     Description: >-
       ECR image URI for the SEPARATE ClamAV container (Dockerfile.clamav:
       clamscan + freshclam + S3 signature sync). Kept separate from the pipeline
       image for isolation (scans untrusted bytes in a minimal least-privilege
       container), independent lifecycle, and the ~1GB daily-updated signature DB.
-      Optional: the AV scan + signature-update resources are only created when
-      supplied (same pattern as VideoImageUri).
+      MANDATORY: the AV scan + signature-update resources always exist and the
+      trigger always scans (owner 2026-11-23: ClamAV on for every binary object).
   BatchPollerIntervalMinutes:
     Type: Number
     Default: 5
@@ -137,7 +144,6 @@ Parameters:
 
 Conditions:
   HasVideoImage: !Not [!Equals [!Ref VideoImageUri, ""]]
-  HasAvImage: !Not [!Equals [!Ref AvImageUri, ""]]
 
 Resources:
   # --- ECS Cluster ---
@@ -380,14 +386,12 @@ Resources:
   # Demand-launched by the trigger over binary keys (pdf/image/video/office).
   # Kept separate from the pipeline image for isolation + the ~1GB signature DB.
   AvScanLogGroup:
-    Condition: HasAvImage
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub /ecs/${EnvironmentName}-wwii-av-scan
       RetentionInDays: 30
 
   AvScanTaskDef:
-    Condition: HasAvImage
     Type: AWS::ECS::TaskDefinition
     Properties:
       Family: !Sub ${EnvironmentName}-wwii-av-scan
@@ -424,7 +428,6 @@ Resources:
   # freshclam signature-update job: refreshes the ClamAV virus DB to S3 so the
   # scan task syncs current signatures (the DB updates daily). Scheduled daily.
   AvSignatureUpdateTaskDef:
-    Condition: HasAvImage
     Type: AWS::ECS::TaskDefinition
     Properties:
       Family: !Sub ${EnvironmentName}-wwii-av-freshclam
@@ -455,7 +458,6 @@ Resources:
               awslogs-stream-prefix: freshclam
 
   AvFreshclamSchedule:
-    Condition: HasAvImage
     Type: AWS::Events::Rule
     Properties:
       Name: !Sub ${EnvironmentName}-wwii-av-freshclam
@@ -606,41 +608,26 @@ Resources:
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: phase3
 
-  ImportTaskDef:
-    Type: AWS::ECS::TaskDefinition
-    Properties:
-      Family: !Sub ${EnvironmentName}-wwii-import
-      Cpu: '512'
-      Memory: '1024'
-      NetworkMode: awsvpc
-      RequiresCompatibilities: [FARGATE]
-      TaskRoleArn: !Ref ECSTaskRoleArn
-      ExecutionRoleArn: !Ref ECSTaskExecutionRoleArn
-      ContainerDefinitions:
-        - Name: pipeline
-          Image: !Ref PipelineImageUri
-          Command: ['import_to_dynamodb.py', '--prefix', !Sub '${EnvironmentName}-wwii-']
-          Environment:
-            - Name: AWS_DEFAULT_REGION
-              Value: !Ref AWS::Region
-            - Name: S3_BUCKET
-              Value: !Ref DataBucketName
-            - Name: NOTIFICATION_TOPIC_ARN
-              Value: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-phase2-complete
-          LogConfiguration:
-            LogDriver: awslogs
-            Options:
-              awslogs-group: !Ref PipelineLogGroup
-              awslogs-region: !Ref AWS::Region
-              awslogs-stream-prefix: import
-
   # --- Trigger Lambda (SNS → ECS RunTask) ---
+  # task 1.1b follow-up: an async invoke (EventBridge task-stop rules, schedules, SNS, ECS tasks)
+  # that failed Lambda's 2 retries lands here instead of being dropped; alarmed in events.yaml
+  # (<env>-wwii-trigger-dlq-not-empty). LambdaExecutionRole may send to <env>-wwii-*-dlq. Also the
+  # redrive target of <env>-wwii-trigger-queue (events.yaml, task 1.2f): SQS moves those itself.
+  TriggerDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub ${EnvironmentName}-wwii-trigger-dlq
+      MessageRetentionPeriod: 1209600  # 14 days
+      SqsManagedSseEnabled: true
+
   TriggerFunction:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: !Sub ${EnvironmentName}-wwii-trigger
       Runtime: python3.12
       Handler: lambda_handlers.trigger_handler.handler
+      DeadLetterConfig:
+        TargetArn: !GetAtt TriggerDLQ.Arn
       # Must exceed the AV scan poll in src/ingestion/av_scan.py (_poll_av_result: attempts x delay =
       # 600 s): the malware gate waits inside this Lambda for the scan task's verdict, and a Lambda that
       # timed out mid-poll never reached its quarantine logic (tests/test_trigger_container_override.py).
@@ -670,14 +657,14 @@ Resources:
           CACHE_TABLE: !Ref CacheTableName
           NOTIFICATION_TOPIC_ARN: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-phase2-complete
           NAT_MANAGER_FN: !Sub ${EnvironmentName}-wwii-nat-manager
+          # task 1.1e: reads the xAI balance before a Grok-phase launch (src/utils/credit_hold)
+          CREDIT_CHECK_FN: !Sub ${EnvironmentName}-wwii-credit-check
           NETWORKING_STACK: !Sub ${EnvironmentName}-wwii-networking
           PHASE1_TASK_DEF: !Ref Phase1TaskDef
           PHASE0_TASK_DEF: !Ref Phase0TaskDef
           PHASE0_VIDEO_TASK_DEF: !Sub ${EnvironmentName}-wwii-phase0-video
-          # AV scanning (binary-only, demand-launched). Opt-in; enable after the
-          # ClamAV image is deployed. Task def name is static so the trigger can
-          # reference it even when the HasAvImage-gated resource isn't created yet.
-          AV_SCAN_ENABLED: !If [HasAvImage, 'true', 'false']
+          # AV scanning (binary-only, demand-launched): always on (AvImageUri is mandatory).
+          AV_SCAN_ENABLED: 'true'
           AV_SCAN_TASK_DEF: !Sub ${EnvironmentName}-wwii-av-scan
           PHASE2_TASK_DEF: !Ref Phase2TaskDef
           PHASE3_TASK_DEF: !Ref Phase3TaskDef
@@ -731,7 +718,10 @@ Resources:
         - Id: TriggerLambda
           Arn: !GetAtt TriggerFunction.Arn
 
-  # --- ECS task failure detection (any non-zero exit) ---
+  # --- ECS task failure detection (any non-zero exit, or a task that never started) ---
+  # The whole event goes to the trigger (no fixed Input, task 1.1b): it alerts a stop the task did
+  # not report itself (killed, out of memory, no network for its alert, failed to start) and gives
+  # back the attempt of an outside stop, then runs the same lock/queue recovery as before.
   TaskFailureRule:
     Type: AWS::Events::Rule
     Properties:
@@ -747,13 +737,141 @@ Resources:
             - !Sub arn:aws:ecs:${AWS::Region}:${AWS::AccountId}:cluster/${EnvironmentName}-wwii-pipeline
           lastStatus:
             - STOPPED
-          containers:
-            exitCode:
-              - anything-but: 0
+          $or:
+            - containers:
+                exitCode:
+                  - anything-but: 0
+            - stopCode:
+                - TaskFailedToStart
       Targets:
         - Id: TriggerLambda
           Arn: !GetAtt TriggerFunction.Arn
-          Input: '{"source": "scheduled", "action": "check_locks"}'
+
+  # --- Daily Fargate price refresh for the Spot price ladder (task 1.1b) ---
+  # Own role (least privilege): Cost Explorer + Price List reads, one api-cache item, alerts.
+  # One Cost Explorer request a day ($0.01). lambda_handlers/price_refresh.py.
+  PriceRefreshRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${EnvironmentName}-wwii-price-refresh-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: { Service: lambda.amazonaws.com }
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: price-refresh
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              # neither action supports resource-level permissions
+              - Effect: Allow
+                Action:
+                  - ce:GetCostAndUsage
+                  - pricing:GetProducts
+                Resource: '*'
+              - Effect: Allow
+                Action: dynamodb:PutItem
+                Resource: !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${CacheTableName}
+                Condition:
+                  ForAllValues:StringLike:
+                    dynamodb:LeadingKeys:
+                      - price#fargate#*
+              - Effect: Allow
+                Action: sns:Publish
+                Resource: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-phase2-complete
+
+  PriceRefreshFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${EnvironmentName}-wwii-price-refresh
+      Runtime: python3.12
+      Handler: lambda_handlers.price_refresh.handler
+      Role: !GetAtt PriceRefreshRole.Arn
+      Timeout: 60
+      MemorySize: 256
+      Code:
+        S3Bucket: !Ref LambdaCodeBucket
+        S3Key: !Ref LambdaCodeKey
+      Environment:
+        Variables:
+          ENV_NAME: !Ref EnvironmentName
+          CACHE_TABLE: !Ref CacheTableName
+          NOTIFICATION_TOPIC_ARN: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${EnvironmentName}-wwii-phase2-complete
+
+  PriceRefreshSchedule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub ${EnvironmentName}-wwii-price-refresh-daily
+      ScheduleExpression: rate(1 day)
+      State: ENABLED
+      Targets:
+        - Arn: !GetAtt PriceRefreshFunction.Arn
+          Id: price-refresh
+
+  PriceRefreshInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref PriceRefreshFunction
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt PriceRefreshSchedule.Arn
+
+  # --- xAI credit balance for launch decisions (task 1.1e) ---
+  # The ONLY Lambda role allowed the xAI management key (iam.yaml denies it to the shared Lambda
+  # role). Outside the VPC: no NAT. Invoked by the trigger when its 5-minute cached balance is
+  # stale; one HTTPS GET, no Grok tokens. lambda_handlers/credit_check.py.
+  CreditCheckRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${EnvironmentName}-wwii-credit-check-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: { Service: lambda.amazonaws.com }
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: credit-check
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: secretsmanager:GetSecretValue
+                Resource:
+                  - !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${EnvironmentName}-wwii-pipeline/xai-management-key-??????
+                  - !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${EnvironmentName}-wwii-pipeline/grok-api-key-??????
+              - Effect: Allow
+                Action: dynamodb:PutItem
+                Resource: !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${CacheTableName}
+                Condition:
+                  ForAllValues:StringEquals:
+                    dynamodb:LeadingKeys:
+                      - credit#balance
+
+  CreditCheckFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub ${EnvironmentName}-wwii-credit-check
+      Runtime: python3.12
+      Handler: lambda_handlers.credit_check.handler
+      Role: !GetAtt CreditCheckRole.Arn
+      Timeout: 45
+      MemorySize: 256
+      Code:
+        S3Bucket: !Ref LambdaCodeBucket
+        S3Key: !Ref LambdaCodeKey
+      Environment:
+        Variables:
+          ENV_NAME: !Ref EnvironmentName
+          CACHE_TABLE: !Ref CacheTableName
+          SECRETS_ID: !Sub ${EnvironmentName}-wwii-pipeline/grok-api-key
+          XAI_MANAGEMENT_SECRET_ID: !Sub ${EnvironmentName}-wwii-pipeline/xai-management-key
 
   # --- OCR cross-check task died without finishing: relaunch once, then alert ---
   # The task is one-shot (no restart). Every STOPPED event of its family goes to the OCR merge
@@ -828,6 +946,8 @@ Resources:
         Variables:
           ENV_NAME: !Ref EnvironmentName
           PUBLIC_SUBNET_ID: !Ref PublicSubnet1Id
+          # NAT placement in AZ order: the primary, then the failover AZ (task 1.2c)
+          PUBLIC_SUBNET_IDS: !Sub "${PublicSubnet1Id},${PublicSubnet2Id}"
           PRIVATE_SUBNET_IDS: !Sub "${PrivateSubnet1Id},${PrivateSubnet2Id}"
           VPC_ID: !Ref VpcId
           SECURITY_GROUP_ID: !Ref LambdaSGId
@@ -1263,6 +1383,7 @@ Resources:
       Code:
         ZipFile: |
           import base64
+          import hmac
           import os
           def _wildcard(method_arn):
               # Grant the WHOLE API/stage (all methods + paths). API Gateway token-CACHES the
@@ -1279,12 +1400,15 @@ Resources:
               token = event.get('authorizationToken', '')
               expected = os.environ.get('AUTH_TOKEN', '')
               arn = event.get('methodArn', '')
-              if token.startswith('Basic '):
+              # no configured login -> deny everything (never "empty matches empty"); constant-time
+              # compare; strict base64 (task 0.5, 2026-11-18)
+              if expected and token.startswith('Basic '):
                   try:
-                      decoded = base64.b64decode(token[6:]).decode()
+                      decoded = base64.b64decode(token[6:], validate=True).decode()
                   except Exception:
                       decoded = None
-                  if decoded is not None and decoded == expected:
+                  if decoded is not None and hmac.compare_digest(
+                          decoded.encode(), expected.encode()):
                       return {'principalId': 'user', 'policyDocument': {
                           'Version': '2012-10-17',
                           'Statement': [{'Action': 'execute-api:Invoke', 'Effect': 'Allow',
@@ -1867,8 +1991,6 @@ Outputs:
     Value: !Ref Phase2TaskDef
   Phase3TaskDefArn:
     Value: !Ref Phase3TaskDef
-  ImportTaskDefArn:
-    Value: !Ref ImportTaskDef
   OpenSerpServiceName:
     Value: !GetAtt OpenSerpService.Name
   OpenSerpWorkQueueUrl:

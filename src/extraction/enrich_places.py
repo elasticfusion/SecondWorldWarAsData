@@ -531,7 +531,7 @@ def enrich_place(place_file: Path, grok_client: GrokClient) -> bool:
     try:
         changed, errored = _enrich_place_data(data, name, grok_client)
     except BatchModeCollecting:
-        return False
+        raise  # queued for the batch: not an answer; the pass is repeated on the answer
     status = _stamp_place_status(data, name, changed, errored)
     if status is False:
         return False

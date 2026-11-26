@@ -31,6 +31,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import re
 import time as _time
 import uuid
 from dataclasses import dataclass, field
@@ -103,6 +104,7 @@ class AvOutcome:
     """Aggregate result the caller acts on."""
 
     scanned: bool = False  # was a scan actually attempted (binary present)?
+    more: bool = False  # a drain stopped at its deadline with keys left (drain again)
     clean_keys: list[str] = field(default_factory=list)
     quarantined_keys: list[str] = field(default_factory=list)
     results: list[ScanResult] = field(default_factory=list)
@@ -378,6 +380,79 @@ UNSCANNED_PREFIX = "unscanned/"
 QUARANTINE_PREFIX = "quarantine/"
 
 
+# what a task may upload straight to its key: text the pipeline writes itself. DENY BY DEFAULT -
+# anything else (an image, a PDF, an unknown or missing suffix, a .svg, an .img) is staged
+_TEXT_SUFFIXES = (
+    ".json",
+    ".jsonl",
+    ".md",
+    ".txt",
+    ".csv",
+    ".tsv",
+    ".html",
+    ".htm",
+    ".xml",
+    ".yaml",
+    ".yml",
+    ".log",
+)
+# the pipeline's own state, never served or ingested (the diagnostics copy of the Grok cache,
+# written only by ecs_entrypoint from /app/cache/api)
+_INTERNAL_PREFIXES = ("diagnostics/cache/",)
+
+
+# C0 control bytes (and DEL) that text never holds - tab, newline, form feed and carriage return
+# are text; a file signature like ZIP's "PK\x03\x04" is caught here
+_CONTROL = re.compile(rb"[\x00-\x08\x0b\x0e-\x1f\x7f]")
+
+
+# file signatures that are never text, whatever bytes follow
+_BINARY_MAGIC = (
+    b"%PDF-",
+    b"PK\x03\x04",
+    b"MZ",
+    b"\x7fELF",
+    b"GIF8",
+    b"\x89PNG",
+    b"\xff\xd8\xff",
+    b"\xd0\xcf\x11\xe0",
+    b"#!",
+)
+
+
+def _looks_like_text(body: bytes) -> bool:
+    """The WHOLE body is UTF-8 text with no control bytes but tab/newline/form feed/carriage
+    return, and does not open with a binary file signature."""
+    data = bytes(body)
+    if data.startswith(_BINARY_MAGIC) or _CONTROL.search(data):
+        return False
+    try:
+        data.decode("utf-8")
+        return True
+    except UnicodeDecodeError:
+        return False
+
+
+def needs_scan(key: str, body: "bytes | None" = None) -> bool:
+    """Whether an object written to ``key`` must pass ClamAV first (owner 2026-11-23: ClamAV on
+    for every binary). Everything does, except a text-suffix key (``_TEXT_SUFFIXES``) whose
+    ``body`` - when the caller has it - really is text: a server's bytes saved under a
+    Content-Type-derived ``.html`` are staged too. Already-staged and internal keys never.
+    """
+    if key.startswith(UNSCANNED_PREFIX) or key.startswith(_INTERNAL_PREFIXES):
+        return False
+    if not key.lower().endswith(_TEXT_SUFFIXES):
+        return True
+    return body is not None and not _looks_like_text(body)
+
+
+def staged_key(key: str, body: "bytes | None" = None) -> str:
+    """Where an upload to ``key`` must go: under ``unscanned/`` when it needs a scan
+    (``needs_scan``) - the drain promotes it to ``key`` only after a clean scan and quarantines an
+    infected one - else ``key`` itself."""
+    return UNSCANNED_PREFIX + key if needs_scan(key, body) else key
+
+
 def _prod_path(key: str) -> str:
     """Strip the unscanned/ staging prefix to recover the production path (the move target parity)."""
     return key[len(UNSCANNED_PREFIX) :] if key.startswith(UNSCANNED_PREFIX) else key
@@ -427,6 +502,126 @@ def _move_key(s3_client, bucket: str, src: str, dest: str) -> bool:
         return False
 
 
+INFECTED_MARKERS = "av-scan/infected/"
+# where the pipeline stores what it FETCHED from the web (photos, map and page images, portraits,
+# award files, downloaded originals): an infected one is deleted. Anything else - an upload, or a
+# binary derived from one - keeps the quarantine + review + submitter-freeze path (when unsure,
+# quarantine: the safe direction)
+FETCHED_PREFIXES = (
+    "output/photos/",
+    "output/maps/",
+    "output/images/",
+    "person_photos/",
+    "award_sources/",
+    "artifacts/",
+)
+
+
+def infected_marker(prod_key: str) -> str:
+    """Where the drain notes that the binary at ``prod_key`` was infected and deleted."""
+    return f"{INFECTED_MARKERS}{prod_key}.json"
+
+
+def _delete_infected(r, outcome, s3_client, bucket: str, prod: str) -> None:
+    """An infected binary the PIPELINE fetched is deleted outright, not kept in quarantine/
+    (owner 2026-11-23). The marker is written FIRST (it names the file, so the record that points
+    at it drops the entry on its next pass, ``web_photos.drop_infected``); a failed delete leaves
+    the file in unscanned/ - never promoted - and is retried by the next drain."""
+    signature = r.signature or r.detail or "unknown"
+    marked = _mark_infected(s3_client, bucket, prod, signature)
+    try:
+        s3_client.delete_object(Bucket=bucket, Key=r.key)
+        deleted = True
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - said; it stays in unscanned/, never promoted
+        deleted = False
+        logger.error(
+            "OBSERV av.infected_delete_failed key=%s err=%s status=error - it stays in "
+            "unscanned/ (never promoted); the next drain tries again. Check the role's "
+            "s3:DeleteObject on unscanned/",
+            r.key,
+            type(e).__name__,
+        )
+    outcome.quarantined_keys.append(r.key)
+    logger.error(
+        "OBSERV av.verdict key=%s result=infected signature=%s action=delete deleted=%s "
+        "marked=%s",
+        prod,
+        signature,
+        deleted,
+        marked,
+    )
+    _alert_infected(prod, signature, deleted, marked)
+
+
+def _mark_infected(s3_client, bucket: str, prod: str, signature: str) -> bool:
+    try:
+        body = json.dumps({"key": prod, "signature": signature, "at": _time.time()})
+        s3_client.put_object(Bucket=bucket, Key=infected_marker(prod), Body=body)
+        return True
+    except Exception as e:  # noqa: BLE001 - said; the record keeps a dangling entry
+        logger.error(
+            "OBSERV av.infected_marker_failed key=%s err=%s status=error - the record that "
+            "names this file is not cleaned up. Remove its entry by hand "
+            "(scripts/retract_photo.py for a photo)",
+            prod,
+            type(e).__name__,
+        )
+        return False
+
+
+def _alert_infected(prod: str, signature: str, deleted: bool, marked: bool) -> None:
+    from src.utils.observe import publish_alert
+
+    if deleted:
+        what = "It was deleted from the unscanned/ staging area; it never reached production."
+    else:
+        what = (
+            "The DELETE FAILED: it stays in unscanned/ (never promoted) and the next drain "
+            "tries again. Check the trigger role's s3:DeleteObject on unscanned/."
+        )
+    if not marked:
+        cleanup = "The marker could not be written: remove the record's entry by hand."
+    elif prod.startswith("output/photos/"):
+        cleanup = (
+            "The photo's record drops it on the next Phase 3 pass (URL ruled out)."
+        )
+    else:
+        cleanup = (
+            "Records naming this file are NOT cleaned up automatically (only web photos are): "
+            "check them."
+        )
+    publish_alert(
+        "ClamAV: an infected file the pipeline fetched was deleted",
+        f"key: {prod}\nsignature: {signature}\n{what}\n{cleanup}\n"
+        "Several from one site: exclude the domain in the URL review UI.",
+    )
+
+
+def was_infected(s3_client, bucket: str, prod_key: str) -> bool:
+    """Whether the drain deleted the binary at ``prod_key`` as infected. A marker that cannot be
+    read (not a plain "not found") is said: the check must not go dead silently."""
+    try:
+        s3_client.head_object(Bucket=bucket, Key=infected_marker(prod_key))
+        return True
+    except Exception as e:  # noqa: BLE001 - classified below
+        code = str(getattr(e, "response", {}).get("Error", {}).get("Code", ""))
+        if code not in ("404", "NoSuchKey", "NotFound"):
+            from src.utils.observe import observe_warn_counted
+
+            observe_warn_counted(
+                "av",
+                "infected_check_failed",
+                key=("check",),
+                every=100,
+                note="the infected-file marker could not be read: infected photos may stay on "
+                "their records. Check the task role's s3:GetObject/ListBucket on av-scan/",
+                err=code or type(e).__name__,
+            )
+        return False
+
+
 def _disposition_staged(r, outcome, s3_client, bucket: str, region: str) -> None:
     """Three-zone disposition for ONE staged (unscanned/) scan result (prefix-swap moves)."""
     prod = _prod_path(r.key)
@@ -445,35 +640,7 @@ def _disposition_staged(r, outcome, s3_client, bucket: str, region: str) -> None
             )
         return
     if r.verdict is Verdict.INFECTED:
-        dest = QUARANTINE_PREFIX + prod
-        # Capture submitter identity BEFORE _move_key copy-DELETES the source key (a head_object on
-        # the deleted key would always return "" and permanently blind freeze_submitter).
-        identity = _submitter_identity(s3_client, bucket, r.key)
-        _move_key(s3_client, bucket, r.key, dest)
-        outcome.quarantined_keys.append(dest)
-        logger.error(
-            "OBSERV av.verdict key=%s result=infected signature=%s action=quarantine dest=%s",
-            prod,
-            r.signature or r.detail or "unknown",
-            dest,
-        )
-        reject_to_review(
-            s3_client,
-            bucket,
-            r.key,
-            _book_from_key(r.key),
-            f"av-infected: {r.signature or r.detail}",
-            category="av-infected",
-            region=region,
-        )
-        freeze_submitter(
-            s3_client,
-            bucket,
-            identity,
-            key=r.key,
-            signature=r.signature or "unknown",
-            region=region,
-        )
+        _infected(r, outcome, s3_client, bucket, region, prod)
         return
     # UNSCANNABLE (ERROR) -> stays in unscanned/ (fail-closed, retried next cycle).
     outcome.quarantined_keys.append(r.key)
@@ -481,6 +648,44 @@ def _disposition_staged(r, outcome, s3_client, bucket: str, region: str) -> None
         "OBSERV av.verdict key=%s result=scanner_unavailable detail=%s action=stay_unscanned",
         r.key,
         r.detail or "unknown",
+    )
+
+
+def _infected(r, outcome, s3_client, bucket: str, region: str, prod: str) -> None:
+    """A binary the pipeline fetched from the web (``FETCHED_PREFIXES``) is deleted; anything
+    else (an upload, or derived from one) is quarantined, rejected to review and its submitter
+    frozen."""
+    if prod.startswith(FETCHED_PREFIXES):
+        _delete_infected(r, outcome, s3_client, bucket, prod)
+        return
+    dest = QUARANTINE_PREFIX + prod
+    # Capture submitter identity BEFORE _move_key copy-DELETES the source key (a head_object on
+    # the deleted key would always return "" and permanently blind freeze_submitter).
+    identity = _submitter_identity(s3_client, bucket, r.key)
+    _move_key(s3_client, bucket, r.key, dest)
+    outcome.quarantined_keys.append(dest)
+    logger.error(
+        "OBSERV av.verdict key=%s result=infected signature=%s action=quarantine dest=%s",
+        prod,
+        r.signature or r.detail or "unknown",
+        dest,
+    )
+    reject_to_review(
+        s3_client,
+        bucket,
+        r.key,
+        _book_from_key(r.key),
+        f"av-infected: {r.signature or r.detail}",
+        category="av-infected",
+        region=region,
+    )
+    freeze_submitter(
+        s3_client,
+        bucket,
+        identity,
+        key=r.key,
+        signature=r.signature or "unknown",
+        region=region,
     )
 
 
@@ -589,13 +794,34 @@ def _release_drain_lock(s3_client, bucket: str) -> None:
         pass
 
 
+def _rotated(keys: list) -> list:
+    """The keys from a random starting point (each drain begins somewhere new)."""
+    import random
+
+    if not keys:
+        return keys
+    start = random.randrange(len(keys))  # nosec B311 - load spreading, not security
+    return keys[start:] + keys[:start]
+
+
 def drain_unscanned(
-    s3_client, bucket: str, scanner: Scanner, *, chunk_size: int = 25, region: str = ""
+    s3_client,
+    bucket: str,
+    scanner: Scanner,
+    *,
+    chunk_size: int = 25,
+    region: str = "",
+    deadline: "float | None" = None,
 ) -> AvOutcome:
     """Model-A drain: list the unscanned/ queue and scan it in bounded SEQUENTIAL chunks (one ClamAV
     task per chunk so no single sequential scan outruns the poll window), dispositioning each chunk
     via the three-zone scan_staged_binaries. Single-drainer (S3 lock) so overlapping runs don't
     race. Keys arriving AFTER the snapshot wait for the next drain. Never raises.
+
+    ``deadline`` (a ``time.monotonic()`` value): no chunk after the first is STARTED after it;
+    the outcome's ``more`` says keys were left for the next drain (a Lambda must stop before its
+    timeout). A chunk ClamAV decides nothing about ends the drain (``more`` False): the 15-minute
+    schedule tries again, never a tight loop. Each drain starts at a random key.
 
     Returns an aggregate AvOutcome (clean/quarantined across all chunks)."""
     agg = AvOutcome()
@@ -611,12 +837,34 @@ def drain_unscanned(
             len(keys),
             step,
         )
+        keys = _rotated(
+            keys
+        )  # no fixed first chunk: undecidable keys cannot starve the rest
         for i in range(0, len(keys), step):
+            if i and deadline is not None and _time.monotonic() > deadline:
+                agg.more = (
+                    True  # the first chunk always runs: an invocation always progresses
+                )
+                logger.info(
+                    "OBSERV av.drain_deadline left=%d status=ok - the rest is drained next",
+                    len(keys) - i,
+                )
+                break
             chunk = keys[i : i + step]
             out = scan_staged_binaries(s3_client, bucket, chunk, scanner, region=region)
             agg.results.extend(out.results)
             agg.clean_keys.extend(out.clean_keys)
             agg.quarantined_keys.extend(out.quarantined_keys)
+            if not (out.clean_keys or out.quarantined_keys):
+                agg.more = False  # ClamAV decided nothing: do not keep launching scans
+                logger.error(
+                    "OBSERV av.drain_no_verdict keys=%d left=%d status=error - the ClamAV task "
+                    "returned no verdict for a whole chunk; the drain stops (the 15-minute "
+                    "schedule tries again). Check the AvScanTaskDef task's logs and its signature DB",
+                    len(chunk),
+                    len(keys) - i - len(chunk),
+                )
+                break
         agg.scanned = bool(agg.results)
         logger.info(
             "OBSERV av.drain_summary chunks=%d promoted=%d quarantined=%d status=%s",

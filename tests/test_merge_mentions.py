@@ -175,7 +175,6 @@ def test_dedup_auto_merge_unions_by_the_rule(tmp_path):
         mock.patch.object(M, "_rebase_refs_for_merge"),
         mock.patch.object(M, "_backup_before_delete", return_value=True),
         mock.patch.object(M, "_notify_deletion"),
-        mock.patch.object(M, "_dynamo_merge_sync"),
     ):
         M.merge_generic(
             d, [{"filename": "a.json"}, {"filename": "b.json"}], 0, "PlaceID"
@@ -212,7 +211,6 @@ def _storage(files):
 def test_the_review_ui_merge_unions_by_the_rule_and_writes_before_deleting(
     ui, monkeypatch
 ):
-    monkeypatch.setattr(ui, "_sync_entity_to_dynamo", mock.Mock())
     monkeypatch.setattr(ui, "_append_to_manifest", mock.Mock())
     monkeypatch.setattr(ui, "_rebase_event_refs_storage", mock.Mock())
     prefix = ui.ENTITY_PREFIXES["places"]

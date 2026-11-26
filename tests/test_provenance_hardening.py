@@ -216,3 +216,31 @@ def test_stamp_resolves_nested_source_section(tmp_path, monkeypatch):
     data = json.loads(ev.read_text())
     assert data["Event"]["SourceSectionID"] == sid
     assert data["Event"]["Sub-events"][0]["SourceSectionID"] == sid
+
+
+def test_a_notes_event_is_stamped_too(tmp_path, monkeypatch):
+    """A notes event has its own source section and sub-events; its chain must reach the section."""
+    out = tmp_path
+    eid, sid = "0W4BFG28KZ8NJM0F5MKEPMGRN9", "01M61D2YRNBJY2FP6YJ5XSWVEZ"
+    _write(
+        out / "source_section" / f"{sid}.json",
+        {"SourceSectionID": sid, "EventID": eid, "source": {"book": "B"}},
+    )
+    ev = out / "content" / "B" / "chapter2full-notes-event.json"
+    _write(
+        ev,
+        {
+            "Event": {
+                "EventID": eid,
+                "Event_Name": "notes",
+                "Sub-events": [{"Sub-eventID": "4Y5QFR21HP835V12HY5Y294QJW"}],
+            }
+        },
+    )
+    monkeypatch.setattr(
+        EP, "_write_event", lambda f, d: f.write_text(json.dumps(d), encoding="utf-8")
+    )
+    assert EP.stamp_event_source_sections(out) == 1
+    data = json.loads(ev.read_text())
+    assert data["Event"]["SourceSectionID"] == sid
+    assert data["Event"]["Sub-events"][0]["SourceSectionID"] == sid

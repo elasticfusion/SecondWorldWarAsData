@@ -1,73 +1,8 @@
-"""P1: map-as-source wiring — raw source recycle + loop guard."""
+"""The map loop guard: a place known only from a map-derived source does not seed a new map search."""
 
 import json
 from pathlib import Path
 import pytest
-
-
-def test_render_map_markdown_and_meta():
-    from src.extraction.map_source_adapter import (
-        render_map_markdown,
-        render_map_meta_yaml,
-    )
-
-    depicted = {
-        "units": ["28th Infantry Division"],
-        "places": ["Schmidt"],
-        "description": "Tactical map of the first attack on Schmidt.",
-    }
-    md = render_map_markdown("Schmidt map", depicted, source_url="http://x/p")
-    assert "## Schmidt map" in md and "Schmidt" in md and "28th Infantry" in md
-    import yaml
-
-    meta = yaml.safe_load(
-        render_map_meta_yaml("01ABC", "Schmidt map", source_url="http://x/p")
-    )
-    assert (
-        meta["book"] == "map-01ABC"
-        and meta["source_type"] == "map"
-        and meta["chapter_number"] == 1
-    )
-
-
-def test_recycle_writes_contentrepository_source_pair(tmp_path, monkeypatch):
-    import src.extraction.openserp_maps as OM
-
-    monkeypatch.chdir(tmp_path)  # contentrepository/ is relative
-    depicted = {
-        "units": ["9th Division"],
-        "places": ["Hürtgen"],
-        "description": "map of the Hürtgen.",
-    }
-    ok = OM._recycle_map_as_source(
-        map_id="01MAP",
-        map_title="Hürtgen map",
-        approved_image_url="http://x/m.png",
-        depicted=depicted,
-        source_url="http://x/page",
-    )
-    assert ok
-    base = tmp_path / "contentrepository" / "map-01MAP"
-    assert (base / "map-01MAP-meta.yaml").is_file()
-    assert (base / "map-01MAPa-content.md").is_file()
-    assert "Hürtgen" in (base / "map-01MAPa-content.md").read_text()
-
-
-def test_recycle_skips_when_no_depicted(tmp_path, monkeypatch):
-    import src.extraction.openserp_maps as OM
-
-    monkeypatch.chdir(tmp_path)
-    assert (
-        OM._recycle_map_as_source(
-            map_id="01NONE",
-            map_title="t",
-            approved_image_url="",
-            depicted=None,
-            source_url="",
-        )
-        is False
-    )
-    assert not (tmp_path / "contentrepository" / "map-01NONE").exists()
 
 
 def test_loop_guard_skips_map_derived_place(tmp_path):

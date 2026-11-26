@@ -14,13 +14,14 @@ from typing import Optional
 
 import boto3
 
-from src.utils.observe import observe_error
+from src.utils.observe import observe, observe_alert, observe_error
 
 logger = logging.getLogger()
 logger.setLevel(os.getenv("LOG_LEVEL", "INFO"))
 
 # Environment variables (set by CloudFormation)
 CLUSTER = os.environ.get("ECS_CLUSTER", "")
+AWS_REGION = os.environ.get("AWS_REGION", "us-east-1")
 SUBNETS = [
     s.strip() for s in os.environ.get("PRIVATE_SUBNET_IDS", "").split(",") if s.strip()
 ]
@@ -286,6 +287,14 @@ def _review_alert(category: str) -> dict:
     }
 
 
+def _grok_transient_stops():
+    """The outage / no-credit stops (src/utils/grok_models), caught BEFORE the missing-model stop
+    they derive from."""
+    from src.utils.grok_models import GrokFundsExhausted, GrokUnreachable
+
+    return (GrokUnreachable, GrokFundsExhausted)
+
+
 def _grok_model_unavailable():
     """The stop raised when a Grok model is gone (src/utils/grok_models)."""
     from src.utils.grok_models import GrokModelUnavailable
@@ -487,6 +496,15 @@ def _resolve_title_identity(s3, title: str, tkeys: list):
         else:
             new_fp = _multi_fingerprint(s3, tkeys)
             same = _llm_same_work(title, (existing_marker or "")[4:], new_fp)
+    except _grok_transient_stops() as e:
+        # an outage / no credits is not a missing model (task 1.2e): the fail-open path below
+        from src.utils.grok_models import clear_transient_stop
+
+        clear_transient_stop()
+        logger.warning(
+            "identity compare failed for %r (%s) — proceeding", title, type(e).__name__
+        )
+        return True, "", ""
     except _grok_model_unavailable() as e:
         logger.error("sameness check stopped for %r: %s", title, e)
         return (
@@ -948,14 +966,23 @@ def _ocr_job_in_flight(book: str) -> bool:
     queue. Used to distinguish a legitimate in-flight claim from a silent drop
     (claim written but no job launched). Fails SAFE: on error, assume in flight
     (do not reclaim on uncertain state)."""
-    queues = [OCR_JOB_QUEUE, f"{ENV_NAME}-wwii-chandra-gpu-ondemand"]
+    from src.utils import gpu_ladder
+
+    queues = [OCR_JOB_QUEUE] + [
+        q for q in gpu_ladder.all_queues(ENV_NAME) if q != OCR_JOB_QUEUE
+    ]  # every Spot rung + on-demand: a job moved up the ladder is still in flight
     try:
         batch = _batch_client()
         for q in queues:
             for status in ("SUBMITTED", "PENDING", "RUNNABLE", "STARTING", "RUNNING"):
-                jobs = batch.list_jobs(jobQueue=q, jobStatus=status).get(
-                    "jobSummaryList", []
-                )
+                try:
+                    jobs = batch.list_jobs(jobQueue=q, jobStatus=status).get(
+                        "jobSummaryList", []
+                    )
+                except Exception as qe:  # noqa: BLE001
+                    if "does not exist" in str(qe):
+                        break  # a ladder deployed without its upper rungs
+                    raise
                 if any(book in j.get("jobName", "") for j in jobs):
                     return True
         return False
@@ -1366,19 +1393,430 @@ s3 = boto3.client("s3")
 dynamo = boto3.resource("dynamodb").Table(CACHE_TABLE)
 
 
+# ECS stop codes for a stop from OUTSIDE the task: not the book's fault (owner 2026-11-18)
+OUTSIDE_STOPS = (
+    "SpotInterruption",
+    "UserInitiated",
+    "ServiceSchedulerInitiated",
+    "TerminationNotice",
+)
+
+
 def _handle_task_stopped_event(event):
-    """Spot-interruption recovery (dev-wwii-spot-recovery rule). A task STOPPED — recover NOW rather
-    than waiting up to 15 min for the scheduled sweep. Reuses the SAME safe reconciliation
-    (_handle_scheduled_check: clear a lock only when no RUNNING task remains, then drain pending#*),
-    so there is no new double-launch surface — the authoritative STOPPED event just runs it now.
+    """A pipeline task STOPPED (the dev-wwii-spot-recovery and dev-wwii-task-failure rules): report
+    it (_report_task_stop, task 1.1b), then recover NOW rather than waiting for the hourly sweep.
+    Reuses the SAME safe reconciliation (_handle_scheduled_check: clear a lock only when no RUNNING
+    task remains, then drain pending#*), so there is no new double-launch surface.
     """
-    reason = str(event.get("detail", {}).get("stoppedReason", ""))
+    detail = event.get("detail") or {}
+    undelivered = None
+    reason = str(detail.get("stoppedReason", ""))
     logger.warning(
-        "OBSERV spot.task_stopped status=warn reason=%s — running immediate lock/pending "
-        "reconciliation (spot-interruption recovery)",
+        "OBSERV spot.task_stopped status=warn reason=%s code=%s — running immediate lock/pending "
+        "reconciliation",
         " ".join(reason.split())[:120] or "unknown",
+        detail.get("stopCode", ""),
     )
-    return _handle_scheduled_check()
+    task_id = str(detail.get("taskArn", "")).rsplit("/", 1)[-1]
+    try:
+        _report_task_stop(detail)
+    except StopAlertUndelivered as e:
+        undelivered = e  # retried below, after the recovery
+    except Exception as e:  # noqa: BLE001 - recovery must still run
+        observe_alert(
+            "phase",
+            "stop_report_failed",
+            note="a stopped task could not be reported or its Spot ladder updated; the "
+            "recovery below still runs. Check the trigger Lambda logs",
+            dedup_key=task_id,
+            task=task_id,
+            error=type(e).__name__,
+        )
+    result = _handle_scheduled_check()
+    if undelivered:
+        # not raised: the report is stored and listed, and the next scheduled check (every
+        # ReconciliationIntervalMinutes) re-sends it - failing the invocation would only add a
+        # Lambda error alarm and a DLQ message for the same, already-handled stop
+        logger.info("OBSERV stop.report_deferred task=%s status=ok", task_id[:64])
+    return result
+
+
+class StopAlertUndelivered(RuntimeError):
+    """A stop alert could not be published (SNS): the invocation fails so it is retried."""
+
+
+def _override_env(detail: dict) -> dict:
+    """The container environment overrides of a task event, as a dict."""
+    env = {}
+    for c in (detail.get("overrides") or {}).get("containerOverrides") or []:
+        env.update(
+            {kv.get("name"): kv.get("value") for kv in c.get("environment") or []}
+        )
+    return env
+
+
+def _first_nonzero_exit(detail: dict):
+    exits = [c.get("exitCode") for c in detail.get("containers") or []]
+    return next((x for x in exits if x not in (None, 0)), exits[0] if exits else None)
+
+
+def _stop_facts(detail: dict) -> dict:
+    """The fields of an ECS Task State Change (STOPPED) event that the report uses."""
+    return {
+        "task_id": str(detail.get("taskArn", "")).rsplit("/", 1)[-1],
+        "family": str(detail.get("group", "")).removeprefix("family:"),
+        "book": _override_env(detail).get("BOOK_NAME", ""),
+        "base": _override_env(detail).get("SPOT_LADDER_BASE", ""),
+        "code": str(detail.get("stopCode", "")),
+        "reason": " ".join(str(detail.get("stoppedReason", "")).split())[:160],
+        "exit": _first_nonzero_exit(detail),
+        "cpu": int(detail.get("cpu") or 0),
+        "memory": int(detail.get("memory") or 0),
+    }
+
+
+STOP_REPORT_STALE_S = 960  # longer than this Lambda's 900 s timeout
+
+
+def _first_report(task_id: str) -> bool:
+    """True when this task's stop should be reported now: not seen yet, or a report that started
+    and never finished (the Lambda timed out or crashed) - EventBridge retries the event. Both
+    rules can deliver the same event; a finished or in-progress report is not repeated.
+    """
+    now = int(time.time())
+    try:
+        # an update, not a put: a failed report's stored facts survive the claim, so a sweep that
+        # dies mid-report leaves a stale "started" row the next sweep can still re-send
+        dynamo.update_item(
+            Key={"cache_key": f"stopevt#{task_id}"},
+            UpdateExpression="SET #s = :started, started_at = :now, #ttl = :ttl",
+            ConditionExpression=(
+                "attribute_not_exists(cache_key) OR #s = :failed OR "
+                "(#s = :started AND started_at < :stale)"
+            ),
+            ExpressionAttributeNames={"#s": "status", "#ttl": "ttl"},
+            ExpressionAttributeValues={
+                ":started": "started",
+                ":failed": "failed",
+                ":now": now,
+                ":ttl": now + 7 * 86400,
+                ":stale": now - STOP_REPORT_STALE_S,
+            },
+        )
+        return True
+    except Exception as e:  # noqa: BLE001 - only the guard means "already reported"
+        code = (getattr(e, "response", None) or {}).get("Error", {}).get("Code", "")
+        if code == "ConditionalCheckFailedException":
+            return False
+        raise
+
+
+FAILED_STOPS_KEY = "stopevt#failed"  # the ids of stops whose alert SNS did not take
+SWEEP_MAX = 20  # stops re-reported per scheduled check (each is one alert)
+
+
+def _report_done(facts: dict, delivered: bool = True) -> None:
+    """Mark the report done, or failed (its alert was not published): a failed report keeps its
+    facts and is listed under FAILED_STOPS_KEY, so the next scheduled check re-reports it (task
+    1.1b follow-up)."""
+    task_id = facts["task_id"]
+    if delivered:
+        dynamo.update_item(
+            Key={"cache_key": f"stopevt#{task_id}"},
+            UpdateExpression="SET #s = :s",
+            ExpressionAttributeNames={"#s": "status"},
+            ExpressionAttributeValues={":s": "done"},
+        )
+        return
+    # listed FIRST: a listed id whose facts never got stored is still alerted (stop_report_lost)
+    dynamo.update_item(
+        Key={"cache_key": FAILED_STOPS_KEY},
+        UpdateExpression="ADD tasks :t",
+        ExpressionAttributeValues={":t": {task_id}},
+    )
+    dynamo.update_item(
+        Key={"cache_key": f"stopevt#{task_id}"},
+        UpdateExpression="SET #s = :s, facts = :f",
+        ExpressionAttributeNames={"#s": "status"},
+        ExpressionAttributeValues={":s": "failed", ":f": json.dumps(facts)},
+    )
+    logger.error(
+        "OBSERV phase.stop_alert_undelivered status=error task=%s - SNS did not take the "
+        "alert; the next scheduled check re-sends it. Check SNS (the phase2-complete topic) "
+        "if this repeats",
+        task_id,
+    )
+    raise StopAlertUndelivered(task_id)
+
+
+def _report_task_stop(detail: dict) -> None:
+    """One alert per stopped pipeline task, with its cause and what happens next (task 1.1b):
+
+    * a Spot reclaim moves the book up its price ladder and ALWAYS alerts (never benign): the
+      reclaim count, whether the task's emergency upload worked, and the next launch;
+    * any other stop the task did not report itself (killed outright, out of memory, no network
+      for its alert) is alerted here;
+    * an outside stop of a Phase 3 task gives back the attempt the task claimed, if the task could
+      not (src/utils/task_marker).
+    """
+    from src.utils import task_marker
+
+    facts = _stop_facts(detail)
+    if facts["family"] not in set(TASK_FAMILIES.values()) or not facts["task_id"]:
+        return  # services (OpenSERP) and tasks this Lambda does not launch
+    if not _first_report(facts["task_id"]):
+        return
+    _report_facts(facts)
+
+
+def _report_facts(facts: dict) -> None:
+    """Report one claimed stop (see _report_task_stop); raises StopAlertUndelivered if its alert
+    was not published (the facts are kept for the scheduled sweep, _sweep_failed_stop_reports).
+    """
+    from src.utils import task_marker
+
+    marker = task_marker.read(dynamo, facts["task_id"])
+    outside = facts["code"] in OUTSIDE_STOPS
+    gave_back = _give_back_for_task(facts, marker) if outside else False
+    delivered = True
+    if facts["code"] == "SpotInterruption":
+        # always alerted, even if the task alerted too: only this alert has the next launch
+        delivered = _alert_spot_reclaim(facts, marker, gave_back)
+    elif (
+        facts["exit"] not in (0, None)
+        or outside
+        or facts["code"] == "TaskFailedToStart"
+    ):
+        if not marker.get("alerted"):
+            delivered = _alert_unreported_stop(facts, marker, gave_back)
+    _report_done(facts, delivered)
+
+
+def _forget_failed_stop(task_id: str) -> None:
+    dynamo.update_item(
+        Key={"cache_key": FAILED_STOPS_KEY},
+        UpdateExpression="DELETE tasks :t",
+        ExpressionAttributeValues={":t": {task_id}},
+    )
+
+
+def _stored_facts(task_id: str, row: dict) -> Optional[dict]:
+    """The facts a failed report stored, or None if they are missing or not this task's."""
+    try:
+        facts = json.loads(str(row.get("facts", "")))
+    except ValueError:
+        return None
+    if (
+        not isinstance(facts, dict)
+        or facts.get("task_id") != task_id
+        or not isinstance(facts.get("family"), str)
+        or facts["family"] not in set(TASK_FAMILIES.values())
+    ):
+        return None
+    return facts
+
+
+def _resend_failed_stop(task_id: str) -> Optional[bool]:
+    """Re-report one listed stop: True sent, None nothing to send (dropped from the list or a
+    report in progress), False its alert still failed (SNS still down)."""
+    row = dynamo.get_item(Key={"cache_key": f"stopevt#{task_id}"}).get("Item")
+    status = (row or {}).get("status")
+    if status == "done":
+        _forget_failed_stop(task_id)  # reported meanwhile
+        return None
+    if status == "started" and not _stale_start(row or {}):
+        return None  # a report in progress: next check
+    facts = _stored_facts(task_id, row or {})
+    if facts is None:
+        _forget_failed_stop(task_id)
+        observe_error(
+            "phase",
+            "stop_report_lost",
+            note=(
+                "a stopped task's alert was never delivered and its stored report has "
+                "expired or is unreadable. Look up the task in the trigger Lambda logs "
+                "(OBSERV phase.stop_alert_undelivered) and check its book by hand"
+            ),
+            task=task_id[:64],
+        )
+        return None
+    if not _first_report(task_id):
+        return None
+    try:
+        _report_facts(facts)
+    except StopAlertUndelivered:
+        return False  # still failing: kept for the next hour
+    _forget_failed_stop(task_id)
+    return True
+
+
+def _stale_start(row: dict) -> bool:
+    """A "started" report older than the Lambda timeout: its reporter died (_first_report's
+    stale rule), so it may be re-sent."""
+    try:
+        return int(row.get("started_at", 0)) < int(time.time()) - STOP_REPORT_STALE_S
+    except (TypeError, ValueError):
+        return True
+
+
+def _sweep_failed_stop_reports() -> int:
+    """Hourly: re-report the stops whose alert SNS never took, after Lambda's own two async
+    retries were spent (else the alert is lost). One small item lists them (no table scan).
+    Stops at the first alert that still fails (SNS is still down). Returns how many it sent.
+    """
+    item = dynamo.get_item(Key={"cache_key": FAILED_STOPS_KEY}).get("Item") or {}
+    listed = sorted(str(t) for t in item.get("tasks") or ())
+    sent = 0
+    for task_id in listed[:SWEEP_MAX]:
+        try:
+            outcome = _resend_failed_stop(task_id)
+        except Exception as e:  # noqa: BLE001 - one bad id must not block the others
+            logger.error(
+                "OBSERV stop.resend_failed task=%s err=%s status=error - kept for the next "
+                "check; check the trigger Lambda's DynamoDB access and this task's stopevt# row",
+                task_id[:64],
+                type(e).__name__,
+            )
+            continue
+        if outcome is False:
+            break
+        sent += 1 if outcome else 0
+    if listed:
+        logger.info("OBSERV stop.sweep sent=%d listed=%d status=ok", sent, len(listed))
+    return sent
+
+
+def _sweep_stop_reports_safely() -> None:
+    """The scheduled sweep; never stops the lock check that follows (the list is kept)."""
+    try:
+        _sweep_failed_stop_reports()
+    except Exception as e:  # noqa: BLE001
+        logger.warning(
+            "OBSERV stop.sweep_failed err=%s status=warn - stop alerts SNS did not take are "
+            "retried next hour; check the trigger Lambda's DynamoDB access",
+            type(e).__name__,
+        )
+
+
+def _give_back_for_task(facts: dict, marker: dict) -> bool:
+    """Give back the Phase 3 attempt the stopped task claimed and could not give back itself."""
+    from src.utils import pending_queue, task_marker
+
+    if facts["family"] != TASK_FAMILIES.get(PHASE3_TASK_DEF) or not facts["book"]:
+        return False
+    if marker.get("given_back"):
+        return True
+    if not marker.get("claimed"):
+        return False  # the task never counted one: do not forgive an earlier run's
+    # bound to THIS task's claim (claimed_by): never twice, never another run's attempt
+    if pending_queue.give_back(dynamo, facts["book"], task_id=facts["task_id"]):
+        task_marker.mark(dynamo, facts["task_id"], given_back=True)
+        return True
+    return False
+
+
+def _sync_text(facts: dict, marker: dict) -> str:
+    if facts["code"] == "TaskFailedToStart":
+        return "it never started, so no work was lost"
+    if not marker.get("sigterm"):
+        return "it was killed before its emergency upload: up to 2 min of work lost"
+    if marker.get("synced"):
+        return "its emergency upload worked"
+    return "its emergency upload FAILED: up to 2 min of work lost"
+
+
+def _alert_spot_reclaim(facts: dict, marker: dict, gave_back: bool) -> bool:
+    from src.utils import spot_ladder
+
+    rates, frac = _ladder_inputs()
+    state = spot_ladder.record_reclaim(
+        dynamo,
+        facts["family"],
+        facts["book"],
+        facts["cpu"],
+        facts["memory"],
+        rates,
+        frac,
+        task_id=facts["task_id"],
+        base=spot_ladder.parse_base_env(facts["base"]),
+    )
+    nxt = spot_ladder.launch_for(
+        state["base_cpu"], state["base_mem"], state["rung"], rates, frac
+    )
+    limit = (
+        f"${rates.hourly(state['base_cpu'], state['base_mem'], spot=False) * frac:.4f}/h"
+        if rates
+        else "unknown (no fresh rates)"
+    )
+    return observe_alert(
+        "spot",
+        "task_reclaimed",
+        note=(
+            f"Spot reclaim {state['reclaims']} of this book; {_sync_text(facts, marker)}. "
+            f"Next launch: {nxt.describe()}, limit {limit}. Queued work relaunches now; "
+            "repeated reclaims mean Spot capacity is short"
+        ),
+        dedup_key=facts["task_id"],
+        family=facts["family"],
+        book=facts["book"] or "all",
+        reclaims=state["reclaims"],
+        rung=state["rung"],
+        attempt_given_back=gave_back,
+    )
+
+
+def _plain(text: object) -> str:
+    """Task-written text without Slack markup (<!channel>, <url|label>, @mentions)."""
+    return "".join(c for c in str(text) if c not in "<>@")
+
+
+def _relay_task_alert(facts: dict, marker: dict, gave_back: bool) -> bool:
+    """The task wrote its own stop alert but could not send it (no NAT = no route to SNS)."""
+    from src.utils import task_marker
+
+    return observe_alert(
+        "phase",
+        "task_alert_relayed",
+        note=(
+            "the task could not send this alert itself (no network path to SNS): "
+            + _plain(marker.get("unsent_note", ""))[: task_marker.UNSENT_NOTE_MAX]
+            + f". {_sync_text(facts, marker)}"
+        ),
+        dedup_key=facts["task_id"],
+        task_alert=_plain(marker["unsent_event"])[:60],
+        family=facts["family"],
+        book=facts["book"] or "all",
+        attempt_given_back=gave_back,
+    )
+
+
+def _alert_unreported_stop(facts: dict, marker: dict, gave_back: bool) -> bool:
+    """A stop with no alert from the task: an outside stop it recorded (it leaves the alert to
+    this Lambda, which knows the cause), or one it could not report at all."""
+    if marker.get("unsent_event"):
+        return _relay_task_alert(facts, marker, gave_back)
+    queued = facts["family"] == TASK_FAMILIES.get(PHASE3_TASK_DEF) and facts["book"]
+    how = "was stopped" if marker.get("sigterm") else "stopped unreported"
+    code = facts["code"] or "unknown"
+    if facts["exit"] is not None:
+        code += f", exit {facts['exit']}"
+    return observe_alert(
+        "phase",
+        "task_stopped" if marker.get("sigterm") else "task_stopped_unreported",
+        note=(
+            f"the task {how} ({code}: {facts['reason'][:60] or 'no reason'}); "
+            f"{_sync_text(facts, marker)}. "
+            + (
+                "The book stays queued and relaunches now"
+                if queued
+                else "Check its logs, then re-trigger the phase for this book"
+            )
+        ),
+        dedup_key=facts["task_id"],
+        family=facts["family"],
+        book=facts["book"] or "all",
+        attempt_given_back=gave_back,
+    )
 
 
 def _handle_manual_trigger(event):
@@ -1405,8 +1843,13 @@ def _handle_manual_trigger(event):
                 "(set the env to authorize a scope override).",
                 exp,
             )
-    _run_task(task_def, "manual", book_name=book, extra_env=extra_env)
-    return {"status": "launched", "book": book, "phase": phase}
+    launched = _run_task(task_def, "manual", book_name=book, extra_env=extra_env)
+    # not launched = queued (its lock is held, or held for low xAI credit): it runs later
+    return {
+        "status": "launched" if launched else "queued",
+        "book": book,
+        "phase": phase,
+    }
 
 
 def handler(event, _context):
@@ -1415,9 +1858,22 @@ def handler(event, _context):
     if event.get("source") == "manual":
         return _handle_manual_trigger(event)
 
-    # Scheduled stale lock check
+    # Scheduled stale lock check (and a drain of the AV staging area: catches anything a
+    # phase-complete drain left)
     if event.get("source") == "scheduled":
+        _sweep_stop_reports_safely()
+        _start_av_drain("scheduled")
         return _handle_scheduled_check()
+
+    # A drain of the AV staging area (started by phase completion, the schedule, or itself)
+    if event.get("source") == "av-drain":
+        return _run_av_drain(_context)
+
+    # A Phase 3 task finished its book: launch the next queued one that can run (each is tried
+    # until one launches - another may be running in its own task)
+    if event.get("source") == "enrich-next":
+        # True also when every queued book's lock is held (they run or wait their turn)
+        return {"queued_work": _reconcile_phase3("enrich-next")}
 
     # ECS Task State Change (the dev-wwii-spot-recovery rule): a task STOPPED — recover immediately.
     if (
@@ -1434,7 +1890,21 @@ def handler(event, _context):
         logger.info("Phase-complete event: phase=%s -> driving next phase", completed)
         return _drive_next_phase(completed)
 
-    # Extract topics and S3 keys from SQS/SNS records
+    return _handle_records(event, _context)
+
+
+def _handle_records(event, context=None):
+    """SNS/SQS records: a trigger-queue batch reports its failing records (``_handle_sqs_batch``);
+    anything else is processed as one event."""
+    records = event.get("Records") or []
+    if records and all(r.get("eventSource") == "aws:sqs" for r in records):
+        return _handle_sqs_batch(records, context)
+    _process_records(event)
+    return None
+
+
+def _process_records(event) -> None:
+    """Extract topics and S3 keys from SQS/SNS records, keep the manifest, route each topic."""
     topics, s3_keys = _extract_records(event)
     logger.info("Trigger topics: %s, keys: %d", topics, len(s3_keys))
 
@@ -1443,6 +1913,71 @@ def handler(event, _context):
         _update_manifest(s3_keys)
 
     _route_topics(topics, s3_keys)
+
+
+SQS_FALLBACK_RESERVE_MS = (
+    60_000  # stop retrying records one by one this close to the timeout
+)
+
+
+def _handle_sqs_batch(records: list, context=None) -> dict:
+    """A batch from the trigger queue (task 1.2f): handled together (the S3 events of one upload
+    debounce into one launch); if that fails, each record is tried on its own and only the ones
+    that fail again go back to the queue (``ReportBatchItemFailures``: after 5 receives, to the
+    alarmed DLQ) - one bad record no longer returns the whole batch of up to 100. Launches are
+    lock- and claim-guarded, so re-processing a record that already launched starts nothing.
+    """
+    if not all(r.get("messageId") for r in records):
+        _process_records(
+            {"Records": records}
+        )  # cannot report per record: all or nothing
+        return {"batchItemFailures": []}
+    try:
+        _process_records({"Records": records})
+        return {"batchItemFailures": []}
+    except Exception as e:  # noqa: BLE001 - narrowed to the failing records below
+        if len(records) == 1:
+            _alert_record_failed(records[0], e)
+            return {"batchItemFailures": [{"itemIdentifier": records[0]["messageId"]}]}
+        logger.warning(
+            "OBSERV trigger.batch_failed records=%d err=%s status=warn - retrying each record "
+            "on its own",
+            len(records),
+            type(e).__name__,
+        )
+    failed = []
+    for i, record in enumerate(records):
+        if _near_timeout(context):
+            # out of time: the untried rest go back as they are (retried on their own later)
+            failed += [{"itemIdentifier": r["messageId"]} for r in records[i:]]
+            break
+        try:
+            _process_records({"Records": [record]})
+        except Exception as e:  # noqa: BLE001 - this record goes back to the queue
+            failed.append({"itemIdentifier": record["messageId"]})
+            _alert_record_failed(record, e)
+    return {"batchItemFailures": failed}
+
+
+def _near_timeout(context) -> bool:
+    try:
+        return context.get_remaining_time_in_millis() < SQS_FALLBACK_RESERVE_MS
+    except AttributeError:
+        return False  # no Lambda context (tests, local runs)
+
+
+def _alert_record_failed(record: dict, e: Exception) -> None:
+    observe_error(
+        "trigger",
+        "record_failed",
+        note=(
+            "a trigger-queue message failed and went back to the queue; it is retried, and after "
+            "5 receives moves to the alarmed trigger DLQ. Check the trigger Lambda logs for the "
+            "traceback"
+        ),
+        message=str(record.get("messageId", ""))[:64],
+        error=type(e).__name__,
+    )
 
 
 def _route_topics(topics, s3_keys) -> None:
@@ -1525,6 +2060,60 @@ def _submit_ocr_batch(ocr_keys: list) -> None:
             logger.warning("OCR submit did not proceed for %s", k)
 
 
+# one ClamAV chunk: the task launch plus its result poll (av_scan._poll_av_result, 600 s), with
+# margin - a drain invocation starts a chunk only while this much time is left
+_AV_CHUNK_BUDGET_S = 700
+
+
+def _start_av_drain(reason: str) -> None:
+    """Drain unscanned/ in a separate, asynchronous invocation of this function (never blocks the
+    caller). Fail-safe: a failed request is said; the 15-minute scheduled check starts one too.
+    """
+    if not AV_SCAN_ENABLED:
+        return
+    try:
+        boto3.client("lambda").invoke(
+            FunctionName=os.environ.get("AWS_LAMBDA_FUNCTION_NAME", ""),
+            InvocationType="Event",
+            Payload=json.dumps({"source": "av-drain", "reason": reason}).encode(),
+        )
+    except Exception as e:  # noqa: BLE001 - the scheduled check starts a drain anyway
+        logger.warning(
+            "OBSERV av.drain_start_failed reason=%s err=%s status=warn - the staged binaries wait "
+            "for the next scheduled check (15 min). Check this function's lambda:InvokeFunction",
+            reason,
+            type(e).__name__,
+        )
+
+
+def _run_av_drain(context) -> dict:
+    """One drain invocation: scan chunks while a whole chunk still fits in this invocation, then
+    hand the rest to a fresh invocation. Another active drainer (the S3 lock) means nothing to do.
+    """
+    from src.ingestion.av_scan import drain_unscanned
+
+    remaining = context.get_remaining_time_in_millis() / 1000 if context else 900.0
+    deadline = time.monotonic() + max(0.0, remaining - _AV_CHUNK_BUDGET_S)
+    try:
+        out = drain_unscanned(s3, BUCKET, _make_av_scanner(), deadline=deadline)
+    except Exception as e:  # noqa: BLE001 - said; the scheduled check drains again
+        logger.warning(
+            "OBSERV av.phase_drain_failed reason=%s status=warn - the staged binaries wait for "
+            "the next drain. Check the ClamAV task (AvScanTaskDef) logs",
+            type(e).__name__,
+        )
+        return {"action": "av_drain", "ok": False}
+    logger.info(
+        "OBSERV av.phase_drain promoted=%d quarantined=%d more=%s status=ok",
+        len(out.clean_keys),
+        len(out.quarantined_keys),
+        out.more,
+    )
+    if out.more and (out.clean_keys or out.quarantined_keys):
+        _start_av_drain("continue")  # only while it progresses: never a loop of no-ops
+    return {"action": "av_drain", "ok": True, "more": out.more}
+
+
 def _drive_next_phase(completed_phase: str) -> dict:
     """Event-driven phase chaining: a completed phase invokes this to launch the
     NEXT phase immediately from parked pending#* queues (instead of relying on the
@@ -1536,24 +2125,15 @@ def _drive_next_phase(completed_phase: str) -> dict:
     just reconcile all pending queues. Delegates to _reconcile_pending so the
     event-driven path and the scheduled backstop share ONE drain implementation.
     """
-    # On Phase-3 completion, drain the unscanned/ AV queue: downloaded map/image binaries were
-    # staged to unscanned/ by the Phase-3 final sync (never prod un-scanned). Scan+promote them
-    # with the SAME ClamAV scanner (clean->prod, infected->quarantine/+alert, unscannable->stay).
+    # On Phase-2 or Phase-3 completion, drain the unscanned/ AV queue: every binary a task writes
+    # (maps, images, photos, portraits, patches) is staged to unscanned/ by its upload (never prod
+    # un-scanned; av_scan.staged_key). Scan+promote them with the SAME ClamAV scanner (clean->prod,
+    # infected->quarantine/+alert, unscannable->stay). An empty queue launches no scan task.
     # Fail-safe: a drain error never blocks phase chaining.
-    if completed_phase == "3" and AV_SCAN_ENABLED:
-        try:
-            from src.ingestion.av_scan import drain_unscanned
-
-            out = drain_unscanned(s3, BUCKET, _make_av_scanner())
-            logger.info(
-                "OBSERV av.phase3_drain promoted=%d quarantined=%d status=ok",
-                len(out.clean_keys),
-                len(out.quarantined_keys),
-            )
-        except Exception as e:  # noqa: BLE001 - AV drain must not block phase chaining
-            logger.warning(
-                "OBSERV av.phase3_drain_failed reason=%s status=warn", type(e).__name__
-            )
+    # The drain runs in its OWN invocation (``_start_av_drain``): a chunk can take ~10 min, so an
+    # inline drain could outlive this Lambda and strand both its lock and the phase chain.
+    if completed_phase in ("2", "3"):
+        _start_av_drain(f"phase-{completed_phase}")
 
     launched = _reconcile_pending(reason=f"phase-{completed_phase}-complete")
     return {
@@ -1652,13 +2232,16 @@ def _reconcile_phase3(reason: str) -> bool:
     pending_enrich = _get_pending_books_for_enrich()
     if not pending_enrich:
         return False
-    logger.info(
-        "Reconcile (%s): enrich queue for %s -> launching Phase 3",
-        reason,
-        pending_enrich[0],
-    )
-    _run_task(PHASE3_TASK_DEF, f"reconcile-{reason}", book_name=pending_enrich[0])
-    return True
+    # Queue rows now stay while their book runs (src/utils/pending_queue), so the first one may
+    # be running: try each until one actually launches, instead of re-queuing the first forever
+    # (per-book locks would otherwise starve every other queued book).
+    for book in pending_enrich:
+        logger.info(
+            "Reconcile (%s): enrich queue for %s -> launching Phase 3", reason, book
+        )
+        if _run_task(PHASE3_TASK_DEF, f"reconcile-{reason}", book_name=book):
+            return True
+    return True  # queued work exists; every book's lock is held (they run or wait)
 
 
 def _handle_scheduled_check():
@@ -1682,6 +2265,14 @@ def _handle_scheduled_check():
     # but if a phase-complete invoke was lost, this scheduled poll drains any
     # parked pending#* queue when the cluster is idle. Shared drain implementation
     # (WARNING-level errors) — this is the B460-strand fix (was a silent block).
+    try:
+        _release_credit_holds()  # task 1.1e: imports held while credit was low
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - the hold was put back; the reconcile still runs
+        logger.warning(
+            "OBSERV credit.release_failed err=%s status=warn", type(e).__name__
+        )
     _reconcile_pending(reason="scheduled-backstop")
 
     return {"action": "lock_check_complete"}
@@ -2132,8 +2723,11 @@ def _acquire_task_lock(task_def, family, lock_key, book_name, now) -> bool:
     return False
 
 
-def _run_task(task_def, source, book_name="", extra_env=None):
-    """Create networking, acquire lock, launch ECS task.
+def _run_task(
+    task_def, source, book_name="", extra_env=None, credit_checked=False
+) -> bool:
+    """Create networking, acquire lock, launch ECS task. True when a launch was made (the lock
+    was taken); False when refused (unsafe name) or the lock is held (the request is queued).
 
     extra_env: optional list of {"name","value"} container env overrides (e.g.
     CONVERT_KEY for the Phase-0 convert task)."""
@@ -2155,9 +2749,12 @@ def _run_task(task_def, source, book_name="", extra_env=None):
             book_name=str(book_name)[:80],
             source=source,
         )
-        return
+        return False
     if _task_family(task_def) == _task_family(AV_SCAN_TASK_DEF):
-        return _run_av_scan(task_def, source, extra_env)
+        _run_av_scan(task_def, source, extra_env)
+        return True
+    if _launch_held(task_def, source, book_name, extra_env, credit_checked):
+        return False  # kept (queue row or credit hold) or waiting for its batch
     # Cancel any pending delayed teardown
     _cancel_delayed_teardown()
 
@@ -2167,7 +2764,9 @@ def _run_task(task_def, source, book_name="", extra_env=None):
     lock_key = _lock_key(family, book_name)
     now = int(time.time())
     if not _acquire_task_lock(task_def, family, lock_key, book_name, now):
-        return  # lock held by a live/recent invocation (request queued if per-book)
+        return (
+            False  # lock held by a live/recent invocation (request queued if per-book)
+        )
 
     # Lock is HELD. Kick off an ASYNC NAT warm-up (fire-and-forget) and launch
     # immediately — do NOT block the launch on NAT readiness. Phase 1 needs no
@@ -2182,6 +2781,180 @@ def _run_task(task_def, source, book_name="", extra_env=None):
     _fire_nat_warmup(family)
 
     _launch_ecs_task(task_def, source, book_name, extra_env, lock_key, family)
+    return True
+
+
+def _launch_held(task_def, source, book_name, extra_env, credit_checked) -> bool:
+    """True when this launch must not happen now: a Phase 3 book whose batch is being answered
+    (its retrieve task resumes it), or credit under the floor (the request is kept)."""
+    if task_def == PHASE3_TASK_DEF and _phase3_batch_live(book_name, source):
+        return True
+    return not credit_checked and _held_for_credit(
+        task_def, source, book_name, extra_env
+    )
+
+
+def _phase3_batch_live(book_name: str, source: str = "") -> bool:
+    """True while a Phase 3 batch of ``book_name`` (any book for an unscoped launch) is waiting for
+    its answers or for its retrieve task. A second Phase 3 launch then would collect the same
+    requests and pay for a second batch; the retrieve task resumes the run. The book's queue row
+    stays, so nothing is lost. A MANUAL launch is the operator's override and goes ahead. A row
+    older than ``job_queue.LIVE_MAX_AGE_S`` is not trusted (a batch gone at xAI never settles) and
+    is said so. A lookup error launches (False): a double launch is only a cost, a stuck book is
+    a defect."""
+    from src.utils import job_queue
+
+    if source == "manual":
+        return False
+    try:
+        batch = job_queue.live_batch_for(dynamo, "phase3", book_name or None)
+    except Exception as e:  # noqa: BLE001 - launching is the safe side
+        logger.warning(
+            "OBSERV trigger.batch_check_failed book=%s err=%s status=warn - launching anyway",
+            book_name,
+            type(e).__name__,
+        )
+        return False
+    if batch:
+        logger.info(
+            "OBSERV trigger.phase3_waits_for_batch book=%s batch=%s - not launching: the "
+            "retrieve task resumes the run when the batch is answered",
+            book_name or "(all)",
+            batch,
+        )
+    return bool(batch)
+
+
+def _spends_grok(task_def: str) -> bool:
+    """The launches that spend xAI credit: Phase 2/3, and a Phase 0 import whose title-page
+    request is on (ecs_entrypoint._uses_grok is the in-task twin)."""
+    if task_def in (PHASE2_TASK_DEF, PHASE3_TASK_DEF):
+        return True
+    if task_def in (PHASE0_TASK_DEF, PHASE0_VIDEO_TASK_DEF):
+        from src.ingestion import book_metadata
+
+        return book_metadata.enabled(_trigger_config())
+    return False
+
+
+def _held_for_credit(task_def, source, book_name, extra_env) -> bool:
+    """Task 1.1e (owner 2026-11-18): do not launch a Grok phase while xAI credit is under the
+    floor - the task would start (Fargate + NAT) only to stop at its preflight. The request is
+    kept, never dropped: a Phase 2/3 book stays on its queue; anything else (a Phase 0 import,
+    an unscoped manual or dedup-complete run) becomes a credit hold that the hourly check
+    replays (_release_credit_holds). True when held. The gate only saves cost: any error in it,
+    or a request that cannot be kept, launches (False) and the task's own preflight decides.
+    """
+    if not _spends_grok(task_def):
+        return False
+    from src.utils import credit_hold
+
+    family = TASK_FAMILIES.get(task_def, "unknown")
+    try:
+        allowed, usd, floor = credit_hold.launch_allowed(
+            dynamo, _credit_lambda(), _trigger_config()
+        )
+        if allowed or usd is None:
+            return False
+        if task_def == PHASE3_TASK_DEF and book_name:
+            _queue_pending_enrich(book_name, strict=True)
+        elif task_def == PHASE2_TASK_DEF and book_name:
+            _queue_pending_parsed_book(book_name, strict=True)
+        else:
+            credit_hold.hold_request(dynamo, task_def, source, book_name, extra_env)
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - not kept: launch, the task's preflight decides
+        logger.warning(
+            "OBSERV credit.hold_failed family=%s book=%s err=%s status=warn - launching "
+            "instead; the task's own preflight stops it under the floor. Check the trigger's "
+            "DynamoDB access and the credit-check Lambda if this repeats",
+            family,
+            book_name,
+            type(e).__name__,
+        )
+        return False
+    logger.info(
+        "OBSERV credit.launch_held family=%s book=%s usd=%.2f floor=%.2f status=ok",
+        family,
+        book_name,
+        usd,
+        floor,
+    )
+    credit_hold.alert_held(dynamo, usd, floor, f"{family} {book_name}".strip())
+    return True
+
+
+_credit_client: dict = {}
+
+
+def _credit_lambda():
+    """The Lambda client for the credit-check invoke (one per container)."""
+    from src.utils import credit_hold
+
+    if "c" not in _credit_client:
+        _credit_client["c"] = credit_hold.lambda_client()
+    return _credit_client["c"]
+
+
+def _hold_env_rules() -> dict:
+    """What a stored hold may name: each Grok task definition with the only env it is ever held
+    with (its source key; a manual run's declared count, and that only while the operator allows
+    it, as _handle_manual_trigger does). Anything else in a hold is never replayed."""
+    from src.utils import credit_hold
+
+    count = {"EXPECTED_COUNT": credit_hold.COUNT} if ALLOW_MANUAL_EXPECTED_COUNT else {}
+    return {
+        PHASE0_TASK_DEF: {"CONVERT_KEY": credit_hold.IMPORT_KEY},
+        PHASE0_VIDEO_TASK_DEF: {"VIDEO_KEY": credit_hold.IMPORT_KEY},
+        PHASE2_TASK_DEF: count,
+        PHASE3_TASK_DEF: count,
+    }
+
+
+def _release_credit_holds() -> int:
+    """Hourly: once credit is back over the floor, launch every held request (the queues of
+    Phase 2/3 drain through _reconcile_pending as before). Returns how many were launched.
+    """
+    from src.utils import credit_hold
+
+    try:
+        held = credit_hold.held_requests(dynamo, _hold_env_rules())
+    except Exception as e:  # noqa: BLE001 - try again next hour
+        logger.warning(
+            "OBSERV credit.holds_unreadable err=%s status=warn - held launches wait another "
+            "hour; check the trigger's DynamoDB access",
+            type(e).__name__,
+        )
+        return 0
+    if not held:
+        return 0
+    allowed, usd, _ = credit_hold.launch_allowed(
+        dynamo, _credit_lambda(), _trigger_config()
+    )
+    if not allowed:
+        logger.info(
+            "OBSERV credit.holds_waiting n=%d usd=%.2f status=ok", len(held), usd or 0
+        )
+        return 0
+    n, failed = credit_hold.release_held(
+        dynamo,
+        lambda r: _run_task(
+            r["task_def"],
+            r.get("source") or "credit-release",
+            r.get("book") or "",
+            r.get("extra_env") or None,
+            credit_checked=True,  # just checked; a False now means its lock is held
+        ),
+        held,
+    )
+    logger.info(
+        "OBSERV credit.holds_released n=%d failed=%d status=%s",
+        n,
+        failed,
+        "warn" if failed else "ok",
+    )
+    return n
 
 
 def _run_av_scan(task_def, source, extra_env) -> None:
@@ -2253,9 +3026,8 @@ def _override_container(task_def: str) -> str:
 
 def _launch_ecs_task(task_def, source, book_name, extra_env, lock_key, family):
     """Build container overrides and run the ECS task; on launch failure release
-    the (already-held) lock then re-raise. Extracted verbatim from _run_task — the
-    ecs.run_task args, the lock-release-on-failure path, and _notify_launch are
-    unchanged."""
+    the (already-held) lock then re-raise. The capacity and size come from the book's Spot price
+    ladder (_launch_plan, task 1.1b)."""
     # Launch task
     logger.info(
         "Launching ECS task %s from %s (book=%s)", family, source, book_name or "all"
@@ -2271,31 +3043,8 @@ def _launch_ecs_task(task_def, source, book_name, extra_env, lock_key, family):
         else {}
     )
     try:
-        resp = ecs.run_task(
-            cluster=CLUSTER,
-            taskDefinition=task_def,
-            count=1,
-            capacityProviderStrategy=[
-                {"capacityProvider": "FARGATE_SPOT", "weight": 4, "base": 0},
-                {"capacityProvider": "FARGATE", "weight": 1, "base": 0},
-            ],
-            networkConfiguration={
-                "awsvpcConfiguration": {
-                    "subnets": SUBNETS,
-                    "securityGroups": [SG],
-                    "assignPublicIp": "DISABLED",
-                }
-            },
-            overrides=overrides,
-        )
-        # ECS run_task does NOT raise on a PLACEMENT failure (capacity/quota — common with
-        # FARGATE_SPOT): it returns {"tasks":[], "failures":[...]}. Treat an empty tasks list /
-        # any failure as a launch failure so we don't hold the lock with no task running
-        # (§1.0d H1).
-        if not resp.get("tasks") or resp.get("failures"):
-            raise RuntimeError(
-                f"ECS run_task placed no task (failures={resp.get('failures')})"
-            )
+        plan = _launch_plan(task_def, family, book_name)
+        _run_with_capacity_fallback(task_def, overrides, plan, family, book_name)
     except Exception as e:
         # Launch failed AFTER we took the lock — release it so the content isn't stuck
         # behind a held lock until the 2h TTL (that would need manual intervention).
@@ -2307,6 +3056,167 @@ def _launch_ecs_task(task_def, source, book_name, extra_env, lock_key, family):
         raise
     # Notify operator that a task was launched
     _notify_launch(family, book_name, source)
+
+
+class NoPlacement(RuntimeError):
+    """RunTask returned without placing the task (no capacity, quota): nothing was started."""
+
+
+def _ecs_run(task_def, capacity, overrides):
+    """One RunTask on ``capacity``. Raises on a placement failure too: ECS run_task does NOT raise
+    when it places nothing (capacity/quota, common with FARGATE_SPOT) - it returns
+    {"tasks":[], "failures":[...]} - and a held lock with no task would stall the book (§1.0d H1).
+    """
+    resp = ecs.run_task(
+        cluster=CLUSTER,
+        taskDefinition=task_def,
+        count=1,
+        capacityProviderStrategy=[
+            {"capacityProvider": capacity, "weight": 1, "base": 0}
+        ],
+        networkConfiguration={
+            "awsvpcConfiguration": {
+                "subnets": SUBNETS,
+                "securityGroups": [SG],
+                "assignPublicIp": "DISABLED",
+            }
+        },
+        overrides=overrides,
+    )
+    if not resp.get("tasks") or resp.get("failures"):
+        raise NoPlacement(
+            f"ECS run_task placed no task (failures={resp.get('failures')})"
+        )
+    return resp
+
+
+def _run_with_capacity_fallback(task_def, overrides, plan, family, book_name):
+    """Launch on the plan's capacity and size (Spot at the task-definition size when there is no
+    ladder row). Spot with no capacity right now: launch ON-DEMAND at the ORIGINAL size instead -
+    never a larger on-demand size, so the owner's price limit holds (task 1.1b)."""
+    from src.utils import spot_ladder
+
+    capacity = plan.capacity if plan else spot_ladder.SPOT
+    sized = dict(overrides)
+    if plan and plan.overridden:
+        sized = _sized_overrides(overrides, plan)
+    try:
+        resp = _ecs_run(task_def, capacity, sized)
+    except NoPlacement as e:
+        # only when NOTHING was started: a timeout or throttle may have started a task, and an
+        # on-demand retry would run the book twice
+        if capacity != spot_ladder.SPOT:
+            raise
+        observe(
+            "spot",
+            "no_capacity",
+            status="warn",
+            note="Fargate Spot placed no task; launching on-demand at the original size",
+            family=family,
+            book=book_name or "all",
+            error=str(e)[:160],
+        )
+        capacity = spot_ladder.FARGATE
+        resp = _ecs_run(task_def, capacity, overrides)
+    _log_launch(family, book_name, capacity, plan)
+    return resp
+
+
+def _sized_overrides(overrides, plan):
+    """``overrides`` with the plan's task size, and its ORIGINAL size in SPOT_LADDER_BASE so a
+    later reclaim keeps the right limit even if the ladder row is gone."""
+    from src.utils import spot_ladder
+
+    sized = json.loads(
+        json.dumps(overrides)
+    )  # deep copy: the fallback reuses the original
+    sized.update(cpu=str(plan.cpu), memory=str(plan.memory))
+    containers = sized.setdefault("containerOverrides", [{"name": "pipeline"}])
+    containers[0].setdefault("environment", []).append(
+        {
+            "name": spot_ladder.BASE_ENV,
+            "value": spot_ladder.base_env_value(*_plan_base(plan)),
+        }
+    )
+    return sized
+
+
+def _plan_base(plan):
+    """The original (rung 0) size of an upsized plan: its size halved once per rung."""
+    k = int(plan.rung)
+    return plan.cpu // 2**k, plan.memory // 2**k
+
+
+def _log_launch(family, book_name, capacity, plan) -> None:
+    size = (
+        plan.describe()
+        if plan is not None and capacity == plan.capacity
+        else "task definition"
+    )
+    logger.info(
+        "OBSERV spot.launch status=ok family=%s book=%s capacity=%s rung=%s size=%s",
+        family,
+        book_name or "all",
+        capacity,
+        plan.rung if plan else 0,
+        size,
+    )
+
+
+def _trigger_config() -> dict:
+    """config.yaml, or {} (callers' defaults apply) if it cannot be read."""
+    try:
+        from src.utils.config import load_config
+
+        return load_config() or {}
+    except Exception as e:  # noqa: BLE001 - defaults are safe
+        logger.warning("OBSERV config.unreadable status=warn err=%s", type(e).__name__)
+        return {}
+
+
+def _ladder_inputs():
+    """(the stored Fargate rates or None, the configured max fraction of on-demand)."""
+    from src.utils import fargate_prices, spot_ladder
+
+    config = _trigger_config()
+    try:
+        age = int((config.get("spot_ladder") or {}).get("max_price_age_days", 3))
+    except (TypeError, ValueError):
+        age = fargate_prices.DEFAULT_MAX_AGE_DAYS
+    try:
+        rates = fargate_prices.load(dynamo, AWS_REGION, age)
+    except Exception as e:  # noqa: BLE001 - no rates: the ladder never upsizes
+        logger.warning(
+            "OBSERV spot.rates_unreadable status=warn err=%s", type(e).__name__
+        )
+        rates = None
+    return rates, spot_ladder.max_fraction(config)
+
+
+def _launch_plan(task_def, family, book_name):
+    """The book's next launch from its Spot price ladder (src/utils/spot_ladder), or None for
+    rung 0 (Spot at the task-definition size). Re-checked against today's rates. ``family`` is the
+    TASK_FAMILIES name, the same name the stop report keys the ladder on (the ECS event's group).
+    """
+    from src.utils import spot_ladder
+
+    if _override_container(task_def) != "pipeline":
+        return None
+    try:
+        state = spot_ladder.get_state(dynamo, family, book_name)
+    except Exception as e:  # noqa: BLE001 - rung 0 is always within the limit
+        logger.warning(
+            "OBSERV spot.ladder_unreadable status=warn family=%s err=%s - launching rung 0",
+            family,
+            type(e).__name__,
+        )
+        return None
+    if not state:
+        return None
+    rates, frac = _ladder_inputs()
+    return spot_ladder.launch_for(
+        state["base_cpu"], state["base_mem"], state["rung"], rates, frac
+    )
 
 
 def _notify_launch(family: str, book_name: str, source: str) -> None:
@@ -2477,22 +3387,11 @@ def _queue_parsed(keys):
 
 
 def _get_pending_books() -> list:
-    """Return list of book names with pending parsed queues."""
+    """Books with pending parsed queues, all scan pages (src/utils/pending_queue)."""
+    from src.utils import pending_queue
+
     try:
-        resp = dynamo.scan(
-            FilterExpression="begins_with(cache_key, :prefix)",
-            ExpressionAttributeValues={":prefix": "pending#parsed#"},
-            ProjectionExpression="cache_key",
-            Limit=1000,  # Cap scan cost; pending queue will never exceed this
-        )
-        books = []
-        for item in resp.get("Items", []):
-            # pending#parsed#BookName → BookName
-            key = item["cache_key"]
-            book = key.split("#", 2)[2] if key.count("#") >= 2 else ""
-            if book:
-                books.append(book)
-        return sorted(books)
+        return pending_queue.pending_books(dynamo, "parsed")
     except Exception as e:
         logger.warning("Failed to scan pending books: %s", e)
         return []
@@ -2532,40 +3431,47 @@ def _launch_phase2_if_idle(book_name=""):
     _run_task(PHASE2_TASK_DEF, "pending-parsed", book_name=book_name)
 
 
-def _queue_pending_enrich(book_name: str) -> None:
-    """Queue a book for Phase 3 enrichment when the lock is held."""
+def _queue_pending_enrich(book_name: str, strict: bool = False) -> None:
+    """Queue a book for Phase 3 enrichment when the lock is held (keeps its attempt count).
+    ``strict``: raise if the row was not written (a caller that must not lose the request).
+    """
+    from src.utils import pending_queue
+
     try:
-        dynamo.put_item(
-            Item={"cache_key": f"pending#enrich#{book_name}", "book": book_name}
-        )
+        pending_queue.queue_enrich(dynamo, book_name)
         logger.info("Queued Phase 3 enrichment for %s", book_name)
     except Exception as e:
         logger.error("Failed to queue enrichment for %s: %s", book_name, e)
+        if strict:
+            raise
 
 
 def _get_pending_books_for_enrich() -> list:
-    """Return list of book names with pending enrichment queues."""
+    """Books queued for Phase 3 that may run now, all scan pages (src/utils/pending_queue): a
+    deferred book is held (task 1.2b), and a recent funding/connectivity deferral holds them all.
+    """
+    from src.utils import pending_queue
+
     try:
-        resp = dynamo.scan(
-            FilterExpression="begins_with(cache_key, :prefix)",
-            ExpressionAttributeValues={":prefix": "pending#enrich#"},
-            ProjectionExpression="cache_key",
-            Limit=100,
+        from src.utils.config import load_config
+
+        config = load_config()
+    except Exception as e:  # noqa: BLE001 - the default retry interval still applies
+        logger.warning("Config unreadable for the queue retry interval: %s", e)
+        config = {}
+    try:
+        return pending_queue.runnable_books(
+            dynamo, "enrich", pending_queue.defer_retry_minutes(config)
         )
-        books = []
-        for item in resp.get("Items", []):
-            key = item["cache_key"]
-            book = key.split("#", 2)[2] if key.count("#") >= 2 else ""
-            if book:
-                books.append(book)
-        return sorted(books)
     except Exception as e:
         logger.warning("Failed to scan pending enrich: %s", e)
         return []
 
 
-def _queue_pending_parsed_book(book_name: str) -> None:
-    """Queue a book for Phase 2 extraction when the lock is held (no file keys, just marks book as pending)."""
+def _queue_pending_parsed_book(book_name: str, strict: bool = False) -> None:
+    """Queue a book for Phase 2 extraction when the lock is held (no file keys, just marks book as pending).
+    ``strict``: raise if the row was not written (a caller that must not lose the request).
+    """
     try:
         dynamo.update_item(
             Key={"cache_key": f"pending#parsed#{book_name}"},
@@ -2575,3 +3481,5 @@ def _queue_pending_parsed_book(book_name: str) -> None:
         logger.info("Queued Phase 2 extraction for %s", book_name)
     except Exception as e:
         logger.error("Failed to queue extraction for %s: %s", book_name, e)
+        if strict:
+            raise

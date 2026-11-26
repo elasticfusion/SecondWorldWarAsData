@@ -65,7 +65,9 @@ def test_a_handed_off_round_enqueues_that_batch_and_ends(ep):
     assert enqueue.call_args.args[0] == "new"
     assert enqueue.call_args.kwargs["status"] == "pending"
     assert enqueue.call_args.args[3] == "phase2-B-1files-r2-new"  # the round travels on
-    alert.assert_called_once_with("new", "phase2-B-1files-r2-new")  # standard topic
+    alert.assert_called_once_with(
+        "new", "phase2-B-1files-r2-new", "phase2_extract.py"
+    )  # standard topic
     old_notice.assert_not_called()  # not also the old "batch submitted" notice
     status.assert_called_once_with("prev", "retrieved")
     ep._post_process.assert_not_called()
@@ -115,3 +117,9 @@ def test_a_failed_or_capped_run_enqueues_nothing_and_fails(ep):
     ep._post_process.assert_not_called()
     ep._final_sync_failed_phase.assert_called_once()
     status.assert_called_once_with("prev", "failed")
+
+
+def test_a_finished_phase3_is_post_processed_not_run_again(ep):
+    ep._settle_phase2_task("phase3_enrich_data.py", 0)
+    ep._post_process.assert_called_once()
+    ep._final_sync.assert_called_once()

@@ -1,7 +1,7 @@
 # JSON Schema Reference
 
-**Last Updated:** 2026-11-16
-**Schema Version:** per-entity (see `ENTITY_SCHEMA_VERSIONS` in `src/schemas/__init__.py`; as of 2026-11-16: places 2.30, equipment 2.30, people_groups 2.29, bibliography 2.29, images 2.28, people 2.27, casualties 2.27, maps 2.26, source_section 2.26, events/dates/weather/logistics 2.25, map_features 2.24) — there is no single global number
+**Last Updated:** 2026-11-20
+**Schema Version:** per-entity (see `ENTITY_SCHEMA_VERSIONS` in `src/schemas/__init__.py`; as of 2026-11-23: places 2.31, equipment 2.31, people_groups 2.30, bibliography 2.32, images 2.29, people 2.28, casualties 2.27, maps 2.27, source_section 2.26, events/dates/weather/logistics 2.25, map_features 2.24) — there is no single global number
 
 > **Equipment 2.29+ (2026-11-07):** `identity_scope` (specific | generic | unresolved) decides enrichment: generic mentions are kept but never searched; named vessels are resolved to one ship by date (`identity_resolution`). Images are Phase 3 only, and an image counts as attached only when `images[].vision_check == "verified"` (`vision_verified: true`).
 
@@ -585,6 +585,12 @@ Note: Images use `Sub-eventID` (hyphen) and `Sub-event_Name` (hyphen). No `event
     "first_edition_date": null, "author_death_date": null
   },
   "availability": "online|offline|archive|unknown|null",
+  "held_in_corpus": {
+    "BookID": "01ULID...", "book": "USA-A-Omaha", "volume": "USA-A-Omaha",
+    "format": "pdf|html|unknown", "edition": "CMH Pub 100-11|null", "copyright_date": "1945|null",
+    "linked_at": "2026-11-24T...",
+    "evidence": [{"book": "XChannel", "chapter": "chapter6k", "reference_number": "116", "url": "https://..."}]
+  },
   "resource_urls": ["https://..."],
   "archive_reference_number": null,
   "archive_physical_address": null,
@@ -598,6 +604,11 @@ Note: Images use `Sub-eventID` (hyphen) and `Sub-event_Name` (hyphen). No `event
   },
   "search_status": "resolved|not_found|pending|null",
   "search_source": "...|null",
+  "source_metadata": {
+    "findings": [{"url": "...", "source": "archive_org|gutenberg|nara_catalog|...", "kind": "bookseller|null"}],
+    "bookseller": [{"url": "https://www.amazon.com/dp/<ASIN>", "source": "amazon", "kind": "bookseller"}],
+    "bookseller_searched_at": 1789000000
+  },
   "download_status": "pending|downloaded|extracted|gated|skipped|error|null",
   "download_path": "...|null",
   "mentions": [
@@ -617,7 +628,7 @@ Note: Images use `Sub-eventID` (hyphen) and `Sub-event_Name` (hyphen). No `event
 }
 ```
 
-Note: `BibliographyID` and `title` are required. Bibliography uses `Sub-eventID` (hyphen) in mentions. The output `availability` enum is `online|offline|archive|unknown`. The extraction-time schema (`src/json_schemas.py`) uses `MaterialID` per item, while the consolidated output uses `BibliographyID`.
+Note: `source_metadata` is open (provenance keys vary by source); `findings`, `bookseller` and `bookseller_searched_at` are modeled (2.30). `held_in_corpus` (2.32) says the cited work is in the corpus: the defining copy we hold (a PDF first) and the notes whose links matched it (`src/extraction/bibliography_corpus`). `merged_from` (2.31) lists the BibliographyIDs of records combined into this one (same footnote text); a reference to one of them resolves here. A `bookseller` listing is a pointer to buy, never an online copy: it is not in `resource_urls`, and its URL must be the canonical `https://www.amazon.com/dp/<10-char ASIN>`. `BibliographyID` and `title` are required. Bibliography uses `Sub-eventID` (hyphen) in mentions. The output `availability` enum is `online|offline|archive|unknown`. The extraction-time schema (`src/json_schemas.py`) uses `MaterialID` per item, while the consolidated output uses `BibliographyID`.
 
 ---
 
@@ -647,9 +658,23 @@ Note: `BibliographyID` and `title` are required. Bibliography uses `Sub-eventID`
   "local_image_path": "path|null",
   "file_format": "png|jpg|null",
   "storage_backend": "local|s3",
-  "extracted_date": "2026-03-15T..."
+  "extracted_date": "2026-03-15T...",
+  "depicted": {
+    "units": ["28th Infantry Division"], "places": ["Schmidt"], "movements": ["..."],
+    "front_line_or_sector": "...", "date_or_window": "2-8 November 1944", "operation": "...",
+    "description": "...", "legibility_confidence": 0.8
+  },
+  "depicted_provenance": {
+    "verdict": "depicted|not_relevant", "kind": "in_doc_map_vision|external_maps_verification",
+    "model": "...|null", "request_id": "...|null", "checked_at": "2026-11-24T...",
+    "image_url": "https://...", "found_in": "<book slug>|openserp"
+  }
 }
 ```
+
+`depicted` (2.27) is what Grok map vision says the map shows (null when the image was judged not a
+relevant map); `depicted_provenance` records where that answer came from. A map with
+`depicted_provenance` is never sent to vision again (`src/extraction/map_depicted`).
 
 Note: Maps use `Sub_eventID` (underscore) — inconsistent with images/bibliography which use hyphen.
 
@@ -739,6 +764,8 @@ The per-entity JSON examples above predate several Phase 2 additions. The enforc
 | people | `name_resolution` (object), `oob_convergence_note` (string) | nullable |
 | people_groups | `organization_lifecycle` (`standing`/`ephemeral`), `active_period` `{start,end,precision(exact/approximate/unresolved),original_text}`, `constituent_units[]`, `members[]`, `member_countries[]` | schema 2.29 and earlier |
 | equipment | `variant_of`, `distinguishing_features` (lineage, 2.30), `lineage_source` (`grok_disambiguation`), `identity_scope` (`specific`/`generic`/`unresolved`), `identity_resolution`, `presence`, `absence_reason`, `extended_text` | nullable |
+| equipment (images[]) | `page_sha256`, `sha256`, `period_photo` (`yes`/`no`/`unsure`), `copyright_status` (web photos, 2.31) | nullable |
+| people (2.28), places (2.31), people_groups (2.30): images[] | the same web-photo fields (`src/schemas/photo_fields.py`, one definition for all four) | nullable |
 | logistics | `original_text` (verbatim anchor), `weather_impact` `{WeatherID, impact_description, severity, ...}`, `impacted_places[]` | nullable |
 | casualties | `magnitude` (`none`/`light`/`moderate`/`heavy`/`severe`), `is_comparative` (bool), `impacted_equipment[]`, `impacted_logistics[]` | nullable |
 | places, people, people_groups, equipment, source_section | `openserp_searched_at` (number), `wikipedia_checked_at` (string) | nullable enrichment bookkeeping |

@@ -137,7 +137,9 @@ def _run_case(tmp_path, choice, script_rc):
         f"import sys; print('APPLY', sys.argv[1:]); sys.exit({script_rc})\n"
     )
     (fake / "scripts" / "deploy_all.sh").write_text(
-        f'set -e\nprofile_choice="{choice}"\n{_case_block()}\necho REACHED\n'
+        # stamp_version (task 0.2) is defined earlier in the real script; stubbed here
+        f'set -e\nstamp_version() {{ :; }}\nprofile_choice="{choice}"\n'
+        f"{_case_block()}\necho REACHED\n"
     )
     return subprocess.run(
         ["bash", str(fake / "scripts" / "deploy_all.sh")],

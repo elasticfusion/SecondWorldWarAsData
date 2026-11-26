@@ -124,11 +124,18 @@ class S3Storage:
         self.s3.put_object(Bucket=self.bucket, Key=self._key(path), Body=body)
 
     def exists(self, path: str) -> bool:
-        try:
-            self.s3.head_object(Bucket=self.bucket, Key=self._key(path))
-            return True
-        except self.s3.exceptions.ClientError:
-            return False
+        """True when the object is at ``path``, or (a binary) still waiting in the AV staging area
+        - written once, not written again while it waits for its scan."""
+        from src.ingestion.av_scan import UNSCANNED_PREFIX
+
+        key = self._key(path)
+        for k in dict.fromkeys((key, UNSCANNED_PREFIX + key)):
+            try:
+                self.s3.head_object(Bucket=self.bucket, Key=k)
+                return True
+            except self.s3.exceptions.ClientError:
+                continue
+        return False
 
     def list_files(self, prefix: str, pattern: str = "*.json") -> list[str]:
         full_prefix = self._key(prefix)
@@ -153,4 +160,11 @@ class S3Storage:
         return resp["Body"].read()
 
     def write_bytes(self, path: str, data: bytes) -> None:
-        self.s3.put_object(Bucket=self.bucket, Key=self._key(path), Body=data)
+        """Anything that is not text goes to the AV staging area (``av_scan.staged_key``, judged by
+        the key AND the bytes): readable at ``path`` only after a clean ClamAV scan promotes it
+        (owner 2026-11-23: ClamAV on for every binary)."""
+        from src.ingestion.av_scan import staged_key
+
+        self.s3.put_object(
+            Bucket=self.bucket, Key=staged_key(self._key(path), data), Body=data
+        )

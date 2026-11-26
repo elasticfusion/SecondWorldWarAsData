@@ -217,7 +217,7 @@ class TestEcsEntrypoint:
             assert "phase1_parse.py" in PHASE_NAMES
             assert "phase2_extract.py" in PHASE_NAMES
             assert "phase3_enrich_data.py" in PHASE_NAMES
-            assert "import_to_dynamodb.py" in PHASE_NAMES
+            assert "import_to_dynamodb.py" not in PHASE_NAMES  # retired 2026-11-21
             assert PHASE_SUFFIXES["phase1_parse.py"] == "phase1-parse"
 
     def test_read_manifest_empty(self):

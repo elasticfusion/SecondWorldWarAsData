@@ -26,32 +26,6 @@ from src.utils.observe import observe_error  # noqa: E402
 
 STATUS_KEY = "dedup/review_status.json"
 
-# Entity ID fields per type
-_ID_FIELDS = {
-    "people": "PersonID",
-    "people_groups": "GroupID",
-    "places": "PlaceID",
-    "dates": "DateID",
-    "equipment": "EquipmentID",
-    "weather": "WeatherID",
-    "casualties": "CasualtyID",
-    "logistics": "LogisticsID",
-    "bibliography": "BibliographyID",
-    "maps": "MapID",
-}
-
-
-def _sync_entity_to_dynamo(entity_type: str, data: dict) -> None:
-    """Write merged entity to DynamoDB entity store (dual-write)."""
-    id_field = _ID_FIELDS.get(entity_type)
-    if not id_field:
-        return
-    entity_id = data.get(id_field)
-    if not entity_id:
-        return
-    # DynamoDB entity store removed — S3 JSON is authoritative; nothing to sync. No-op.
-    return
-
 
 def _append_to_manifest(keys: list) -> None:
     """Append changed S3 keys to the Phase 2 manifest in DynamoDB."""
@@ -596,11 +570,15 @@ def _merge_generic_files(entity_type, people, primary_index, storage):
     primary_data["event_mentions"] = primary_mentions
     primary_data["aliases"] = aliases
     storage.write_json(f"{prefix}/{primary['filename']}", primary_data)
-    _sync_entity_to_dynamo(prefix.split("/")[-1], primary_data)
     _append_to_manifest([f"{prefix}/{primary['filename']}"])
+    from src.dedup.merge import store_merge_pointer
+
     for p, secondary in absorbed:
         secondary_id = secondary.get(pk_field, "") if pk_field else ""
         _rebase_event_refs_storage(storage, secondary_id, primary_id, ref_key)
+        # pointers name the entity by its directory (people_groups), as the dedup merge does
+        if not store_merge_pointer(prefix.split("/")[-1], secondary_id, primary_id):
+            continue  # kept until its pointer is stored (id_aliases logged the error)
         try:
             storage.delete(f"{prefix}/{p['filename']}")
         except Exception as e:
@@ -716,7 +694,6 @@ def _rename_apply(storage, entity_type, prefix, filename, new_filename, name, da
     # Copy to new key, delete old
     storage.write_json(f"{prefix}/{new_filename}", data)
     storage.delete(f"{prefix}/{filename}")
-    _sync_entity_to_dynamo(entity_type, data)
     _append_to_manifest([f"{prefix}/{new_filename}"])
 
     # Update index.json

@@ -135,8 +135,10 @@ def test_12_status_check_error_emits_canonical_observ(caplog):
     """A status-check exception returns the 'pending' skip sentinel (so a transient fault
     doesn't mark a batch failed) — but it MUST be a loud canonical anomaly so a persistent
     broken check is distinguishable from a still-running batch."""
-    with patch.object(bp, "requests") as req:
-        req.get.side_effect = RuntimeError("connection reset")
+    with patch("src.utils.batch_api.requests.request") as req:
+        req.side_effect = RuntimeError(
+            "connection reset"
+        )  # not a network error: no retry
         with caplog.at_level(logging.ERROR):
             status = bp._check_batch_status("fake-key", "batch-123", 0)
     assert status == "pending"  # behavioral contract preserved

@@ -160,6 +160,15 @@ def _is_public_domain(entry: Dict[str, Any]) -> bool:
     )
 
 
+def _downloadable(entry: Dict[str, Any]) -> bool:
+    """Resolved to a copy that can be downloaded: not held on paper only (NARA, no scans: that is
+    the NARA pull list, not a download)."""
+    return (
+        entry.get("search_status") == "resolved"
+        and entry.get("availability") != "archive"
+    )
+
+
 def plan_acquisition(
     entry: Dict[str, Any], config: Optional[Dict[str, Any]] = None
 ) -> Optional[AcquisitionPlan]:
@@ -170,7 +179,7 @@ def plan_acquisition(
     honouring ``decision.verdict`` (auto vs review) and the licensing gate already applied.
     """
     cfg = config or {}
-    if entry.get("search_status") != "resolved":
+    if not _downloadable(entry):
         return None
     source = str(entry.get("search_source") or "")
     fetcher = get_fetcher(source)

@@ -56,7 +56,7 @@ import logging
 import os
 import sys
 import time
-from typing import Any
+from typing import Any, Optional
 
 logger = logging.getLogger("observe")
 
@@ -132,20 +132,31 @@ def publish_alert(
         return False
 
 
-def _escalate_to_slack(scope: str, event: str, line: str) -> None:
+def _escalate_to_slack(scope: str, event: str, line: str, dedup_key: str = "") -> bool:
     """Publish a status=error OBSERV line to the notify SNS topic (-> formatter -> Slack).
 
     Fail-safe and best-effort: unset topic => no-op; any boto3/publish error is swallowed. Never
     raises. Rate-limited per (scope.event) so a failure loop pings Slack once, not thousands of times.
+    ``dedup_key`` narrows the rate limit (e.g. a task id: every task's stop is its own alert).
+    Returns True only when the alert was published now (suppressed is not delivered).
     """
     try:
         if not _slack_enabled():
-            return
-        if not _should_escalate(f"{scope}.{event}", time.time()):
-            return
-        publish_alert(f"WWII Pipeline: OBSERV error — {scope}.{event}", line)
+            return False
+        key = f"{scope}.{event}" + (f".{dedup_key}" if dedup_key else "")
+        now = time.time()
+        if not _should_escalate(key, now):
+            return False
+        sent = publish_alert(f"WWII Pipeline: OBSERV error — {scope}.{event}", line)
+        if not sent and dedup_key:
+            # a per-occurrence alert (observe_alert) that was not delivered: its retry must not
+            # be suppressed. Other keys stay suppressed for the window, so an SNS outage does not
+            # make every observe_error call wait on a publish.
+            _slack_last_sent.pop(key, None)
+        return sent
     except Exception:  # noqa: BLE001 - Slack escalation must NEVER stop the pipeline
         logger.debug("observe slack-escalation failed (swallowed)", exc_info=True)
+        return False
 
 
 def _safe(value: Any, limit: int = 200) -> str:
@@ -168,6 +179,27 @@ def _safe(value: Any, limit: int = 200) -> str:
     return token
 
 
+NOTE_LIMIT = (
+    500  # room for a pasteable command (e.g. the OCR re-drive, ~250 characters)
+)
+
+
+def _safe_note(value: Any, limit: int = NOTE_LIMIT) -> str:
+    """The note: like ``_safe`` (one line - no newline or Unicode line separator can forge a
+    second OBSERV line - and bounded), but word spaces are KEPT as single spaces, so a command
+    or an S3 key in it can be pasted as written (task 1.2f: ``_`` for every space broke them).
+    The note is the line's last part, so spaces cannot break the key=value grammar."""
+    token = str(value)
+    for sep in ("\u2028", "\u2029", "\u0085"):
+        token = token.replace(sep, " ")
+    token = " ".join(token.split())
+    # caller text cannot pose as another OBSERV record to a viewer that greps for "OBSERV x.y"
+    token = token.replace("OBSERV ", "OBSERV_")
+    if len(token) > limit:
+        token = token[: limit - 3] + "..."
+    return token
+
+
 def _format_kv(fields: dict[str, Any]) -> str:
     """Render extra fields as ` key=value` tokens, each value sanitized to a single grep-safe token
     (no internal whitespace, bounded length) via `_safe` so the grammar stays parseable and a field
@@ -180,12 +212,34 @@ def _format_kv(fields: dict[str, Any]) -> str:
     return (" " + " ".join(parts)) if parts else ""
 
 
+def observe_alert(
+    scope: str, event: str, *, note: str = "", dedup_key: str = "", **fields: Any
+) -> bool:
+    """observe_error for ONE occurrence that must reach the operator: rate-limited only per
+    ``dedup_key`` (e.g. a task id), so two tasks' stops are two alerts, and returning whether the
+    alert was PUBLISHED. For a task recording that its own stop was reported
+    (src/utils/task_marker) and for the trigger's per-stop alerts. Never raises."""
+    delivered: list = []
+    observe(
+        scope,
+        event,
+        status="error",
+        note=note,
+        _delivered=delivered,
+        _dedup_key=dedup_key or "-",
+        **fields,
+    )
+    return bool(delivered and delivered[0])
+
+
 def observe(
     scope: str,
     event: str,
     *,
     status: str = "ok",
     note: str = "",
+    _delivered: Optional[list] = None,
+    _dedup_key: str = "",
     **fields: Any,
 ) -> str:
     """The generic observability sink. Emit one stable `OBSERV <scope>.<event> status=...` line.
@@ -218,10 +272,13 @@ def observe(
         level = _STATUS_LEVEL[canon]
         line = f"OBSERV {_safe(scope, 80)}.{_safe(event, 80)} status={canon}{_format_kv(fields)}"
         if note:
-            line += f" — {_safe(note, 300)}"
+            line += f" — {_safe_note(note)}"
         logger.log(level, line)
         if canon == "error":
-            _escalate_to_slack(scope, event, line)  # fail-safe; no-op unless configured
+            # fail-safe; no-op unless configured
+            sent = _escalate_to_slack(scope, event, line, _dedup_key)
+            if _delivered is not None:
+                _delivered.append(sent)
         return canon
     except Exception:  # noqa: BLE001 - the sink must NEVER raise into the phase
         # best-effort: don't lose a data-affecting signal just because logging broke

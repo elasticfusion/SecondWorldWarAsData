@@ -18,6 +18,7 @@ import requests
 from src.grok_client import BatchModeCollecting, GrokClient
 from src.schemas import inject_metadata
 from src.utils.entity_records import is_record_file
+from src.utils.find_queue import FindNotStored
 
 logger = logging.getLogger(__name__)
 
@@ -973,7 +974,9 @@ def validate_source_urls(
 ) -> list[dict]:
     """Fetch each URL, verify it exists and is relevant via Grok.
 
-    Returns list of validated source dicts with url, status, and reason.
+    Returns list of validated source dicts with url, status and relevance; a relevant one also
+    carries the fetched ``page`` and its ``provenance`` (live, or the Internet Archive copy), so the
+    find keeps the page it was judged on.
     """
     validated = []
     for url in urls[:max_urls]:
@@ -982,7 +985,8 @@ def validate_source_urls(
 
         logger.info("  Validating URL: %s", url)
 
-        page_text = _fetch_url_content(url)
+        prov: Dict[str, Any] = {}
+        page_text = _fetch_url_content(url, provenance=prov)
         if page_text is None:
             logger.info("    ❌ URL unreachable")
             validated.append({"url": url, "status": "broken", "relevant": False})
@@ -991,7 +995,10 @@ def validate_source_urls(
         relevant = _validate_url_relevance(url, page_text, person_name, grok_client)
         status = "validated" if relevant else "irrelevant"
         logger.info("    %s %s", "✅" if relevant else "❌", status)
-        validated.append({"url": url, "status": status, "relevant": relevant})
+        found = {"url": url, "status": status, "relevant": relevant}
+        if relevant:
+            found.update(page=page_text, provenance=prov)
+        validated.append(found)
 
     return validated
 
@@ -1041,32 +1048,88 @@ def _follow_references(bio_profile: Dict[str, Any], grok_client: GrokClient) -> 
     return enriched
 
 
-def _validate_and_store_urls(
+_FIND_PROVIDER = "llm-find"
+
+
+def _find_not_stored(person_name: str, error: Exception) -> None:
+    """The review queue refused a write: the person is left unstamped (not enriched, not
+    ``not_found``), so the next run asks again."""
+    logger.warning(
+        "OBSERV enrich_biographies.find_not_stored person=%r err=%s status=warn - left "
+        "unstamped; the next run asks again. Check the task role's DynamoDB access to the "
+        "api-cache table",
+        str(person_name)[:60],
+        str(error)[:120],
+    )
+
+
+_MAX_SUGGESTED_URLS = 5  # the most URLs Grok may suggest per person that are looked at
+
+
+def _fresh_suggested_urls(bio_profile: Dict[str, Any], origin: Any) -> "list[str]":
+    """The suggested URLs (popped from the profile; at most ``_MAX_SUGGESTED_URLS``, strings only)
+    that no earlier run queued, whatever its review status: those cost no fetch and no Grok request.
+    """
+    from src.utils import find_queue
+
+    suggested = bio_profile.pop("source_urls", [])
+    urls = [
+        u
+        for u in (suggested if isinstance(suggested, list) else [])[
+            :_MAX_SUGGESTED_URLS
+        ]
+        if isinstance(u, str)
+    ]
+    return [
+        u
+        for u in urls
+        if find_queue.is_queueable(
+            u
+        )  # a malformed or unsafe URL is never logged or fetched
+        and not find_queue.already_queued(_FIND_PROVIDER, u, origin)
+    ]
+
+
+def _queue_suggested_urls(
     bio_profile: Dict[str, Any],
+    person_data: Dict[str, Any],
     person_name: str,
     grok_client: GrokClient,
-) -> bool:
-    """Validate source URLs from Grok and store validated ones."""
-    source_urls = bio_profile.pop("source_urls", [])
-    if not source_urls:
-        return False
-    logger.info("  Validating %d source URL(s)...", len(source_urls))
-    results = validate_source_urls(source_urls, person_name, grok_client)
-    validated = [r for r in results if r["relevant"]]
-    if not validated:
-        return False
-    sources = bio_profile.get("biography_sources", [])
-    for r in validated:
-        sources.append(
-            {
-                "source": r["url"],
-                "page": None,
-                "confidence": 0.9,
-                "fields_sourced": ["url_validated"],
-            }
+) -> int:
+    """Validate the source URLs Grok suggested and queue each relevant page for human review
+    (provider ``llm-find``, origin: the person record's ULID). Nothing is written to
+    ``biography_sources[]``: a find is held in the queue until a human approves it, so the record is
+    not changed by it. Returns the number of finds queued. Raises ``find_queue.FindNotStored`` when the
+    queue refused a write: the caller leaves the person unstamped, so the next run asks again (Grok's
+    answer is cached, so nothing is paid twice)."""
+    from src.utils import find_pages, find_queue
+
+    origin = find_queue.entity_origin("person", person_data, query=person_name)
+    if origin is None:
+        bio_profile.pop("source_urls", None)
+        return 0
+    fresh = _fresh_suggested_urls(bio_profile, origin)
+    if not fresh:
+        return 0
+    logger.info("  Validating %d source URL(s)...", len(fresh))
+    queued = 0
+    for r in validate_source_urls(fresh, person_name, grok_client):
+        if not r["relevant"]:
+            continue
+        page = find_pages.keep(r["url"], r.get("page") or "", r.get("provenance"))
+        status = find_queue.enqueue_find(
+            provider=_FIND_PROVIDER,
+            url=r["url"],
+            verdict=find_queue.RELEVANT,  # fetched, and Grok called the page relevant
+            origin=origin,
+            summary=f"Grok-suggested source for {person_name}",
+            params={"suggested_by": "grok", "validation": r["status"], **page},
         )
-    bio_profile["biography_sources"] = sources
-    return True
+        if status == find_queue.ENQUEUED:
+            queued += 1
+        elif status == find_queue.FAILED:
+            raise find_queue.FindNotStored(find_queue.clean_for_log(r["url"]))
+    return queued
 
 
 def _should_re_search(data: dict) -> bool:
@@ -1108,8 +1171,11 @@ def _run_enrichment_steps(
     bio_profile: Dict[str, Any],
     grok_client: GrokClient,
     search_references_flag: bool,
+    person_data: Dict[str, Any],
 ) -> bool:
-    """Run all enrichment steps, return True if any data added."""
+    """Run all enrichment steps, return True if any data added. Pages Grok suggested are queued
+    for review (``person_data``'s ULID is their origin) and do not count as data added.
+    """
     added = _search_and_enrich(
         person_name, "Grokipedia", search_grokipedia, bio_profile, grok_client
     )
@@ -1121,7 +1187,7 @@ def _run_enrichment_steps(
     )
     if search_references_flag:
         added = _follow_references(bio_profile, grok_client) or added
-    added = _validate_and_store_urls(bio_profile, person_name, grok_client) or added
+    _queue_suggested_urls(bio_profile, person_data, person_name, grok_client)
     return added
 
 
@@ -1141,10 +1207,13 @@ def enrich_person_biography(
 
     try:
         enriched = _run_enrichment_steps(
-            person_name, bio_profile, grok_client, search_references_flag
+            person_name, bio_profile, grok_client, search_references_flag, person_data
         )
     except BatchModeCollecting:
         # Batch mode — request collected, don't mark as not_found
+        return False
+    except FindNotStored as e:
+        _find_not_stored(person_name, e)
         return False
 
     from src.utils.wikimedia_client import PEOPLE, lookup_was_transient
@@ -1246,11 +1315,18 @@ def enrich_person_from_sources(person_data: Dict[str, Any], grok_client) -> bool
 
     try:
         enriched = _run_enrichment_steps(
-            person_name, bio_profile, grok_client, search_references_flag=True
+            person_name,
+            bio_profile,
+            grok_client,
+            search_references_flag=True,
+            person_data=person_data,
         )
     except BatchModeCollecting:
         # Batch mode — request collected; leave record untouched (don't mark not_found).
         raise
+    except FindNotStored as e:
+        _find_not_stored(person_name, e)
+        return False
 
     from src.utils.wikimedia_client import PEOPLE, lookup_was_transient
 

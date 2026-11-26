@@ -112,9 +112,8 @@ it starts, `_download_inputs` fills that tree from the S3 bucket, and the backgr
 sync copy the enriched files back afterwards. One function serves every phase: it picks the download
 by the phase script name (`EP:1298-1315`). For Phase 3 the steps are:
 
-1. **DynamoDB shortcut (does nothing).** It calls `_materialize_from_dynamo()` unless
-   `processing.force_reprocess` is true. That function is a deprecated stub that always returns
-   False (`EP:1290-1295`): S3 is the only entity store, so the S3 download below always runs.
+1. (The DynamoDB "shortcut" stub `_materialize_from_dynamo()` was removed 2026-11-21: S3 is the only
+   entity store, so the S3 download below always runs.)
 2. **Wait for the bibliography reconcile barrier.** `_download_phase3_from_s3` (`EP:1548`) first
    calls `_wait_for_reconcile_barrier` (`EP:1407`). The dedup step's full-corpus bibliography
    reconcile (`_reconcile_bibliography_full_corpus`, `EP:2883`) collapses the per-task bibliography
@@ -378,7 +377,8 @@ negative TTL (`search_cache.py:77-80`). `_verify_result` stores the literal stri
 truthy, so a NO verdict lives 30 days, not 7. The Grok response cache then keeps the same answer for
 the same prompt for up to 90 days, so a repeat costs no API call.
 
-Weakened keys: `_apply_verified_images` for people (`OE:1235`) passes no snippet or URL, so people
+Weakened keys (2026-11-24: `_apply_verified_images` is gone; people photos are now vision-checked
+by `find_entity_photos`): `_apply_verified_images` for people (`OE:1235`) passed no snippet or URL, so people
 image verdicts are keyed and judged on title and context only. The truncation to 50, 50 and 60
 characters can collide.
 
@@ -501,8 +501,8 @@ receives, alarm on the DLQ in `events.yaml:635`), `phase3_enqueue_openserp.py` (
   (`openserp_worker.py:123-195`), so once the breaker opens every later entity is marked searched without a
   search (gap 2). `enrich_one_equipment` has no `record_scope` gate, so generic equipment is searched. Its
   `output/metrics/openserp_metrics.json` is written to the container's disk and lost at exit.
-  `lambda_handlers/phase3_handler.py` and `phase2_handler.py` (S3-event per-entity enrichment) are not
-  referenced by any template or script.
+  `lambda_handlers/phase2_handler.py` (S3-event per-entity enrichment) is not referenced by any
+  template or script; `phase3_handler.py` was deleted (task 1.2f, 2026-11-20).
 
 ---
 
@@ -630,21 +630,48 @@ exist and none has `noaa_observed` (`validate_phase3.py:172-208`), on every run.
 
 ## 5. Batch mode
 
-`config.yaml` has `batch.phase3: false`, so Phase 3 makes live calls by default. With `--batch`:
+`config.yaml` has `batch.phase3: false`, so Phase 3 makes live calls by default. With `--batch`
+(Group 2 step 2, 2026-11-20; design: [PHASE3_BATCHING_DESIGN.md](PHASE3_BATCHING_DESIGN.md)):
 
-1. `GrokClient(batch_mode=True)`: a cache miss queues the request and raises `BatchModeCollecting`
-   (`grok_client.py:1710-1744`). It derives from `Exception`.
-2. At the end of `main()`, if requests were collected, `submit_batch(batch_name="phase3-<book>-<n>reqs")`. Fewer
-   than `batch.min_requests` (50, env `BATCH_MIN_REQUESTS`) are answered live (`_answer_small_batch_live`).
-3. `_run_batch_rerun` (`P3:697`) repeats six enrichers against the cache: people_groups, places,
-   `link_parent_place_ids`, bibliography, bibliography_resolve, equipment_images. A failed re-run is logged and does
-   not stop teardown. It does **not** re-run geocoding, OpenSERP, the document-media steps or NOAA.
-
-Effect on OpenSERP (latent, because batch is off): the collect pass still runs the OpenSERP group. `_verify_result`
-catches `BatchModeCollecting` as an ordinary exception and returns False, so `process_positive_url` caches
-`REJECT` for 90 days and the entity is stamped searched. The queued verifies are answered but the group is
-not re-run (gap 5). The multi-round poller hand-off in
-[batch_processing](../features/batch_processing/README.md) is Phase 2 only.
+1. `GrokClient(batch_mode=True)`: a cache miss (text or vision) queues the request and raises
+   `BatchModeCollecting` (`grok_client._queue_messages`). It derives from `Exception`.
+   `run_enrichment_step` records a step that raised it as `pending`, not `error`.
+2. `main()` runs every step once (`_run_enrichment_steps`), then `_run_batch_rounds`: submit what the pass
+   queued (`submit_batch`; fewer than `batch.min_requests` (50, env `BATCH_MIN_REQUESTS`) are answered
+   live, `_answer_small_batch_live`), run the WHOLE pass again on the answers, repeat until a pass queues
+   nothing. Every step is stamp-driven, so a repeat only does what is left. A later question that depends
+   on an earlier answer (the bibliography cascade) is simply the next round.
+3. Rounds use `src/utils/batch_rounds.BatchRounds` (shared with Phase 2): each round logs
+   `OBSERV batch.round`, repeats are flagged, and the round cap `batch.max_rounds` (default 8) is SOFT: at the
+   cap the run stops (exit 1, `incomplete` in `.phase_results.json`) with an alert that names the command
+   to allow more: `python3 scripts/approve_batch_rounds.py --phase phase3 --scope <book> --extra N`
+   (`src/utils/round_approval`; the next run of that phase and book gets `cap + N`; the approval expires after 7
+   days).
+4. A request submitted `batch.max_request_attempts` (default 3) times without an answer is SET ASIDE
+   (`BatchRounds.drop_stuck`): it leaves the batch, one alert names it, its step stays `pending` and its
+   record unstamped (`OBSERV phase3.steps_pending`), and the run ends without it. The next run asks again.
+5. Each round waits in the task up to `batch.in_task_wait_minutes` (default 5, shared with Phase 2). A round not
+   answered by then exits `HANDED_OFF_EXIT` (75) with `pending_batch` in the results file; `_settle_phase2_task`
+   enqueues the batch for the poller, gives back the task's attempt (a round trip is progress, not a failure),
+   frees the lock and drops the NAT lease, and the task ends (alert `Phase 3 round N handed to the poller`).
+   While the batch is live (`batch_job#` pending / ready / in_task) the trigger does not launch the book
+   again (`trigger_handler._phase3_batch_live`): a second run would submit and pay for the same requests.
+   When the poller sees the batch answered it starts `--retrieve-only`: the answers are cached, the job is
+   `retrieved`, and `_begin_phase3_resume` does what the start of a run does (claim an attempt, take the lock,
+   waiting up to 30 min for another book's Phase 3 in serial mode, credit floor, NAT lease, OpenSERP), then
+   phase 3 runs again with `--batch` and `BATCH_ROUND_START` set to the next round. A resume that cannot
+   start (attempt cap, lock) leaves the book queued; its answers are cached, so the reconcile resumes it.
+   A failed Phase 3 run, in the task or after a resume, takes the one failure path `ecs_entrypoint._fail_run`.
+6. "Queued is not a verdict" (Group 2 step 2b, 2026-11-20). Every handler on a Phase 3 path to a Grok call
+   re-raises `BatchModeCollecting` before its broad `except Exception`; before this, a queued request was
+   read as an answer or a failure. The worst: OpenSERP's URL summary stamped the page "searched" and cached
+   `REJECT` for 90 days (gap 5), a queued death-date lookup wrote an "unknown" copyright status, a queued
+   NARA verify was cached as a genuine not-found, a queued link-relevancy check sent the link to human review,
+   a queued license check marked the place searched, and queued geocodes counted as errors and tripped the
+   "geocoder is down" streak. A loop over many items visits every item (so every request is queued in one
+   round) and raises once after it (`src/utils/batch_pending.Pending`); a queued URL claim is given back
+   (`url_registry.release`). `tests/test_batch_queued_is_not_a_verdict.py` pins each. `batch.phase3`
+   can be switched on.
 
 ---
 

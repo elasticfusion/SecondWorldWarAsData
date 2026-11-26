@@ -41,7 +41,9 @@ run "mypy"     python -m mypy $SCOPE --ignore-missing-imports --no-strict-option
 # .basedpyright/baseline.json so only NEW errors fail (a ratchet, like radon / raw-writes). Fix
 # findings and re-run `python -m basedpyright --writebaseline` to shrink the baseline — never to
 # silence a regression.
-run "basedpyright" python -m basedpyright
+# --baselinemode=lock, as in CI: a fixed finding must also be removed from the baseline (the
+# local default "auto" rewrote it silently, so the gate passed and CI failed, 2026-11-18)
+run "basedpyright" python -m basedpyright --baselinemode=lock
 run "bandit"   python -m bandit -r src/ lambda_handlers/ -ll -q
 # Ruff: high-value bug-pattern rules (flake8-bugbear 'B') only — e.g. raise-without-from,
 # loop-var-closure, mutable-default. Deliberately NOT the logging/style groups (the project uses
@@ -184,14 +186,64 @@ fi
 
 if [ "${1:-}" != "--no-tests" ]; then
   echo "--- tests (CI-equivalent: example config) ---"
-  cp config.yaml /tmp/gate_config.mine 2>/dev/null || true
-  cp config.yaml.example config.yaml
+  # The tests run against config.yaml.example (as CI does), but config.yaml is the gitignored, LOCAL
+  # deployed config: it is swapped out for the run and must always come back. Task 0.4 (2026-11-18):
+  # the old swap copied it to a shared, world-readable /tmp file and restored it only when pytest
+  # returned, so an interrupted gate (Ctrl-C, OOM kill, timeout) left the example in place for the
+  # next deploy, and two gates at once could restore each other's copy. Now: one gate at a time
+  # (flock), a private backup, restore on every exit path, and a loud failure if it did not restore.
+  # >>> gate-config-swap (tests/test_gate_config_swap.py runs this block as-is)
+  gate_swap_config() {
+    command -v flock >/dev/null || { echo "  ✗ flock is not installed - cannot run the gate safely"; exit 1; }
+    mkdir -p tmp && chmod 700 tmp  # the backup and lock live here: owner only
+    exec 9>tmp/.gate_config.lock
+    flock -n 9 || { echo "  ✗ another gate is running (tmp/.gate_config.lock) - wait for it"; exit 1; }
+    # a backup left behind means a gate was killed (SIGKILL, e.g. OOM) before it could restore:
+    # config.yaml is the example now, so put the real one back first - only from a regular file
+    # this user owns (anything else under tmp/ is not trusted as the deployed config)
+    local left
+    left=$(find tmp -maxdepth 1 -name '.gate_config.??????' -type f -size +0 -user "$(id -u)" \
+             -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2-)
+    if [ -n "$left" ]; then
+      echo "  ⚠ restoring config.yaml from $left (an earlier gate was killed before restoring it)"
+      if cp --preserve=timestamps "$left" config.yaml && cmp -s "$left" config.yaml; then
+        rm -f "$left"
+      else
+        echo "  ✗ could not restore config.yaml from $left - copy it back by hand, then rerun"; exit 1
+      fi
+    fi
+    GATE_CFG_BACKUP=""
+    if [ -f config.yaml ]; then
+      GATE_CFG_BACKUP=$(umask 077 && mktemp tmp/.gate_config.XXXXXX)
+      # contents and mtime travel; the backup keeps its own 0600 mode (cp onto an existing file)
+      cp --preserve=timestamps config.yaml "$GATE_CFG_BACKUP"
+    fi
+    trap gate_restore_config EXIT
+    trap 'gate_restore_config; exit 130' INT TERM HUP
+    cp config.yaml.example config.yaml
+  }
+  gate_restore_config() {
+    trap - EXIT INT TERM HUP
+    if [ -n "${GATE_CFG_BACKUP:-}" ]; then
+      if cp --preserve=timestamps "$GATE_CFG_BACKUP" config.yaml && cmp -s "$GATE_CFG_BACKUP" config.yaml; then
+        rm -f "$GATE_CFG_BACKUP"
+      else
+        echo "  ✗ config.yaml was NOT restored - your config is in $GATE_CFG_BACKUP; copy it back"
+        fail=1
+      fi
+    else
+      rm -f config.yaml  # there was none before the swap
+    fi
+    GATE_CFG_BACKUP=""
+  }
+  # <<< gate-config-swap
+  gate_swap_config
   if python -m pytest tests/ -m "not slow and not requires_api" -q --tb=short >/tmp/gate_tests 2>&1; then
     grep -E "[0-9]+ passed" /tmp/gate_tests | tail -1 | sed 's/^/  ✓ pytest: /'
   else
     echo "  ✗ pytest"; grep -E "FAILED|ERROR" /tmp/gate_tests | head -10 | sed 's/^/      /'; fail=1
   fi
-  cp /tmp/gate_config.mine config.yaml 2>/dev/null || true
+  gate_restore_config
 fi
 
 echo "==================================="

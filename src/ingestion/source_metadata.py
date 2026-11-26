@@ -26,9 +26,9 @@ MediaType = Literal[
 # Acquisition provenance: how the original was obtained.
 # "web_archive_affirmed": a positive textual fetch-provenance find (e.g. a Wayback snapshot) that a
 # human reviewer AFFIRMED, promoted into ingestion like an uploaded book (src/enrichment/fetch_review).
-# "map_vision": a vision-verified map promoted into ingestion as a SOURCE DOCUMENT — its vision-derived
-# description becomes parsed text so Phase-2 derives an event from it (see
-# docs/current/design/MAP_AS_SOURCE_DOCUMENT.md + src/extraction/map_source_adapter.py).
+# "map_vision": a vision-verified map promoted into ingestion as a SOURCE DOCUMENT (the retired
+# map-as-source path; maps now keep their vision answer on the Map record, src/extraction/
+# map_depicted). Kept so records made by that path still validate.
 AcquisitionMethod = Literal[
     "download", "local", "unknown", "web_archive_affirmed", "map_vision"
 ]

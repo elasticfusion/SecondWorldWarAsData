@@ -68,12 +68,39 @@ Resources:
                 Resource:
                   - !Ref CacheTableArn
                   - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${EnvironmentName}-wwii-*
+              - Sid: NoRoundApprovalWrites
+                # Group 2: the operator's batch-round approval rows (see the ECS task role)
+                Effect: Deny
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:BatchWriteItem
+                Resource:
+                  - !Ref CacheTableArn
+                Condition:
+                  ForAnyValue:StringLike:
+                    dynamodb:LeadingKeys:
+                      - rounds#*
+                      # the NARA pull list's status rows and added-scan provenance rows are a
+                      # person's (scripts/nara_pull_list.py), never a task's
+                      - pull#*
+                      - pullscan#*
               - Sid: SecretsManager
                 Effect: Allow
                 Action:
                   - secretsmanager:GetSecretValue
                 Resource:
                   - !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${EnvironmentName}-wwii-*
+              - Sid: NoXaiManagementKey
+                # the xAI Management API key (task 1.1c) is read only by the ECS phase tasks
+                # (ECSTaskRole) and the credit-check Lambda's own role (compute.yaml, task 1.1e):
+                # it can buy credit and manage keys, so this shared role may not read it
+                Effect: Deny
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource:
+                  - !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${EnvironmentName}-wwii-pipeline/xai-management-key*
               - Sid: SNSPublish
                 Effect: Allow
                 Action:
@@ -183,8 +210,6 @@ Resources:
                 Effect: Allow
                 Action:
                   - lambda:InvokeFunction
-                  - lambda:PutFunctionConcurrency
-                  - lambda:DeleteFunctionConcurrency
                 Resource:
                   - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${EnvironmentName}-wwii-*
               - Sid: SchedulerManage
@@ -301,6 +326,75 @@ Resources:
                 Resource:
                   - !Ref CacheTableArn
                   - !Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${EnvironmentName}-wwii-*
+              - Sid: NoCreditGateWrites
+                # task 1.1e: the trigger replays credit#holds entries as task launches and trusts
+                # credit#balance / credit#hold_alerted for launch and alert decisions; a phase task
+                # (which processes untrusted book text) must not be able to write them
+                Effect: Deny
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:BatchWriteItem
+                Resource:
+                  - !Ref CacheTableArn
+                Condition:
+                  ForAnyValue:StringLike:
+                    dynamodb:LeadingKeys:
+                      - credit#holds#*
+                      - credit#balance
+                      - credit#hold_alerted
+              - Sid: NoRoundApprovalWrites
+                # Group 2: rounds#<phase>#<book> rows raise a run's soft batch-round cap and are
+                # written by an OPERATOR (scripts/approve_batch_rounds.py), never by a task that
+                # processes untrusted book text
+                Effect: Deny
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:BatchWriteItem
+                Resource:
+                  - !Ref CacheTableArn
+                Condition:
+                  ForAnyValue:StringLike:
+                    dynamodb:LeadingKeys:
+                      - rounds#*
+                      # the NARA pull list's status rows and added-scan provenance rows are a
+                      # person's (scripts/nara_pull_list.py), never a task's
+                      - pull#*
+                      - pullscan#*
+              - Sid: NoLaunchStateWrites
+                # task 1.1b follow-up: the trigger trusts the Fargate price rows (Spot ladder
+                # limit) and its stop reports (re-sent by the hourly sweep); a task never
+                # writes them
+                Effect: Deny
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:BatchWriteItem
+                Resource:
+                  - !Ref CacheTableArn
+                Condition:
+                  ForAnyValue:StringLike:
+                    dynamodb:LeadingKeys:
+                      - price#fargate#*
+                      - stopevt#*
+              - Sid: NoSpotLadderClimb
+                # a task may only RESET its book's Spot ladder on success (spot_ladder.reset, a
+                # DeleteItem: a lower rung is only cheaper); the climb is the trigger's
+                Effect: Deny
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:BatchWriteItem
+                Resource:
+                  - !Ref CacheTableArn
+                Condition:
+                  ForAnyValue:StringLike:
+                    dynamodb:LeadingKeys:
+                      - spot#*
               - Sid: SecretsManager
                 Effect: Allow
                 Action:
@@ -338,8 +432,6 @@ Resources:
                 Effect: Allow
                 Action:
                   - lambda:InvokeFunction
-                  - lambda:PutFunctionConcurrency
-                  - lambda:DeleteFunctionConcurrency
                 Resource:
                   - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${EnvironmentName}-wwii-*
               - Sid: SchedulerManagement
@@ -442,6 +534,9 @@ Resources:
                   - ecr:GetDownloadUrlForLayer
                   - ecr:BatchGetImage
                   - ecr:PutImage
+                  # scripts/image_pin.sh: read a digest/tags, drop a live image's deploy- tags
+                  - ecr:DescribeImages
+                  - ecr:BatchDeleteImage
                   - ecr:InitiateLayerUpload
                   - ecr:UploadLayerPart
                   - ecr:CompleteLayerUpload
@@ -539,6 +634,15 @@ Resources:
                 Condition:
                   StringEquals:
                     aws:RequestedRegion: !Ref AWS::Region
+              - Sid: NoXaiManagementKey
+                # the xAI Management API key (task 1.1c) is read only by the ECS phase tasks
+                # (ECSTaskRole) and the credit-check Lambda's own role (compute.yaml, task 1.1e):
+                # it can buy credit and manage keys, so this shared role may not read it
+                Effect: Deny
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource:
+                  - !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${EnvironmentName}-wwii-pipeline/xai-management-key*
 
 Outputs:
   LambdaExecutionRoleArn:

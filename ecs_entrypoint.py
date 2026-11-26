@@ -11,12 +11,13 @@ import threading
 import time
 import uuid
 from pathlib import Path
-from typing import Dict, Optional, Union
+from typing import Any, Dict, NoReturn, Optional, Union
 
 import boto3
 
 from src.utils.observe import (
     observe,
+    observe_alert,
     observe_error,
     observe_warn,
     observe_warn_counted,
@@ -39,6 +40,7 @@ if os.environ.get("ECS_CONTAINER_METADATA_URI"):
 
             _task_meta = _req.get(f"{_meta_uri}/task", timeout=2).json()
             os.environ["ECS_TASK_ID"] = _task_meta.get("TaskARN", "").split("/")[-1]
+            os.environ.setdefault("ECS_TASK_FAMILY", _task_meta.get("Family", ""))
         except Exception:
             pass
 logger = logging.getLogger(__name__)
@@ -88,6 +90,7 @@ _CACHE_BOOKS_DIR = Path("/app/cache/api/books")
 
 # Global state for SIGTERM handler
 _current_phase_script = ""
+_balance_checked = False  # this task's Grok credit preflight passed (task 1.1c)
 # The batch a resumed Phase 2 run (retrieve task) was started from: marked retrieved before the
 # run, so a reclaim mid-run must hand it back to the poller (see _handle_sigterm)
 _current_resume_batch = ""
@@ -101,9 +104,28 @@ def _requeue_interrupted_resume() -> None:
     if not _current_resume_batch:
         return
     try:
+        from src.utils import job_queue
         from src.utils.job_queue import update_job_status
         from src.utils.observe import observe_error
 
+        phase = "phase3" if "phase3" in _current_phase_script else "phase2"
+        try:
+            newer = job_queue.live_batch_for(
+                job_queue._get_table(), phase, os.environ.get("BOOK_NAME", "")
+            )
+        except (
+            Exception
+        ):  # noqa: BLE001 - cannot tell: hand the batch back (a resume is cheap)
+            newer = None
+        if newer:
+            # the resumed run already handed off / submitted the NEXT round: retrieving this one
+            # again would start a second resume that asks for that round's requests again
+            logger.info(
+                "OBSERV batch.resume_not_requeued batch=%s newer=%s - a later round is live",
+                _current_resume_batch,
+                newer,
+            )
+            return
         update_job_status(_current_resume_batch, "ready")
         observe_error(
             "batch",
@@ -117,19 +139,273 @@ def _requeue_interrupted_resume() -> None:
         logger.error("Could not re-queue batch %s: %s", _current_resume_batch, e)
 
 
+# Set once a failure alert for this task has gone out, so a later path (the watchdog's SIGTERM, a
+# re-raised exception) does not alert the same stop twice.
+_stop_alerted = False
+
+# Phase 3 attempt bookkeeping for THIS task (task 1.2b): set when _claim_enrich_attempt counted
+# an attempt; cleared once it is given back, so a task gives back at most once and never gives
+# back a previous run's attempt. _watchdog_stop: the watchdog (not Spot/ECS) sent the SIGTERM - a
+# stalled run is a real failure and keeps its attempt, whether or not its alert was delivered.
+_attempt_claimed = False
+_watchdog_stop = False
+_phase_failed = False  # the phase failed and its attempt counts (_attempt_counts)
+
+
+def _mark_stop_alerted() -> None:
+    """A stop already alerted another way (the watchdog's _notify_failure), delivered."""
+    global _stop_alerted
+    _stop_alerted = True
+    _mark_task(alerted=True)
+
+
+def _reset_spot_ladder() -> None:
+    """The phase succeeded: reset this family and book's Spot price ladder (src/utils/spot_ladder,
+    task 1.1b). Never raises: a leftover row only makes the next launch start one rung up.
+    """
+    family = os.environ.get("ECS_TASK_FAMILY", "")
+    if not family:
+        return
+    from src.utils import spot_ladder
+
+    try:
+        spot_ladder.reset(_cache_table(), family, os.environ.get("BOOK_NAME", ""))
+    except Exception as e:  # noqa: BLE001 - the phase already succeeded
+        logger.warning(
+            "OBSERV spot.ladder_reset_failed status=warn family=%s err=%s - the next launch of "
+            "this book starts one rung up (never above the on-demand price)",
+            family,
+            type(e).__name__,
+        )
+
+
+def _mark_task(**fields: Any) -> bool:
+    """Record ``fields`` on this task's stop marker (src/utils/task_marker), read by the trigger
+    Lambda when ECS reports the task STOPPED (task 1.1b). Only in ECS. Never raises."""
+    task_id = os.environ.get("ECS_TASK_ID", "")
+    if not task_id:
+        return False
+    from src.utils import task_marker
+
+    try:
+        task_marker.mark(_cache_table(), task_id, **fields)
+        return True
+    except Exception as e:  # noqa: BLE001 - exit paths must reach their exit
+        logger.warning(
+            "OBSERV task.marker_failed status=warn fields=%s err=%s - the trigger Lambda may "
+            "alert this stop a second time",
+            ",".join(sorted(fields)),
+            type(e).__name__,
+        )
+        return False
+
+
+def _alert_phase_stopped(event: str, note: str, **fields: Any) -> None:
+    """ONE alert for a phase that stops without finishing (task 1.1, 2026-11-18): an
+    ``OBSERV phase.<event> status=error`` line, which observe_error escalates to the
+    phase2-complete topic (email + Slack). Carries phase and book; ``note`` says what to do. At
+    most once per task. Never raises."""
+    global _stop_alerted
+    if _stop_alerted:
+        logger.info(
+            "OBSERV phase.stop_alert_suppressed event=%s status=ok "
+            "(this task's stop was already alerted)",
+            event,
+        )
+        return
+    _stop_alerted = True
+    delivered = False
+    try:
+        delivered = observe_alert(
+            "phase",
+            event,
+            note=note,
+            dedup_key=os.environ.get("ECS_TASK_ID", "") or "local",
+            phase=Path(_current_phase_script).stem if _current_phase_script else "",
+            book=os.environ.get("BOOK_NAME", ""),
+            task=os.environ.get("ECS_TASK_ID", ""),
+            **fields,
+        )
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - callers (SIGTERM, exit paths) must reach their exit
+        logger.error(
+            "OBSERV phase.stop_alert_failed event=%s err=%s", event, type(e).__name__
+        )
+    if delivered:
+        _mark_task(alerted=True)
+        return
+    # not delivered (no NAT = no route to SNS): the marker is reached through the DynamoDB
+    # gateway endpoint, and the trigger Lambda relays this alert when ECS reports the stop
+    from src.utils import task_marker
+
+    _mark_task(
+        unsent_event=str(event)[:60],
+        unsent_note=str(note)[: task_marker.UNSENT_NOTE_MAX],
+    )
+
+
+def _sigterm_next_step() -> "tuple[str, bool]":
+    """(what the SIGTERM alert says happens next, whether this is an OUTSIDE stop). A stop from
+    outside the task (a Spot reclaim, an ECS stop, a deploy) is not the book's fault: its Phase 3
+    attempt is given back (task 1.2b, owner: Spot can be lost at any time) and the queue row
+    stays; the dev-wwii-spot-recovery / task-failure rules relaunch it as soon as ECS reports the
+    stop. A watchdog stop (the run stalled) or an already-alerted stop still counts. Decided
+    BEFORE the alert (which marks the stop alerted); no AWS call."""
+    queued = "phase3" in _current_phase_script and bool(os.environ.get("BOOK_NAME"))
+    if _watchdog_stop or _stop_alerted or _failure_counted():
+        if queued:
+            return (
+                "The book stays queued and is retried (this counts as an attempt)",
+                False,
+            )
+        return "Re-trigger the phase for this book", False
+    if queued:
+        return (
+            "The book stays queued and is relaunched when ECS reports the stop; no "
+            "re-trigger needed",
+            True,
+        )
+    return "Re-trigger the phase for this book", True
+
+
+def _failure_counted() -> bool:
+    """The phase already failed and its attempt counts (_attempt_counts): a SIGTERM during the
+    failure handling gives nothing back."""
+    return _phase_failed
+
+
+def _give_back_own_attempt() -> bool:
+    """Give back the attempt THIS task claimed, at most once (task 1.2b). Never raises."""
+    global _attempt_claimed
+    if not _attempt_claimed:
+        return False
+    _attempt_claimed = False
+    from src.utils import pending_queue
+
+    book = os.environ.get("BOOK_NAME", "")
+    try:
+        given = pending_queue.give_back(
+            _cache_table(), book, task_id=os.environ.get("ECS_TASK_ID", "")
+        )
+        if given:
+            _mark_task(
+                given_back=True
+            )  # the trigger Lambda must not give it back again
+        return given
+    except Exception as e:  # noqa: BLE001 - exit paths must reach their alert and exit
+        logger.error(
+            "OBSERV queue.give_back_failed book=%s err=%s status=error - this attempt still "
+            "counts toward queue.phase3_max_attempts",
+            book,
+            type(e).__name__,
+        )
+        return False
+
+
+# a failed first sync this quick is retried once (ECS allows 30 s after SIGTERM)
+EMERGENCY_RETRY_IF_UNDER_S = 10.0
+EMERGENCY_SYNC_BUDGET_S = (
+    18.0  # the retry ends by then: the cleanup and alert need the rest
+)
+
+
+def _emergency_sync() -> bool:
+    """The SIGTERM upload, retried once if the first try failed fast (task 1.2f: a brief S3 or
+    network blip must not lose up to 2 minutes of work). The retry runs in a thread with a hard
+    deadline (EMERGENCY_SYNC_BUDGET_S from SIGTERM), so the lock, NAT lease and stop alert still
+    happen inside ECS's 30 s window. Returns whether the work reached S3. Never raises.
+    """
+    start = time.monotonic()
+    if _sync_attempt(1):
+        return True
+    took = time.monotonic() - start
+    if took >= EMERGENCY_RETRY_IF_UNDER_S:
+        return False  # no time for a second full try
+    done: list = []
+    worker = threading.Thread(target=lambda: done.append(_sync_attempt(2)), daemon=True)
+    worker.start()
+    worker.join(max(0.0, EMERGENCY_SYNC_BUDGET_S - took))
+    if worker.is_alive():
+        # it may go on uploading for the few seconds until the task exits (S3 puts are atomic per
+        # object); the alert says unsynced, so the operator knows work may be missing
+        logger.error(
+            "OBSERV phase.emergency_sync_failed attempt=2 err=deadline status=error - the "
+            "retry did not finish in %.0f s; changes since the last sync may be lost",
+            EMERGENCY_SYNC_BUDGET_S,
+        )
+        return False
+    return bool(done and done[0])
+
+
+def _sync_attempt(attempt: int) -> bool:
+    started = time.monotonic()
+    try:
+        _final_sync(_current_phase_script)
+        logger.info("Emergency sync complete (attempt %d)", attempt)
+        return True
+    except Exception as e:  # noqa: BLE001 - the emergency path must reach its exit
+        logger.error(
+            "OBSERV phase.emergency_sync_failed attempt=%d took_s=%.1f err=%s status=error",
+            attempt,
+            time.monotonic() - started,
+            type(e).__name__,
+        )
+        return False
+
+
 def _handle_sigterm(_signum, _frame):
     """Emergency sync on spot termination — 30 second window."""
     logger.warning("SIGTERM received — performing emergency S3 sync")
-    try:
-        _final_sync(_current_phase_script)
-        _remove_lock(_current_phase_script)
-        _release_nat_lease()
-        # last: it publishes an alert, which must not eat the window the lock + lease need
-        _requeue_interrupted_resume()
-        logger.info("Emergency sync complete — exiting cleanly")
-    except Exception as e:
-        logger.error("Emergency sync failed: %s", e)
+    synced = _emergency_sync()
+    # Each step on its own: a failed upload must not keep the lock (it would block the re-trigger
+    # the alert asks for, up to the 2 h TTL) or the NAT lease. Then the batch re-queue (preserves
+    # work) and, last, the stop alert (informational) in what is left of the 30 s window.
+    for step in (lambda: _remove_lock(_current_phase_script), _release_nat_lease,
+                 _requeue_interrupted_resume):  # fmt: skip
+        try:
+            step()
+        except (
+            Exception
+        ) as e:  # noqa: BLE001 - the emergency path must reach the alert and exit
+            logger.error("SIGTERM cleanup step failed: %s", type(e).__name__)
+    next_step, outside = _sigterm_next_step()
+    # An outside stop is reported by the trigger Lambda, which knows its cause (Spot reclaim, ECS
+    # stop, deploy) and the next launch (src/utils/spot_ladder): one alert, not two. The task only
+    # records what it knows; if that record fails, it alerts itself.
+    if outside and _mark_task(sigterm=True, synced=synced):
+        logger.info(
+            "OBSERV phase.stop_reported_by_trigger status=ok synced=%s - the trigger Lambda "
+            "alerts this stop with its cause",
+            synced,
+        )
+    else:
+        _alert_stop_in_task(synced, next_step)
+    if (
+        outside
+    ):  # after the alert: a slow DynamoDB call must not cost the alert (30 s window)
+        _give_back_own_attempt()
     sys.exit(143)
+
+
+def _alert_stop_in_task(synced: bool, next_step: str) -> None:
+    """The SIGTERM alert, sent by the task itself (a watchdog stop, or no stop marker)."""
+    _alert_phase_stopped(
+        "task_stopped",
+        (
+            (
+                "the task was stopped before the phase finished; what had changed was uploaded. "
+                f"{next_step}"
+            )
+            if synced
+            else (
+                "the task was stopped before the phase finished AND its emergency upload failed: "
+                f"changes since the last 2-minute sync are lost. {next_step}"
+            )
+        ),
+        signal="SIGTERM",
+        synced=synced,
+    )
 
 
 signal.signal(signal.SIGTERM, _handle_sigterm)
@@ -191,8 +467,25 @@ def _clear_manifest() -> None:
         pass
 
 
+_s3: dict = {}
+
+
 def _s3_client():
-    return boto3.client("s3", region_name=REGION)
+    """The wrapper's S3 client (one per process): adaptive retries and bounded timeouts, so a
+    short S3 throttle or blip is retried here instead of failing a sync (task 1.2f)."""
+    if "c" not in _s3:
+        from botocore.config import Config
+
+        _s3["c"] = boto3.client(
+            "s3",
+            region_name=REGION,
+            config=Config(
+                retries={"mode": "adaptive", "max_attempts": 10},
+                connect_timeout=10,
+                read_timeout=60,
+            ),
+        )
+    return _s3["c"]
 
 
 def _get_account_id() -> str:
@@ -201,6 +494,24 @@ def _get_account_id() -> str:
 
 
 _downloaded_keys: dict = {}  # key → mtime at download time
+# key → when this task last downloaded or uploaded it (task 1.5): a record the phase then
+# removes locally is deleted from S3 too, unless another writer replaced it after that time
+_synced_at: dict = {}
+_synced_etag: dict = (
+    {}
+)  # key → the S3 ETag this task downloaded (when the listing gave it)
+
+
+def _note_download(key: str, local: Path, etag: str = "") -> None:
+    """Record a downloaded key: its local mtime (unchanged-file skip) and when it was downloaded
+    (a later S3 delete of a record the phase removed must not undo another task's newer write).
+    """
+    _downloaded_keys[key] = local.stat().st_mtime
+    _synced_at[key] = time.time()
+    if etag:
+        _synced_etag[key] = etag
+
+
 _deleted_keys: set = (
     set()
 )  # Files deleted locally (merged) — remove from S3 in final sync
@@ -290,7 +601,7 @@ def s3_sync_down(prefix: str, local_dir: Path) -> int:
                 continue
             local.parent.mkdir(parents=True, exist_ok=True)
             s3.download_file(BUCKET, key, str(local))
-            _downloaded_keys[key] = local.stat().st_mtime
+            _note_download(key, local, obj.get("ETag", ""))
             count += 1
     return count
 
@@ -301,11 +612,15 @@ def s3_sync_up(
     exclude_patterns: "list | None" = None,
     skip_keys: "set | None" = None,
 ) -> tuple:
-    """Upload local dir to S3 prefix. Returns (file_count, uploaded_keys)."""
+    """Upload local dir to S3 prefix. Returns (file_count, uploaded_keys). A binary goes to the AV
+    staging area (``av_scan.staged_key``): it is counted, but not in ``uploaded_keys`` (the next
+    phase's manifest) - it reaches its own key only after a clean ClamAV scan."""
+    from src.ingestion.av_scan import staged_key
+
     s3 = _s3_client()
     exclude = exclude_patterns or []
     skip = skip_keys or set()
-    count = 0
+    count = staged = 0
     uploaded = []
     for f in local_dir.rglob("*"):
         if f.is_file():
@@ -314,12 +629,24 @@ def s3_sync_up(
             # not just files whose NAME contains "files").
             if any(pat in f.name or pat in rel.split("/") for pat in exclude):
                 continue
+            if f.suffix == ".tmp":
+                continue  # mid-write (write_json_with_lock), as the background sync skips it
             key = f"{prefix}/{rel}"
             if key in skip:
                 continue
-            s3.upload_file(str(f), BUCKET, key)
-            uploaded.append(key)
+            dest = staged_key(key)
+            s3.upload_file(str(f), BUCKET, dest)
             count += 1
+            if dest == key:
+                uploaded.append(key)
+            else:
+                staged += 1
+    if staged:
+        logger.info(
+            "OBSERV av.staged_for_scan prefix=%s count=%d dest=unscanned/ status=ok",
+            prefix,
+            staged,
+        )
     return count, uploaded
 
 
@@ -376,10 +703,20 @@ class BackgroundSync:
         while not self._stop.wait(self._interval):
             self._sync()
 
+    # background passes in a row with failed uploads before the operator is told (10 min)
+    S3_ALERT_AFTER_PASSES = 5
+
     def _sync(self):
         try:
             _heartbeat_nat_lease()  # M3: keep NAT lease alive while task runs
             self._upload_changed()
+            if self._s3_failing_passes and (
+                self._s3_failing_passes * self._interval < self.WATCHDOG_TIMEOUT
+            ):
+                # S3 is the reason nothing uploaded: the task is not stuck - do not kill it as
+                # a stall (the work stays on disk and is uploaded when S3 answers). Bounded: an
+                # S3 failure as long as the watchdog window lets the watchdog act as before.
+                return
             # Watchdog: self-terminate if no activity for too long
             idle = time.time() - self._last_activity_time
             if idle > self.WATCHDOG_TIMEOUT:
@@ -392,28 +729,69 @@ class BackgroundSync:
                     _notify_failure(_current_phase_script, -1)
                 except Exception:
                     pass
+                # _notify_failure marks the stop alerted when it was delivered, so the SIGTERM
+                # below alerts only if that notice failed
+                _mark_watchdog_stop()  # the stall counts as an attempt (not an outside stop)
                 os.kill(os.getpid(), signal.SIGTERM)
         except Exception as e:
             logger.warning("Background sync error: %s", e)
 
+    _s3_failing_passes = 0
+
     def _upload_changed(self) -> None:
-        """Upload the output/ and artifacts/ files changed since the last pass."""
+        """Upload the output/ and artifacts/ files changed since the last pass. A file that fails
+        to upload does not stop the pass (task 1.2f); it is retried next pass."""
+        failed = 0
         for name, prefix in [("output", "output"), ("artifacts", "artifacts")]:
             d = WORKDIR / name
             if d.exists():
-                n = self._sync_changed(d, prefix)
+                n, f = self._sync_changed(d, prefix)
+                failed += f
                 if n:
                     self._last_activity_time = time.time()
                     self.progress.mark()
                     logger.info("Background sync: uploaded %d %s files", n, name)
+        self._note_s3_pass(failed)
 
-    def _sync_changed(self, local_dir: Path, prefix: str) -> int:
-        """Upload only files modified since last sync."""
+    def _note_s3_pass(self, failed: int) -> None:
+        """Count passes with failed uploads; tell the operator once S3 has failed for
+        S3_ALERT_AFTER_PASSES passes in a row (the work is only on the task's disk meanwhile).
+        """
+        if not failed:
+            if self._s3_failing_passes >= self.S3_ALERT_AFTER_PASSES:
+                logger.info(
+                    "OBSERV s3.sync_recovered status=ok - background uploads resumed"
+                )
+            self._s3_failing_passes = 0
+            from src.utils import service_outage
+
+            service_outage.ok("s3")
+            return
+        self._s3_failing_passes += 1
+        if self._s3_failing_passes == self.S3_ALERT_AFTER_PASSES:
+            observe_error(
+                "s3",
+                "sync_failing",
+                note=(
+                    f"Background S3 uploads have failed for {self._s3_failing_passes} passes "
+                    f"({self._s3_failing_passes * self._interval // 60} min): this task's work "
+                    "since then is only on its disk and is lost if the task stops. Check S3 "
+                    "health and the task role's s3:PutObject on the data bucket"
+                ),
+                failed_files=failed,
+                book=os.environ.get("BOOK_NAME", ""),
+            )
+
+    def _sync_changed(self, local_dir: Path, prefix: str) -> tuple:
+        """Upload only files modified since last sync. Returns (uploaded, failed). A binary goes to
+        the AV staging area (``av_scan.staged_key``)."""
+        from src.ingestion.av_scan import staged_key
+
         s3 = _s3_client()
         exclude = [
             "-parsed.json"
         ]  # Keep parsed excluded (triggers Phase 2 via S3 notification)
-        count = 0
+        count = failed = 0
         now = time.time()
         for f in local_dir.rglob("*"):
             if not f.is_file():
@@ -433,10 +811,25 @@ class BackgroundSync:
             # Skip files modified in the last 2s (may still be mid-write)
             if now - mtime < 2:
                 continue
-            s3.upload_file(str(f), BUCKET, key)
+            try:
+                # a binary goes to the AV staging area, never straight to its key
+                s3.upload_file(str(f), BUCKET, staged_key(key))
+            except FileNotFoundError:
+                continue  # removed between the scan and the upload (merged away): not S3
+            except Exception as e:  # noqa: BLE001 - retried next pass; counted
+                from src.utils import service_outage
+
+                service_outage.failed("s3", "background_upload", type(e).__name__)
+                failed += 1
+                continue
             self._uploaded_mtimes[key] = mtime
+            # a record removed later is deleted from S3 too
+            _synced_at[key] = time.time()
+            # our own upload replaced the downloaded version: its ETag no longer identifies
+            # the S3 object, so the change check falls back to the upload time
+            _synced_etag.pop(key, None)
             count += 1
-        return count
+        return count, failed
 
 
 def _load_secrets():
@@ -466,7 +859,70 @@ def _load_secrets():
             os.environ["NARA_API_KEY"] = resp["SecretString"].strip()
             logger.info("Loaded NARA API key from Secrets Manager")
         except Exception as e:  # noqa: BLE001 - NARA key optional; never block the run
-            logger.warning("NARA API key not loaded (%s): %s", nara_secret, e)
+            _alert_nara_key_missing(nara_secret, e)
+    # Google Safe Browsing key (link_safety: known-malicious links). Optional: without it the
+    # check is off and link_safety says so once per process
+    if not os.environ.get("SAFE_BROWSING_API_KEY"):
+        env = os.environ.get("ENV_NAME", "dev")
+        sb_secret = os.environ.get(
+            "SAFE_BROWSING_SECRET_ID", f"{env}-wwii-pipeline/safe-browsing-api-key"
+        )
+        try:
+            sm = sm or boto3.client("secretsmanager", region_name=REGION)
+            resp = sm.get_secret_value(SecretId=sb_secret)
+            os.environ["SAFE_BROWSING_API_KEY"] = resp["SecretString"].strip()
+            logger.info("Loaded Safe Browsing API key from Secrets Manager")
+        except Exception as e:  # noqa: BLE001 - optional; link_safety reports it is off
+            logger.info(
+                "Safe Browsing API key not loaded (%s): %s", sb_secret, type(e).__name__
+            )
+    # xAI Management API key: reads the live credit balance (task 1.1c), Grok phases only. It
+    # can buy credit and manage keys, so it is held in grok_balance, NOT os.environ: no phase
+    # subprocess inherits it. Its absence is alerted by _preflight_balance_check (which stops
+    # the phase), not here.
+    from src.utils import grok_balance
+
+    if _uses_grok(_current_phase_script) and not os.environ.get(
+        grok_balance.MANAGEMENT_KEY_ENV
+    ):
+        env = os.environ.get("ENV_NAME", "dev")
+        mgmt_secret = os.environ.get(
+            "XAI_MANAGEMENT_SECRET_ID", f"{env}-wwii-pipeline/xai-management-key"
+        )
+        try:
+            sm = sm or boto3.client("secretsmanager", region_name=REGION)
+            resp = sm.get_secret_value(SecretId=mgmt_secret)
+            grok_balance.set_management_key(resp["SecretString"])
+            logger.info("Loaded xAI management key from Secrets Manager")
+        except (
+            Exception
+        ) as e:  # noqa: BLE001 - reported (and stopped on) by the preflight
+            logger.warning(
+                "xAI management key not loaded (%s): %s", mgmt_secret, type(e).__name__
+            )
+
+
+def _alert_nara_key_missing(secret_id: str, error: Exception) -> None:
+    """D8b (task 1.2f): without the NARA key Phase 3 leaves every archive-path citation
+    unresolved for the next run (never "not found online") - say so, once, so the key is fixed
+    before the next run. Other phases do not use NARA: a warning only."""
+    if "phase3" not in _current_phase_script:
+        logger.warning(
+            "NARA API key not loaded (%s): %s", secret_id, type(error).__name__
+        )
+        return
+    observe_error(
+        "nara",
+        "key_unavailable",
+        note=(
+            f"The NARA API key ({secret_id}) did not load, so this Phase 3 run leaves NARA "
+            "citations unresolved (retried next run, never marked not found). Check the secret "
+            "and the task role's secretsmanager:GetSecretValue, then re-run Phase 3"
+        ),
+        secret=secret_id,
+        error=type(error).__name__,
+        book=os.environ.get("BOOK_NAME", ""),
+    )
 
 
 def _setup_symlinks():
@@ -620,6 +1076,30 @@ def _scope_args(phase_script: str, args: list) -> list:
     return scoped
 
 
+EGRESS_PROBES = (
+    "https://checkip.amazonaws.com",
+    "https://www.cloudflare.com/cdn-cgi/trace",
+)
+
+
+def _egress_ok(rounds: int = 3) -> bool:
+    """True if the public internet is reachable: either probe answers, in any of ``rounds``
+    tries 5 s apart (two unrelated hosts, so one site's outage is not taken for ours).
+    """
+    import requests as _req
+
+    for n in range(rounds):
+        for url in EGRESS_PROBES:
+            try:
+                if _req.get(url, timeout=5).status_code < 500:
+                    return True
+            except Exception:  # noqa: BLE001 - unreachable: try the next probe
+                continue
+        if n + 1 < rounds:
+            time.sleep(5)
+    return False
+
+
 def _ensure_nat_if_needed(phase_script: str) -> None:
     """Bring the NAT gateway up for any phase that needs the public internet.
 
@@ -641,12 +1121,9 @@ def _ensure_nat_if_needed(phase_script: str) -> None:
     stem = Path(phase_script).stem
     # An import needs the internet only for its title-page metadata request, which is fail-safe:
     # one try, and on failure the import goes on (the metadata-gap marker records what is missing).
-    optional = "phase0_convert" in phase_script or "phase0_video" in phase_script
-    if optional:
-        from src.ingestion import book_metadata
-
-        if not book_metadata.enabled():
-            return  # the request is switched off: the import needs no internet at all
+    optional = _is_import(phase_script)
+    if optional and not _import_asks_grok(phase_script):
+        return  # the request is switched off: the import needs no internet at all
     # READINESS CONTRACT: Phase 2/3 need public egress (Grok/Wiki/geocode). Invoke
     # the nat-manager and WAIT until it reports status=ready (NAT available + ACTIVE
     # route + endpoints). nat-manager itself blocks on route-active, but a cold NAT
@@ -658,12 +1135,14 @@ def _ensure_nat_if_needed(phase_script: str) -> None:
         1 if optional else int(os.environ.get("NAT_READY_MAX_ATTEMPTS", "6"))
     )  # ~6 x ~2min
     env = os.environ.get("ENV_NAME", "dev")
+    request = {"action": "create"}
+    failed_over = False
     for attempt in range(1, max_attempts + 1):
         try:
             resp = boto3.client("lambda", region_name=REGION).invoke(
                 FunctionName=f"{env}-wwii-nat-manager",
                 InvocationType="RequestResponse",
-                Payload=b'{"action": "create"}',
+                Payload=json.dumps(request).encode(),
             )
             if resp.get("FunctionError"):
                 body = resp.get("Payload").read().decode("utf-8", "replace")[:500]
@@ -682,9 +1161,26 @@ def _ensure_nat_if_needed(phase_script: str) -> None:
             except Exception:  # noqa: BLE001 - defensive parse
                 payload = {}
             status = payload.get("status")
-            if status == "ready":
+            if payload.get("failover") or request["action"] == "create":
+                request = {
+                    "action": "create"
+                }  # acted on (or none asked): back to create
+            if status == "ready" and (optional or _egress_ok()):
                 logger.info("NAT ready for %s (attempt %d)", stem, attempt)
                 return
+            if status == "ready" and not failed_over:
+                # "ready" but no internet: the NAT's AZ may be down (task 1.2c). Ask once for
+                # a NAT in the other AZ; the next attempt waits for it.
+                failed_over = True
+                request = {"action": "failover", "nat_id": payload.get("nat", "")}
+                logger.error(
+                    "OBSERV nat.no_egress status=error phase=%s nat=%s - NAT reported ready "
+                    "but the internet is unreachable; asking nat-manager to fail over to the "
+                    "other AZ",
+                    stem,
+                    payload.get("nat", ""),
+                )
+                continue
             logger.warning(
                 "NAT NOT READY for %s (status=%s, missing=%s) — retrying "
                 "(attempt %d/%d)",
@@ -718,6 +1214,18 @@ def _ensure_nat_if_needed(phase_script: str) -> None:
         stem,
         max_attempts,
     )
+    _alert_phase_stopped(
+        "nat_not_ready",
+        f"NAT never became ready after {max_attempts} attempts, so the phase stopped before any "
+        "work. Check the nat-manager Lambda logs. "
+        + _queue_followup(
+            "connectivity", f"NAT not ready after {max_attempts} attempts"
+        ),
+        attempts=max_attempts,
+    )
+    # with no NAT this task has no route to SNS (no SNS VPC endpoint), so the alert above is most
+    # likely not delivered: it is left on the task's stop marker, and the trigger Lambda relays
+    # it when ECS reports the stop (trigger_handler._alert_unreported_stop)
     # Release the phase lock the trigger holds BEFORE exiting so a sibling can
     # relaunch immediately instead of waiting out the stale-lock grace window
     # (~5 min) or the 2h lock TTL. Queued work (pending#*) is untouched and the
@@ -734,9 +1242,18 @@ def _start_openserp_if_needed(phase_script: str) -> None:
 
     OpenSERP (live web-search browser service) is a Phase-3-only dependency.
     NAT is handled separately by _ensure_nat_if_needed (phase2+phase3), so this
-    function no longer manages NAT — it only brings up the OpenSERP service.
+    function no longer manages NAT — it only brings up the OpenSERP service. Not started when
+    web search is off (``_openserp_switched_off``: use_openserp false, absent or unreadable).
     """
     if "phase3" not in phase_script:
+        return
+    if _openserp_switched_off():
+        # task 1.4: the operator switched web search off - do not pay for the service (Fargate
+        # + NAT time); the non-search steps run without it
+        logger.info(
+            "OBSERV openserp.not_started status=ok reason=use_openserp_off - "
+            "supplemental_material.use_openserp is false"
+        )
         return
     try:
         env = os.environ.get("ENV_NAME", "dev")
@@ -779,8 +1296,176 @@ def _start_openserp_if_needed(phase_script: str) -> None:
                 return
             time.sleep(10)
         logger.warning("OpenSERP service did not start in 12 min")
+        _alert_openserp_down("did not start within 12 minutes")
     except Exception as e:
         logger.warning("Failed to start OpenSERP: %s", e)
+        _alert_openserp_down(type(e).__name__)
+
+
+def _alert_openserp_down(reason: str) -> None:
+    """OpenSERP could not be started for this Phase 3 run. Owner decision D8c (task 1.2f): stop
+    the whole phase before any work, stamp nothing, alert; the book is deferred (connectivity)
+    and resumes when OpenSERP is back. Skipped when the operator switched OpenSERP off
+    (supplemental_material.use_openserp: false) - then there is nothing to wait for."""
+    if _openserp_switched_off():
+        logger.info(
+            "OBSERV openserp.not_started status=ok reason=%s - use_openserp is off",
+            reason,
+        )
+        return
+    _alert_phase_stopped(
+        "openserp_unavailable",
+        (
+            f"OpenSERP did not start ({reason}), so Phase 3 stopped before any work. Check the "
+            f"ECS service {os.environ.get('ENV_NAME', 'dev')}-wwii-openserp. "
+            + _queue_followup("connectivity", f"OpenSERP did not start: {reason}")
+        ),
+        reason=reason,
+    )
+    _exit_before_work()
+
+
+def _exit_before_work() -> None:
+    """A preflight stopped the phase before any work (already alerted and queued): free the lock
+    at once (owner decision D10) and this task's NAT demand, then exit 1."""
+    _remove_lock(_current_phase_script)
+    _release_nat_lease()  # nothing will run: drop this task's NAT demand
+    sys.exit(1)
+
+
+def _is_import(phase_script: str) -> bool:
+    """A Phase 0 import task (document or video), whose only internet use is the title-page
+    metadata request to Grok."""
+    return "phase0_convert" in phase_script or "phase0_video" in phase_script
+
+
+def _import_asks_grok(phase_script: str) -> bool:
+    """True if this import will make its title-page metadata request (ingestion.book_metadata)."""
+    if not _is_import(phase_script):
+        return False
+    from src.ingestion import book_metadata
+
+    return book_metadata.enabled()
+
+
+def _uses_grok(phase_script: str) -> bool:
+    """Phases that spend Grok credit and have the internet to read the balance: Phase 2/3, and a
+    Phase 0 import whose title-page request is on (owner 2026-11-18: halt it under the floor too,
+    better to deal with low credit earlier)."""
+    return (
+        "phase2" in phase_script
+        or "phase3" in phase_script
+        or _import_asks_grok(phase_script)
+    )
+
+
+def _preflight_balance_check(phase_script: str) -> None:
+    """Task 1.1c (owner 2026-11-18): read the LIVE xAI credit balance before any Grok spend.
+    Under the floor ($50): stop, alert, defer ``funding`` (resumes on its own after a top-up).
+    Unreadable: stop, do not guess (``config`` is held for the operator; ``connectivity``
+    resumes on its own). Other phases: nothing."""
+    global _balance_checked
+    if not _uses_grok(phase_script) or _balance_checked:
+        return  # (a batch run_phase hands on to run_submit_only: one check per task)
+    from src.utils import grok_balance
+
+    if not grok_balance.check_enabled(_config_or_empty()):
+        logger.info(
+            "OBSERV grok.balance_check status=ok enabled=false - api.grok.balance_check is "
+            "off: this deployment does not gate runs on the xAI credit balance"
+        )
+        return
+    floor, alert_at, _ = grok_balance.thresholds(_config_or_empty())
+    try:
+        usd = grok_balance.balance_usd()
+    except grok_balance.BalanceUnreadable as e:
+        fix = (
+            "Check the xAI management key (Secrets Manager "
+            f"{os.environ.get('ENV_NAME', 'dev')}-wwii-pipeline/xai-management-key, billing "
+            "read) and the Grok key"
+            if e.cause == "config"
+            else "Check xAI status (status.x.ai) and this task's network path"
+        )
+        _alert_phase_stopped(
+            "grok_balance_unreadable",
+            f"The xAI credit balance could not be read ({e.reason}), so the phase stopped "
+            f"before any Grok spend (it never guesses). {fix}. "
+            + _queue_followup(e.cause, f"xAI balance unreadable: {e.reason}"),
+            reason=e.reason,
+        )
+        _exit_before_work()
+        return
+    if usd < floor:
+        _alert_phase_stopped(
+            "grok_credits_low",
+            f"xAI prepaid credit is ${usd:.2f}, under the ${floor:.2f} floor, so the phase "
+            "stopped before any Grok spend. Top up at https://console.x.ai (Billing). "
+            + _queue_followup("funding", f"xAI credit ${usd:.2f} under ${floor:.2f}"),
+            balance_usd=f"{usd:.2f}",
+            floor_usd=f"{floor:.2f}",
+        )
+        _exit_before_work()
+        return
+    _balance_checked = True
+    logger.info(
+        "OBSERV grok.balance usd=%.2f floor=%.2f alert_at=%.2f status=ok",
+        usd,
+        floor,
+        alert_at,
+    )
+
+
+def _start_balance_monitor(phase_script: str):
+    """During a Grok phase, a loud alert every hour while the balance is at or under
+    ``credit_alert_usd`` ($10); the run continues (owner). Returns the monitor (``stop()`` it),
+    or None for other phases."""
+    from src.utils import grok_balance
+
+    if not _uses_grok(phase_script) or not grok_balance.check_enabled(
+        _config_or_empty()
+    ):
+        return None
+    _, alert_at, minutes = grok_balance.thresholds(_config_or_empty())
+    task = os.environ.get("ECS_TASK_ID", "") or "local"
+
+    def alert(usd: float) -> None:
+        observe_alert(
+            "grok",
+            "credits_critical",
+            note=(
+                f"xAI prepaid credit is ${usd:.2f} (alert at ${alert_at:.2f}). The run goes on; "
+                "when it runs out the book is deferred (funding) and resumes after a top-up. "
+                "Top up now at https://console.x.ai (Billing)"
+            ),
+            dedup_key=f"{task}.{grok_balance.hour_bucket()}",
+            balance_usd=f"{usd:.2f}",
+            book=os.environ.get("BOOK_NAME", ""),
+        )
+
+    def unreadable(reason: str) -> None:
+        observe_warn_counted(
+            "grok",
+            "balance_unreadable",
+            key=(task,),
+            every=4,
+            note=(
+                "The xAI credit balance could not be read mid-run, so the low-credit alert "
+                "cannot fire; the run goes on (no credit still stops it, HTTP 402). Check the "
+                "xai-management-key secret and status.x.ai"
+            ),
+            reason=reason,
+        )
+
+    monitor = grok_balance.LowBalanceMonitor(alert_at, minutes, alert, unreadable)
+    monitor.start()
+    return monitor
+
+
+def _openserp_switched_off() -> bool:
+    """True if config.yaml says supplemental_material.use_openserp: false."""
+    sm = _config_or_empty().get("supplemental_material") or {}
+    # the same default as phase3_enrich_data: absent / unreadable = off
+    return sm.get("use_openserp", False) is not True
 
 
 def _patch_openserp_url(ip: str) -> None:
@@ -790,8 +1475,9 @@ def _patch_openserp_url(ip: str) -> None:
     config_path = Path("/app/config.yaml")
     with open(config_path, "r", encoding="utf-8") as f:
         config = yaml.safe_load(f)
+    # only the address: the operator's use_openserp is never overridden (task 1.4; it used to be
+    # forced true here, so `use_openserp: false` had no effect once the service started)
     config.setdefault("external_maps", {})["openserp_url"] = f"http://{ip}:7001"
-    config.setdefault("supplemental_material", {})["use_openserp"] = True
     with open(config_path, "w", encoding="utf-8") as f:
         yaml.dump(config, f, default_flow_style=False)
 
@@ -823,10 +1509,22 @@ def _preflight_credit_check() -> None:
             resp.status_code == 403 and "credit" in resp.text.lower()
         ):
             logger.error("PREFLIGHT FAILED: Grok API credits depleted. Aborting.")
-            sys.exit(1)
+            _alert_phase_stopped(
+                "grok_credits_depleted",
+                "xAI reports no API credits (HTTP %d), so the phase stopped before any work. "
+                "Top up the xAI account. " % resp.status_code
+                + _queue_followup("funding", "xAI reports no credits at preflight"),
+            )
+            _exit_before_work()
         if resp.status_code == 401:
             logger.error("PREFLIGHT FAILED: Invalid API key. Aborting.")
-            sys.exit(1)
+            _alert_phase_stopped(
+                "grok_key_invalid",
+                "xAI rejected the API key (HTTP 401), so the phase stopped before any work. "
+                "Fix the Secrets Manager secret named by SECRETS_ID. "
+                + _queue_followup("config", "xAI rejected the API key (HTTP 401)"),
+            )
+            _exit_before_work()
         resp.raise_for_status()
         logger.info("Preflight OK: Grok API credits available")
         # every configured model is served AS ITSELF (a retired one is redirected silently);
@@ -836,11 +1534,32 @@ def _preflight_credit_check() -> None:
         _grok_models.preflight(
             api_key, _grok_models.configured_models(), probed={default}
         )
+    except (_grok_models.GrokUnreachable, _grok_models.GrokFundsExhausted) as e:
+        # derived from GrokModelUnavailable: caught first so an outage is not a "model gone"
+        cause = (
+            "funding"
+            if isinstance(e, _grok_models.GrokFundsExhausted)
+            else "connectivity"
+        )
+        _alert_phase_stopped(
+            f"grok_{cause}",
+            f"Grok stopped the preflight ({type(e).__name__}). "
+            + _queue_followup(cause, f"preflight: {type(e).__name__}"),
+        )
+        _exit_before_work()
     except _grok_models.GrokModelUnavailable:
         logger.error(
             "PREFLIGHT FAILED: a configured Grok model is unavailable. Aborting."
         )
-        sys.exit(1)  # already alerted (OBSERV grok.model_unavailable + operator alert)
+        # the model alert (OBSERV grok.model_unavailable) says how to fix config.yaml; this one
+        # says the book is now held and how to resume it, or it would sit unnoticed
+        _alert_phase_stopped(
+            "grok_model_unavailable",
+            "A configured Grok model is unavailable (see grok.model_unavailable); stopped "
+            "before any work. "
+            + _queue_followup("config", "a configured Grok model is unavailable"),
+        )
+        _exit_before_work()
     except SystemExit:
         raise
     except Exception as e:
@@ -963,6 +1682,10 @@ def run_phase(phase_script: str, extra_args: list) -> None:
     """Run a pipeline phase script with incremental S3 sync."""
     global _current_phase_script
     _current_phase_script = phase_script
+    # count this Phase 3 attempt before anything can fail (queue row = the retry; cap = no loop)
+    if not _claim_enrich_attempt():
+        _remove_lock(phase_script)  # free the lock the trigger took for this launch
+        sys.exit(0)  # deliberately not run: alerted, nothing to retry
     _acquire_nat_lease()  # M3: register NAT demand for the life of this task
     phase_name = Path(phase_script).stem
     WORKDIR.mkdir(parents=True, exist_ok=True)
@@ -991,6 +1714,7 @@ def run_phase(phase_script: str, extra_args: list) -> None:
     logger.info("[step] %s: loading secrets", phase_name)
     _load_secrets()
     logger.info("[step] %s: preflight credit check", phase_name)
+    _preflight_balance_check(phase_script)
     _preflight_credit_check()
     _preflight_notification_subscriptions()
     _preflight_runtime_tables()
@@ -1006,7 +1730,6 @@ def run_phase(phase_script: str, extra_args: list) -> None:
 
     if "phase3" in phase_script:
         _stamp_schema_versions()
-        _reset_openserp_searched()
 
     sync = BackgroundSync(SYNC_INTERVAL)
     if "phase2" in phase_script or "phase3" in phase_script:
@@ -1039,33 +1762,18 @@ def run_phase(phase_script: str, extra_args: list) -> None:
     import time as _time
 
     _phase_start = _time.monotonic()
-    result = subprocess.run(cmd, cwd="/app", env=env, check=False)
+    balance_monitor = _start_balance_monitor(phase_script)
+    try:
+        result = subprocess.run(cmd, cwd="/app", env=env, check=False)
+    finally:
+        if balance_monitor is not None:
+            balance_monitor.stop()
     _phase_duration = _time.monotonic() - _phase_start
 
     sync.stop()
 
     if result.returncode != 0:
-        logger.error(
-            "Phase failed: %s (code %d, %.0fs)",
-            phase_name,
-            result.returncode,
-            _phase_duration,
-            extra={
-                "extra_fields": {
-                    "event": "phase_failed",
-                    "phase": phase_name,
-                    "returncode": result.returncode,
-                    "duration_s": round(_phase_duration),
-                }
-            },
-        )
-        _notify_failure(phase_script, result.returncode)
-        _final_sync_failed_phase(phase_script)
-        _audit_failed_phase2(phase_script, result.returncode)
-        if "phase3" not in phase_script:
-            _remove_lock(phase_script)
-        _release_nat_lease()  # M3: task exiting — drop NAT demand
-        sys.exit(result.returncode)
+        _fail_run(phase_script, phase_name, result.returncode, _phase_duration)
 
     logger.info(
         "Phase complete: %s (%.0fs)",
@@ -1086,7 +1794,45 @@ def run_phase(phase_script: str, extra_args: list) -> None:
     logger.info("[step] %s: final S3 sync", phase_name)
     _final_sync(phase_script)
     _post_process(phase_script, env)
+    _reset_spot_ladder()  # finished: this book's next launch starts small on Spot again
     _release_nat_lease()  # M3: task done — drop NAT demand
+
+
+def _fail_run(
+    phase_script: str, phase_name: str, returncode: int, duration: float = 0.0
+) -> NoReturn:
+    """A phase run ended with a non-zero code: log it, defer or count the failure, notify, sync
+    what was saved, free the lock and the NAT lease, exit with the code. One path for a run that
+    failed in ``run_phase`` and for a batch run (Phase 3 rounds) settled in this task.
+    """
+    logger.error(
+        "Phase failed: %s (code %d, %.0fs)",
+        phase_name,
+        returncode,
+        duration,
+        extra={
+            "extra_fields": {
+                "event": "phase_failed",
+                "phase": phase_name,
+                "returncode": returncode,
+                "duration_s": round(duration),
+            }
+        },
+    )
+    try:
+        next_step = _defer_on_stop_cause(returncode)
+        # a real failure (not deferred): the attempt counts even if a SIGTERM follows
+        _attempt_counts()
+        _notify_failure(phase_script, returncode, next_step)
+        _final_sync_failed_phase(phase_script)
+        _audit_failed_phase2(phase_script, returncode)
+    finally:
+        # every phase, Phase 3 too (owner decision D10, task 1.3), even if a step above
+        # raised: the book is still queued (src/utils/pending_queue) and the reconcile's
+        # retry needs the lock free
+        _remove_lock(phase_script)
+        _release_nat_lease()  # M3: task exiting — drop NAT demand
+    sys.exit(returncode)
 
 
 def _prepare_phase1() -> None:
@@ -1287,14 +2033,6 @@ def _get_book_entity_files(s3, book_name: str) -> list:
     return list(referenced)
 
 
-def _materialize_from_dynamo() -> bool:
-    """Deprecated no-op. The DynamoDB entity (JSON) store was removed — S3 is the sole
-    authoritative entity store — so there is nothing to materialize from Dynamo. Always
-    returns False, so callers fall through to the S3 download path. (DynamoDB is retained
-    only for queue/coordination, not JSON storage.)"""
-    return False
-
-
 def _download_inputs(phase_script: str) -> None:
     """Download the appropriate inputs from S3 for this phase."""
     if "phase0" in phase_script:
@@ -1304,14 +2042,7 @@ def _download_inputs(phase_script: str) -> None:
     elif "phase2" in phase_script:
         n = _download_phase2_inputs()
         logger.info("Downloaded %d files for Phase 2", n)
-    elif "phase3" in phase_script or "import" in phase_script:
-        # Skip DynamoDB shortcut when force_reprocess — need full S3 corpus
-        import yaml as _yaml
-
-        _cfg = _yaml.safe_load(Path("/app/config.yaml").read_text())
-        force = _cfg.get("processing", {}).get("force_reprocess", False)
-        if not force and _materialize_from_dynamo():
-            return
+    elif "phase3" in phase_script:
         _download_phase3_from_s3()
 
 
@@ -1444,6 +2175,9 @@ def _wait_for_reconcile_barrier() -> str:
     deadline = time.time() + timeout
     interval = 5
     waited = 0
+    unproven = (
+        False  # a complete barrier seen, rejected only for its age (no run id to match)
+    )
     while time.time() < deadline:
         for key in keys:
             try:
@@ -1453,6 +2187,7 @@ def _wait_for_reconcile_barrier() -> str:
             body = _parse_barrier_body(obj)
             fresh, via = _judge_barrier(s3, body, min_completed_at, key)
             if not fresh:
+                unproven = unproven or (via == "timestamp" and _has_time(body))
                 continue
             completed_at = body["completed_at"]
             logger.info(
@@ -1468,28 +2203,59 @@ def _wait_for_reconcile_barrier() -> str:
             return "seen"
         time.sleep(interval)
         waited += interval
+    return _alert_barrier_timeout(keys, waited, unproven)
+
+
+def _has_time(body: dict) -> bool:
+    at = body.get("completed_at")
+    return isinstance(at, (int, float)) and not isinstance(at, bool)
+
+
+def _alert_barrier_timeout(keys: list, waited: int, unproven: bool) -> str:
+    """Phase 3 timed out waiting for a fresh reconcile barrier: alert what to do, and return the
+    outcome ("timeout_incomplete" | "timeout")."""
     # Timed out waiting for a fresh reconcile barrier. Distinguish "just slow" from KNOWN-incomplete:
     # if pending batch jobs for THIS book are still queued (e.g. a slow Grok batch offloaded to the
     # batch-poller), the bibliography/late records will DEFINITELY be missing this run — a loud,
     # distinct anomaly (not the soft 'might miss'), and doubly so if the poller is disabled.
     outstanding = _pending_batches_for_book()
     if outstanding:
-        logger.warning(
-            "OBSERV reconcile.barrier_timeout_incomplete keys=%s waited=%ds pending_batches=%d "
-            "book=%s — proceeding with KNOWN-INCOMPLETE data (late bibliography/endnote records "
-            "from the queued batch WILL be missed; they land only when the batch-poller drains the "
-            "queue — re-enrich after)",
-            ",".join(keys),
-            waited,
-            outstanding,
-            os.environ.get("BOOK_NAME", ""),
+        observe_error(
+            "reconcile",
+            "barrier_timeout_incomplete",
+            note=(
+                "Phase 3 is going on with KNOWN-INCOMPLETE bibliography data: late "
+                "bibliography/endnote records from the queued batch will be missed. Re-run Phase 3 "
+                "for this book after the batch-poller has drained the queue"
+            ),
+            keys=",".join(keys),
+            waited_s=waited,
+            pending_batches=outstanding,
+            book=os.environ.get("BOOK_NAME", ""),
         )
         return "timeout_incomplete"
-    logger.warning(
-        "OBSERV reconcile.barrier_timeout keys=%s waited=%ds — proceeding (Phase 3 may snapshot "
-        "before reconcile finished; a late bibliography record could be missed this run)",
-        ",".join(keys),
-        waited,
+    if unproven:
+        # an earlier reconcile finished but carries no run id this task can match (its run
+        # marker write failed): a Phase 3 re-run alone would wait and raise this again
+        note = (
+            "Phase 3 found only a reconcile barrier older than this task whose run id it could "
+            "not match, so it cannot prove the bibliography is current, and went on. Re-run the "
+            "Phase 2 dedup step for this book (it writes a run id), then Phase 3"
+        )
+    else:
+        note = (
+            "Phase 3 did not see the bibliography reconcile finish and is going on; late "
+            "bibliography records can be missing. Check the end of the Phase 2 log for the "
+            "reconcile (failed, or slower than RECONCILE_BARRIER_WAIT_SECS), fix it and re-run "
+            "the Phase 2 dedup step, then Phase 3 (Phase 3 alone waits again)"
+        )
+    observe_error(
+        "reconcile",
+        "barrier_unproven" if unproven else "barrier_timeout",
+        note=note,
+        keys=",".join(keys),
+        waited_s=waited,
+        book=os.environ.get("BOOK_NAME", ""),
     )
     return "timeout"
 
@@ -1658,30 +2424,37 @@ def _observe_bibliography_download_coverage(
             barrier_status,
         )
         if local_count < s3_count:
-            # Correlate with the drain barrier so the root cause is unambiguous.
+            # Correlate with the drain barrier so the root cause is unambiguous (the `cause` field;
+            # the note is capped at 300 characters by observe, so the cause rides separately).
             if barrier_status in ("timeout", "timeout_incomplete"):
                 cause = (
-                    "the reconcile barrier TIMED OUT, so Phase 3 snapshotted before reconcile "
-                    "finished publishing (HIGH#5 drain miss — raise RECONCILE_BARRIER_WAIT_SECS "
-                    "or investigate why reconcile is slow/failed)"
+                    "reconcile barrier TIMED OUT: Phase 3 snapshotted before the reconcile "
+                    "finished; raise RECONCILE_BARRIER_WAIT_SECS or find why it is slow/failed"
                 )
             elif barrier_status == "seen":
                 cause = (
-                    "the reconcile barrier was SEEN (ordering held), so this shortfall is NOT the "
-                    "drain race — likely a scoped-download filter dropping cross-book files"
+                    "barrier SEEN, so not the drain race: likely a scoped-download filter "
+                    "dropping cross-book bibliography files"
                 )
             else:
                 cause = (
-                    f"barrier status={barrier_status}; likely a scoped-download filter "
-                    "dropping cross-book bibliography files"
+                    f"barrier {barrier_status}: likely a scoped-download filter dropping "
+                    "cross-book bibliography files"
                 )
-            logger.warning(
-                "Phase 3 bibliography download SHORTFALL: %d/%d records present locally "
-                "(missing %d). Cause: %s.",
-                local_count,
-                s3_count,
-                s3_count - local_count,
-                cause,
+            observe_error(
+                "phase3",
+                "bib_download_shortfall",
+                note=(
+                    f"SHORTFALL: {local_count} of {s3_count} bibliography records downloaded, so "
+                    "the resolver runs on a partial set. Fix the cause (field cause), then re-run "
+                    "Phase 3 for this book"
+                ),
+                cause=cause,
+                local=local_count,
+                s3=s3_count,
+                missing=s3_count - local_count,
+                barrier=barrier_status,
+                book=os.environ.get("BOOK_NAME", ""),
             )
     except Exception as e:  # noqa: BLE001 - observability must never break the download
         logger.debug("bibliography download coverage check failed: %s", e)
@@ -2006,7 +2779,7 @@ def _download_s3_file(s3, key: str, *, optional: Union[bool, str] = False) -> No
     local.parent.mkdir(parents=True, exist_ok=True)
     try:
         s3.download_file(BUCKET, key, str(local))
-        _downloaded_keys[key] = local.stat().st_mtime
+        _note_download(key, local)
     except ClientError as e:
         if e.response["Error"]["Code"] in ("404", "NoSuchKey") and optional:
             observe(
@@ -2064,16 +2837,35 @@ def _invoke_trigger_phase_complete(phase: str) -> None:
     """Tell the trigger Lambda a phase finished so it drives the NEXT phase from
     parked pending#* queues immediately (event-driven chain; the 15-min scheduled
     check is only a backstop). Best-effort — a lost invoke is covered by the poll."""
+    _invoke_trigger(
+        {"source": "phase-complete", "phase": phase},
+        f"phase {phase} complete -> drive the next phase",
+    )
+
+
+def _invoke_trigger(payload: dict, what: str) -> bool:
+    """Invoke the trigger Lambda asynchronously. Best-effort: a lost invoke is picked up by the
+    hourly reconcile (the queue rows stay), so a failure only warns. Returns whether it was sent.
+    """
     try:
         env_name = os.environ.get("ENV_NAME", "dev")
         boto3.client("lambda", region_name=REGION).invoke(
             FunctionName=f"{env_name}-wwii-trigger",
             InvocationType="Event",
-            Payload=json.dumps({"source": "phase-complete", "phase": phase}).encode(),
+            Payload=json.dumps(payload).encode(),
         )
-        logger.info("Notified trigger: phase %s complete -> drive next phase", phase)
-    except Exception as e:
-        logger.warning("Failed to notify trigger of phase %s completion: %s", phase, e)
+        logger.info("OBSERV trigger.invoked what=%s status=ok", what)
+        return True
+    except Exception as e:  # noqa: BLE001 - the hourly reconcile is the backstop
+        logger.warning(
+            "OBSERV trigger.invoke_failed what=%s err=%s status=warn - check this task "
+            "role's lambda:InvokeFunction on %s-wwii-trigger and the Lambda's throttles; the "
+            "hourly reconcile does the work late (up to an hour)",
+            what,
+            type(e).__name__,
+            os.environ.get("ENV_NAME", "dev"),
+        )
+        return False
 
 
 def _advance_doc_lifecycle(completed_phase: str) -> None:
@@ -2365,8 +3157,30 @@ def _phase3_durable_referential_fix() -> bool:
 
         rc = _validate_phase3(str(WORKDIR / "output"), strict_coverage=False)
         logger.info("Post-sync Phase-3 validation exit=%d (0=pass, 1=fail)", rc)
+        if rc != 0:
+            observe_error(
+                "phase3",
+                "validation_failed",
+                note=(
+                    "the post-sync Phase 3 validation found hard failures (the FAIL lines above "
+                    "'=== PHASE3 VALIDATION FAIL' in this task's log). Fix the records or the "
+                    "step that wrote them, then re-run Phase 3 for this book"
+                ),
+                exit_code=rc,
+                book=os.environ.get("BOOK_NAME", ""),
+            )
     except Exception as e:  # noqa: BLE001 - validation must never crash teardown
         logger.warning("post-sync Phase-3 validation skipped: %s", e)
+        observe_error(
+            "phase3",
+            "validation_not_run",
+            note=(
+                "the post-sync Phase 3 validation could not run, so this book's Phase 3 output "
+                "is unchecked. Run scripts/validate_phase3.py on the corpus, or re-run Phase 3"
+            ),
+            error=type(e).__name__,
+            book=os.environ.get("BOOK_NAME", ""),
+        )
     return refreshed
 
 
@@ -2491,46 +3305,42 @@ def _post_process(phase_script: str, env: dict) -> None:
                 _invoke_trigger_phase_complete("2")
 
     if "phase3" in phase_script:
-        # Phase 3 complete — release lock and check for next book in enrich queue
-        _remove_lock(phase_script)
+        # Phase 3 complete. The lock is released only AFTER the S3-side repair and the provenance
+        # gate below (task 1.3): released first, another task could start and download the
+        # records while they are being rewritten.
         # DURABLE referential repair + validation: run it HERE (after _final_sync, against S3) — NOT
         # only inside phase3 main(). The in-main() enforcement ran before the final local->S3 sync,
         # so its S3-side down-bind repair was clobbered by the sync and it audited a local tree that
         # lacks output/content (events) -> false EventID danglers. Post-sync S3 is the authoritative,
         # complete corpus; repairing it now makes the fix durable and the audit truthful.
-        refreshed = _phase3_durable_referential_fix()
-        _notify_url_review_pending()  # email the operator if URL finds await human review
-        # After every merge (dedup auto-merge, bibliography reconcile, review-UI merges): the book
-        # is "done" only if its provenance holds - in gate mode block, held for review instead.
-        # the corpus the fix refreshed is reused; if its refresh failed, the gate refreshes itself
-        if _phase_end_held(_provenance_gate("3", refresh=not refreshed), "Phase 3"):
-            _offramp_doc_needs_review("provenance validation failed after Phase 3")
-        else:
-            _advance_doc_lifecycle("3")  # doc# -> done (multi-doc; terminal)
+        try:
+            refreshed = _phase3_durable_referential_fix()
+            _notify_url_review_pending()  # email the operator if URL finds await human review
+            # After every merge (dedup auto-merge, bibliography reconcile, review-UI merges): the book
+            # is "done" only if its provenance holds - in gate mode block, held for review instead.
+            # the corpus the fix refreshed is reused; if its refresh failed, the gate refreshes itself
+            if _phase_end_held(_provenance_gate("3", refresh=not refreshed), "Phase 3"):
+                _offramp_doc_needs_review("provenance validation failed after Phase 3")
+            else:
+                _advance_doc_lifecycle("3")  # doc# -> done (multi-doc; terminal)
+            # done either way: a provenance off-ramp goes to human review, not to an automatic rerun
+            _finish_own_enrich_row()
+        finally:
+            # released even if the repair or the gate raises (D10; the enrich row then stays
+            # queued for the reconcile), and before the next book is triggered: it needs the lock
+            _remove_lock(phase_script)
         next_enrich = _get_next_pending_enrich()
         if next_enrich:
             logger.info(
                 "Next book for enrichment: %s — triggering Phase 3, keeping networking up",
                 next_enrich,
             )
-            try:
-                env_name = os.environ.get("ENV_NAME", "dev")
-                lambda_client = boto3.client("lambda", region_name=REGION)
-                payload = json.dumps(
-                    {"source": "manual", "book": next_enrich, "phase": "3"}
-                )
-                lambda_client.invoke(
-                    FunctionName=f"{env_name}-wwii-trigger",
-                    InvocationType="Event",
-                    Payload=payload.encode(),
-                )
-                _consume_pending_enrich(next_enrich)
-            except Exception as e:
-                logger.warning(
-                    "Failed to trigger Phase 3 for %s (will retry on next reconciliation): %s",
-                    next_enrich,
-                    e,
-                )
+            # the trigger tries each queued book until one launches (one may be running in
+            # another task: naming only the first left the rest for the hourly reconcile); the
+            # rows stay until each book's own task succeeds (task 1.2)
+            _invoke_trigger(
+                {"source": "enrich-next"}, "launch the next queued Phase 3 book"
+            )
     else:
         _remove_lock(phase_script)
 
@@ -2540,56 +3350,358 @@ def _post_process(phase_script: str, env: dict) -> None:
     _notify_complete(phase_script)
 
 
-def _get_next_pending_book() -> str:
-    """Check DynamoDB for other books with pending parsed queues. Returns book name or ''."""
+def _config_or_empty() -> dict:
+    """config.yaml, or {} (the callers' defaults apply) if it cannot be read."""
     try:
-        table_name = os.environ.get("CACHE_TABLE", "dev-wwii-api-cache")
-        table = boto3.resource("dynamodb", region_name=REGION).Table(table_name)
-        resp = table.scan(
-            FilterExpression="begins_with(cache_key, :prefix)",
-            ExpressionAttributeValues={":prefix": "pending#parsed#"},
-            ProjectionExpression="cache_key",
-            Limit=100,
+        from src.utils.config import load_config
+
+        return load_config() or {}
+    except Exception as e:  # noqa: BLE001 - a default is safer than stopping the chain
+        logger.warning(
+            "OBSERV config.unreadable status=warn err=%s - using defaults", e
         )
-        for item in resp.get("Items", []):
-            key = item["cache_key"]
-            book = key.split("#", 2)[2] if key.count("#") >= 2 else ""
-            if book:
-                return book
+        return {}
+
+
+def _cache_table():
+    """The api-cache table (queues, leases, locks)."""
+    table_name = os.environ.get("CACHE_TABLE", "dev-wwii-api-cache")
+    return boto3.resource("dynamodb", region_name=REGION).Table(table_name)
+
+
+def _get_next_pending_book() -> str:
+    """The next book waiting for Phase 2 (all scan pages; src/utils/pending_queue), or ''."""
+    from src.utils import pending_queue
+
+    try:
+        return pending_queue.next_book(_cache_table(), "parsed")
     except Exception as e:
         logger.warning("Failed to check pending books: %s", e)
     return ""
 
 
 def _get_next_pending_enrich() -> str:
-    """Check DynamoDB for books with pending enrichment. Returns book name or ''."""
+    """The next book waiting for Phase 3, other than the one this task runs, or ''."""
+    from src.utils import pending_queue
+
     try:
-        table_name = os.environ.get("CACHE_TABLE", "dev-wwii-api-cache")
-        table = boto3.resource("dynamodb", region_name=REGION).Table(table_name)
-        resp = table.scan(
-            FilterExpression="begins_with(cache_key, :prefix)",
-            ExpressionAttributeValues={":prefix": "pending#enrich#"},
-            ProjectionExpression="cache_key",
-            Limit=100,
+        return pending_queue.next_book(
+            _cache_table(),
+            "enrich",
+            exclude=os.environ.get("BOOK_NAME", ""),
+            retry_minutes=pending_queue.defer_retry_minutes(_config_or_empty()),
         )
-        for item in resp.get("Items", []):
-            key = item["cache_key"]
-            book = key.split("#", 2)[2] if key.count("#") >= 2 else ""
-            if book:
-                return book
     except Exception as e:
         logger.warning("Failed to check pending enrich: %s", e)
     return ""
 
 
-def _consume_pending_enrich(book: str) -> None:
-    """Delete a pending enrich queue entry after successful trigger."""
+def _finish_own_enrich_row() -> None:
+    """Phase 3 succeeded for this book: remove ITS OWN queue row (task 1.2). Before, the row of
+    the NEXT book was deleted when it was triggered, so a failed book was never retried.
+    """
+    book = os.environ.get("BOOK_NAME", "")
+    if not book:
+        return
+    from src.utils import pending_queue
+
     try:
-        table_name = os.environ.get("CACHE_TABLE", "dev-wwii-api-cache")
-        table = boto3.resource("dynamodb", region_name=REGION).Table(table_name)
-        table.delete_item(Key={"cache_key": f"pending#enrich#{book}"})
-    except Exception as e:
-        logger.warning("Failed to consume pending#enrich#%s: %s", book, e)
+        pending_queue.finish(_cache_table(), "enrich", book)
+        logger.info("OBSERV queue.enrich_done book=%s status=ok", book)
+    except (
+        Exception
+    ) as e:  # noqa: BLE001 - a leftover row only means one extra (idempotent) run
+        observe_warn(
+            "queue",
+            "enrich_done_failed",
+            note="the finished book's pending#enrich# row was not removed; the reconcile may "
+            "run Phase 3 for it once more (harmless). Delete the row if it repeats",
+            book=book,
+            error=type(e).__name__,
+        )
+
+
+def _mark_watchdog_stop() -> None:
+    global _watchdog_stop
+    _watchdog_stop = True
+
+
+def _mark_attempt_claimed() -> None:
+    global _attempt_claimed
+    _attempt_claimed = True
+    # the trigger Lambda gives the attempt back for a task killed by an outside stop before it
+    # could (task 1.1b); it must know this task, and not an earlier one, counted it
+    _mark_task(claimed=True, book=os.environ.get("BOOK_NAME", ""))
+
+
+def _attempt_counts() -> None:
+    """This task's claimed attempt is now a counted failure: neither this task (a later SIGTERM)
+    nor the trigger Lambda (an outside stop) may give it back (1.2b follow-up). No-op when nothing
+    is claimed (never claimed, or already given back by a deferral)."""
+    global _attempt_claimed, _phase_failed
+    if not _attempt_claimed:
+        return
+    _attempt_claimed, _phase_failed = False, True
+    if not _mark_task(claimed=False) and os.environ.get("ECS_TASK_ID"):
+        logger.error(
+            "OBSERV queue.attempt_counted_unmarked book=%s status=error - the stop marker "
+            "still says claimed: if ECS stops this task from outside, the trigger may give "
+            "this failed attempt back (one extra retry). Check the task role's DynamoDB access",
+            os.environ.get("BOOK_NAME", ""),
+        )
+
+
+_attempt_of: dict = (
+    {}
+)  # this task's Phase 3 attempt {"n", "cap"} (the step-failure notice)
+
+
+def _claim_enrich_attempt() -> bool:
+    """A Phase 3 task is starting: count this attempt on the book's queue row FIRST (task 1.2;
+    owner decision D8c-2). The row stays until the run succeeds (_finish_own_enrich_row), so any
+    other ending - crash, preflight abort, SIGTERM, gate failure - leaves the book queued for the
+    hourly reconcile, and the count bounds the retries. Returns False when the cap is passed:
+    the caller must not run (the row is deferred "failure", never dropped, and an alert gives
+    the resume command). A stop that is not the book's fault gives the attempt back
+    (_queue_followup, task 1.2b)."""
+    book = os.environ.get("BOOK_NAME", "")
+    if not book or "phase3" not in _current_phase_script:
+        return True  # unscoped / other phases: not queue-managed here
+    from src.utils import pending_queue
+    from src.utils.config import load_config
+
+    try:
+        cap = pending_queue.max_attempts(load_config())
+    except Exception:  # noqa: BLE001 - the default cap still applies
+        cap = pending_queue.DEFAULT_MAX_ATTEMPTS
+    try:
+        attempts, allowed = pending_queue.claim_attempt(
+            _cache_table(), book, cap, task_id=os.environ.get("ECS_TASK_ID", "")
+        )
+    except Exception as e:  # noqa: BLE001 - not counting must not stop a run
+        observe_warn(
+            "queue",
+            "claim_failed",
+            note="this Phase 3 attempt was not counted, so a failure will not be retried "
+            "automatically. Re-trigger Phase 3 by hand if it fails",
+            book=book,
+            error=type(e).__name__,
+        )
+        return True
+    if allowed:
+        _mark_attempt_claimed()
+        _attempt_of["n"], _attempt_of["cap"] = attempts, cap
+        logger.info(
+            "OBSERV queue.enrich_attempt book=%s attempt=%d max=%d status=ok",
+            book,
+            attempts,
+            cap,
+        )
+        return True
+    steps = _failed_steps_of(book)
+    observe_error(
+        "queue",
+        "enrich_deferred",
+        note=(
+            f"Run `{pending_queue.RESUME_COMMAND} {book}` after fixing the cause (earlier "
+            f"alerts): Phase 3 failed {cap} times, so the book is deferred, not retried"
+            + (f". Last failed step(s): {steps}" if steps else "")
+        ),
+        failed_steps=steps or "unknown",
+        book=book,
+        cause="failure",
+        attempts=attempts - 1,
+    )
+    return False
+
+
+def _failed_steps_of(book: str) -> str:
+    """The steps that failed in ``book``'s last run, from its queue row ('' if unknown)."""
+    from src.utils import pending_queue
+
+    try:
+        steps = pending_queue.failed_steps(_cache_table(), book)
+        return ", ".join(steps[:4]) + (
+            f" (+{len(steps) - 4})" if len(steps) > 4 else ""
+        )
+    except Exception:  # noqa: BLE001 - the hold alert goes out without them
+        return ""
+
+
+def _queue_followup(cause: str, reason: str) -> str:
+    """A Phase 3 run stopped for ``cause`` (src/utils/pending_queue.CAUSES), not counted as a
+    failure (owner 2026-11-18, decision 4(b)): defer the book's queue row, give this attempt back,
+    and return the sentence the stop alert ends with (what happens next). Other phases are not
+    queue-managed here: "re-trigger". Never raises."""
+    book = os.environ.get("BOOK_NAME", "")
+    source = os.environ.get("CONVERT_KEY") or os.environ.get("VIDEO_KEY") or ""
+    if _is_import(_current_phase_script) and source:
+        # a Phase 0 import has no queue row: name the upload to repeat (owner 2026-11-20)
+        return (
+            "Then re-upload the same file under the same name (it keeps its book slug) to "
+            f"s3://{BUCKET}/{source[:200]}"
+        )
+    if "phase0_ocr_crosscheck" in _current_phase_script and book:
+        from src.ingestion.ocr_chunk_manifest import redrive_command
+
+        return "Then re-drive the OCR merge: " + redrive_command(book)
+    if not book or "phase3" not in _current_phase_script:
+        return "Then re-trigger the phase for this book"
+    from src.utils import pending_queue
+
+    try:
+        table = _cache_table()
+        deferred = pending_queue.defer(
+            table,
+            book,
+            cause,
+            reason,
+            pending_queue.max_connectivity_deferrals(_config_or_empty()),
+            pending_queue.max_funding_deferrals(_config_or_empty()),
+        )
+    except Exception as e:  # noqa: BLE001 - the caller is on its way to exit
+        logger.error(
+            "OBSERV queue.enrich_defer_failed book=%s cause=%s err=%s status=error",
+            book,
+            cause,
+            type(e).__name__,
+        )
+        _attempt_counts()  # as the alert says: this attempt counts (no later give-back)
+        return (
+            "The book could not be marked deferred, so this attempt still counts; its queue "
+            "row stays and the hourly reconcile retries it"
+        )
+    if not deferred:
+        logger.warning(
+            "OBSERV queue.enrich_not_queued book=%s cause=%s status=warn - no queue row (claim "
+            "failed or a duplicate task finished it)",
+            book,
+            cause,
+        )
+        return "The book has no Phase 3 queue row, so re-trigger the phase for it"
+    _give_back_own_attempt()
+    logger.info(
+        "OBSERV queue.enrich_deferred book=%s cause=%s reason=%s status=ok",
+        book,
+        deferred,
+        reason,
+    )
+    if deferred != cause:  # repeated connectivity stops: held for the operator now
+        return (
+            f"It stopped for {cause} too many times since the last resume, so it is held: "
+            "after the fix "
+            f"run `{pending_queue.RESUME_COMMAND} {book}`"
+        )
+    if cause in pending_queue.AUTO_RESUME:
+        return (
+            f"The book is deferred ({cause}); Phase 3 is held and the hourly reconcile "
+            "retries on its own, nothing to re-trigger"
+        )
+    return (
+        f"After the fix run `{pending_queue.RESUME_COMMAND} {book}` (deferred: {cause})"
+    )
+
+
+def _defer_on_stop_cause(returncode: int) -> str:
+    """The phase script exited with a src/utils/stop_cause code: defer (Grok funds,
+    connectivity) or hold (data corruption) instead of counting a failure, and return what
+    happens next for the failure notice. A step failure (82) is counted and retried. Other
+    codes: nothing (the attempt counts), ''."""
+    from src.utils import stop_cause
+
+    if returncode == stop_cause.EXIT_STEP_FAILED:
+        results = _phase_results()
+        failed = [str(x) for x in (results.get("errored_sources") or [])]
+        # steps whose requests the batch rounds set aside: unfinished, named like a failure
+        failed += [str(x) for x in (results.get("pending_sources") or [])]
+        steps = ", ".join(failed[:4]) + (
+            f" (+{len(failed) - 4})" if len(failed) > 4 else ""
+        )
+        _record_failed_steps(failed)
+        # what happens next goes FIRST: the alert note is capped at 300 characters
+        return (
+            f"Phase 3 did not finish: {_retry_sentence()}. Work already saved is kept. "
+            f"Failed step(s): {steps or 'unknown'}"
+        )
+    cause = stop_cause.cause_for_exit(returncode)
+    if not cause:
+        return ""
+    reason = f"the phase exited {returncode} ({cause})"
+    if returncode == stop_cause.EXIT_DATA_CORRUPT:
+        reason = _alert_data_corruption()
+    return _queue_followup(cause, reason)
+
+
+def _record_failed_steps(steps: list) -> None:
+    """Keep the failed steps on the book's queue row (the cap hold and `resume_book.py list`
+    name them). Never raises."""
+    book = os.environ.get("BOOK_NAME", "")
+    if not book or not steps or "phase3" not in _current_phase_script:
+        return
+    from src.utils import pending_queue
+
+    try:
+        pending_queue.record_failed_steps(_cache_table(), book, steps)
+    except Exception as e:  # noqa: BLE001 - the alert still names them
+        logger.warning(
+            "OBSERV queue.failed_steps_not_recorded book=%s err=%s status=warn",
+            book,
+            type(e).__name__,
+        )
+
+
+def _retry_sentence() -> str:
+    """What happens to the book after this counted failure: retried, or - on the last allowed
+    attempt - held at the next start (so the operator knows now, not a run later)."""
+    n, cap = _attempt_of.get("n"), _attempt_of.get("cap")
+    if not n or not cap:
+        return "it stays queued and is retried (attempt-capped)"
+    if n >= cap:
+        book = os.environ.get("BOOK_NAME", "")
+        from src.utils import pending_queue
+
+        return (
+            f"this was the LAST attempt ({n} of {cap}): the book is held at its next start - "
+            f"fix the cause, then run `{pending_queue.RESUME_COMMAND} {book}`"
+        )
+    return f"it stays queued and is retried (attempt {n} of {cap})"
+
+
+def _alert_data_corruption() -> str:
+    """Alert loudly that the book's own stored data stopped Phase 3 (exit 83): name only the
+    corrupt step(s) and their (truncated) error, so the operator can find the record. Returns
+    the queue reason."""
+    results = _phase_results()
+    stats = results.get("source_stats") or {}
+    bad = {
+        n: str(s.get("error", ""))[:120]
+        for n, s in stats.items()
+        if isinstance(s, dict) and s.get("corrupt")
+    }
+    found = [str(r) for r in (results.get("corrupt_records") or [])]
+    records = found[:10] + (
+        [f"... {len(found) - 10} more in .phase_results.json"]
+        if len(found) > 10
+        else []
+    )
+    steps = ", ".join(bad) or ("skipped records" if records else "unknown")
+    detail = "; ".join(
+        [f"{n}: {err}" for n, err in bad.items()]
+        + ([f"records: {', '.join(records)}"] if records else [])
+    )[:400]
+    observe_error(
+        "phase",
+        "data_corrupt",
+        note=(
+            f"DATA CORRUPTION stopped Phase 3 step(s) {steps}: a stored record could not be "
+            "read. A retry cannot fix it, so the book is held and its corpus stays unrepaired "
+            "until resumed. Repair or delete the record named in the error, then resume the book"
+        ),
+        steps=steps,
+        error=detail,
+        book=os.environ.get("BOOK_NAME", ""),
+    )
+    return f"data corruption in step(s) {steps}"
 
 
 def _dedup_has_no_pending() -> bool:
@@ -2845,17 +3957,6 @@ def _migrate_exclusions_to_dynamo() -> None:
 
 def _download_dedup_data() -> None:
     """Download entity files needed for cross-book dedup comparison."""
-    # Try DynamoDB first (faster than S3 for entity files)
-    if _materialize_from_dynamo():
-        # Still need event files from S3 for cross-reference
-        s3 = _s3_client()
-        d, s = _download_s3_prefix_skip_existing(s3, "output/content/")
-        logger.info(
-            "Dedup: materialized entities from DynamoDB, downloaded %d event files from S3",
-            d,
-        )
-        return
-
     s3 = _s3_client()
     dedup_files = [
         "output/people/index.json",
@@ -2905,11 +4006,37 @@ def _reconcile_bibliography_full_corpus() -> None:
         from src.extraction.bibliography import reconcile_bibliography_dir
 
         bib_dir = WORKDIR / "output" / "bibliography"
-        merged_away = reconcile_bibliography_dir(bib_dir)
+        removed: list = []
+        held: list = []
+        merged_away = reconcile_bibliography_dir(bib_dir, removed=removed, held=held)
+        if held:
+            observe_error(
+                "reconcile",
+                "records_held",
+                count=len(held),
+                examples=",".join(sorted(held)[:5])[:300],
+                note="these bibliography records were left out of the merge and left unchanged "
+                "(each is named in a schema.not_usable or bib.record_unreadable line above): fix "
+                "or restore each, then re-run the reconcile. Everything else merged",
+            )
         # Upload the collapsed canonical files; shards were unlinked locally by reconcile, but
         # their S3 copies still exist — remove them so the prefix reflects the canonical set.
         up, _ = s3_sync_up(bib_dir, "output/bibliography")
         _delete_orphaned_bibliography_shards(s3, bib_dir)
+        # a record folded into another (same footnote text, near-identical title) is merged away
+        # too, under its own canonical name: without this it is downloaded again next run. Its id
+        # must resolve first (a pointer to the survivor), else it is kept for the next run.
+        from src.extraction.bibliography import record_merge_pointers
+
+        if record_merge_pointers(bib_dir):
+            _delete_merged_bibliography_records(s3, bib_dir, removed)
+        elif removed:
+            logger.error(
+                "OBSERV bib.merged_delete_deferred count=%d status=error - merge pointers were "
+                "not all stored (see id_aliases.write_failed), so the merged-away records stay on "
+                "S3 and are combined again next run",
+                len(set(removed)),
+            )
         logger.info(
             "Full-corpus bibliography reconcile: merged_away=%d, uploaded %d canonical files",
             merged_away,
@@ -2933,6 +4060,17 @@ def _reconcile_bibliography_full_corpus() -> None:
         Exception
     ) as e:  # noqa: BLE001 - reconcile is best-effort, never blocks dedup
         logger.warning("Full-corpus bibliography reconcile failed: %s", e)
+        observe_error(
+            "reconcile",
+            "failed",
+            note=(
+                "the full-corpus bibliography reconcile failed, so no barrier was published: the "
+                "next Phase 3 waits out RECONCILE_BARRIER_WAIT_SECS and works on unmerged "
+                "bibliography shards. Fix the cause (see this task's log), then re-run the "
+                "reconcile (Phase 2 dedup step) before Phase 3"
+            ),
+            error=type(e).__name__,
+        )
 
 
 # S3 key for the "Phase-2 dedup/reconcile finished publishing bibliography" barrier. Book-scoped so
@@ -3114,6 +4252,40 @@ def _publish_reconcile_barrier(
             key=barrier_key,
             error=type(e).__name__,
         )
+
+
+def _delete_merged_bibliography_records(s3, bib_dir: Path, removed: list) -> None:
+    """Delete the S3 copy of each bibliography record reconcile merged away (its id is on the
+    survivor's ``merged_from``). Only names reconcile itself removed, and only when no local file
+    of that name came back. A failed delete is an error: the record would return next run.
+    """
+    import re as _re
+
+    failed = deleted = 0
+    for name in sorted(set(removed)):
+        if (bib_dir / name).exists():
+            continue  # a file of that name is back: it is a record, never deleted
+        if not _re.fullmatch(r"bib_[0-9A-Za-z_.-]{1,120}\.json", name):
+            logger.error(
+                "OBSERV bib.merged_delete_skipped name=%r status=error - an unexpected file name; "
+                "its S3 copy is kept and returns next run: check and delete it by hand",
+                name[:120],
+            )
+            continue
+        deleted += 1
+        try:
+            s3.delete_object(Bucket=BUCKET, Key=f"output/bibliography/{name}")
+        except Exception as e:  # noqa: BLE001
+            failed += 1
+            logger.error(
+                "OBSERV bib.merged_delete_failed key=output/bibliography/%s err=%s status=error - "
+                "a merged-away record is still on S3 and returns next run; delete it by hand",
+                name,
+                type(e).__name__,
+            )
+    logger.info(
+        "OBSERV bib.merged_deleted count=%d failed=%d", deleted - failed, failed
+    )
 
 
 def _delete_orphaned_bibliography_shards(s3, bib_dir: Path) -> None:
@@ -3433,22 +4605,11 @@ def _read_manifest() -> list:
 
 
 def _sync_maps_with_av_staging(maps_dir: "Path", skip: set) -> tuple:
-    """AV staging (owner three-zone model): downloaded map image BINARIES (output/maps/files/) must
-    NOT land in production un-scanned. Stage them to the unscanned/ prefix (mirrored structure); the
-    trigger Lambda drains+promotes them on Phase-3 completion. The map RECORD JSONs
-    (output/maps/*.json) sync to prod as usual (excluding the files/ binaries). Returns the (count,
-    keys) for the PROD record sync (the staging sync is logged separately)."""
-    files_dir = maps_dir / "files"
-    if files_dir.exists():
-        nf, _ = s3_sync_up(files_dir, "unscanned/output/maps/files")
-        if nf:
-            logger.info(
-                "OBSERV av.staged_for_scan dir=output/maps/files count=%d dest=unscanned/ status=ok",
-                nf,
-            )
-    return s3_sync_up(
-        maps_dir, "output/maps", skip_keys=skip, exclude_patterns=["files"]
-    )
+    """The maps directory's upload: the records to production and the downloaded map images to
+    the AV staging area - which ``s3_sync_up`` now does for every binary (``av_scan.staged_key``),
+    honouring ``skip`` for both (an unchanged downloaded image is not staged and scanned again).
+    """
+    return s3_sync_up(maps_dir, "output/maps", skip_keys=skip)
 
 
 def _final_sync_phase1() -> None:
@@ -3465,6 +4626,169 @@ def _final_sync_phase1() -> None:
     if rs.exists():
         n_rs, _ = s3_sync_up(rs, "output/manifests/run_scope")
         logger.info("OBSERV run_scope.synced files=%d", n_rs)
+
+
+def _deletable_record_key(key: str) -> bool:
+    """The only S3 keys the final sync may delete: entity records ``output/<entity>/...json``
+    (not sidecars, binaries, parsed content or anything outside output/) - one rule for the
+    tracked and the detected removals (DRY)."""
+    from src.utils.entity_records import is_record_file
+
+    parts = key.split("/")
+    if len(parts) < 3 or parts[0] != "output" or parts[1] not in _PHASE23_ENTITY_DIRS:
+        return False
+    local = _safe_local_path(WORKDIR, key)
+    return local is not None and key.endswith(".json") and is_record_file(local)
+
+
+def _removed_downloads() -> set:
+    """Entity records this task downloaded or background-uploaded and the phase then removed
+    locally: their S3 copy must go too, or the next download brings them back (task 1.5: the
+    phase runs in a subprocess, so its unlinks never reached ``track_deletion``)."""
+    out = set()
+    for key in list(_synced_at):
+        if not _deletable_record_key(key):
+            continue
+        local = _safe_local_path(WORKDIR, key)
+        if local is not None and not local.exists():
+            out.add(key)
+    return out
+
+
+def _changed_in_s3_since_download(s3, key: str) -> bool:
+    """True when another writer replaced ``key`` in S3 after this task synced it (so deleting it
+    would destroy their update). Unknown -> True: never delete on a guess."""
+    at = _synced_at.get(key)
+    if at is None:
+        return False  # tracked in-process and never synced: this task owns it
+    try:
+        head = s3.head_object(Bucket=BUCKET, Key=key)
+    except Exception as e:  # noqa: BLE001
+        code = getattr(e, "response", {}).get("Error", {}).get("Code", "")
+        return code not in (
+            "404",
+            "NoSuchKey",
+            "NotFound",
+        )  # gone already: nothing to do
+    etag = _synced_etag.get(key)
+    if etag:  # the S3 object's own identity: no clock involved
+        return head.get("ETag") != etag
+    # a background upload has no recorded ETag: compare times (the task clock is NTP-synced;
+    # S3 stamps LastModified before upload_file returned, so our own upload is never "newer")
+    modified = head.get("LastModified")
+    return modified is None or modified.timestamp() > at + 1
+
+
+# more removed records than this (and than MASS_DELETE_FRACTION of the synced records) in one
+# final sync is not a merge: something removed the corpus locally - delete nothing, alert
+MASS_DELETE_MIN = 50
+MASS_DELETE_FRACTION = 0.05
+
+
+def _mass_delete_refused(keys: set) -> bool:
+    """True (and alerted) when ``keys`` is too many to be merges."""
+    synced = sum(1 for k in _synced_at if _deletable_record_key(k))
+    if len(keys) <= max(MASS_DELETE_MIN, MASS_DELETE_FRACTION * synced):
+        return False
+    observe_error(
+        "sync",
+        "mass_delete_refused",
+        note=(
+            f"The phase removed {len(keys)} of {synced} synced records locally - far more than "
+            "a merge does - so none were deleted from S3. Check the task log for what removed "
+            "them; if they really should go, delete them by hand"
+        ),
+        count=len(keys),
+        synced=synced,
+        book=os.environ.get("BOOK_NAME", ""),
+    )
+    return True
+
+
+def _forget_synced(key: str) -> None:
+    """A deleted key: a later final sync in this process must not look at it again."""
+    _synced_at.pop(key, None)
+    _synced_etag.pop(key, None)
+    _downloaded_keys.pop(key, None)
+    _deleted_keys.discard(key)
+
+
+def _delete_merged_from_s3(removed: Optional[set] = None) -> None:
+    """Delete from S3 the records this task merged away or removed. ``removed`` is the set seen
+    BEFORE the final uploads (``_removed_downloads``): a record the still-running phase removes
+    after that (a SIGTERM sync) keeps its S3 copy, since its replacement may not be uploaded yet.
+    A delete that fails would leave a duplicate entity in S3 that the next phase downloads
+    again: alert, never silently (task 1.2f). A record another task rewrote after this one
+    synced it is kept and alerted, and a mass removal deletes nothing (task 1.5); S3 versioning
+    keeps every deleted record restorable."""
+    detected = _removed_downloads() if removed is None else removed
+    # the cap applies to the DETECTED removals (something removed files locally); the tracked
+    # ones are merges this process recorded one by one as it made them
+    detected = {k for k in detected if _deletable_record_key(k)}
+    if _mass_delete_refused(detected):
+        detected = set()
+    keys = {k for k in set(_deleted_keys) if _deletable_record_key(k)} | detected
+    if not keys:
+        return
+    s3 = _s3_client()
+    left = []
+    for key in sorted(keys):
+        try:
+            if _changed_in_s3_since_download(s3, key):
+                left.append((key, "changed_since_download"))
+                continue
+            s3.delete_object(Bucket=BUCKET, Key=key)
+        except Exception as e:  # noqa: BLE001 - reported below
+            left.append((key, type(e).__name__))
+            continue
+        _forget_synced(key)
+    logger.info(
+        "OBSERV sync.records_deleted count=%d kept=%d status=%s",
+        len(keys) - len(left),
+        len(left),
+        "warn" if left else "ok",
+    )
+    if left:
+        _alert_merged_left(left)
+
+
+def _alert_merged_left(left: list) -> None:
+    """Alert that merged-away records are still in S3. The keys (built from entity names, so
+    untrusted) go to a manifest and to sanitised OBSERV lines - never into a command for the
+    operator to paste - and the operator reviews them before deleting."""
+    task = os.environ.get("ECS_TASK_ID", "") or "local"
+    manifest = f"manifests/merged_delete_left/{_safe_key_part(task)}.json"
+    where = f"s3://{BUCKET}/{manifest}"
+    try:
+        _s3_client().put_object(
+            Bucket=BUCKET,
+            Key=manifest,
+            Body=json.dumps([k for k, _ in left], indent=1).encode(),
+            ContentType="application/json",
+        )
+    except Exception:  # noqa: BLE001 - the per-key OBSERV lines below still list them
+        where = "this task's log (OBSERV s3.merged_delete_left lines)"
+    observe_error(
+        "s3",
+        "merged_delete_failed",
+        note=(
+            f"{len(left)} removed record(s) are still in S3 and would come back on the next "
+            f"download (a failed delete, or another task rewrote it since: "
+            f"changed_since_download). The keys are in {where}: review each, delete it from "
+            "the data bucket if it is really gone, then re-run dedup for the book"
+        ),
+        count=len(left),
+        error=left[0][1],
+    )
+    for key, err in left:
+        observe("s3", "merged_delete_left", status="error", key=key, err=err)
+
+
+def _safe_key_part(value: str) -> str:
+    """``value`` as one safe S3 key segment."""
+    import re as _re
+
+    return _re.sub(r"[^A-Za-z0-9._-]", "_", value)[:128] or "x"
 
 
 def _final_sync(phase_script: str = ""):
@@ -3488,6 +4812,9 @@ def _final_sync(phase_script: str = ""):
         # downloaded record (shared bibliography/maps for every book) cost a PUT each and widened
         # the window in which a concurrent task's update to a shared record is overwritten.
         skip = _unchanged_downloads()
+        # removed records, seen BEFORE the uploads: a record the phase removes after this (a
+        # SIGTERM sync while it still runs) keeps its S3 copy until a later sync (task 1.5)
+        removed = _removed_downloads()
         for subdir in entity_dirs:
             d = WORKDIR / "output" / subdir
             if not d.exists():
@@ -3546,69 +4873,27 @@ def _final_sync(phase_script: str = ""):
                 "OBSERV cache.synced status=error reason=%s", type(_e).__name__
             )
 
-        # Delete merged/removed files from S3
-        if _deleted_keys:
-            s3 = _s3_client()
-            for key in _deleted_keys:
-                try:
-                    s3.delete_object(Bucket=BUCKET, Key=key)
-                except Exception:
-                    pass
-            logger.info(
-                "Final sync: deleted %d merged files from S3", len(_deleted_keys)
-            )
+        # Delete merged/removed records from S3 (task 1.5): the ones tracked in this process
+        # and every downloaded record the phase removed locally (a dedup merge, a narrative
+        # note moved out of bibliography/, a shard folded in)
+        _delete_merged_from_s3(removed)
 
         # Write manifest to DynamoDB so next phase only downloads changed files
         if all_uploaded and "phase2" in phase_script:
             _write_manifest(all_uploaded)
-    elif "import" in phase_script:
-        pass  # import doesn't produce output
 
 
 PHASE_NAMES = {
     "phase1_parse.py": "Phase 1 (Parse)",
     "phase2_extract.py": "Phase 2 (Extract)",
     "phase3_enrich_data.py": "Phase 3 (Enrich)",
-    "import_to_dynamodb.py": "Import",
 }
 
 PHASE_SUFFIXES = {
     "phase1_parse.py": "phase1-parse",
     "phase2_extract.py": "phase2-extract",
     "phase3_enrich_data.py": "phase3-enrich",
-    "import_to_dynamodb.py": "import",
 }
-
-
-def _reset_openserp_searched() -> None:
-    """Reset openserp_searched on files that were searched but got no results."""
-    output = Path("/app/output")
-    skip = {"index.json", "duplicate_report.json", "not_duplicates.json"}
-    reset = 0
-    for d in [output / "people", output / "equipment"]:
-        if not d.exists():
-            continue
-        for f in d.glob("*.json"):
-            if f.name in skip:
-                continue
-            try:
-                data = json.loads(f.read_text(encoding="utf-8"))
-                if (
-                    data.get("openserp_searched")
-                    and not data.get("images")
-                    and not data.get("military_awards")
-                ):
-                    del data["openserp_searched"]
-                    f.write_text(
-                        json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8"
-                    )
-                    reset += 1
-            except Exception:
-                continue
-    if reset:
-        logger.info(
-            "Reset openserp_searched on %d files (no results from previous run)", reset
-        )
 
 
 def _dir_all_current(files, entity, needs_migration) -> bool:
@@ -3698,65 +4983,46 @@ def _stamp_schema_versions() -> None:
     never stamped at all.)"""
     from src.schemas import SCHEMA_VERSION, inject_metadata, needs_migration
 
-    env = os.environ.get("ENV_NAME", "dev")
-    trigger_fn = f"{env}-wwii-trigger"
-    lam = boto3.client("lambda", region_name=REGION)
-
-    # Disable trigger Lambda during stamping
-    try:
-        lam.put_function_concurrency(
-            FunctionName=trigger_fn, ReservedConcurrentExecutions=0
-        )
-        logger.info("Disabled trigger Lambda for schema migration")
-    except Exception as e:
-        logger.warning("Could not disable trigger Lambda: %s", e)
-
-    try:
-        output = Path("/app/output")
-        dirs = [
-            "weather",
-            "people",
-            "people_groups",
-            "places",
-            "equipment",
-            "dates",
-            "casualties",
-            "logistics",
-            "maps",
-            "bibliography",
-        ]
-        skip = {
-            "index.json",
-            "duplicate_report.json",
-            "not_duplicates.json",
-            "not_related.json",
-            "review_queue.json",
-            ".processed_events.json",
-        }
-        updated = 0
-        for d in dirs:
-            p = output / d
-            if not p.exists():
-                continue
-            updated += _stamp_entity_dir(p, d, skip, needs_migration, inject_metadata)
-        # Event files -> entity 'events'
-        content = output / "content"
-        if content.exists():
-            for f in content.rglob("*-event.json"):
-                updated += _stamp_file(f, needs_migration, inject_metadata, "events")
-        logger.info(
-            "Schema migration: stamped %d files (per-entity versions; max v%s)",
-            updated,
-            SCHEMA_VERSION,
-        )
-
-    finally:
-        # Re-enable trigger Lambda (always, even on crash)
-        try:
-            lam.delete_function_concurrency(FunctionName=trigger_fn)
-            logger.info("Re-enabled trigger Lambda")
-        except Exception as e:
-            logger.warning("Could not re-enable trigger Lambda: %s", e)
+    # No trigger-Lambda disable here (removed 2026-11-25): stamping rewrites only this task's local
+    # files (they reach S3 at the later syncs), so the disable protected nothing, while it throttled
+    # every pipeline event and, if the task was killed mid-stamp, left the trigger off with no alert.
+    output = Path("/app/output")
+    dirs = [
+        "weather",
+        "people",
+        "people_groups",
+        "places",
+        "equipment",
+        "dates",
+        "casualties",
+        "logistics",
+        "maps",
+        "bibliography",
+    ]
+    skip = {
+        "index.json",
+        "duplicate_report.json",
+        "not_duplicates.json",
+        "not_related.json",
+        "review_queue.json",
+        ".processed_events.json",
+    }
+    updated = 0
+    for d in dirs:
+        p = output / d
+        if not p.exists():
+            continue
+        updated += _stamp_entity_dir(p, d, skip, needs_migration, inject_metadata)
+    # Event files -> entity 'events'
+    content = output / "content"
+    if content.exists():
+        for f in content.rglob("*-event.json"):
+            updated += _stamp_file(f, needs_migration, inject_metadata, "events")
+    logger.info(
+        "Schema migration: stamped %d files (per-entity versions; max v%s)",
+        updated,
+        SCHEMA_VERSION,
+    )
 
 
 def _held_lock_keys() -> list:
@@ -3770,21 +5036,12 @@ def _held_lock_keys() -> list:
     env_name = os.environ.get("ENV_NAME", "dev")
     table_name = os.environ.get("CACHE_TABLE", "dev-wwii-api-cache")
     if _multi_doc_enabled():
+        from src.utils.ddb_scan import scan_prefix
+
         table = boto3.resource("dynamodb", region_name=REGION).Table(table_name)
-        keys: list = []
-        kwargs = {
-            "FilterExpression": "begins_with(cache_key, :p)",
-            "ExpressionAttributeValues": {":p": "lock#"},
-            "ProjectionExpression": "cache_key",
-        }
-        while True:
-            resp = table.scan(**kwargs)
-            keys.extend(i["cache_key"] for i in resp.get("Items", []))
-            lek = resp.get("LastEvaluatedKey")
-            if not lek:
-                break
-            kwargs["ExclusiveStartKey"] = lek
-        return keys
+        return [
+            i["cache_key"] for i in scan_prefix(table, "lock#", projection="cache_key")
+        ]
     # Serial: exact keys only
     dynamodb = boto3.client("dynamodb", region_name=REGION)
     lock_keys = [
@@ -3894,21 +5151,29 @@ def _stop_openserp_if_running(phase_script: str) -> None:
         logger.warning("Failed to scale OpenSERP to 0: %s", e)
 
 
-def _notify_failure(phase_script: str, returncode: int) -> None:
-    """Publish failure notification to SNS."""
-    topic_arn = os.environ.get("NOTIFICATION_TOPIC_ARN", "")
-    if not topic_arn:
-        return
+def _notify_failure(phase_script: str, returncode: int, next_step: str = "") -> None:
+    """Publish the failure notification (the one publisher, publish_alert). Marks the stop
+    alerted only when it was delivered, so a failed publish does not suppress a later alert.
+    ``next_step``: what happens to the book now (a queue deferral), added to the message.
+    """
     phase_name = PHASE_NAMES.get(phase_script, phase_script)
-    try:
-        sns = boto3.client("sns", region_name=REGION)
-        sns.publish(
-            TopicArn=topic_arn,
-            Subject=f"WWII Pipeline: {phase_name} FAILED",
-            Message=f"{phase_name} failed with exit code {returncode}.\nBucket: {BUCKET}\n\nCheck logs: aws logs tail /ecs/dev-wwii-pipeline --region us-east-1 --since 30m",
+    # one line, bounded (the slug is validated at intake; do not trust it in a message body)
+    book = " ".join((os.environ.get("BOOK_NAME", "") or "(all books)").split())[:120]
+    sent = publish_alert(
+        f"WWII Pipeline: {phase_name} FAILED",
+        f"{phase_name} failed with exit code {returncode} for book {book}.\nBucket: {BUCKET}\n\n"
+        + (f"{next_step}.\n\n" if next_step else "")
+        + "Check logs: aws logs tail /ecs/dev-wwii-pipeline --region us-east-1 --since 30m",
+    )
+    if sent:
+        _mark_stop_alerted()
+        logger.info("OBSERV phase.failure_notice status=ok returncode=%s", returncode)
+    else:
+        logger.warning(
+            "OBSERV phase.failure_notice status=warn returncode=%s - not delivered (no "
+            "NOTIFICATION_TOPIC_ARN or SNS error); a later stop alert may still go out",
+            returncode,
         )
-    except Exception as e:
-        logger.warning("Failed to send failure notification: %s", e)
 
 
 def _notify_complete(phase_script: str) -> None:
@@ -3962,6 +5227,11 @@ def _build_results_section() -> str:
         for src, st in sorted(source_stats.items()):
             if st.get("status") == "error":
                 parts.append(f"\n  ✗ {src}: ERROR — {st.get('error', 'see logs')}")
+            elif st.get("status") == "pending":
+                parts.append(
+                    f"\n  ⚠ {src}: INCOMPLETE — requests were set aside after repeated batch "
+                    f"failures ({st.get('enriched', 0)} done); the book stays queued"
+                )
             else:
                 extra = ""
                 if "attempted" in st:  # geocode-style richer stats
@@ -4146,18 +5416,43 @@ def _acquire_lock(phase_script: str) -> bool:
         return True
 
 
+# locks this task has already released. Released once only: the delete has no owner check, so a
+# second release (a SIGTERM during the Phase 3 post-sync repair, then its finally) could delete
+# the lock a retry task has just taken (task 1.3)
+_released_locks: set = set()
+# Whether this task holds the phase lock it may delete. A task the trigger launched holds it (the
+# trigger took it for the launch). A RETRIEVE task that resumes a Phase 3 run starts without it and
+# sets this only when it has taken the lock itself (``_wait_for_lock``): deleting a lock it never
+# took would end another book's (serial mode) or another run's mutual exclusion.
+_lock_owned = True
+
+
 def _remove_lock(phase_script: str) -> None:
-    """Remove the DynamoDB lock for this phase."""
+    """Remove the DynamoDB lock for this phase (once per task)."""
     lock_key = _lock_key(phase_script)
-    if not lock_key:
+    if not lock_key or lock_key in _released_locks:
+        return
+    if not _lock_owned:
+        logger.info("Not removing %s: this task does not hold it", lock_key)
         return
     try:
         table_name = os.environ.get("CACHE_TABLE", "dev-wwii-api-cache")
         table = boto3.resource("dynamodb", region_name=REGION).Table(table_name)
+        _released_locks.add(
+            lock_key
+        )  # before the delete: a SIGTERM mid-call must not repeat it
         table.delete_item(Key={"cache_key": lock_key})
         logger.info("Removed lock: %s", lock_key)
     except Exception as e:
-        logger.warning("Failed to remove lock %s: %s", lock_key, e)
+        _released_locks.discard(lock_key)  # not released: a later call may retry
+        logger.warning(
+            "Failed to remove lock %s: %s. The next run of this phase waits for the lock's 2h "
+            "TTL; delete item cache_key=%s from table %s to release it sooner",
+            lock_key,
+            e,
+            lock_key,
+            os.environ.get("CACHE_TABLE", "dev-wwii-api-cache"),
+        )
 
 
 def _clear_all_locks() -> None:
@@ -4165,14 +5460,14 @@ def _clear_all_locks() -> None:
     try:
         table_name = os.environ.get("CACHE_TABLE", "dev-wwii-api-cache")
         table = boto3.resource("dynamodb", region_name=REGION).Table(table_name)
-        resp = table.scan(
-            FilterExpression="begins_with(cache_key, :prefix)",
-            ExpressionAttributeValues={":prefix": "lock#"},
-            ProjectionExpression="cache_key",
-        )
-        for item in resp.get("Items", []):
-            table.delete_item(Key={"cache_key": item["cache_key"]})
-            logger.info("Cleared lock: %s", item["cache_key"])
+        from src.utils.ddb_scan import scan_prefix
+
+        # list every page first, then delete (do not delete while paging the same scan)
+        for key in [
+            i["cache_key"] for i in scan_prefix(table, "lock#", projection="cache_key")
+        ]:
+            table.delete_item(Key={"cache_key": key})
+            logger.info("Cleared lock: %s", key)
     except Exception as e:
         logger.warning("Failed to clear locks: %s", e)
 
@@ -4213,6 +5508,7 @@ def run_submit_only(phase_script: str, extra_args: list) -> None:
     logger.info("[step] %s: loading secrets", phase_name)
     _load_secrets()
     logger.info("[step] %s: preflight credit check", phase_name)
+    _preflight_balance_check(phase_script)
     _preflight_credit_check()
     _preflight_notification_subscriptions()
     _preflight_runtime_tables()
@@ -4225,7 +5521,6 @@ def run_submit_only(phase_script: str, extra_args: list) -> None:
 
     if "phase3" in phase_script:
         _stamp_schema_versions()
-        _reset_openserp_searched()
 
     logger.info("[step] %s: submitting batch to Grok API", phase_name)
     # Monkey-patch poll_batch/retrieve_results so submit_batch returns after upload
@@ -4250,9 +5545,11 @@ def run_submit_only(phase_script: str, extra_args: list) -> None:
     _batch_mod.poll_batch = _orig_poll
     _batch_mod.retrieve_results = _orig_retrieve
 
-    if "phase2" in phase_script:
-        # Phase 2 runs its batch ROUNDS in the child, each waiting up to batch.in_task_wait_minutes
-        # (the stubs above do not reach the child process): settle from its exit status.
+    if "phase2" in phase_script or "phase3" in phase_script:
+        # Phase 2 and Phase 3 run their batch ROUNDS in the child, each waiting in the task (the
+        # stubs above do not reach the child process): settle from its exit status. Without this
+        # a finished Phase 3 would be run AGAIN below, non-batch, answering live what the rounds
+        # set aside.
         _settle_phase2_task(phase_script, result.returncode)
         return
 
@@ -4346,10 +5643,13 @@ def _entities_materialized_in_task() -> bool:
         return False
 
 
-def _alert_handed_off(batch_id: str, batch_name: str) -> None:
-    """Operator alert (phase2-complete topic: email + Slack) that a Phase 2 batch round went to
-    the poller: which book and round, and what happens next. Informational, not an error.
+def _alert_handed_off(
+    batch_id: str, batch_name: str, phase_script: str = "phase2_extract.py"
+) -> None:
+    """Operator alert (phase2-complete topic: email + Slack) that a Phase 2 or Phase 3 batch round
+    went to the poller: which book and round, and what happens next. Informational, not an error.
     """
+    label = _phase_label(phase_script)
     from src.utils.batch_api import in_task_wait_minutes
     from src.utils.batch_rounds import round_of
     from src.utils.observe import publish_alert
@@ -4363,11 +5663,11 @@ def _alert_handed_off(batch_id: str, batch_name: str) -> None:
     except Exception:  # noqa: BLE001 - the alert must not fail on config
         wait = in_task_wait_minutes()
     publish_alert(
-        f"WWII Pipeline: Phase 2 round {rnd or '?'} handed to the poller ({book})"[
+        f"WWII Pipeline: {label} round {rnd or '?'} handed to the poller ({book})"[
             :100
         ],
         (
-            f"Phase 2 for {book}: batch round {rnd or '?'} (batch {batch_id}) was not answered "
+            f"{label} for {book}: batch round {rnd or '?'} (batch {batch_id}) was not answered "
             f"within the {wait:.0f}-minute in-task wait, so this task ended.\n\n"
             "Next: the batch poller checks it every poll interval; when Grok has answered it, a "
             "retrieve task loads the answers and resumes the book from the next round (same "
@@ -4551,6 +5851,8 @@ def _settle_phase2_task(
         )
         _final_sync(phase_script)
         _stop_openserp_if_running(phase_script)
+        if "phase3" in phase_script:
+            _leave_phase3_for_poller(handed_off=enqueued)
         if not enqueued:
             from src.utils.observe import observe_error
 
@@ -4563,12 +5865,20 @@ def _settle_phase2_task(
             )
             sys.exit(1)
         try:
-            _alert_handed_off(pending, str(results.get("pending_batch_name") or ""))
+            _alert_handed_off(
+                pending, str(results.get("pending_batch_name") or ""), phase_script
+            )
         except Exception as e:  # noqa: BLE001 - advisory: the batch is enqueued already
             logger.warning("Hand-off alert not sent: %s", e)
-        logger.info("Phase 2 handed batch %s to the poller; this task ends.", pending)
+        logger.info(
+            "%s handed batch %s to the poller; this task ends.",
+            _phase_label(phase_script),
+            pending,
+        )
         return
     if returncode != 0:
+        if "phase3" in phase_script:  # the one failure path of a Phase 3 run
+            _fail_run(phase_script, Path(phase_script).stem, returncode)
         _final_sync_failed_phase(phase_script)
         _audit_failed_phase2(phase_script, returncode)
         logger.error("Phase 2 exited with code %d", returncode)
@@ -4576,7 +5886,30 @@ def _settle_phase2_task(
     _final_sync(phase_script)
     _stop_openserp_if_running(phase_script)
     _post_process(phase_script, os.environ.copy())
-    logger.info("Phase 2 complete in this task (every batch round answered).")
+    if "phase3" in phase_script:
+        _reset_spot_ladder()  # finished: this book's next launch starts small on Spot again
+        _release_nat_lease()
+    logger.info(
+        "%s complete in this task (every batch round answered).",
+        _phase_label(phase_script),
+    )
+
+
+def _phase_label(phase_script: str) -> str:
+    return "Phase 3" if "phase3" in phase_script else "Phase 2"
+
+
+def _leave_phase3_for_poller(handed_off: bool = True) -> None:
+    """A Phase 3 round was handed to the batch poller: this task is NOT a failure and NOT done.
+    Give back its attempt (a round trip is progress; only a failure counts toward
+    queue.phase3_max_attempts, and the resumed task claims its own) - but only when the batch WAS
+    enqueued: a hand-off nothing can resume stays counted. Free the lock (the resumed task takes
+    it) and drop this task's NAT demand (the pending batch job keeps NAT up). The book's queue row
+    stays, so a lost batch is still picked up by the reconcile."""
+    if handed_off:
+        _give_back_own_attempt()
+    _remove_lock(_current_phase_script or "phase3_enrich_data.py")
+    _release_nat_lease()
 
 
 def _enqueue_or_alert(
@@ -4716,7 +6049,7 @@ def _populate_cache(grok_client, mapped: dict, batch_id: str) -> int:
     return populated
 
 
-def _map_batch_results_by_index(submitted, ordered_results, batch_id=""):
+def _map_batch_results_by_index(submitted, ordered_results, batch_id="", strict=False):
     """Map batch results to OUR cache keys by POSITION (the xAI results API does not
     echo our custom_id — only a server batch_request_id). ``submitted`` is the
     submission-ordered list of (our_request_id, cache_type); ``ordered_results`` is
@@ -4734,7 +6067,9 @@ def _map_batch_results_by_index(submitted, ordered_results, batch_id=""):
     from src.utils.observe import observe_error
 
     # each answer to its own request first (the API returns them out of order)
-    ordered_results = align_by_request_id(submitted, ordered_results, batch_id=batch_id)
+    ordered_results = align_by_request_id(
+        submitted, ordered_results, batch_id=batch_id, strict=strict
+    )
 
     def _on_desync(our_id, cache_type, br):
         observe_error(
@@ -4758,6 +6093,13 @@ def _map_batch_results_by_index(submitted, ordered_results, batch_id=""):
     return result.mapped
 
 
+def _resumes_rounds(phase_script: str) -> bool:
+    """Phase 2 and Phase 3 run their batch ROUNDS in the task: a retrieve task RESUMES them (batch
+    mode stays on, the round count continues) instead of re-running the phase synchronously.
+    """
+    return "phase2" in phase_script or "phase3" in phase_script
+
+
 def _retrieve_rerun_env(phase_script: str, batch_name: str = "") -> dict:
     """Environment for the retrieve re-run (it reads the cache the batch results populated).
 
@@ -4771,7 +6113,7 @@ def _retrieve_rerun_env(phase_script: str, batch_name: str = "") -> dict:
     env = os.environ.copy()
     env["SKIP_RETRY"] = "1"
     env["PIPELINE_PHASE"] = Path(phase_script).stem
-    if "phase2" in phase_script:
+    if _resumes_rounds(phase_script):
         from src.utils.batch_rounds import round_of
 
         env["BATCH_ROUND_START"] = str(round_of(batch_name) + 1)
@@ -4813,54 +6155,71 @@ def _submitted_from_dynamo_metrics(batch_id: str) -> list:
     return pairs
 
 
-def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> None:
-    """Retrieve completed batch results and re-run phase with cached data."""
-    import re as _re
+PHASE3_RESUME_LOCK_WAIT_S = 1800
+PHASE3_RESUME_LOCK_POLL_S = 30
 
-    from src.utils.job_queue import get_job, update_job_status
 
-    # Register the phase for the SIGTERM handler. Without this, a spot reclaim of a --retrieve-only
-    # task hit _handle_sigterm with _current_phase_script="" → _final_sync("")/_remove_lock("") were
-    # no-ops, so in-task entities were lost and the lock leaked (§1.0d H3).
-    global _current_phase_script, _current_resume_batch
-    _current_phase_script = phase_script
+def _begin_phase3_resume(phase_script: str) -> bool:
+    """A retrieve task is about to RESUME a handed-off Phase 3 run (its answers are cached): what
+    ``run_phase`` does before a run, in the same order. True to go on, False when the task must
+    end (it has said why): the book stays queued, and because the answers are cached a later
+    Phase 3 run for it picks up where this one would have.
 
-    WORKDIR.mkdir(parents=True, exist_ok=True)
-    _load_secrets()
-    _patch_config()
-
-    # READINESS GATE: the retrieve task makes Grok egress (retrieve_results) and runs
-    # _post_process (SNS + trigger Lambda) — all NAT-only. Validate NAT is ready
-    # (available + ACTIVE route + endpoints) with self-heal, the SAME contract as
-    # run_phase/run_submit_only. Previously this path trusted the batch-poller's
-    # state-only NAT wait (no route-active check) → the "available != routable" race.
-    _ensure_nat_if_needed(phase_script)
-
-    job = get_job(batch_id)
-    if not job:
-        logger.error("Job %s not found in queue", batch_id)
-        sys.exit(1)
-
-    logger.info(
-        "Retrieving batch %s (%s/%s, %d reqs)",
-        batch_id,
-        job.phase,
-        job.book,
-        job.request_count,
+    - the attempt: claimed here (the hand-off gave its own back), so only a FAILED resume counts
+      toward queue.phase3_max_attempts. A refusal means the book is deferred (alerted); this task
+      holds no lock yet, so it removes none;
+    - the lock: taken (waiting up to PHASE3_RESUME_LOCK_WAIT_S for another book's Phase 3 in serial
+      mode) BEFORE the inputs are downloaded, so the run never works on a copy another run is
+      changing, and the trigger cannot launch the same book while this task runs it;
+    - the credit floor, OpenSERP and NAT: as at the start of a run (more spend follows).
+    """
+    global _lock_owned
+    _lock_owned = (
+        False  # until _wait_for_lock takes it: never delete a lock held by another
     )
+    if not _claim_enrich_attempt():
+        return False
+    _acquire_nat_lease()
+    if not _wait_for_lock(phase_script):
+        _give_back_own_attempt()
+        _release_nat_lease()
+        logger.info(
+            "OBSERV batch.resume_waiting book=%s - another Phase 3 holds the lock; the book "
+            "stays queued and its answers are cached, so the reconcile resumes it",
+            os.environ.get("BOOK_NAME", ""),
+        )
+        return False
+    try:
+        _preflight_balance_check(phase_script)
+        _preflight_credit_check()
+        _start_openserp_if_needed(phase_script)
+    except Exception:
+        # (a deliberate preflight stop frees the lock itself and exits: SystemExit passes)
+        _remove_lock(phase_script)
+        _release_nat_lease()
+        raise
+    return True
 
-    # Scope downloads to the book being retrieved (avoid processing entire backlog)
-    if job.book and job.book != "unknown":
-        os.environ["BOOK_NAME"] = job.book
-    os.environ["FORCE_DOWNLOAD_PARSED"] = "1"  # Retrieve needs all parsed files
-    _setup_symlinks()
-    _download_inputs(phase_script)
-    # Download metrics so cache_type mapping is available for result classification
-    _download_s3_prefix(_s3_client(), "output/metrics/")
 
-    if "phase3" in phase_script:
-        _stamp_schema_versions()
+def _wait_for_lock(phase_script: str) -> bool:
+    """Take the phase lock, waiting up to PHASE3_RESUME_LOCK_WAIT_S for it to be freed. The NAT
+    lease is extended on every poll (it lasts 15 minutes; the wait can be 30). Marks the lock as
+    this task's (``_lock_owned``) only when it was taken."""
+    global _lock_owned
+    deadline = time.monotonic() + PHASE3_RESUME_LOCK_WAIT_S
+    while not _acquire_lock(phase_script):
+        if time.monotonic() >= deadline:
+            return False
+        _heartbeat_nat_lease()
+        time.sleep(PHASE3_RESUME_LOCK_POLL_S)
+    _lock_owned = True
+    return True
 
+
+def _cache_batch_answers(batch_id: str) -> int:
+    """Retrieve the batch's results and put each answer in the cache under its own request id.
+    Costs nothing and needs no lock or inputs (only the batch's metrics, downloaded by the caller).
+    Returns how many answers were cached."""
     # Retrieve results in SUBMISSION ORDER. The xAI results API was thought not to echo our (it does; aligned by id first)
     # custom_id (only a server-assigned batch_request_id), so we map results to OUR
     # cache keys by POSITION against the submission-ordered request_details in metrics.
@@ -4909,19 +6268,110 @@ def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> Non
     cache_dir.mkdir(parents=True, exist_ok=True)
     grok_client = GrokClient(cache_dir)
 
-    mapped = _map_batch_results_by_index(submitted, ordered_results, batch_id)
-    populated = _populate_cache(grok_client, mapped, batch_id)
-    if "phase2" in phase_script:
-        # the answers are in the (shared) cache: the job is retrieved NOW, not after the resumed
-        # run - that run can take several 90-min rounds, past the poller's retrieve claim, and a
-        # still-"ready" job would be retrieved again by a second task on the same book. A reclaim
-        # mid-run puts it back to ready (_handle_sigterm).
+    from src.utils.batch_api import strict_alignment
+
+    mapped = _map_batch_results_by_index(
+        submitted,
+        ordered_results,
+        batch_id,
+        strict=strict_alignment(_current_phase_script),
+    )
+    return _populate_cache(grok_client, mapped, batch_id)
+
+
+def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> None:
+    """Retrieve completed batch results and re-run phase with cached data."""
+    import re as _re
+
+    from src.utils.job_queue import get_job, update_job_status
+
+    # Register the phase for the SIGTERM handler. Without this, a spot reclaim of a --retrieve-only
+    # task hit _handle_sigterm with _current_phase_script="" → _final_sync("")/_remove_lock("") were
+    # no-ops, so in-task entities were lost and the lock leaked (§1.0d H3).
+    global _current_phase_script, _current_resume_batch, _lock_owned
+    if "phase3" in phase_script:
+        # a retrieve task never starts with the lock (the trigger did not launch it): until
+        # _wait_for_lock takes it, no exit path, SIGTERM or NAT abort may delete a lock that
+        # belongs to another run
+        _lock_owned = False
+    _current_phase_script = phase_script
+
+    WORKDIR.mkdir(parents=True, exist_ok=True)
+    _load_secrets()
+    _patch_config()
+
+    # READINESS GATE: the retrieve task makes Grok egress (retrieve_results) and runs
+    # _post_process (SNS + trigger Lambda) — all NAT-only. Validate NAT is ready
+    # (available + ACTIVE route + endpoints) with self-heal, the SAME contract as
+    # run_phase/run_submit_only. Previously this path trusted the batch-poller's
+    # state-only NAT wait (no route-active check) → the "available != routable" race.
+    _ensure_nat_if_needed(phase_script)
+
+    job = get_job(batch_id)
+    if not job:
+        logger.error("Job %s not found in queue", batch_id)
+        sys.exit(1)
+
+    # Scope downloads to the book being retrieved (avoid processing entire backlog)
+    if job.book and job.book != "unknown":
+        from src.ingestion.book_slug import is_safe_slug
+
+        if not is_safe_slug(job.book):
+            # BOOK_NAME becomes a lock key, S3 prefixes, queue rows and --book: never from a
+            # job row that is not a plain book name
+            from src.utils.observe import observe_error
+
+            observe_error(
+                "batch",
+                "retrieve_book_rejected",
+                batch=batch_id,
+                book=str(job.book)[:80],
+                note="the batch job names an unsafe book: not retrieved. Check the batch_job# "
+                "row (who wrote it); delete it once checked",
+            )
+            update_job_status(batch_id, "failed")
+            sys.exit(1)
+        os.environ["BOOK_NAME"] = job.book
+    logger.info(
+        "Retrieving batch %s (%s/%s, %d reqs)",
+        batch_id,
+        job.phase,
+        job.book,
+        job.request_count,
+    )
+
+    os.environ["FORCE_DOWNLOAD_PARSED"] = "1"  # Retrieve needs all parsed files
+    _setup_symlinks()
+    if "phase3" in phase_script:
+        # the answers first (free, no lock, only the metrics), then the lock, THEN the inputs:
+        # a resumed run must not work on a copy another run is still changing
+        _download_s3_prefix(_s3_client(), "output/metrics/")
+        _cache_batch_answers(batch_id)
         update_job_status(batch_id, "retrieved")
         _current_resume_batch = batch_id
+        if not _begin_phase3_resume(phase_script):
+            _current_resume_batch = (
+                ""  # nothing is running: a SIGTERM must not re-queue it
+            )
+            return
+        _download_inputs(phase_script)
+        _stamp_schema_versions()
+    else:
+        _download_inputs(phase_script)
+        # Download metrics so cache_type mapping is available for result classification
+        _download_s3_prefix(_s3_client(), "output/metrics/")
+        _cache_batch_answers(batch_id)
+        if _resumes_rounds(phase_script):
+            # the answers are in the (shared) cache: the job is retrieved NOW, not after the
+            # resumed run - that run can take several 90-min rounds, past the poller's retrieve
+            # claim, and a still-"ready" job would be retrieved again by a second task on the same
+            # book. A reclaim mid-run puts it back to ready (_handle_sigterm).
+            update_job_status(batch_id, "retrieved")
+            _current_resume_batch = batch_id
 
     # Re-run the phase on the cached results. Phase 2 keeps --batch: it resumes its rounds.
     # Others re-run without it (hits cache; skip retry since batch results are authoritative).
-    resume = "phase2" in phase_script
+    resume = _resumes_rounds(phase_script)
     clean_args = (
         list(extra_args) if resume else [a for a in extra_args if a != "--batch"]
     )
@@ -4933,7 +6383,13 @@ def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> Non
     env = _retrieve_rerun_env(phase_script, job.batch_name)
     cmd = [sys.executable, phase_script] + _scope_args(phase_script, clean_args)
     logger.info("Re-running with cached results: %s", " ".join(cmd))
-    result = subprocess.run(cmd, cwd="/app", env=env, check=False)
+    # a resumed Phase 3 spends again: watch the balance as run_phase does
+    monitor = _start_balance_monitor(phase_script) if "phase3" in phase_script else None
+    try:
+        result = subprocess.run(cmd, cwd="/app", env=env, check=False)
+    finally:
+        if monitor is not None:
+            monitor.stop()
 
     sync.stop()
     if resume:
@@ -4958,6 +6414,28 @@ def run_retrieve_only(phase_script: str, extra_args: list, batch_id: str) -> Non
     logger.info("Retrieve-only complete for batch %s", batch_id)
 
 
+def _dispatch(argv: list) -> None:
+    """Run the requested mode. A wrapper crash (an Exception, not a deliberate SystemExit) sends
+    one alert before it propagates (task 1.1): before, only the traceback was left."""
+    try:
+        if argv[1] == "--submit-only":
+            run_submit_only(argv[2], argv[3:])
+        elif argv[1] == "--retrieve-only":
+            run_retrieve_only(argv[3], argv[4:], batch_id=argv[2])
+        else:
+            run_phase(argv[1], argv[2:])
+    except (
+        Exception
+    ) as crash:  # SystemExit is not an Exception: deliberate exits pass through
+        _alert_phase_stopped(
+            "crashed",
+            "the task's wrapper (ecs_entrypoint.py) crashed before the phase finished; see the "
+            "traceback in this task's log, fix it, then re-trigger the phase for this book",
+            error=type(crash).__name__,
+        )
+        raise
+
+
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print(
@@ -4977,9 +6455,4 @@ if __name__ == "__main__":
 
     _atexit.register(_release_nat_lease)
 
-    if sys.argv[1] == "--submit-only":
-        run_submit_only(sys.argv[2], sys.argv[3:])
-    elif sys.argv[1] == "--retrieve-only":
-        run_retrieve_only(sys.argv[3], sys.argv[4:], batch_id=sys.argv[2])
-    else:
-        run_phase(sys.argv[1], sys.argv[2:])
+    _dispatch(sys.argv)

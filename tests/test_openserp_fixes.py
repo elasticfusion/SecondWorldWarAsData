@@ -10,13 +10,17 @@ def test_equipment_images_use_yaml_templates():
     # not a hardcoded f-string.
     seen = []
 
-    def fake_search(q, url, limit=10):
+    def fake_search(q, url, limit=None):
         seen.append(q)
         return []
 
-    with patch.object(oe, "_search_openserp", side_effect=fake_search):
+    with patch.object(oe, "_search_openserp_images", side_effect=fake_search):
         oe.search_equipment_images(
-            "M4 Sherman", "http://x", identifier="M4", year="1944"
+            "M4 Sherman",
+            "http://x",
+            identifier="M4",
+            year="1944",
+            equipment_id="01HEQUIPMENT0000000000000",
         )
     assert seen  # queries were rendered + issued
     # equipment.yaml 'images' templates quote the name and include identifier/year variants
@@ -42,23 +46,30 @@ def test_awards_use_yaml_templates():
     assert all("John Smith" in q for q in seen)
 
 
-def test_verify_and_apply_dedupes_existing_urls():
-    data = {"images": [{"url": "http://dup", "source": "x"}], "military_awards": []}
-    cand = {
-        "image_results": [
-            {"url": "http://dup", "title": "John Smith"},
-            {"url": "http://new", "title": "John Smith"},
-        ],
-        "web_results": [],
-    }
-    with patch.object(oe, "_verify_result", return_value=True):
-        changed = oe._verify_and_apply(
-            cand, data, "John Smith", object(), max_images=5, max_web=5
+def test_person_photos_fill_only_the_room_left_and_skip_what_is_held():
+    data = {"PersonID": "01HJOHN", "images": [{"url": "http://dup", "source": "x"}]}
+    seen = {}
+
+    def fake(subject, queries, url, grok, existing, wanted):
+        seen.update(
+            wanted=wanted, existing=[i["url"] for i in existing], key=subject.entity_key
         )
-    urls = [i["url"] for i in data["images"]]
-    assert changed
-    assert urls.count("http://dup") == 1  # not duplicated
-    assert "http://new" in urls
+        return [{"url": "http://new", "vision_verified": True}]
+
+    with patch.object(oe, "find_entity_photos", side_effect=fake):
+        changed = oe._verify_and_apply(
+            {"openserp_url": "http://serp", "web_results": []},
+            data,
+            "John Smith",
+            object(),
+            max_images=3,
+            max_web=5,
+        )
+    assert changed and [i["url"] for i in data["images"]] == [
+        "http://dup",
+        "http://new",
+    ]
+    assert seen == {"wanted": 2, "existing": ["http://dup"], "key": "person#01HJOHN"}
 
 
 def test_validate_before_write_rejects_bad_allows_good():
@@ -123,5 +134,5 @@ def test_search_timeout_is_config_driven():
             lambda: {"openserp": {"rate_limit_seconds": 0}},
         ),
     ):
-        oe._search_openserp("q", "http://x", limit=5)
+        oe._search_openserp("q2", "http://x", limit=5)  # "q" is answered from the cache
     assert captured["timeout"] == 60

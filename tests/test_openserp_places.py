@@ -27,7 +27,7 @@ def test_place_name_variants_dedupes_case_insensitive():
     assert v == ["Aachen"]
 
 
-def test_places_openserp_searches_each_variant(tmp_path):
+def test_places_openserp_searches_each_variant(tmp_path, queued_finds):
     pd = tmp_path / "places"
     pd.mkdir()
     (pd / "p.json").write_text(
@@ -41,14 +41,25 @@ def test_places_openserp_searches_each_variant(tmp_path):
     )
     seen = []
 
-    def fake(q, url, limit=10):
+    def fake(q, url, limit=10, start=0, **k):
         seen.append(q)
         return [
-            {"url": f"http://{abs(hash(q)) % 100}", "title": "x WWII", "snippet": ""}
+            {
+                "url": f"http://example.org/{abs(hash(q)) % 100}",
+                "title": "x WWII",
+                "snippet": "",
+            }
         ]
 
     with (
         patch.object(oe, "_openserp_reachable", return_value=True),
+        patch.object(
+            oe,
+            "find_entity_photos",
+            return_value=[
+                {"url": "http://img.example.org/p.jpg", "vision_verified": True}
+            ],
+        ),
         patch.object(oe, "_search_openserp", side_effect=fake),
         patch.object(oe, "_verify_result", return_value=True),
         patch.object(
@@ -68,6 +79,11 @@ def test_places_openserp_searches_each_variant(tmp_path):
     assert any("Palatinate" in q for q in seen)  # English
     assert any("Pfalz" in q for q in seen)  # native German WWII name
     p = json.loads((pd / "p.json").read_text())
-    assert p["images"] and p["web_results"]
+    assert p["images"] and "web_results" not in p  # pages are held in the review queue
+    finds = queued_finds()
+    assert finds and {e["request_params"]["origin_entity_id"] for e in finds} == {
+        "01HX7YZABCDEFGHJKMNPQRSTVW"
+    }
+    assert all(e["request_params"]["origin_entity_type"] == "place" for e in finds)
     assert p["openserp_searched"] is True
     jsonschema.validate(p, PLACES_OUTPUT_SCHEMA)

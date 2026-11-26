@@ -181,7 +181,7 @@ def test_llm_search_runs_only_when_no_other_source_found_a_copy(monkeypatch):
     monkeypatch.setattr(br, "_find_in_openserp", lambda *a, **k: [])
     monkeypatch.setattr(br, "_find_in_gutenberg", lambda *a, **k: [])
     monkeypatch.setattr(br, "_find_in_llm", lambda *a, **k: calls.append("llm") or [])
-    monkeypatch.setattr(br, "_aggregate_findings", lambda e, f: None)
+    monkeypatch.setattr(br, "_queue_found", lambda *a, **k: None)
 
     monkeypatch.setattr(
         br, "_find_in_archive_org", lambda *a, **k: [("https://a/x", "archive_org")]
@@ -217,9 +217,9 @@ def test_resolve_config_is_built_once_and_carries_every_search_flag():
         "use_openserp": True,
         "openserp_url": "http://o:1",
     }
-    # DRY: both Phase 3 call sites use the helper (no second inline dict)
+    # DRY: the one Phase 3 call site (the rounds repeat the same pass) uses the helper
     src = inspect.getsource(p3)
-    assert src.count("_bibliography_resolve_config(config)") == 2
+    assert src.count("_bibliography_resolve_config(config)") == 1
     assert '"search_archive_org": supplemental_config.get' not in src
 
 
@@ -288,19 +288,24 @@ def test_license_is_rederived_once_phase3_finds_a_url():
     assert decided["license"] == "copyrighted"  # never overrides a decided license
 
 
-def test_llm_search_is_deferred_in_batch_collect_pass(monkeypatch):
-    """Batch COLLECT only queues Grok calls: running the LLM search would be swallowed as 'no URL'
-    and raise a false verify alert. It must be skipped then and run on the batch re-run.
-    """
+def test_llm_search_is_queued_in_batch_mode_not_swallowed_as_no_url():
+    """Batch rounds (Group 2): the LLM search QUEUES its Grok call (BatchModeCollecting) and the
+    next pass has the answer. It must neither be skipped (the entry would be persisted as
+    not_found and sent to human review) nor swallowed as a failure."""
+    from src.grok_client import BatchModeCollecting
+
     br = _resolver()
-    monkeypatch.setattr(
-        ss, "search_llm", lambda *a: pytest.fail("no LLM call in collect")
-    )
 
     class _Batch:
         batch_mode = True
 
-    assert br._find_in_llm({}, "q", "T", "A", _Batch(), {"llm_search": True}) == []
+        def chat_completion(self, **_k):
+            raise BatchModeCollecting("k")
+
+    with pytest.raises(BatchModeCollecting):
+        br._find_in_llm({}, "q", "T", "A", _Batch(), {"llm_search": True})
+    with pytest.raises(BatchModeCollecting):
+        ss.search_llm("T", "A", _Batch())
 
 
 def test_llm_search_failure_is_visible(monkeypatch, caplog):

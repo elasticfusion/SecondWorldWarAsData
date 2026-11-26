@@ -4,7 +4,7 @@ import json
 import logging
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 import ulid
 from pydantic import BaseModel, ConfigDict, Field
@@ -384,8 +384,27 @@ def extract_places(
             if not place_name:
                 continue
 
-            # Find or create place file
-            place_file = _find_or_create_place(place_name, mention, places_dir, index)
+            # Find or create place file; a record the schema guard refuses skips this mention
+            # only (task 1.8), loudly - the other places of the event are still written
+            try:
+                place_file = _find_or_create_place(
+                    place_name, mention, places_dir, index
+                )
+            except RuntimeError as e:
+                from src.utils.observe import observe_warn
+
+                observe_warn(
+                    "places",
+                    "record_refused",
+                    note=(
+                        "a new place record failed its schema and was not written; check the "
+                        "places schema against the extractor's fields (the task log has the "
+                        "validation error)"
+                    ),
+                    place=str(place_name)[:80],
+                    error=str(e)[:120],
+                )
+                continue
 
             # Add event mention to place file
             _add_event_mention(
@@ -463,14 +482,17 @@ def _new_place_filename(place_name: str, place_id: str, places_dir: Path) -> str
     from src.extraction.batch_parallel import (
         _safe_entity_filename,
         _contained_entity_path,
+        entity_id_suffix,
     )
 
     safe_name = place_name.replace(" ", "_").replace("/", "_")[:120]
+    stem = _safe_entity_filename(safe_name, "place")[:-5]
     filename = _safe_entity_filename(
-        f"{safe_name}_{place_id[:8]}.json", f"place_{place_id[:12]}"
+        f"{stem}_{entity_id_suffix(place_id, places_dir, stem)}.json",
+        f"place_{place_id[-12:]}",
     )
     if _contained_entity_path(places_dir, filename) is None:
-        filename = f"place_{place_id[:12]}.json"
+        filename = f"place_{place_id}.json"
     return filename
 
 
@@ -560,7 +582,11 @@ def _find_or_create_place(
         # then register it in the locked index before releasing (so the next waiter sees it).
         place_data = _build_new_place_record(place_name, mention)
         filename = _new_place_filename(place_name, place_data["PlaceID"], places_dir)
-        write_json_with_lock(places_dir / filename, place_data)
+        if not write_json_with_lock(places_dir / filename, place_data):
+            # the schema guard refused the record: never index a file that does not exist
+            raise RuntimeError(
+                f"place record for {place_name!r} was refused by its schema"
+            )
 
         disk_index[place_key] = filename
         save(disk_index)
@@ -585,63 +611,232 @@ def _build_place_name_index(
             if not isinstance(data, dict) or not data.get("PlaceID"):
                 continue
             file_data[pf] = data
-            name = (data.get("current_name") or "").lower()
-            if name:
+            for name in _record_names(data):
                 name_to_id[name] = data["PlaceID"]
-            for alias in data.get("aliases", []):
-                name_to_id[alias.lower()] = data["PlaceID"]
         except (OSError, json.JSONDecodeError):
             continue
     return name_to_id, file_data
 
 
+def _record_names(data: Dict[str, Any]) -> List[str]:
+    """A place's lowercase name and aliases (non-text aliases ignored)."""
+    names = [data.get("current_name")] + list(data.get("aliases") or [])
+    return [n.lower() for n in names if isinstance(n, str) and n]
+
+
+# How coarse a place is. A parent must be coarser than its child and of the type its hierarchy
+# field names (owner 2026-11-17: village/town/city < region < country < continent). Anything not
+# listed (towns, rivers, bridges, ports, "other", unknown) is a local feature (rank 1).
+_RANK = {"region": 2, "state": 2, "province": 2, "country": 3, "continent": 4}
+# the hierarchy field -> the types its parent may be
+_FIELD_TYPES = {
+    "region": ("region", "state", "province"),
+    "country": ("country",),
+    "continent": ("continent",),
+}
+
+
+def _rank(data: Dict[str, Any]) -> int:
+    return _RANK.get(str(data.get("geography_type") or "").lower(), 1)
+
+
+def _name_candidates(
+    file_data: Dict[Path, Dict[str, Any]],
+) -> Dict[str, List[Dict[str, Any]]]:
+    """lowercase name or alias -> EVERY place with it (never last-one-wins)."""
+    out: Dict[str, List[Dict[str, Any]]] = {}
+    for data in file_data.values():
+        names = [data.get("current_name") or ""] + list(data.get("aliases") or [])
+        for name in {str(n).strip().lower() for n in names if n}:
+            found = out.setdefault(name, [])
+            if not any(d is data for d in found):
+                found.append(data)
+    return out
+
+
+def _fits(
+    found: List[Dict[str, Any]], field: str, child: Dict[str, Any]
+) -> "tuple[List[Dict[str, Any]], bool]":
+    """The candidates that may be ``child``'s parent for ``field``, and whether they are of a
+    different type than the field names. A candidate must be a container (region, state,
+    country, continent) coarser than the child; those of the field's own type win. A hierarchy
+    whose field is mislabelled (``country: Devon`` for the region Devon) still links to the
+    place it names, and is counted (``field_mismatch``) so the data can be corrected."""
+    own = child.get("PlaceID")
+    coarser = [
+        c
+        for c in found
+        if str(c.get("geography_type") or "").lower() in _RANK
+        and _rank(c) > _rank(child)
+        and c.get("PlaceID") != own
+    ]
+    exact = [
+        c
+        for c in coarser
+        if str(c.get("geography_type") or "").lower() in _FIELD_TYPES[field]
+    ]
+    return (exact, False) if exact else (coarser, bool(coarser))
+
+
 def _find_parent_id(
-    hierarchy: Dict[str, Any], name_to_id: Dict[str, str], own_id: str = ""
-) -> Optional[str]:
-    """Find parent PlaceID from hierarchy region or country. Skips self."""
+    data: Dict[str, Any],
+    candidates: Dict[str, List[Dict[str, Any]]],
+    parent_of: Dict[str, str],
+) -> "tuple[Optional[str], str, Optional[str]]":
+    """(parent PlaceID, outcome, the name that was ambiguous). Tries the hierarchy's region, then
+    country, then continent: a candidate counts only if it is a container coarser than the place
+    (of the field's own type first, ``_fits``); exactly one must remain (several = ``ambiguous``: never guessed); a link that
+    would close a cycle is ``cycle``. Outcomes: linked | linked_field_mismatch | ambiguous |
+    cycle | not_found.
+    """
+    hierarchy = data.get("hierarchy") or {}
     for field in ("region", "country", "continent"):
-        parent_name = hierarchy.get(field, "")
-        if parent_name:
-            parent_id = name_to_id.get(parent_name.lower())
-            if parent_id and parent_id != own_id:
-                return parent_id
-    return None
+        name = str(hierarchy.get(field) or "").strip().lower()
+        fits, mismatch = (
+            _fits(candidates.get(name, []), field, data) if name else ([], False)
+        )
+        if len(fits) > 1:
+            return None, "ambiguous", name
+        if fits:
+            parent = str(fits[0]["PlaceID"])
+            if _closes_cycle(str(data.get("PlaceID") or ""), parent, parent_of):
+                return None, "cycle", None
+            return parent, ("linked_field_mismatch" if mismatch else "linked"), name
+    return None, "not_found", None
+
+
+def _closes_cycle(own: str, parent: str, parent_of: Dict[str, str]) -> bool:
+    """Whether linking ``own`` -> ``parent`` makes a loop (``own`` is above ``parent``)."""
+    seen, node = set(), parent
+    while node and node not in seen:
+        if node == own:
+            return True
+        seen.add(node)
+        node = parent_of.get(node, "")
+    return False
+
+
+def _current_parents(file_data: Dict[Path, Dict[str, Any]]) -> Dict[str, str]:
+    """PlaceID -> its parent's PlaceID, for the links that exist (for the cycle check)."""
+    out: Dict[str, str] = {}
+    for d in file_data.values():
+        h = d.get("hierarchy")
+        if isinstance(h, dict) and h.get("parent_place_id"):
+            out[str(d.get("PlaceID"))] = str(h["parent_place_id"])
+    return out
+
+
+def _log_name(value: Any) -> str:
+    """A place name safe for a log line (untrusted text: control characters dropped, capped)."""
+    from src.utils.find_queue import clean_for_log
+
+    return clean_for_log(str(value or ""), 80)
+
+
+def _needs_parent(hierarchy: Any) -> bool:
+    return (
+        isinstance(hierarchy, dict)
+        and bool(hierarchy)
+        and not hierarchy.get("parent_place_id")
+    )
 
 
 def link_parent_place_ids(places_dir: Path) -> int:
-    """Link parent_place_id for all places using hierarchy data.
+    """Link ``hierarchy.parent_place_id`` for places that have a hierarchy and no parent yet.
 
-    Processes in order: countries → regions → cities/towns/other.
-    Returns number of places updated.
+    The parent is the place named by the hierarchy's region, else country, else continent - only
+    a place of that type and coarser than the child (``_find_parent_id``). A name shared by
+    several such places is not guessed (counted and said, with examples), nor is a link that
+    would close a cycle. Returns the number of places linked.
     """
     if not places_dir.exists():
         return 0
+    _names, file_data = _build_place_name_index(places_dir)
+    candidates = _name_candidates(file_data)
+    parent_of = _current_parents(file_data)
+    counts = {"linked": 0, "field_mismatch": 0, "ambiguous": 0, "cycle": 0,
+              "not_found": 0, "refused": 0}  # fmt: skip
+    ambiguous: Dict[str, int] = {}
+    noted: Dict[str, List[str]] = {
+        "field_mismatch": [],
+        "cycle": [],
+    }  # examples to name
+    for pf, data in sorted(file_data.items(), key=lambda kv: -_rank(kv[1])):
+        if not _needs_parent(data.get("hierarchy")):
+            continue
+        parent_id, outcome, name = _find_parent_id(data, candidates, parent_of)
+        if outcome == "linked_field_mismatch":
+            counts["field_mismatch"] += 1  # linked below, and said
+            noted["field_mismatch"].append(
+                f"{_log_name(data.get('current_name'))} -> {_log_name(name)}"
+            )
+        elif outcome == "cycle":
+            noted["cycle"].append(_log_name(data.get("current_name") or pf.name))
+        if outcome.startswith("linked"):
+            outcome = _write_parent(pf, data, str(parent_id), parent_of)
+        counts[outcome] += 1
+        if outcome == "ambiguous" and name:
+            ambiguous[_log_name(name)] = ambiguous.get(_log_name(name), 0) + 1
+    _say_parent_links(counts, ambiguous, noted)
+    return counts["linked"]
 
-    name_to_id, file_data = _build_place_name_index(places_dir)
 
-    # Process in hierarchy order so parents are indexed before children
-    priority = {"continent": 0, "country": 1, "region": 2}
-    ordered = sorted(
-        file_data.items(),
-        key=lambda item: priority.get(item[1].get("geography_type", ""), 3),
+def _write_parent(
+    pf: Path, data: Dict[str, Any], parent_id: str, parent_of: Dict[str, str]
+) -> str:
+    """Write the link; ``linked`` or ``refused`` (the schema guard said no)."""
+    data["hierarchy"]["parent_place_id"] = parent_id
+    # entity="places": the version and _last_updated stamp, so change detection sees the new
+    # parent (task 1.10); a refused write is not counted as linked
+    if write_json_with_lock(pf, data, entity="places"):
+        parent_of[str(data["PlaceID"])] = parent_id
+        return "linked"
+    logger.warning(
+        "OBSERV places.parent_link_refused place=%s status=warn - the schema guard refused the "
+        "record; check its fields against the places schema",
+        pf.name,
     )
+    return "refused"
 
-    updated = 0
-    for pf, data in ordered:
-        hierarchy = data.get("hierarchy")
-        if not hierarchy or not isinstance(hierarchy, dict):
-            continue
-        if hierarchy.get("parent_place_id"):
-            continue
-        parent_id = _find_parent_id(hierarchy, name_to_id, data.get("PlaceID", ""))
-        if parent_id:
-            hierarchy["parent_place_id"] = parent_id
-            write_json_with_lock(pf, data)
-            updated += 1
 
-    logger.info("Linked parent_place_id for %d places", updated)
-    logger.info("OBSERV places.parent_link linked=%d", updated)
-    return updated
+def _say_parent_links(
+    counts: Dict[str, int], ambiguous: Dict[str, int], noted: Dict[str, List[str]]
+) -> None:
+    bad = counts["ambiguous"] or counts["cycle"] or counts["refused"]
+    logger.info(
+        "OBSERV places.parent_link linked=%d field_mismatch=%d ambiguous=%d cycle=%d "
+        "not_found=%d refused=%d status=%s",
+        counts["linked"],
+        counts["field_mismatch"],
+        counts["ambiguous"],
+        counts["cycle"],
+        counts["not_found"],
+        counts["refused"],
+        "warn" if bad else "ok",
+    )
+    if counts["field_mismatch"]:
+        logger.info(
+            "OBSERV places.parent_link_field_mismatch n=%d examples=%s - a hierarchy names its "
+            "parent under the wrong field (country: Devon for the region Devon); linked to the "
+            "coarser place it names. Check these: a field naming a country that matched a "
+            "same-named region is wrong (fix the place's hierarchy); the text comes from Grok's "
+            "place enrichment (enrich_places)",
+            counts["field_mismatch"],
+            "; ".join(noted["field_mismatch"][:10]),
+        )
+    if counts["ambiguous"] or counts["cycle"]:
+        examples = sorted(ambiguous, key=lambda n: -ambiguous[n])[:10]
+        logger.warning(
+            "OBSERV places.parent_link_unresolved ambiguous=%d cycle=%d names=%s "
+            "cycle_places=%s status=warn - "
+            "these places were not given a parent: several places of the right type share the "
+            "parent's name (duplicates to merge, or names to disambiguate), or the link would "
+            "make a loop (check the places' hierarchy fields)",
+            counts["ambiguous"],
+            counts["cycle"],
+            "; ".join(examples) or "-",
+            "; ".join(noted["cycle"][:10]) or "-",
+        )
 
 
 def _backfill_place_data(place_data: Dict[str, Any], mention: Dict[str, Any]) -> None:

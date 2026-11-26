@@ -42,13 +42,16 @@ def _normalize_name(name: str) -> str:
 
 
 def _name_to_filename(name: str, group_id: str) -> str:
-    """Convert group name to safe filename with ULID prefix."""
-    # Take first 8 chars of ULID for uniqueness
-    prefix = group_id[:8]
-    # Sanitize name for filename
+    """Convert group name to a safe filename ending in the ULID's random part (task 1.8: the
+    timestamp head made two same-second groups share a file). The name part is capped in bytes
+    (a long non-Latin name raised ENAMETOOLONG)."""
+    from src.extraction.batch_parallel import entity_id_suffix
+
     safe_name = "".join(c if c.isalnum() or c in " -_" else "_" for c in name)
     safe_name = safe_name.replace(" ", "_")
-    return f"{safe_name}_{prefix}.json"
+    while len(safe_name.encode("utf-8")) > 150:
+        safe_name = safe_name[:-1]
+    return f"{safe_name or 'group'}_{entity_id_suffix(group_id)}.json"
 
 
 def _update_index(index_file: Path, name: str, filename: str):
@@ -293,7 +296,7 @@ def _create_new_group(
 
 def _save_group(
     groups_dir: Path, index_file: Path, group: dict, book: str, author: str, series: str
-):
+) -> Optional[Path]:
     """Save or merge a group file — conflict-safe WITHOUT a queue.
 
     The find-vs-create decision is serialised on the shared group ``index_file`` under
@@ -329,11 +332,13 @@ def _save_group(
         existing_filename = index.get(normalized)
         if existing_filename and (groups_dir / existing_filename).exists():
             _merge_existing_group(groups_dir / existing_filename, group, group_name)
-        else:
-            filename = _create_new_group(groups_dir, group, group_id, group_name)
-            if filename:
-                index[normalized] = filename
-                save_index(index)
+            return groups_dir / existing_filename
+        filename = _create_new_group(groups_dir, group, group_id, group_name)
+        if not filename:
+            return None
+        index[normalized] = filename
+        save_index(index)
+        return groups_dir / filename
 
 
 def _observe_groups_yield(event_data: dict, produced: int) -> None:

@@ -187,3 +187,12 @@ def book_id(book: Optional[str]) -> str:
     The slug is used as given (not normalised): it is already a safe, exact identifier.
     """
     return _ulid_from_key("|".join(["book", _SCHEMA, str(book or "")]))
+
+
+def fetch_event_id(*parts: object) -> str:
+    """Deterministic ``fetch_event_id`` for an event that must be recorded ONCE however often a
+    run repeats (e.g. one link of one source section queued for review, task 1.2f)."""
+    import json
+
+    # JSON, not "|".join: a part containing "|" cannot make two identities collide
+    return _ulid_from_key(json.dumps(["fetchevent", _SCHEMA, *(str(p) for p in parts)]))

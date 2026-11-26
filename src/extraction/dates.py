@@ -262,11 +262,12 @@ def _find_or_create_date(
     # Cap the human (LLM-derived) portion BEFORE appending the id so the id — which provides
     # uniqueness — is NEVER truncated away (a too-long name would otherwise collide distinct entities).
     safe_date = safe_date[:80]
+    # the ULID's random tail, not its timestamp head (same-second dates shared a file, task 1.8)
     if time_start:
         safe_time = time_start.replace(":", "")[:20]
-        filename = f"{safe_date}_{safe_time}_{date_id[:8]}.json"
+        filename = f"{safe_date}_{safe_time}_{date_id[-8:]}.json"
     else:
-        filename = f"{safe_date}_{date_id[:8]}.json"
+        filename = f"{safe_date}_{date_id[-8:]}.json"
 
     # Path-traversal guard: date_start/time_start are LLM-derived, so the cosmetic replaces above do
     # NOT block "/", "..", backslash, NUL, etc. Route through the hardened sanitizer + symlink-resolved

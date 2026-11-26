@@ -103,6 +103,7 @@ def test_submit_only_adds_batch_flag(entrypoint):
     """run_submit_only adds --batch if not present."""
     with (
         patch.object(entrypoint, "_load_secrets"),
+        patch.object(entrypoint, "_preflight_balance_check"),
         patch.object(entrypoint, "_ensure_nat_if_needed"),
         patch.object(entrypoint, "_patch_config"),
         patch.object(entrypoint, "_start_openserp_if_needed"),

@@ -18,6 +18,7 @@ import base64
 import logging
 from typing import List
 
+from src.grok_client import BatchModeCollecting
 from src.ingestion.speaker_id import RosterCandidate
 
 logger = logging.getLogger(__name__)
@@ -85,6 +86,8 @@ class GrokVisionAnalyzer:  # pylint: disable=too-few-public-methods
                 cache_type="events",
             )
             return result if isinstance(result, dict) else {}
+        except BatchModeCollecting:
+            raise  # queued for the batch, not an unknown frame
         except (
             Exception
         ) as e:  # noqa: BLE001 - perception failure -> unknown, not crash

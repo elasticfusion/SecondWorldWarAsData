@@ -21,37 +21,41 @@ from src.schemas import (
     entity_version,
 )
 
+CURRENT = entity_version("places")  # places' current version (not a pinned number)
+
 
 def test_entity_version_distinguishes_entities():
     # sanity: these differ, so a None-fallback (min) is demonstrably wrong for places
-    assert entity_version("places") == "2.30"
+    assert entity_version("places") != entity_version(None)
     assert entity_version("weather") == "2.25"
     assert entity_version(None) == "2.24"  # the MIN — the old buggy fallback
 
 
 def test_stamp_file_threads_entity_stamps_real_version(tmp_path):
-    # an OLD places record -> must be stamped to places' REAL version 2.30 (not 2.24)
+    # an OLD places record -> must be stamped to places' REAL version (not the minimum)
     f = tmp_path / "p.json"
     f.write_text(json.dumps({"PlaceID": "X", "_schema_version": "2.0"}))
     n = E._stamp_file(f, needs_migration, inject_metadata, "places")
     assert n == 1
-    assert json.loads(f.read_text())["_schema_version"] == "2.30"
+    assert json.loads(f.read_text())["_schema_version"] == entity_version("places")
 
 
 def test_stamp_file_does_not_downgrade_current_places(tmp_path):
-    # a places record ALREADY at 2.30 must NOT be re-stamped (the downgrade-to-2.24 bug)
+    # a places record ALREADY at its current version must NOT be re-stamped (the downgrade-to-2.24 bug)
     f = tmp_path / "p.json"
-    f.write_text(json.dumps({"PlaceID": "X", "_schema_version": "2.30"}))
+    f.write_text(
+        json.dumps({"PlaceID": "X", "_schema_version": entity_version("places")})
+    )
     n = E._stamp_file(f, needs_migration, inject_metadata, "places")
     assert n == 0
-    assert json.loads(f.read_text())["_schema_version"] == "2.30"
+    assert json.loads(f.read_text())["_schema_version"] == entity_version("places")
 
 
 def test_dir_all_current_is_per_entity(tmp_path):
-    # places files at 2.30 are "all current" for places (so the dir is skippable) — the OLD global
+    # places files at their current version are "all current" for places (so the dir is skippable) — the OLD global
     # weather sample would have wrongly driven this decision.
-    (tmp_path / "a.json").write_text(json.dumps({"_schema_version": "2.30"}))
-    (tmp_path / "b.json").write_text(json.dumps({"_schema_version": "2.30"}))
+    (tmp_path / "a.json").write_text(json.dumps({"_schema_version": CURRENT}))
+    (tmp_path / "b.json").write_text(json.dumps({"_schema_version": CURRENT}))
     files = list(tmp_path.glob("*.json"))
     assert E._dir_all_current(files, "places", needs_migration) is True
     # the SAME files judged against weather (2.25) are NOT current -> would be stamped (shows the
@@ -61,24 +65,26 @@ def test_dir_all_current_is_per_entity(tmp_path):
 
 def test_stamp_entity_dir_stamps_higher_versioned_dir(tmp_path):
     # the old global fast-path (weather==min) early-returned and never stamped places; the per-dir
-    # path stamps an out-of-date places dir to 2.30.
+    # path stamps an out-of-date places dir to its current version.
     p = tmp_path / "places"
     p.mkdir()
     (p / "one.json").write_text(json.dumps({"PlaceID": "A", "_schema_version": "2.1"}))
-    (p / "two.json").write_text(json.dumps({"PlaceID": "B", "_schema_version": "2.30"}))
+    (p / "two.json").write_text(
+        json.dumps({"PlaceID": "B", "_schema_version": CURRENT})
+    )
     (p / "index.json").write_text("{}")  # skipped
     n = E._stamp_entity_dir(
         p, "places", {"index.json"}, needs_migration, inject_metadata
     )
     assert n == 1  # only the out-of-date one stamped; index.json skipped
-    assert json.loads((p / "one.json").read_text())["_schema_version"] == "2.30"
-    assert json.loads((p / "two.json").read_text())["_schema_version"] == "2.30"
+    assert json.loads((p / "one.json").read_text())["_schema_version"] == CURRENT
+    assert json.loads((p / "two.json").read_text())["_schema_version"] == CURRENT
 
 
 def test_stamp_entity_dir_skips_all_current(tmp_path):
     p = tmp_path / "places"
     p.mkdir()
-    (p / "one.json").write_text(json.dumps({"_schema_version": "2.30"}))
+    (p / "one.json").write_text(json.dumps({"_schema_version": CURRENT}))
     n = E._stamp_entity_dir(p, "places", set(), needs_migration, inject_metadata)
     assert n == 0  # all current -> fast-path skip
 
@@ -93,3 +99,23 @@ def test_stamp_entity_dir_refuses_unknown_entity(tmp_path):
     assert (
         json.loads((p / "one.json").read_text())["_schema_version"] == "2.0"
     )  # untouched
+
+
+def test_stamping_never_touches_the_trigger_lambda(monkeypatch):
+    """Stamping rewrites only local files: it must not throttle the trigger Lambda (a task killed
+    mid-stamp used to leave the whole pipeline's trigger at concurrency 0, with no alert).
+    """
+
+    def no_aws(service, *a, **k):
+        raise AssertionError(f"schema stamping called AWS ({service})")
+
+    monkeypatch.setattr(E.boto3, "client", no_aws)
+    E._stamp_schema_versions()  # /app/output is absent here: every directory is skipped
+
+
+def test_no_role_may_change_lambda_concurrency():
+    """The stamping disable was the only use; the grant is gone (least privilege)."""
+    from pathlib import Path
+
+    iam = (Path(E.__file__).parent / "cloudformation" / "iam.yaml").read_text()
+    assert "FunctionConcurrency" not in iam
