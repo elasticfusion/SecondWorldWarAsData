@@ -1608,15 +1608,6 @@ tries, abort if never ready) -> `_clear_title_cache_if_reprocess` -> `_load_secr
   copy of production data and validate every output record. `resolve_*_people.py` only rename (PersonID kept) but
   skip silently when the target file exists.
 
-#### Loader (PostgreSQL, Phase 2 of the plan): removed records and old ids (owner 2026-11-21)
-- **MED - the loader never deletes, so a removed record keeps its row.** `src/loader/load.py` only inserts or
-  replaces (`INSERT OR REPLACE` / `ON CONFLICT DO UPDATE`). Pointed at a database that already holds data, any record
-  removed from S3 (a merged bibliography record, a deduped person or place, a purged chapter) stays. Fix when the
-  loader is built: each load rebuilds into a fresh schema and swaps, or stamps the rows it loads and deletes the rest.
-- **MED - old ids must still resolve on the site and in the API.** Load the merge pointers
-  (`{env}-wwii-id-aliases`, `src/utils/id_aliases`) into an alias table, so a link, saved search or citation holding
-  a merged-away id reaches the surviving record (redirect, not 404).
-
 #### Older backlog - MED list
 - FIXED IN CODE, NOT YET VALIDATED (audit 2026-11-25: `_download_s3_file(optional=...)` emits `download.optional_absent status=ok`; not checked that every tracking key passes it) - **[MED · observability-precision] download.file_missing cries wolf on expected-absent TRACKING files.** On every clean-slate/
   first run, Phase-2 download lists then 404s on index.json / .processed_events.json / manifests/run_scope/<book>.json — all
@@ -3248,6 +3239,20 @@ Larger refactor with semantic-diff risk; own PR, not bundled with the PR6 correc
 ---
 
 ## Other open items (moved out of the Phase 3 review section; not in a Phase 3 test group)
+
+### Site database (PostgreSQL, not built yet): removed records and old ids (owner 2026-11-21; moved out of Phase 3 2026-11-25, was D4/D5)
+- **MED - the loader never deletes, so a removed record keeps its row.** `src/loader/load.py` only inserts or
+  replaces (`INSERT OR REPLACE` / `ON CONFLICT DO UPDATE`). Pointed at a database that already holds data, any record
+  removed from S3 (a merged bibliography record, a deduped person or place, a purged chapter) stays. Fix when the
+  loader is built. Options (was Phase 3 decision D4, owner 2026-11-25: "not a Phase 3 issue, PostgreSQL hasn't been
+  built"): (a) each load rebuilds into a fresh schema and swaps; (b) each load stamps the rows it writes with its
+  load id and deletes the rows it did not touch, a load that did not finish deleting nothing (incremental, fits
+  "never reprocess unchanged content"; suggested).
+- **MED - old ids must still resolve on the site and in the API.** Load the merge pointers
+  (`{env}-wwii-id-aliases`, `src/utils/id_aliases`) into an alias table, so a link, saved search or citation holding
+  a merged-away id reaches the surviving record (redirect, not 404). DECIDED (owner 2026-11-25, was D5): leave a
+  redirect placeholder to the survivor.
+
 
 ### Code defects found by the 2026-11-17 documentation review (each verified in code)
 Phase 3 defects (OpenSERP service, 90-day marker, breaker, batch mode, external maps, NOAA, ...)

@@ -2,7 +2,7 @@
 
 One designation per question, kept stable so each can be answered on its own. Details and evidence for
 each are in `docs/current/TODO.md` (search for the designation or the topic). Suggested order: the data
-decisions first (D4-D9: they shape the schema and the database), then the bibliography/NARA ones
+decisions first (D6-D9: they shape the schema), then the bibliography/NARA ones
 (D10-D16: the bibliography is the core of the system).
 
 ## Decided
@@ -25,7 +25,8 @@ decisions first (D4-D9: they shape the schema and the database), then the biblio
 
 ## Answered 2026-11-25 (owner comments kept below, under each question)
 
-- **D5** - a merged-away id gets a redirect placeholder (to the survivor) on the site and API.
+- **D4 / D5** - NOT Phase 3 (owner 2026-11-25): the site database (PostgreSQL) has not been built. Moved to the
+  TODO, "Site database (PostgreSQL, not built yet)". D5 decided there: a merged-away id gets a redirect placeholder.
 - **D6** - merge scripts must work against S3 (the authoritative store: merge pointers, backups); a local mode
   is optional, kept only where it is easy.
 - **D7** - a held document beats every other source. Add a way to note a copy's problems (missing pages,
@@ -79,8 +80,6 @@ decisions first (D4-D9: they shape the schema and the database), then the biblio
 
 ## Still to answer
 
-- **D4** - (PostgreSQL, the site/API database; not DynamoDB) D4-a rebuild + swap, or D4-b mark touched rows and
-  delete the rest (a load that did not finish deletes nothing)? Suggested: D4-b.
 - **D6-Q** - delete the five archived merge scripts?
 - **D12** - keep the full reference in `archive_reference_number` (it holds the entry/box/file a microfiche pull
   needs) and add a separate `record_group` number field? Suggested: yes.
