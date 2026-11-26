@@ -34,8 +34,11 @@ from typing import Any, Dict, Optional
 #     fingerprint. NO reprocessing: existing records remain valid (the consistency test
 #     confirms it).
 #   • BREAKING change (new REQUIRED field, removed/renamed field, tightened type) -> bump
-#     that entity AND either register_upgrade(old,new) or run a TARGETED reprocess of that
+#     that entity AND either declare it breaking in version_steps (the upgrade release does it) or run
+#     a TARGETED reprocess of that
 #     one entity. Never a global reprocess; other entities are untouched.
+#   • Either way, declare the step in src/schemas/version_steps.py (forward / breaking): merges and
+#     updates bring older records forward through it (schema_contract.bring_forward).
 # ---------------------------------------------------------------------------
 ENTITY_SCHEMA_VERSIONS: Dict[str, str] = {
     "events": "2.25",

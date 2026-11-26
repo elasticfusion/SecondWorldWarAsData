@@ -197,6 +197,9 @@ PLAN (D2):
 6. **D2-6** a test fails when an entity's schema version is bumped without its D2-1 entry (extends the
    fingerprint test).
 7. Separately (to-do): the write guard should still check field TYPES on older-version records (D1-R3).
+   Also: retire `schema_contract.register_upgrade` / `_UPGRADES` / `read_for_update`'s best-effort path once
+   their readers (file_lock._version_status, the people/places/equipment/dates/weather/groups extractors,
+   batch_parallel, enrich_write) move to `bring_forward` (slice A built it, 2026-11-25).
 D1 itself (hold or continue on a merge failure/timeout) is decided after D2: with D2-3 a content problem no
 longer fails the merge, so what is left is an outage (S3 error, task killed).
 7. **D2-7** every merge path uses `bring_forward` on both records before merging; a record that fails is kept out

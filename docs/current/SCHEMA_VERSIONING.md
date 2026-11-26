@@ -27,10 +27,23 @@ changes that don't change output shape, or for index/report files.
   by `tests/test_entity_schema_consistency.py` (old records still validate against the new
   schema).
 - **BREAKING** (new **required** field, removed/renamed field, tightened type): bump that
-  entity AND either register `schema_contract.register_upgrade(old, new)` OR run a **targeted
-  reprocess of that one entity**. Never a global reprocess; other entities are not touched.
+  entity AND declare it a breaking step in `src/schemas/version_steps.py` (done only by the upgrade release:
+  owner 2026-11-25, D2) OR run a **targeted reprocess of that one entity**. (`schema_contract.register_upgrade`
+  is the older, never-used mechanism, replaced by `version_steps.TRANSFORMS`; it goes once its readers move to
+  `bring_forward`.) Never a global reprocess; other entities are not touched.
   The consistency test will FAIL on old records until upgraded/reprocessed — that failure is
   the signal that a breaking change needs one of those two actions.
+
+### Declared steps and `bring_forward` (owner 2026-11-25, D2)
+
+Every version change is declared once in `src/schemas/version_steps.py` (from -> to, kind):
+- **forward-compatible** (additive): an older record is brought forward on the fly, in memory, before a merge or
+  update - `schema_contract.bring_forward(record, entity)` applies each step's transform (most need none) and
+  checks the result against the CURRENT schema: `current` / `brought_forward` (usable, returned as a stamped
+  copy), `invalid` (kept out, alerted by the caller), `needs_release_upgrade`, `future`;
+- **breaking**: never on the fly - only the upgrade release script; until it has run, work on the affected
+  records is held (D2-Q2).
+`tests/test_version_steps.py` fails when an entity's version is bumped without its step.
 
 ### The guard chain (all per-entity)
 
@@ -80,8 +93,10 @@ records validate). No unenforced entity types remain.
 
 1. [ ] Edit the enforced `*_output.py` schema.
 2. [ ] Bump THAT entity's version in `ENTITY_SCHEMA_VERSIONS` (src/schemas/__init__.py).
-3. [ ] SCHEMA_TARGET auto-derives from the map; for a BREAKING change register a
-   `schema_contract.register_upgrade(old, new)` or targeted-reprocess that entity.
+3. [ ] SCHEMA_TARGET auto-derives from the map; for a BREAKING change declare it breaking in
+   `src/schemas/version_steps.py` (the upgrade release does it) or targeted-reprocess that entity.
+   [ ] Declare the step in `src/schemas/version_steps.py` (forward, with a transform if the record must be
+   reshaped; or breaking, which needs the upgrade release).
 4. [ ] Update `docs/current/SCHEMA_REFERENCE.md` (version header + the entity's field table).
 5. [ ] Validate real `output/<entity>/*.json` records against the updated schema (0 drift).
 6. [ ] Run the guard test (`tests/test_schema_target_guard.py`) — must pass.
