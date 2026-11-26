@@ -24,6 +24,9 @@ authoritative HTML REFERENCE links** on the same topic. Route BOTH into one huma
 re-presentation for **at least 90 days**; NEVER permanently blocks clickbait/junk pages (url- or
 host-keyed).
 
+
+> yes
+
 ---
 
 ## 2. Today vs. proposed
@@ -33,6 +36,8 @@ host-keyed).
 searches serially (`rate_limit_seconds: 5`, `max_images_per_entity: 3`, `max_web_results: 3`). Results
 are auto-incorporated as enrichment. Fan-out = 5 types × N entities × up to 6 queries × 5s spacing →
 hours; CPU-pegged; no human gate.
+
+> yes
 
 ### Proposed — split by tool strength
 ```
@@ -61,10 +66,14 @@ hours; CPU-pegged; no human gate.
                   acquisition pass fetches)     URL + description, NOT fetched)
 ```
 
+
 **Net effect:** OpenSERP shrinks from "enrich everything" to "propose acquirable documents"; Grok
-owns the HTML-reference lane; nothing enters the dataset without a human confirm. The 4th-Division
+owthe HTML-reference lane; nothing enters the dataset without a human confirm. The 4th-Division
 association website IS surfaced — via Grok, as a reference link the reviewer can click — rather than
 missed (it would never be an OpenSERP PDF/EPUB hit).
+
+> That would mean OpenSerp is not searchng for images.  Or in the case of people_groups, unit histories.  So no.
+
 
 ---
 
@@ -100,7 +109,7 @@ For each **topic** (start with bibliography entries lacking a resolved online co
 entities that need a citation, e.g. a unit like "US 4th Infantry Division"):
 1. **OpenSERP → documents.** Search scoped to documents; accept result/landing pages and **resolve to
    a concrete PDF/EPUB** (§5a). Keep only hits that resolve to a fetchable document. (A pure-HTML page
-   with no document is NOT an OpenSERP candidate — Grok handles that.)
+   with no document is NOT an OpenSERP candidate — Grok handles that
 2. **Grok → HTML references.** Ask Grok for authoritative links on the topic (title + URL +
    description/why). These are the HTML references (association sites, unit histories, archives'
    landing pages). Validate URLs through the SSRF allowlist (#453) + a liveness/HEAD check so dead
@@ -110,7 +119,12 @@ entities that need a citation, e.g. a unit like "US 4th Infantry Division"):
    description?, fmt?, resolved_doc_url?, verify_score?, live: bool}]}`.
 4. OpenSERP runs **once per topic for documents only** — far fewer queries than 5-entity × images.
 
+> think I answered this as "no" above. If this is different, then describe how.
+
 ### Stage 2 — Human review (new UI, mirrors dedup_ui)
+
+> Defer
+
 - Lists pending candidate records; **each candidate renders as a CLICKABLE LINK** (open in new tab) so
   the reviewer can investigate the actual page/document before deciding. Show kind (document vs
   reference), source (openserp/grok), title, description, and live-check status.
@@ -142,9 +156,13 @@ entities that need a citation, e.g. a unit like "US 4th Infantry Division"):
   + title + description), **never fetched**. The link lives in the dataset for the site/API to surface.
 - Both record provenance: `source=openserp|grok`, the human decision (ADD) + reviewer + timestamp.
 
+> yes, but documents added this way must be human reviewd, not automatic.
+
 ---
 
 ## 5a. ITEM/LANDING-PAGE → DOCUMENT RESOLUTION (the OpenSERP fix)
+
+> You seemed determined to minimize OpenSerp.  The entire point of OpenSerp is to broaden the search.
 
 Within OpenSERP's **document lane**, the fix is to resolve item/landing pages that DO lead to a
 PDF/EPUB — not to require a bare file suffix. (This is NOT about accepting HTML reference sites; those
@@ -169,8 +187,10 @@ the sources the operator wants.
 
 ## 5. What gets DROPPED (be explicit — this is the value/cost call)
 
+> this stays, but everything requires human review
+
 - **Web-page enrichment** for people/places/groups/equipment/source_sections (the `max_web_results`
-  snippets). Grokipedia/Wikipedia (Phase-2, cheaper, already runs) remains the text-enrichment source.
+   snippets). Grokipedia/Wikipedia (Phase-2, cheaper, already runs) remains the text-enrichment source.
 - **Image search** for all entity types (`max_images_per_entity`). NOTE: if place/people IMAGES are
   user-facing on the site, confirm that upstream Phase-2 Grokipedia/Wikipedia media covers them before
   dropping — otherwise keep a narrow place/person image path. (Open question for the operator.)

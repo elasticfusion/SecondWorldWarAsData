@@ -213,6 +213,18 @@ longer fails the merge, so what is left is an outage (S3 error, task killed).
    Already listed elsewhere: the manual merge scripts write raw JSON (Group 4 "Merge scripts"), the concurrent
    last-writer-wins writes (gap 28, the dates index), equipment find-or-create not locked across tasks.
 
+#### Phase 0: a book already submitted is held, not run again (owner 2026-11-25, D16)
+
+A book that was already submitted is not processed a second time: the second copy is put on hold for the GUI
+(deferred with the UI work) to decide, unless there is a technical reason to re-run it (an improved LLM is the
+example). Today intake (`lambda_handlers/trigger_handler.py`) rejects the same work under a new title
+(`duplicate`) and a renamed re-upload of an ingested document (`source-renamed`), and RE-PROCESSES a re-upload
+under the same slug (the reject message even says "re-upload it as contentrepository/<slug>/... to re-process
+it"). Change: every repeat submission (same slug, same work, same checksum) goes to a hold (a `needs-review/`
+reason, alerted on both channels), and a re-run needs an explicit technical reason recorded with it (who, why,
+which model) for provenance. Within Phase 3, tasks for different books may run concurrently; a write to a
+shared record (a unit or place two books mention) takes that record's lock, one writer at a time (D27).
+
 #### Merges: exact only; similar goes to human review (owner 2026-11-25, D3)
 
 DECIDED: an automatic merge needs an EXACT match; a similar one goes to the Dedup Review UI to approve or deny
