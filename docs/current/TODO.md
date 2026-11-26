@@ -3240,6 +3240,18 @@ Larger refactor with semantic-diff risk; own PR, not bundled with the PR6 correc
 
 ## Other open items (moved out of the Phase 3 review section; not in a Phase 3 test group)
 
+### Owner questions moved out of the Phase 3 decision list (2026-11-25; not Phase 3)
+- **Merge scripts (was D6-Q):** delete the five archived merge scripts (`scripts/archive/`)? Decided already (D6):
+  merge scripts must work against S3 (merge pointers, backups); a local mode only where it is easy. See Group 4
+  "Merge scripts: review accuracy and schema compliance".
+- **`map_features` (was D23):** retire it? It is a GeoJSON model of what is drawn inside a map (unit positions,
+  lines) plus a reverse registration of entities onto a map by place and date (`src/extraction/map_registration`);
+  no step runs it. The 2026-11-17 decision D1 says maps keep appearance links only, with no placement model.
+  Suggested: retire.
+- **`supplemental_info_pipeline` (was D24):** retire it? It turns supplemental (non-cited) material into
+  pseudo-events and runs the entity extractors on them; only `scripts/archive/process_supplemental_info.py` calls
+  it, and Phase 2's `supplemental` extraction does that job now. Suggested: retire.
+
 ### Site database (PostgreSQL, not built yet): removed records and old ids (owner 2026-11-21; moved out of Phase 3 2026-11-25, was D4/D5)
 - **MED - the loader never deletes, so a removed record keeps its row.** `src/loader/load.py` only inserts or
   replaces (`INSERT OR REPLACE` / `ON CONFLICT DO UPDATE`). Pointed at a database that already holds data, any record

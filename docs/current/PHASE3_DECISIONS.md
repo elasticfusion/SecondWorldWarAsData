@@ -80,7 +80,10 @@ decisions first (D6-D9: they shape the schema), then the bibliography/NARA ones
 
 ## Still to answer
 
-- **D6-Q** - delete the five archived merge scripts?
+Phase 3 only. D6-Q, D23 and D24 are not Phase 3: moved to the TODO ("Owner questions moved out of the Phase 3
+decision list").
+
+
 - **D12** - keep the full reference in `archive_reference_number` (it holds the entry/box/file a microfiche pull
   needs) and add a separate `record_group` number field? Suggested: yes.
 - **D13-Q2** - books and articles stop at the first copy found today (archival records keep every copy): keep
@@ -90,10 +93,6 @@ decisions first (D6-D9: they shape the schema), then the bibliography/NARA ones
 - **D18** - store the links between chapters of the same HyperWar volume (e.g. "see page 329")?
 - **D19** - read each chapter's links once and route them (one step instead of two; same behaviour)?
 - **D22** - wire up the parallel OpenSERP workers (SQS), or retire them?
-- **D23** - retire `map_features` (GeoJSON of what is drawn inside a map; conflicts with D1 of 2026-11-17,
-  "appearance links only")?
-- **D24** - retire `supplemental_info_pipeline` (only an archived script calls it; Phase 2's supplemental
-  extraction does the job)?
 - **D25** - put the NOAA key in the existing Secrets Manager secret and read it from there (and from `.env`
   locally)?
 - **D26** - scope the "dedup complete" Phase 3 run to the books whose data changed?
