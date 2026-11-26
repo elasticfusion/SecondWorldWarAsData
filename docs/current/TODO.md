@@ -213,6 +213,25 @@ longer fails the merge, so what is left is an outage (S3 error, task killed).
    Already listed elsewhere: the manual merge scripts write raw JSON (Group 4 "Merge scripts"), the concurrent
    last-writer-wins writes (gap 28, the dates index), equipment find-or-create not locked across tasks.
 
+#### Dedup review releases books one by one, not a whole-corpus run (owner 2026-11-25, D26)
+
+Today, in serial mode: when duplicate detection (whole corpus, after each book's Phase 2) finds groups, the dedup
+gate blocks and the book is NOT queued for Phase 3 (`ecs_entrypoint`, after `_phase3_gate_decision`); "Mark
+complete" in the Dedup Review UI (`dedup_ui_handler._mark_complete`) publishes `dedup_complete`, and the trigger
+(`trigger_handler._route_topics`) starts ONE Phase 3 task with no book: every book's data, every step, the per-book
+provenance validation skipped ("no BOOK_NAME"). Plan:
+1. **D26-1** a book stopped by the dedup gate goes on the Phase 3 queue (`pending_queue`), held with a new reason
+   `dedup_review`.
+2. **D26-2** "Mark complete" releases the `dedup_review` holds; each book runs as its own named Phase 3 run through
+   the normal queue. Remove the unscoped launch from `_route_topics` (and the `dedup_gate_handler` path that relays
+   it), keeping the trusted-topic check for the release message.
+3. **D26-3** a dedup merge repoints the per-book manifests (`src/utils/book_manifest`, DynamoDB `manifest#...`):
+   the merged-away file is replaced by the survivor in every book manifest that lists it. Today a book's scoped
+   Phase 3 download (`_get_book_entity_files`) lists the deleted file (a `download.file_missing` error) and never
+   gets the survivor. Cover the auto-merge, the Review UI merges and the bibliography merge.
+Tests: two books with a cross-book duplicate: review merges it, "Mark complete", each book runs once, each run sees
+the surviving record.
+
 #### Phase 0: a book already submitted is held, not run again (owner 2026-11-25, D16)
 
 A book that was already submitted is not processed a second time: the second copy is put on hold for the GUI

@@ -78,24 +78,33 @@ decisions first (D6-D9: they shape the schema), then the bibliography/NARA ones
 - **D30-D36** - after the rest of the fixes.
 - **Waiting items** - keep waiting until Phase 3 is fully QA'd.
 
-## Still to answer
+## Answered 2026-11-25, second round
 
-Phase 3 only. D6-Q, D23 and D24 are not Phase 3: moved to the TODO ("Owner questions moved out of the Phase 3
-decision list").
+- **D12** - add a separate `record_group` number field; `archive_reference_number` keeps the full reference (the
+  entry/box/file a microfiche pull needs).
+- **D13-Q2** - books and articles keep searching after the first copy: links to several copies are fine; each
+  copy's edition is reviewed and the JSON record points to each copy and its edition (new schema field, with
+  D13-Q5).
+- **D15** - the record-group lookup moves out of the code (`bibliography_resolver._RG_LOOKUP`, 49 patterns) into a
+  config file (`config/nara_record_groups.yaml`), built from NARA's Record Group Explorer
+  (https://www.archives.gov/findingaid/record-group-explorer), with each group's holding location (this replaces
+  the per-group address table question).
+- **D18** - store the links between chapters of the same HyperWar volume (e.g. "see page 329").
+- **D19** - one link step: read each chapter's links once and route each to its handler (removes the duplicated
+  reading in `link_asset_review` + `intra_corpus_links`; same behaviour). Done with D18.
+- **D22** - multiple OpenSERP workers: wire up the SQS path (`phase3_enqueue_openserp.py`, `openserp_worker.py`,
+  the autoscaler).
+- **D25** - the NOAA key goes into the existing Secrets Manager secret (read from there on AWS, from `.env`
+  locally).
+- **D26** - "Mark complete" in the Dedup Review UI no longer starts a whole-corpus Phase 3 run:
+  D26-1 a book the dedup block stops is put on the Phase 3 queue, held with a new reason `dedup_review` (today it
+  is not queued at all); D26-2 "Mark complete" releases the held books, each runs as its own named Phase 3 run
+  through the normal queue (per-book provenance, validation and failure handling; shared records are enriched once,
+  by whichever book runs first); D26-3 a merge repoints the per-book manifests (the merged-away file replaced by the
+  survivor in every manifest that listed it): today a book's Phase 3 downloads only the files its manifest lists,
+  so after a cross-book merge the other book would miss the surviving record.
 
-
-- **D12** - keep the full reference in `archive_reference_number` (it holds the entry/box/file a microfiche pull
-  needs) and add a separate `record_group` number field? Suggested: yes.
-- **D13-Q2** - books and articles stop at the first copy found today (archival records keep every copy): keep
-  searching for books and articles too (fits D7, comparing copies; costs more searches per record)?
-- **D15** - where is the record group index you provided? (Not found in the repo; the code's lookup is built from
-  NARA's online Record Group Explorer.)
-- **D18** - store the links between chapters of the same HyperWar volume (e.g. "see page 329")?
-- **D19** - read each chapter's links once and route them (one step instead of two; same behaviour)?
-- **D22** - wire up the parallel OpenSERP workers (SQS), or retire them?
-- **D25** - put the NOAA key in the existing Secrets Manager secret and read it from there (and from `.env`
-  locally)?
-- **D26** - scope the "dedup complete" Phase 3 run to the books whose data changed?
+Nothing else is open for Phase 3: D1 is parked until D2 is built; D30-D36 wait until the rest of the fixes are done.
 
 ## Open (the original questions, with owner comments)
 
